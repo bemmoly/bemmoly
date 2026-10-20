@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { api } from '../../shared/api.ts';
 import { useIssueServices } from '../../shared/issue-services.tsx';
 import { docsPaths, navigateTo } from '../../shared/navigation.ts';
-import { uploadPageImage } from './upload-image.ts';
+import { uploadPageFile, uploadPageImage } from './upload-image.ts';
 
 /**
  * The palette kind Work registers its issues under in the kernel's search registry. Docs asks
@@ -66,6 +66,7 @@ export function useDocServices(pageId: string, comments = false, ai?: AiHandler)
       searchIssues: (query) => searchIssues(query),
       onNavigate: navigateTo,
       uploadImage: (file, options) => uploadPageImage(pageId, file, options),
+      uploadFile: (file, options) => uploadPageFile(pageId, file, options),
       // Commenting needs edit rights, as the comment layer's canComment does.
       comments,
       ...issues,
