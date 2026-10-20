@@ -28,17 +28,21 @@ export function createCodeRegistry(
     requestAppPermissions(request) {
       into.codeAppPermissions.push(request);
     },
-    hosts: () => ({
-      async clientFor(repository) {
-        const directory = codeHosts?.();
-        if (!directory) {
+    hosts: () => {
+      const directory = () => {
+        const bound = codeHosts?.();
+        if (!bound) {
           throw new ModuleLoadError(
             `Module "${moduleId}": code hosts are not available in this process`,
             moduleId,
           );
         }
-        return directory.clientFor(repository);
-      },
-    }),
+        return bound;
+      };
+      return {
+        clientFor: async (repository) => directory().clientFor(repository),
+        repositories: async () => directory().repositories(),
+      };
+    },
   };
 }

@@ -190,3 +190,12 @@ export interface CodeHostClient {
   listFiles(repository: string, ref: string): Promise<{ paths: string[]; truncated: boolean }>;
   openPullRequest(input: CodePullRequestInput): Promise<{ url: string; number: number }>;
 }
+
+/** A repository a connected host lets Bemmoly read, archived ones left out. */
+export interface CodeHostRepository {
+  fullName: string;
+  hostKind: CodeHostKind;
+  /** null when the host was not asked: a repository named by hand on a token connection. */
+  defaultBranch: string | null;
+  url: string | null;
+}

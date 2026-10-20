@@ -139,6 +139,10 @@ describe('GitHub App from a manifest', () => {
       installationId: FAKE_GITHUB_APP.installationId,
       repositories: ['acme/api'],
     });
+    // What Pipelines' discovery sweeps: asked of the installation, with its default branch.
+    expect(await app.instance.codeHosts!.directory.repositories()).toEqual([
+      { fullName: 'acme/api', hostKind: 'github', defaultBranch: 'trunk', url: null },
+    ]);
     const tested = await call<{ api: { ok: boolean; message: string } }>(
       'POST',
       `/admin/code-hosts/${host.id}/tests`,
