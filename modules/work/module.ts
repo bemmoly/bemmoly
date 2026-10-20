@@ -1,4 +1,5 @@
 import { defineModule, importerContribution, loadChangelogFolder } from '@bemmoly/core';
+import { registerAskReports } from './server/src/config/ask-reports.ts';
 import { WORK_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
@@ -161,12 +162,20 @@ export default defineModule({
     registerWorkAiTools(ctx.ai, services);
     registerWorkMcp(ctx.mcp, services);
     registerWorkAi(ctx, ctx.database);
+    const askReports = registerAskReports(ctx);
     const importDeps = {
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
     };
     ctx.importers.add(importerContribution(createJiraImporter(importDeps)));
     ctx.importers.add(importerContribution(createCsvImporter(importDeps)));
-    ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
+    const routes = workRoutes(createWorkControllers(services));
+    ctx.routes.add({
+      prefix: '/work',
+      plugin: async (app) => {
+        await app.register(routes);
+        await app.register(askReports);
+      },
+    });
   },
 });
