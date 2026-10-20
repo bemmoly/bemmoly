@@ -16,7 +16,7 @@ const disposition = (kind: 'inline' | 'attachment', name: string) =>
   `filename*=UTF-8''${encodeURIComponent(name)}`;
 
 /*
- * How each kind of file may run when the browser opens it (ADR 0037). Images are drawn by
+ * How each kind of file may run when the browser opens it (ADR 0047). Images are drawn by
  * <img>, so their own document never needs to run anything. A PDF is framed by the page it
  * is in and drawn by the browser's viewer, which a sandbox would refuse. HTML runs its own
  * scripts in a sandbox without allow-same-origin, so it gets an origin of its own and can

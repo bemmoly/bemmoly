@@ -6,7 +6,7 @@ export type UploadImageType = (typeof UPLOAD_IMAGE_TYPES)[number];
 
 /**
  * Documents the files API stores besides images. HTML is served only inside a sandbox with an
- * origin of its own (ADR 0037), so its scripts never act as the person reading it.
+ * origin of its own (ADR 0047), so its scripts never act as the person reading it.
  */
 export const UPLOAD_DOCUMENT_TYPES = ['application/pdf', 'text/html'] as const;
 export type UploadDocumentType = (typeof UPLOAD_DOCUMENT_TYPES)[number];

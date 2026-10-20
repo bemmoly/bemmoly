@@ -8,7 +8,7 @@ import { IMAGE_CAPTION, PLACEHOLDER_CARD, PLACEHOLDER_TITLE } from '../styles.ts
 
 /**
  * Only files Bemmoly stored (and the dev mock's blob: URLs) are framed: the server's headers,
- * not the block's own attributes, decide how a stored file may run (ADR 0037).
+ * not the block's own attributes, decide how a stored file may run (ADR 0047).
  */
 const STORED_FILE = /^(\/api\/v1\/files\/[0-9a-f-]{36}|blob:)/i;
 

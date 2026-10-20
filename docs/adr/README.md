@@ -47,4 +47,4 @@ accepted record is never edited except to mark it superseded.
 | [0039](0039-pipelines-dispatches-jobs-with-its-own-postgres-queue.md) | Pipelines dispatches jobs with its own Postgres queue | accepted |
 | [0045](0045-code-hosts-carry-events-and-module-writes.md) | Code hosts carry events and the writes modules need | accepted; changes the code-host contract |
 | [0046](0046-command-line-tools-sign-in-with-a-device-code.md) | Command line tools sign in with a device code | accepted; adds the device grant to the OAuth server |
-| [0037](0037-pages-embed-html-and-pdf-files-in-a-sandbox.md) | Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own | accepted |
+| [0047](0047-pages-embed-html-and-pdf-files-in-a-sandbox.md) | Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own | accepted |

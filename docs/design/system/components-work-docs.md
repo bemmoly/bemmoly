@@ -186,7 +186,7 @@ The Docs writing surfaces live inside `packages/editor/src/doc/` and are reached
 ### FileEmbed and FileViewer
 
 `import { FileEmbed, FileViewer, fileEmbedKind } from '@bemmoly/ui'` · Story: Docs/File embed
-(`packages/ui/src/components/file-embed/`). Decision: ADR 0037.
+(`packages/ui/src/components/file-embed/`). Decision: ADR 0047.
 
 - Use: a stored file shown in a page: an HTML page an agent wrote, a PDF, an image full screen.
   The 40px bar on `sunken` names the file, its kind (HTML, PDF, Image) in `tx-3`, then Download
