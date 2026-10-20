@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Icon, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { IconButton } from '../button/icon-button.tsx';
@@ -83,27 +83,6 @@ function FileBar({
   );
 }
 
-/**
- * A blob: URL belongs to the page that made it (a file not yet stored, the dev mock's
- * uploads), and a frame with an origin of its own may not open it; its HTML is handed to the
- * frame as srcdoc instead, under the same sandbox.
- */
-function useLocalHtml(src: string, kind: FileEmbedKind): string | null {
-  const local = kind === 'html' && src.startsWith('blob:');
-  const [html, setHtml] = useState<{ src: string; text: string } | null>(null);
-  useEffect(() => {
-    if (!local) return;
-    let live = true;
-    void fetch(src)
-      .then((response) => response.text())
-      .then((text) => live && setHtml({ src, text }));
-    return () => {
-      live = false;
-    };
-  }, [local, src]);
-  return local ? (html?.src === src ? html.text : '') : null;
-}
-
 function FileBody({
   src,
   name,
@@ -115,7 +94,6 @@ function FileBody({
   kind: FileEmbedKind;
   full: boolean;
 }) {
-  const localHtml = useLocalHtml(src, kind);
   if (kind === 'image') {
     return (
       <div
@@ -128,12 +106,10 @@ function FileBody({
       </div>
     );
   }
-  // A frame is made once, with its content: one whose srcdoc arrives later may never paint.
-  if (localHtml === '') return <div className="min-h-0 flex-1 bg-card" />;
   return (
     <iframe
       key={src}
-      {...(localHtml === null ? { src } : { srcDoc: localHtml })}
+      src={src}
       title={name}
       loading="lazy"
       referrerPolicy="no-referrer"
