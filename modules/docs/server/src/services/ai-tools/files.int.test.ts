@@ -7,24 +7,26 @@ import { docsAiTools } from './index.ts';
 
 /*
  * An agent putting a file in a page over MCP: at the end of the page, or anywhere in its body
- * through Markdown. The kernel's files API stands in as a small store; its own sniffing,
- * limits and headers are tested in apps/server/src/files.int.test.ts.
+ * through Markdown, sent inline or to an upload link first. The kernel's files API stands in
+ * as a small store; its own sniffing, limits, headers and links are tested in
+ * apps/server/src/files.int.test.ts and apps/server/src/upload-links.int.test.ts.
  */
 
-const stored = new Map<string, UploadedFile>();
+const stored = new Map<string, UploadedFile & { targetId: string }>();
 
 const fakeFiles = {
   async upload(_ctx: RequestContext, query: UploadFileQuery, body: Buffer) {
     const id = `0199c0de-0000-7000-8000-${String(stored.size + 1).padStart(12, '0')}`;
     const mime = body.subarray(0, 5).toString() === '%PDF-' ? 'application/pdf' : 'text/html';
     const file = { id, url: `/api/v1/files/${id}`, name: query.name ?? 'file', mime, size: 1 };
-    stored.set(id, file as UploadedFile);
+    stored.set(id, { ...(file as UploadedFile), targetId: query.targetId });
     return file as UploadedFile;
   },
   async stat(_ctx: RequestContext, id: string) {
     const file = stored.get(id);
     if (!file) throw new NotFoundError('The file was not found');
-    return { name: file.name, mime: file.mime, size: file.size };
+    const target = { kind: 'docs.page', id: file.targetId };
+    return { name: file.name, mime: file.mime, size: file.size, target };
   },
   async read(): Promise<never> {
     return Promise.reject(new NotFoundError('The file was not found'));
@@ -145,5 +147,43 @@ describe('docs_upload_file', () => {
         content: '<!doctype html>',
       }),
     ).rejects.toThrow();
+  });
+
+  it('adds a file sent to an upload link by its id, only on its own page', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const member = h.as(h.users.member);
+    const create = (title: string) =>
+      write('docs_create_page', member, { spaceKey: 'RPT', title, body: 'Intro.' });
+    const pageId = String((await create('Large report')).result['id']);
+    const other = String((await create('Elsewhere')).result['id']);
+    // What PUT /api/v1/upload-links/:token stores, as the person, against the page.
+    const sent = await fakeFiles.upload(
+      member,
+      { target: 'docs.page', targetId: pageId, name: 'large.pdf' },
+      Buffer.from('%PDF-1.7\n'),
+    );
+    const added = await write('docs_upload_file', member, { pageId, fileId: sent.id });
+    expect(added.result).toMatchObject({ id: sent.id, mime: 'application/pdf', appended: true });
+    expect((await blocks(member, pageId)).at(-1)).toEqual({
+      type: 'file',
+      attrs: { src: sent.url, name: 'large.pdf', mime: 'application/pdf' },
+    });
+    await added.undo();
+    expect((await blocks(member, pageId)).map((block) => block.type)).toEqual(['paragraph']);
+
+    await expect(
+      write('docs_upload_file', member, { pageId: other, fileId: sent.id }),
+    ).rejects.toThrow(/another page/);
+  });
+
+  it('takes content or a fileId, never both or neither', () => {
+    if (!h) return;
+    const input = tools.get('docs_upload_file')!.input;
+    const pageId = '0199c0de-0000-7000-8000-000000000001';
+    const fileId = '0199c0de-0000-7000-8000-000000000002';
+    expect(input.safeParse({ pageId }).success).toBe(false);
+    expect(input.safeParse({ pageId, fileId, name: 'a.pdf', content: 'x' }).success).toBe(false);
+    expect(input.safeParse({ pageId, content: 'x' }).success).toBe(false);
+    expect(input.safeParse({ pageId, fileId }).success).toBe(true);
   });
 });

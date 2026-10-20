@@ -31,7 +31,13 @@ export function caller(app: SignedInApp): Call {
 }
 
 /** Invites and signs in a member; returns their session cookie and id. */
-export async function addMember(app: SignedInApp, call: Call, email: string, name: string) {
+export async function addMember(
+  app: SignedInApp,
+  call: Call,
+  email: string,
+  name: string,
+  origin = BOOT_ORIGIN,
+) {
   const roles = (await call('GET', '/roles'))!.items as { id: string; key: string }[];
   const roleId = roles.find((role) => role.key === 'member')!.id;
   const invited = (await call('POST', '/invitations', { emails: [email], roleId }))!;
@@ -40,7 +46,7 @@ export async function addMember(app: SignedInApp, call: Call, email: string, nam
   const accepted = await app.instance.app.inject({
     method: 'POST',
     url: `/api/v1/auth/invitations/${token}/accept`,
-    headers: { origin: BOOT_ORIGIN },
+    headers: { origin },
     payload: { name, password: 'twelve chars ok' },
   });
   const header = accepted.headers['set-cookie'];
