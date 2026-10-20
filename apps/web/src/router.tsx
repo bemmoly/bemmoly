@@ -35,6 +35,11 @@ export function createAppRouter(queryClient: QueryClient) {
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
+    // Every navigation is a transition that waits on the next page's chunk; without a pending
+    // state the old page stays up meanwhile. Pages in the frame name theirs (app-routes.tsx).
+    // A fast load never flashes the skeleton, and a slow one never flickers it.
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 200,
   });
   /** Module chunks navigate through the router, so leave guards see their moves too. */
   setShellNavigator((path, options) =>
