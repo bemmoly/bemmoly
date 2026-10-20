@@ -11,8 +11,8 @@ import type { FilesService } from '../services/files/index.ts';
 import { contextOf } from './request-context.ts';
 
 /** An inline header any browser reads: an ASCII fallback and the UTF-8 name. */
-const inline = (name: string) =>
-  `inline; filename="${name.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; ` +
+const disposition = (kind: 'inline' | 'attachment', name: string) =>
+  `${kind}; filename="${name.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; ` +
   `filename*=UTF-8''${encodeURIComponent(name)}`;
 
 /*
@@ -41,11 +41,26 @@ const HTML_POLICY = [
   "frame-ancestors 'self'",
 ].join('; ');
 
-function servedAs(mime: string): { type: string; policy: string; framed: boolean } {
-  if (mime === 'text/html')
-    return { type: 'text/html; charset=utf-8', policy: HTML_POLICY, framed: true };
-  if (mime === 'application/pdf') return { type: mime, policy: PDF_POLICY, framed: true };
-  return { type: mime, policy: IMAGE_POLICY, framed: false };
+interface Served {
+  type: string;
+  policy: string;
+  framed: boolean;
+  inline: boolean;
+}
+
+/**
+ * HTML is drawn only inside a page's frame. Opened on its own (a link, a typed URL, a client
+ * that sends no Sec-Fetch-Dest) it downloads, so a file can never pass for a Bemmoly page.
+ */
+function servedAs(mime: string, request: FastifyRequest): Served {
+  if (mime === 'text/html') {
+    const inline = request.headers['sec-fetch-dest'] === 'iframe';
+    return { type: 'text/html; charset=utf-8', policy: HTML_POLICY, framed: true, inline };
+  }
+  if (mime === 'application/pdf') {
+    return { type: mime, policy: PDF_POLICY, framed: true, inline: true };
+  }
+  return { type: mime, policy: IMAGE_POLICY, framed: false, inline: true };
 }
 
 export function createFilesController(service: FilesService) {
@@ -65,12 +80,15 @@ export function createFilesController(service: FilesService) {
     async read(request: FastifyRequest, reply: FastifyReply): Promise<Readable> {
       const { id } = parseOrThrow(fileIdParamsSchema, request.params);
       const file = await service.read(contextOf(request), id);
-      const served = servedAs(file.mime);
+      const served = servedAs(file.mime, request);
       if (served.framed) reply.header('x-frame-options', 'SAMEORIGIN');
       reply
         .header('content-type', served.type)
         .header('content-length', String(file.size))
-        .header('content-disposition', inline(file.name))
+        .header(
+          'content-disposition',
+          disposition(served.inline ? 'inline' : 'attachment', file.name),
+        )
         .header('x-content-type-options', 'nosniff')
         .header('content-security-policy', served.policy)
         .header('cross-origin-resource-policy', 'same-origin')

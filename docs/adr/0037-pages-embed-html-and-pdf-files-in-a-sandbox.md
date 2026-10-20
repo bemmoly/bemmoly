@@ -31,8 +31,11 @@ same origin changes none of that.
    (never `allow-same-origin`), and the editor frames it with the same `sandbox` attribute.
    The document gets an opaque origin: its requests to Bemmoly are cross-site, so the
    `SameSite=Lax` session cookie is not sent and CORS hides any answer; it cannot reach the
-   page around it, navigate the app or submit forms. The header holds even when the file's URL
-   is opened directly in a tab.
+   page around it, navigate the app or submit forms. HTML is drawn inline only when a frame
+   asks for it (`Sec-Fetch-Dest: iframe`); opened on its own, or by a client that does not
+   say, it is sent as an attachment, so a file is never a page under Bemmoly's name. Links
+   inside it may open new tabs outside the sandbox (`allow-popups-to-escape-sandbox`): such a
+   tab can reach only the frame that opened it, and outside sites work there.
 3. **It may load from the web but never send.** `script-src`, `style-src`, `font-src`,
    `img-src` and `media-src` allow `https:` (and inline code), so CDN chart libraries and web
    fonts work; `connect-src 'none'` and `form-action 'none'` shut `fetch`, XHR, WebSockets,
@@ -51,6 +54,8 @@ same origin changes none of that.
 - Agents attach a file with `docs_upload_file` and place it with Markdown image syntax; the
   server turns a link to a stored PDF or HTML file into a File block.
 - Exports print a File block as a link to the file; print and Markdown never inline it.
-- A separate origin for user content (a second host name) would also stop a malicious file
-  from being opened as a top-level page under Bemmoly's name; self-hosted installs rarely have
-  one, so the CSP sandbox is the line. Revisit if installs gain a content host.
+- A PDF opened on its own still shows under Bemmoly's address, in the browser's viewer; its
+  scripts run in that viewer, never as Bemmoly's origin.
+- A separate origin for user content (a second host name) would be stronger still; self-hosted
+  installs rarely have one, so the CSP sandbox and the framed-only rule are the line. Revisit
+  if installs gain a content host.

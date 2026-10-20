@@ -86,11 +86,11 @@ describe('files api', () => {
         headers: { 'content-type': type, ...(as ? { cookie: as } : {}) },
         payload: body,
       });
-    const read = (id: string, as?: string) =>
+    const read = (id: string, as?: string, dest?: string) =>
       app.inject({
         method: 'GET',
         url: `/api/v1/files/${id}`,
-        ...(as ? { headers: { cookie: as } } : {}),
+        headers: { ...(as ? { cookie: as } : {}), ...(dest ? { 'sec-fetch-dest': dest } : {}) },
       });
 
     // The bytes decide: a PNG sent as SVG under a path-like name is stored as a PNG.
@@ -118,7 +118,11 @@ describe('files api', () => {
     const html = await upload(HTML, undefined, 'report.png', 'image/png');
     expect(html.statusCode).toBe(201);
     expect(html.json()).toMatchObject({ mime: 'text/html', name: 'report.html' });
-    const report = await read(html.json().id);
+    const report = await read(html.json().id, undefined, 'iframe');
+    expect(report.headers['content-disposition']).toMatch(/^inline;/);
+    // Opened on its own, it downloads instead of passing for a Bemmoly page.
+    const alone = await read(html.json().id, undefined, 'document');
+    expect(alone.headers['content-disposition']).toMatch(/^attachment;/);
     expect(report.headers).toMatchObject({
       'content-type': 'text/html; charset=utf-8',
       'x-content-type-options': 'nosniff',
