@@ -67,10 +67,17 @@ const DROP: Record<SchemeKind, (tx: SqlExecutor, project: ProjectRow) => Promise
   board: resetBoards,
 };
 
+const OVERRIDE_ACTION = {
+  board: 'work.board.configure',
+  workflow: 'work.workflow.configure',
+  issue_types: 'work.project.configure',
+  fields: 'work.project.configure',
+} as const satisfies Record<SchemeKind, string>;
+
 /**
  * A project's schemes against the org defaults (tech design §14): which it
  * inherits, what its copies change, and override and reset. Reading needs
- * issue view in the project; override and reset need "Configure project",
+ * issue view in the project; override and reset need the action that edits the kind,
  * run under a lock on the project row, are audited and tell the project's
  * screens to refetch.
  */
@@ -89,8 +96,9 @@ export function createSchemesService(deps: SchemesServiceDeps) {
   async function change(ctx: RequestContext, ref: string, kind: SchemeKind, override: boolean) {
     const sql = db();
     const project = await projectByKey(sql, ref);
-    // The board is "Configure board"'s, as every other change to it is; the rest the project's.
-    const capability = kind === 'board' ? 'work.board.configure' : 'work.project.configure';
+    // Each kind follows the action that edits it: the board "Configure board", the workflow
+    // "Configure workflows"; issue types and fields stay with "Configure project".
+    const capability = OVERRIDE_ACTION[kind];
     await ctx.authz.authorize(ctx.actor, capability, projectResource(project.id));
     await sql.begin(async (tx) => {
       const [locked] = await tx<ProjectRow[]>`

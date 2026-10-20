@@ -112,6 +112,9 @@ describe('Work actions per role', () => {
     );
     await expect(services.automation.create(again, rule)).rejects.toThrow(ForbiddenError);
     const held = (await services.members.permissions(again, 'OVR')).actions;
+    // The workflow scheme follows "Configure workflows"; fields stay with "Configure project".
+    await expect(services.schemes.reset(again, 'OVR', 'workflow')).rejects.toThrow(ForbiddenError);
+    await services.schemes.override(again, 'OVR', 'fields');
     expect(held).toContain('work.project.configure');
     expect(held).not.toContain('work.workflow.configure');
     expect(held).not.toContain('work.automation.edit');
@@ -131,5 +134,38 @@ describe('Work actions per role', () => {
       planning.issue(asKit, { projectId, title: 'Big', typeId: (epic as { id: string }).id }),
     ).rejects.toThrow(ForbiddenError);
     await expect(planning.issue(asKit, { projectId, title: 'Small' })).resolves.toBeTruthy();
+  });
+
+  it('asks for "Manage epics" on every other change to an existing epic', async (ctx) => {
+    if (!planning) return ctx.skip(skipReason);
+    const { services, sql } = planning;
+    const [member] = await sql<{ id: string }[]>`select id from roles where key = 'member'`;
+    const memberId = (member as { id: string }).id;
+    await sql`
+      insert into role_capabilities (role_id, capability, allowed) values
+        (${memberId}, 'work.issue.delete', true), (${memberId}, 'work.epic.manage', false)
+      on conflict (role_id, capability) do update set allowed = excluded.allowed`;
+    const max = await planning.user('Max');
+    const projectId = await planning.project('EPX', 'scrum', [[max, 'member']]);
+    const asMax = planning.ctx(max);
+    const epic = await planning.issue(asMax, { projectId, title: 'Will be an epic' });
+    const task = await planning.issue(asMax, { projectId, title: 'Stays a task' });
+    await sql`
+      update issues set type_id = (
+        select id from issue_types where project_id is null and level = 'epic' limit 1)
+      where id = ${epic.id}`;
+
+    await expect(services.issues.archive(asMax, epic.key)).rejects.toThrow(ForbiddenError);
+    await expect(
+      services.issues.setAssignees(asMax, epic.key, { assigneeIds: [max] }),
+    ).rejects.toThrow(ForbiddenError);
+    await expect(services.issues.rank(asMax, epic.key, { afterIssueId: task.id })).rejects.toThrow(
+      ForbiddenError,
+    );
+    await sql`update issues set deleted_at = now() where id = ${epic.id}`;
+    await expect(services.issues.restore(asMax, epic.key)).rejects.toThrow(ForbiddenError);
+
+    await expect(services.issues.archive(asMax, task.key)).resolves.toBeTruthy();
+    await expect(services.issues.unarchive(asMax, task.key)).resolves.toBeTruthy();
   });
 });

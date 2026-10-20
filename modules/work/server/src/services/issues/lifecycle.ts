@@ -41,6 +41,7 @@ export async function restoreIssue(
   const sql = requireDatabase(deps);
   const row = await loadIssueByKey(sql, key, { includeDeleted: true });
   await ctx.authz.authorize(ctx.actor, 'work.issue.delete', projectResource(row.project_id));
+  await authorizeEpics(ctx, sql, projectResource(row.project_id), [row.type_id]);
   if (!row.deleted_at) throw new ValidationError(`Issue ${key} is not deleted`);
   const deletedAt = new Date(row.deleted_at).getTime();
   if (Date.now() - deletedAt > RECOVERY_DAYS * 24 * 60 * 60 * 1000) {
@@ -125,6 +126,7 @@ export async function rankIssue(
   const sql = requireDatabase(deps);
   const found = await loadIssueByKey(sql, key);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(found.project_id));
+  await authorizeEpics(ctx, sql, projectResource(found.project_id), [found.type_id]);
   const ranked = await sql.begin(async (tx) => {
     const row = await loadIssueByKey(tx, key, { lock: true });
     const [upper, lower] = await Promise.all([
