@@ -23,6 +23,7 @@ export const AUTOMATION_ACTIONS = {
   addLabel: 'add_label',
   sendWebhook: 'send_webhook',
   notify: 'notify',
+  archive: 'archive',
 } as const;
 
 /** Fields a change can be watched on, as the issue history names them. */
@@ -125,6 +126,8 @@ export const notifyArgsSchema = z
     path: ['recipients'],
   });
 
+export const archiveArgsSchema = z.object({});
+
 /** Scheduled rules need a filter: without one they would act on every issue. */
 export const scheduledConditionsSchema = z.array(lqlQuerySchema).min(1);
 
@@ -138,3 +141,4 @@ export type AddCommentArgs = z.infer<typeof addCommentArgsSchema>;
 export type AddLabelArgs = z.infer<typeof addLabelArgsSchema>;
 export type SendWebhookArgs = z.infer<typeof sendWebhookArgsSchema>;
 export type NotifyArgs = z.infer<typeof notifyArgsSchema>;
+export type ArchiveArgs = z.infer<typeof archiveArgsSchema>;

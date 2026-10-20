@@ -48,6 +48,8 @@ export const issueSchema = z.object({
   statusChangedAt: timestampSchema,
   resolvedAt: timestampSchema.nullable(),
   deletedAt: timestampSchema.nullable(),
+  /** Set while the issue is archived: off the board and lists, kept and still open by key. */
+  archivedAt: timestampSchema.nullable().optional(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 });
@@ -175,6 +177,8 @@ export const listIssuesQuerySchema = keysetQuerySchema.extend({
   sort: issueSortSchema.default('rank'),
   order: z.enum(['asc', 'desc']).default('asc'),
   deleted: queryFlagSchema.default(false),
+  /** Lists the archived issues instead of the live ones. */
+  archived: queryFlagSchema.default(false),
 });
 
 /** Where a dragged issue lands: between its new neighbours, either of which may be absent. */

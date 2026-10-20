@@ -1,6 +1,7 @@
 import type { ActionDefinition } from '../contract.ts';
 import { addComment } from './add-comment.ts';
 import { addLabel } from './add-label.ts';
+import { archive } from './archive.ts';
 import { assign } from './assign.ts';
 import { notify } from './notify.ts';
 import { sendWebhook } from './send-webhook.ts';
@@ -20,6 +21,7 @@ const ACTIONS: readonly ActionDefinition<any>[] = [
   addLabel,
   sendWebhook,
   notify,
+  archive,
 ];
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

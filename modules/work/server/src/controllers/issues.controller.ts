@@ -45,6 +45,12 @@ export function createIssuesController(service: IssuesService) {
     async restore(request: FastifyRequest): Promise<Issue> {
       return service.restore(contextOf(request), keyOf(request));
     },
+    async archive(request: FastifyRequest): Promise<Issue> {
+      return service.archive(contextOf(request), keyOf(request));
+    },
+    async unarchive(request: FastifyRequest): Promise<Issue> {
+      return service.unarchive(contextOf(request), keyOf(request));
+    },
     async rank(request: FastifyRequest): Promise<Issue> {
       const body = parseOrThrow(rankIssueBodySchema, request.body);
       return service.rank(contextOf(request), keyOf(request), body);

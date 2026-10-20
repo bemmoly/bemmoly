@@ -110,6 +110,7 @@ export async function listIssues(
     select ${sql.unsafe(ISSUE_COLUMNS)} from issues i
     where (${query.deleted} and i.deleted_at is not null
         or not ${query.deleted} and i.deleted_at is null)
+      and (${query.deleted} or (i.archived_at is not null) = ${query.archived})
       and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
       and (${query.sprintId ?? null}::uuid is null or i.sprint_id = ${query.sprintId ?? null})
       and (${query.sprint !== 'none'} or i.sprint_id is null)

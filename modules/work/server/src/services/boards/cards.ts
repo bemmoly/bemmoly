@@ -117,6 +117,7 @@ export async function loadCards(
         ${lanes} as query_lane
       from issues
       where issues.project_id = ${project.id} and issues.deleted_at is null
+        and issues.archived_at is null
         and issues.status_id = any(${statusIds}::uuid[])
         and not exists (select 1 from issue_types it
           where it.id = issues.type_id and it.level = 'epic')

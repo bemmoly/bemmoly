@@ -116,6 +116,8 @@ export const ISSUE_FIELDS: readonly LqlField[] = [
   field({ key: 'due', label: 'Due', kind: 'date' }),
   field({ key: 'created', label: 'Created', kind: 'date' }),
   field({ key: 'updated', label: 'Updated', kind: 'date' }),
+  /** Archived issues are left out of a query unless it names this field. */
+  field({ key: 'archived', label: 'Archived', kind: 'date' }),
   field({ key: 'fixVersion', label: 'Fix version', kind: 'option', values: 'versions' }),
   field({ key: 'label', label: 'Label', kind: 'option', values: 'labels' }),
   field({ key: 'text', label: 'Text', kind: 'text', operators: MATCHING }),

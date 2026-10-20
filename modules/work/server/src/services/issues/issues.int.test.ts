@@ -63,6 +63,7 @@ describe('issues against Postgres', () => {
       sort: 'created',
       order: 'asc',
       deleted: false,
+      archived: false,
     });
     expect(live.items.map((item) => item.key)).not.toContain(issue.key);
     const trash = await work.services.issues.list(admin, {
@@ -71,6 +72,7 @@ describe('issues against Postgres', () => {
       sort: 'created',
       order: 'asc',
       deleted: true,
+      archived: false,
     });
     expect(trash.items.map((item) => item.key)).toEqual([issue.key]);
     const found = await work.services.search.suggest(admin, { q: issue.key, limit: 8 });

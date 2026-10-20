@@ -144,6 +144,7 @@ export function createLqlService(deps: LqlServiceDeps) {
     const rows = await sql<Row[]>`
       select ${columns(sql)} from issues
       where issues.deleted_at is null
+        and (${compiled.asksForArchived} or issues.archived_at is null)
         and ${compiled.access}
         and (${projectId}::uuid is null or issues.project_id = ${projectId}::uuid)
         and ${compiled.where}

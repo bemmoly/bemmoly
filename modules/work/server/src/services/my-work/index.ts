@@ -51,7 +51,7 @@ async function listTab(
     from issues i
     join workflow_statuses s on s.id = i.status_id
     join issue_types t on t.id = i.type_id
-    where i.deleted_at is null
+    where i.deleted_at is null and i.archived_at is null
       and ${tabFilter(sql, tab, me)}
       and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
     order by (s.category = 'done'), i.updated_at desc, i.id desc

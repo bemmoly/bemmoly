@@ -268,6 +268,11 @@ export function builtInFields(sql: SqlClient): Record<string, FieldCompiler> {
         datePredicate(s, sql`issues.updated_at`, operator, values, cx),
       sort: col(sql`issues.updated_at`),
     },
+    archived: {
+      predicate: (s, operator, values, cx) =>
+        datePredicate(s, sql`issues.archived_at`, operator, values, cx),
+      sort: col(sql`issues.archived_at`),
+    },
     fixVersion: {
       predicate: reference(versionId, versions),
       sort: () => subqueryName(sql, 'versions', versionId),

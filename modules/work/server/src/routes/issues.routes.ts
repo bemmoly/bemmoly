@@ -10,6 +10,8 @@ export function issuesRoutes(controller: IssuesController): FastifyPluginAsync {
     app.patch('/issues/:key', async (request) => controller.update(request));
     app.delete('/issues/:key', async (request, reply) => controller.remove(request, reply));
     app.post('/issues/:key/restore', async (request) => controller.restore(request));
+    app.post('/issues/:key/archive', async (request) => controller.archive(request));
+    app.post('/issues/:key/unarchive', async (request) => controller.unarchive(request));
     app.patch('/issues/:key/rank', async (request) => controller.rank(request));
     app.post('/issues/:key/assign', async (request) => controller.assign(request));
     app.get('/issues/:key/assignees', async (request) => controller.assignees(request));

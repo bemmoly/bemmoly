@@ -60,6 +60,7 @@ async function recentIssues(services: WorkServices, ctx: RequestContext, project
     sort: 'updated',
     order: 'desc',
     deleted: false,
+    archived: false,
   });
   return page.items.map((issue) => ({ key: issue.key, title: issue.title }));
 }
