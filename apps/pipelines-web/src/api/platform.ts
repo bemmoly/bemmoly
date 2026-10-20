@@ -6,6 +6,7 @@ import {
   capacitySchema,
   cloudAccountsResponseSchema,
   connectionsResponseSchema,
+  discoveryStatusSchema,
   idSchema,
   insightsSchema,
   landingZonePlanSchema,
@@ -15,6 +16,7 @@ import {
   poolTokenSchema,
   runnerPoolSchema,
   providersResponseSchema,
+  sweepQueuedSchema,
   type AcceptProposalsBody,
   type ApplyLandingZoneBody,
   type CapacityQuery,
@@ -46,6 +48,7 @@ export const platformKeys = {
     ['pipelines', 'platform', 'plan', connection, body] as const,
   insights: (query: InsightsQuery) => ['pipelines', 'insights', query] as const,
   proposals: () => ['pipelines', 'platform', 'proposals'] as const,
+  discovery: () => ['pipelines', 'platform', 'discovery'] as const,
 };
 
 export function platformEndpoints(http: Http) {
@@ -87,6 +90,10 @@ export function platformEndpoints(http: Http) {
       http.request(`${base}/discovery/proposals`, proposalsPageSchema, {
         query: { limit: 200 },
       }),
+    discovery: () => http.request(`${base}/discovery/status`, discoveryStatusSchema),
+    /** Every repository the hosts let Pipelines read, scanned again. */
+    scanAll: () =>
+      http.request(`${base}/discovery/scans`, sweepQueuedSchema, { method: 'POST', body: {} }),
     acceptProposals: (body: AcceptProposalsBody) =>
       http.request(`${base}/discovery/acceptances`, acceptProposalsResultSchema, {
         method: 'POST',

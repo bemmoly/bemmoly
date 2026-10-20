@@ -1,12 +1,21 @@
 import { useT } from '@bemmoly/core-web';
-import { Button, ProvisionChecklist, type ProvisionState, type ProvisionStep } from '@bemmoly/ui';
+import {
+  Button,
+  ProvisionChecklist,
+  useToast,
+  type ProvisionState,
+  type ProvisionStep,
+} from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { platformKeys } from '../../api/platform.ts';
 import { useGo } from '../../hooks/use-go.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
+import { refusalOf } from '../../parts/load-failed.tsx';
 import { Panel, Screen } from '../../parts/screen.tsx';
 import { Proposals } from './proposals.tsx';
+import { applicationsView } from './applications-step.ts';
+import { useDiscovery } from './use-discovery.ts';
 import { useSetup, type SetupStep } from './use-setup.ts';
 
 const ORDER: readonly SetupStep[] = ['github', 'applications', 'runners', 'cloud', 'ship'];
@@ -21,13 +30,21 @@ const WORDS = {
 
 /**
  * Getting an empty install to its first Prod deploy: connect GitHub, accept the applications
- * the scan found, give builds runners (or keep your CI), connect a cloud, ship. The first
+ * discovery found, give builds runners (or keep your CI), connect a cloud, ship. The first
  * step not done is raised with its action; done steps go quiet.
  */
 export default function StartScreen() {
   const t = useT(pipelinesText);
   const go = useGo();
+  const toast = useToast();
   const setup = useSetup();
+  const discovery = useDiscovery(setup.github, setup.done.applications, (error) =>
+    toast.show({
+      tone: 'danger',
+      title: t('pipelines.start.scanError'),
+      body: refusalOf(error)?.sentence ?? t('pipelines.common.loadFailed'),
+    }),
+  );
   const proposals = useQuery({
     queryKey: platformKeys.proposals(),
     queryFn: () => api.platform.proposals(),
@@ -57,17 +74,7 @@ export default function StartScreen() {
     {
       key: 'applications',
       title: t('pipelines.start.applications'),
-      description:
-        setup.proposals > 0
-          ? t('pipelines.start.applicationsFound', { count: setup.proposals })
-          : t('pipelines.start.applicationsDescription'),
-      state: stateOf('applications'),
-      action:
-        setup.proposals > 0
-          ? action(t('pipelines.start.review'), () =>
-              document.getElementById('proposals')?.scrollIntoView({ behavior: 'smooth' }),
-            )
-          : undefined,
+      ...applicationsView(t, stateOf('applications'), setup.proposals, discovery, action),
     },
     {
       key: 'runners',
