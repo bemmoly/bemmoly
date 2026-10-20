@@ -32,7 +32,8 @@ export {
   fileUrl,
   type FileAccess,
   type FileContent,
-  type FileReader,
+  type FileInfo,
+  type FileStoreAccess,
   type FilesRegistry,
   type FileTargetDefinition,
 } from './files.ts';
