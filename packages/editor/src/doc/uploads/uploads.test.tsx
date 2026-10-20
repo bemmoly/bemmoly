@@ -114,6 +114,32 @@ describe('pasted and dropped images', () => {
     expect(paste(editor, [png()])).toBe(false);
   });
 
+  it('stores a PDF or HTML file through the file upload as a File block', async () => {
+    const uploadImage = vi.fn();
+    const uploadFile = vi.fn(async (file: File) => ({
+      src: URL_OF,
+      name: file.name,
+      mime: 'text/html',
+    }));
+    const editor = await setup({ uploadImage, uploadFile });
+    const report = new File(['<!doctype html>'], 'report.html', { type: 'text/html' });
+    expect(paste(editor, [report])).toBe(true);
+    await waitFor(() =>
+      expect(editor.getJSON().content?.find((node) => node.type === 'file')?.attrs).toEqual({
+        src: URL_OF,
+        name: 'report.html',
+        mime: 'text/html',
+      }),
+    );
+    expect(uploadImage).not.toHaveBeenCalled();
+    // Without the file upload, documents are left to the browser.
+    cleanup();
+    const imagesOnly = await setup({ uploadImage });
+    expect(paste(imagesOnly, [new File(['%PDF-'], 'spec.pdf', { type: 'application/pdf' })])).toBe(
+      false,
+    );
+  });
+
   it('ignores files that are not images', async () => {
     const { upload } = controlledUpload();
     const editor = await setup({ uploadImage: upload });

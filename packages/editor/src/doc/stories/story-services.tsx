@@ -100,6 +100,11 @@ export const WORK_ON: DocServices = {
     ),
   searchPeople: (query) => match(people, query),
   uploadImage: async (file) => ({ src: cutover, alt: file.name }),
+  uploadFile: async (file) => ({
+    src: URL.createObjectURL(file),
+    name: file.name,
+    mime: file.type === 'application/pdf' ? 'application/pdf' : 'text/html',
+  }),
   ai: { write: storyWrite, complete: async () => ' and the old store is switched off.' },
 };
 

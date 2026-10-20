@@ -108,6 +108,16 @@ const INSERT: readonly DocSlashItem[] = [
     run: (e, r) => start(e, r).setImage({ src: '', alt: '' }).run(),
   },
   {
+    id: 'file',
+    label: 'File',
+    description: 'A PDF or HTML page, previewed in place',
+    icon: 'doc',
+    group: 'Insert',
+    keywords: ['pdf', 'html', 'attachment', 'embed', 'report', 'upload'],
+    available: (services) => Boolean(services.uploadFile),
+    run: (e, r) => start(e, r).setFile({ src: '', name: '', mime: '' }).run(),
+  },
+  {
     id: 'horizontalRule',
     label: 'Divider',
     description: 'A line between sections',
