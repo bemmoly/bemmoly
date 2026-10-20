@@ -48,3 +48,4 @@ accepted record is never edited except to mark it superseded.
 | [0045](0045-code-hosts-carry-events-and-module-writes.md) | Code hosts carry events and the writes modules need | accepted; changes the code-host contract |
 | [0046](0046-command-line-tools-sign-in-with-a-device-code.md) | Command line tools sign in with a device code | accepted; adds the device grant to the OAuth server |
 | [0047](0047-pages-embed-html-and-pdf-files-in-a-sandbox.md) | Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own | accepted |
+| [0048](0048-mcp-clients-upload-large-files-through-single-use-links.md) | MCP clients upload large files through single-use upload links | accepted |
