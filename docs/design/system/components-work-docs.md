@@ -181,6 +181,24 @@ The Docs writing surfaces live inside `packages/editor/src/doc/` and are reached
 | Link picker (Mod+K)    | `link-picker.tsx`                          | One field: an address, or pages and issues by search    |
 | Code and table tools   | `code-tools.tsx`, `table-tools.tsx`        | Icon buttons with tooltips; table deletes in `red`      |
 | Issue card block       | `views/issue-card-view.tsx`                | Work's issue card in a page; the key on a quiet card when Work is off |
+| File block             | `views/file-view.tsx`                      | A PDF or HTML file in `FileEmbed`; an empty block is an Upload card; Expand on images too |
+
+### FileEmbed and FileViewer
+
+`import { FileEmbed, FileViewer, fileEmbedKind } from '@bemmoly/ui'` · Story: Docs/File embed
+(`packages/ui/src/components/file-embed/`). Decision: ADR 0037.
+
+- Use: a stored file shown in a page: an HTML page an agent wrote, a PDF, an image full screen.
+  The 40px bar on `sunken` names the file, its kind (HTML, PDF, Image) in `tx-3`, then Download
+  (HTML) or Open in a new tab (PDF, image) and Expand; the file sits below in a 360px box on a
+  `card` surface with the card radius and a `line` border.
+- Expand opens `FileViewer`: the same bar with Close in place of Expand, the file filling a
+  `full` Modal. Escape closes it; the frame exists only while it is open.
+- HTML always runs in its sandboxed frame (`allow-scripts`, never `allow-same-origin`); PDF in
+  the browser's viewer. The bar is never hidden, so a form inside a file never passes for the
+  app.
+- Not: for files the page links to without showing (use a link); never a frame of an outside
+  site.
 
 Their icons are `EDITOR_ICONS` names on `Icon` (`text`, `heading`, `highlight`, `row-add`, …,
 with #77). The page column is a 700px measure and properties sit in one 28px row. The page

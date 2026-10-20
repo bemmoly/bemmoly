@@ -115,7 +115,8 @@ sections, Home's segments). The page's view tabs are `PageHeader` `tabs`, not th
 
 `import { Modal } from '@bemmoly/ui'` · Story: overlays.stories.tsx (ConfirmModal)
 
-- Use: every dialog. `width`: `sm` 400, `md` 480, `lg` 640, `composer` 720, `xl` 760. `title`
+- Use: every dialog. `width`: `sm` 400, `md` 480, `lg` 640, `composer` 720, `xl` 760, and
+  `full` (the window less a 16px margin) only for `FileViewer` (ADR 0037). `title`
   is required (its accessible name); footer buttons sit outside the scrolling body.
 - Not: for small edits that can happen in place (use a popover or inline edit); never a
   confirmation for something Undo can reverse.
