@@ -83,7 +83,7 @@ export function backlogResponse(db: MockDb) {
   const categories = statusCategories(db);
   const epicTypes = epicTypeIds(db);
   const done = (issue: BacklogIssueRow) => categories.get(issue.statusId) === 'done';
-  const live = state.issues.filter((issue) => !issue.deletedAt).sort(byRank);
+  const live = state.issues.filter((issue) => !issue.deletedAt && !issue.archivedAt).sort(byRank);
   const open = state.sprints
     .filter((sprint) => sprint.state !== 'closed')
     .sort(

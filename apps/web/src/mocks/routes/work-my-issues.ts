@@ -50,7 +50,7 @@ export const workMyIssuesRoutes: MockRoute[] = [
     handle: (request, db) => {
       const me = db.signedInAs;
       const limit = Math.min(20, Math.max(1, Number(request.query.get('limit') ?? 6) || 6));
-      const live = issueStore(db).issues.filter((row) => !row['deletedAt']);
+      const live = issueStore(db).issues.filter((row) => !row['deletedAt'] && !row['archivedAt']);
       const watched = watchersOf(db);
       const assigned = live.filter((row) => row['assigneeId'] === me);
       const reported = live.filter((row) => row['reporterId'] === me);

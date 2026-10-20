@@ -151,6 +151,12 @@ export function IssueActionsMenu({
         )}
         <MenuSeparator />
         <MenuItem
+          icon={<Icon name="archive" size={14} />}
+          onSelect={() => void actions.archive(keys, true)}
+        >
+          {many ? `Archive ${keys.length} issues` : 'Archive issue'}
+        </MenuItem>
+        <MenuItem
           tone="danger"
           icon={<Icon name="trash" size={14} />}
           hint="Delete"

@@ -77,6 +77,11 @@ export const AUTOMATION_CATALOG = {
       'Send an in-app notification',
       object({ recipients: list(text), userIds: list(text), message: text }, ['message']),
     ),
+    entry(
+      'archive',
+      'Archive',
+      'Archives the issue: off the board and lists, kept and still open by its key',
+    ),
   ],
 };
 

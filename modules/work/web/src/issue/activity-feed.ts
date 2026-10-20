@@ -93,6 +93,7 @@ export function historyVerb(entry: IssueHistoryEntry, names: HistoryNames): stri
   // The issue's own lifecycle rows carry no field to name.
   if (field === 'created') return 'created the issue';
   if (field === 'deleted') return to ? 'deleted the issue' : 'restored the issue';
+  if (field === 'archived') return to ? 'archived the issue' : 'unarchived the issue';
   const name = FIELD_NAMES[field] ?? field.replace(/_/g, ' ');
   const before = shown(from);
   const after = shown(to);

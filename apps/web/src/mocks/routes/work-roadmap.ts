@@ -75,7 +75,7 @@ function view(request: MockRequest, db: MockDb) {
     String(status.get(String(row['statusId']))?.['category'] ?? 'todo');
   const level = new Map(workState(db).issueTypes.map((type) => [type.id, String(type['level'])]));
   const issues = issueStore(db).issues.filter(
-    (row) => !row['deletedAt'] && ids.has(String(row['projectId'])),
+    (row) => !row['deletedAt'] && !row['archivedAt'] && ids.has(String(row['projectId'])),
   );
   const standard = issues.filter((row) => level.get(String(row['typeId'])) === 'standard');
   const name = (projectId: unknown) =>

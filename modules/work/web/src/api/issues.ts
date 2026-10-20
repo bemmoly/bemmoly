@@ -57,6 +57,10 @@ export function workIssueEndpoints(http: Http) {
           body: validated(updateIssueBodySchema, body),
         }),
       remove: async (key: string) => http.send(issue(key), { method: 'DELETE' }),
+      archive: async (key: string) =>
+        http.request(issue(key, '/archive'), issueSchema, { method: 'POST' }),
+      unarchive: async (key: string) =>
+        http.request(issue(key, '/unarchive'), issueSchema, { method: 'POST' }),
       /** Transitions out of the current status, with what blocks each one. */
       transitions: async (key: string) =>
         (await http.request(issue(key, '/transitions'), issueTransitionsResponseSchema)).items,
