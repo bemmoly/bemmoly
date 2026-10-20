@@ -2,10 +2,15 @@ import { Button, FileEmbed, fileEmbedKind, ProgressBar } from '@bemmoly/ui';
 import { useRef, useState } from 'react';
 import { cx } from '../../cx.ts';
 import { fileName } from '../../schema/nodes/file.ts';
-import { SAFE_IMAGE_SRC } from '../../schema/nodes/values.ts';
 import { useDocServices } from '../context.ts';
 import type { NodeViewProps, ViewSpec } from '../portals.ts';
 import { IMAGE_CAPTION, PLACEHOLDER_CARD, PLACEHOLDER_TITLE } from '../styles.ts';
+
+/**
+ * Only files Bemmoly stored (and the dev mock's blob: URLs) are framed: the server's headers,
+ * not the block's own attributes, decide how a stored file may run (ADR 0037).
+ */
+const STORED_FILE = /^(\/api\/v1\/files\/[0-9a-f-]{36}|blob:)/i;
 
 /** What the file input offers; the server still decides from the bytes. */
 const ACCEPT = '.html,.htm,.pdf,text/html,application/pdf';
@@ -14,7 +19,7 @@ const ACCEPT = '.html,.htm,.pdf,text/html,application/pdf';
 export function FileBlock({ src, name, mime }: { src: string; name: string; mime: string }) {
   const kind = fileEmbedKind(mime);
   const label = fileName(name, mime);
-  if (!SAFE_IMAGE_SRC.test(src) || (kind !== 'html' && kind !== 'pdf')) {
+  if (!STORED_FILE.test(src) || (kind !== 'html' && kind !== 'pdf')) {
     return <p className={IMAGE_CAPTION}>{label}</p>;
   }
   return <FileEmbed src={src} name={label} kind={kind} />;

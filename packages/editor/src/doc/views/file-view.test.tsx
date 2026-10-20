@@ -37,6 +37,17 @@ describe('the File block', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
   });
 
+  it('frames only files Bemmoly stored, whatever type the block claims', () => {
+    render(
+      <RichTextView
+        doc={doc({ src: 'https://example.com/x', name: 'x.pdf', mime: 'application/pdf' })}
+        size="doc"
+      />,
+    );
+    expect(screen.getByText('x.pdf')).toBeTruthy();
+    expect(document.querySelector('iframe')).toBeNull();
+  });
+
   it('prints only the name for a source or type it cannot show', () => {
     render(
       <RichTextView
