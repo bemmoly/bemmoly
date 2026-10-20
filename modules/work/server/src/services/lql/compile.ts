@@ -30,6 +30,8 @@ export interface Compiled {
   directions: SortDirection[];
   /** The sort expressions without direction, the tiebreak included. */
   sortKeys: SqlFragment[];
+  /** Whether the WHERE names the archived field; a list without it shows live issues only. */
+  asksForArchived: boolean;
 }
 
 const STORAGE_OF_KIND: Partial<Record<LqlFieldKind, CustomFieldDefinition['storage']>> = {
@@ -110,6 +112,19 @@ function compileExpression(
   }
 }
 
+function names(expression: Expression | undefined, key: string, catalog: CompileCatalog): boolean {
+  if (!expression) return false;
+  switch (expression.kind) {
+    case 'and':
+    case 'or':
+      return expression.operands.some((operand) => names(operand, key, catalog));
+    case 'not':
+      return names(expression.operand, key, catalog);
+    default:
+      return catalog.resolve(expression.field.name)?.key === key;
+  }
+}
+
 /** Compiles the WHERE part alone, for callers that embed it in their own statement. */
 export function compileWhere(
   sql: SqlClient,
@@ -150,5 +165,6 @@ export function compileQuery(
     orderBy,
     directions: keys.map((key) => key.direction),
     sortKeys: keys.map((key) => key.expression),
+    asksForArchived: names(query.where, 'archived', catalog),
   };
 }

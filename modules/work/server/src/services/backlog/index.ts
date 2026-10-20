@@ -45,7 +45,7 @@ export function createBacklogService(deps: PlanningDeps) {
         statusSets(sql, project.id, boards[0] ? parseConfig(boards[0].config) : null),
         sql<IssueRow[]>`
           select ${sql.unsafe(ISSUE_COLUMNS)} from issues i
-          where i.project_id = ${project.id} and i.deleted_at is null
+          where i.project_id = ${project.id} and i.deleted_at is null and i.archived_at is null
             and (i.sprint_id is null or i.sprint_id = any(${sprintIds}::uuid[]))
             and not exists (select 1 from issue_types t
               where t.id = i.type_id and t.level = 'epic')
@@ -61,7 +61,8 @@ export function createBacklogService(deps: PlanningDeps) {
           join workflow_statuses es on es.id = e.status_id
           left join issues c on c.parent_id = e.id and c.deleted_at is null
           left join workflow_statuses cs on cs.id = c.status_id
-          where e.project_id = ${project.id} and e.deleted_at is null and es.category <> 'done'
+          where e.project_id = ${project.id} and e.deleted_at is null and e.archived_at is null
+            and es.category <> 'done'
           group by e.id
           order by e.rank, e.id`,
         sql<{ target_id: string; keys: string[] }[]>`

@@ -7,6 +7,7 @@ import type {
   SetAssigneesBody,
   UpdateIssueBody,
 } from '../../../../shared/issues.ts';
+import { setArchived } from './archive.ts';
 import { getAssignees, setAssignees } from './assignees.ts';
 import { createIssue } from './create.ts';
 import type { IssueServiceDeps } from './deps.ts';
@@ -27,6 +28,8 @@ export function createIssuesService(deps: IssueServiceDeps) {
       updateIssue(deps, ctx, key, body),
     remove: (ctx: RequestContext, key: string) => deleteIssue(deps, ctx, key),
     restore: (ctx: RequestContext, key: string) => restoreIssue(deps, ctx, key),
+    archive: (ctx: RequestContext, key: string) => setArchived(deps, ctx, key, true),
+    unarchive: (ctx: RequestContext, key: string) => setArchived(deps, ctx, key, false),
     rank: (ctx: RequestContext, key: string, body: RankIssueBody) =>
       rankIssue(deps, ctx, key, body),
     assign: (ctx: RequestContext, key: string, assigneeId: string | null) =>

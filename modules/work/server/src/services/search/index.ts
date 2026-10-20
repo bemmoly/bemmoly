@@ -66,7 +66,7 @@ export function createSearchService(deps: Pick<IssueServiceDeps, 'database'>) {
             'MaxFragments=1, MaxWords=24, MinWords=8, StartSel=<b>, StopSel=</b>') as snippet,
           ts_rank_cd(i.search_vector, q.query) as rank
         from issues i, q
-        where i.deleted_at is null
+        where i.deleted_at is null and i.archived_at is null
           and i.search_vector @@ q.query
           and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
         order by rank desc, i.id desc
@@ -84,6 +84,7 @@ export function createSearchService(deps: Pick<IssueServiceDeps, 'database'>) {
         select i.id, i.key, i.project_id, i.title, i.status_id, i.type_id
         from issues i
         where i.deleted_at is null
+          and (i.archived_at is null or i.key = ${query.q.toUpperCase()})
           and (i.key ilike ${`${term}%`} or i.title ilike ${`%${term}%`})
           and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
         order by (i.key = ${query.q.toUpperCase()}) desc, (i.key ilike ${`${term}%`}) desc,

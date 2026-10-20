@@ -54,7 +54,7 @@ export async function loadEpics(sql: SqlExecutor, projectIds: readonly string[])
     from issues e
     join issue_types t on t.id = e.type_id and t.level = 'epic'
     join workflow_statuses s on s.id = e.status_id
-    where e.project_id = any(${projectIds}::uuid[]) and e.deleted_at is null
+    where e.project_id = any(${projectIds}::uuid[]) and e.deleted_at is null and e.archived_at is null
     order by e.project_id, e.rank collate "C", e.id`;
 }
 
@@ -83,7 +83,7 @@ export async function loadWork(sql: SqlExecutor, projectIds: readonly string[]) 
     from issues i
     join issue_types t on t.id = i.type_id and t.level = 'standard'
     join workflow_statuses s on s.id = i.status_id
-    where i.project_id = any(${projectIds}::uuid[]) and i.deleted_at is null
+    where i.project_id = any(${projectIds}::uuid[]) and i.deleted_at is null and i.archived_at is null
       and (i.parent_id is not null or i.fix_version_id is not null)
     order by i.rank collate "C", i.id`;
 }
@@ -159,7 +159,7 @@ async function loadPace(sql: SqlExecutor, projectIds: readonly string[]) {
       from issues i
       join issue_types t on t.id = i.type_id and t.level = 'standard'
       join workflow_statuses s on s.id = i.status_id
-      where i.project_id = any(${projectIds}::uuid[]) and i.deleted_at is null
+      where i.project_id = any(${projectIds}::uuid[]) and i.deleted_at is null and i.archived_at is null
         and s.category <> 'done'
       group by i.project_id
     )

@@ -56,6 +56,7 @@ export function workReadTools(services: WorkServices) {
           sort: 'rank',
           order: 'asc',
           deleted: false,
+          archived: false,
         });
         const names = await namesFor(services, ctx, page.items);
         return page.items.map((issue) => ({

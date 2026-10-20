@@ -31,6 +31,7 @@ export interface IssueRow {
   status_changed_at: Date | string;
   resolved_at: Date | string | null;
   deleted_at: Date | string | null;
+  archived_at: Date | string | null;
   created_at: Date | string;
   updated_at: Date | string;
   color?: string | null;
@@ -51,7 +52,7 @@ export function issueColumns(sql: SqlClient): SqlFragment {
     issues.priority, issues.assignee_id, issues.reporter_id, issues.parent_id,
     issues.sprint_id, issues.estimate, issues.due_at, issues.fix_version_id,
     issues.component_id, issues.custom_fields, issues.rank, issues.status_changed_at,
-    issues.resolved_at, issues.deleted_at, issues.created_at, issues.updated_at, issues.color,
+    issues.resolved_at, issues.deleted_at, issues.archived_at, issues.created_at, issues.updated_at, issues.color,
     coalesce((select array_agg(il.label_id order by il.id) from issue_labels il
       where il.issue_id = issues.id), '{}'::uuid[]) as label_ids`;
 }
@@ -83,6 +84,7 @@ export function toIssue(row: IssueRow): Issue {
     statusChangedAt: iso(row.status_changed_at),
     resolvedAt: isoOrNull(row.resolved_at),
     deletedAt: isoOrNull(row.deleted_at),
+    archivedAt: isoOrNull(row.archived_at),
     createdAt: iso(row.created_at),
     updatedAt: iso(row.updated_at),
   };

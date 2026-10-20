@@ -20,6 +20,7 @@ describe('issue field catalog', () => {
       'due',
       'created',
       'updated',
+      'archived',
       'fixVersion',
       'label',
       'text',
