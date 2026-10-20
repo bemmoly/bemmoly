@@ -1,0 +1,94 @@
+---
+/**
+ * What a team stops paying when it moves from Jira: a team size, a plan, and the monthly and
+ * yearly figure from src/lib/savings.ts. Jira's prices live in src/data/jira-pricing.ts with
+ * their source and date; Bemmoly's per-person price is zero because there is none to charge.
+ * The server is the one cost left, so the cheapest measured size's "from" price sits beside
+ * the answer. Hidden until the script runs, like the sizing estimator.
+ */
+import { RECOMMENDED, sizeKey, sizeName } from '../../data/capacity.ts';
+import {
+  JIRA_PLANS,
+  JIRA_PRICING_AS_OF,
+  JIRA_PRICING_SOURCE,
+  type JiraPlan,
+} from '../../data/jira-pricing.ts';
+import { fromOffer, offerMoney } from '../../data/prices.ts';
+import { MAX_PEOPLE, MIN_PEOPLE, START_PEOPLE, savings, usd } from '../../lib/savings.ts';
+
+const START: JiraPlan = 'standard';
+const result = savings(START_PEOPLE, START);
+const server = fromOffer(sizeKey(RECOMMENDED));
+const serverNote = server
+  ? `: ${sizeName(RECOMMENDED)} from ${offerMoney(server)} a month at ${server.provider.provider}`
+  : '';
+const plans = Object.entries(JIRA_PLANS) as [JiraPlan, (typeof JIRA_PLANS)[JiraPlan]][];
+---
+
+<div data-savings hidden class="grid overflow-hidden rounded-shot bg-card shadow-e2 md:grid-cols-2">
+  <div class="flex flex-col gap-5 p-5 sm:p-7 md:border-r md:border-line-2">
+    <div class="flex flex-col gap-2">
+      <label for="savings-people" class="text-14 font-medium text-tx">
+        People on your team
+      </label>
+      <input
+        id="savings-people"
+        type="number"
+        inputmode="numeric"
+        min={MIN_PEOPLE}
+        max={MAX_PEOPLE}
+        step="1"
+        value={START_PEOPLE}
+        class="w-full rounded-control border border-line bg-card px-3 py-2 text-16 text-tx tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc"
+      />
+    </div>
+    <fieldset class="min-w-0">
+      <legend class="mb-2 text-14 font-medium text-tx">Jira plan you pay for</legend>
+      <div class="flex rounded-control bg-line-2 p-0.5">
+        {plans.map(([id, plan]) => (
+          <label class="flex-1 cursor-pointer rounded-chip py-1.5 text-center text-14 font-medium text-tx-2 has-checked:bg-card has-checked:text-tx has-checked:shadow-e1 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-acc">
+            <input
+              type="radio"
+              name="savings-plan"
+              value={id}
+              checked={id === START}
+              class="sr-only"
+            />
+            {plan.label}, {usd(plan.perUserMonthly)}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+    <p class="text-13 leading-desc text-tx-3">
+      Per person a month, billed monthly, from Atlassian’s{' '}
+      <a href={JIRA_PRICING_SOURCE}>Jira pricing page</a> as of {JIRA_PRICING_AS_OF}.
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-4 bg-sunken p-5 sm:p-7">
+    <div aria-live="polite" aria-atomic="true" class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <p class="text-13 text-tx-3">You save a month</p>
+        <p class="text-32 font-semibold tracking-sub text-tx tabular-nums" data-savings-monthly>
+          {usd(result.monthly)}
+        </p>
+      </div>
+      <div class="flex flex-col gap-1">
+        <p class="text-13 text-tx-3">You save a year</p>
+        <p class="text-32 font-semibold tracking-sub text-tx tabular-nums" data-savings-yearly>
+          {usd(result.yearly)}
+        </p>
+      </div>
+    </div>
+    <p class="text-14h leading-desc text-tx-2">
+      Bemmoly has no subscription and no per-person price, so the whole plan is what you stop
+      paying. Your one cost is the server you run it on{serverNote}.
+      <a href="/sizing">Size and price your server</a>.
+    </p>
+  </div>
+</div>
+
+<script>
+  import { mountSavings } from '../../lib/client/savings.ts';
+  mountSavings();
+</script>
