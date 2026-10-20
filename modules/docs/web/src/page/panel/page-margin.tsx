@@ -40,10 +40,10 @@ function useFocusOnRequest(ref: RefObject<HTMLElement | null>) {
 }
 
 /**
- * The right margin docked beside the column, inside the page's scroll, so the outline can
- * stick and comment threads stay level with their passages. The page column moves left to
- * make room, so the margin never covers text. `float` hangs the bare outline off the
- * column's right edge, so the column stays centred on the page.
+ * The right margin docked beside the column. The bare outline sits inside the page's scroll
+ * so it can stick; a panel (comments, linked work) sits outside it, fixed at the right edge
+ * with its own scroll, and the column centres in what is left. `float` hangs the bare
+ * outline off the column's right edge, so the column stays centred on the page.
  */
 export function DockedMargin({ float = false }: { float?: boolean }) {
   const slotProps = useSlotProps();
@@ -65,7 +65,7 @@ export function DockedMargin({ float = false }: { float?: boolean }) {
           ? float
             ? 'absolute inset-y-0 left-full w-48 pl-4'
             : 'w-56 self-start'
-          : 'w-85 self-stretch border-l border-line bg-sunken motion-safe:animate-fade-in',
+          : 'flex w-85 min-h-0 flex-col self-stretch border-l border-line bg-sunken motion-safe:animate-fade-in',
       )}
     >
       <Body {...slotProps} docked onClose={closeMargin} />

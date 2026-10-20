@@ -31,7 +31,7 @@ export interface PageSlotProps {
   openMargin: (id: MarginId) => void;
 }
 
-/** What a margin is drawn with: docked beside the page it scrolls with it. */
+/** What a margin is drawn with: docked beside the page, or over it on narrow screens. */
 export interface MarginProps extends PageSlotProps {
   /** True beside the page (wide screens); false over it, from the right. */
   docked: boolean;

@@ -50,13 +50,14 @@ One margin shows one view at a time, chosen from header toggles with tooltips an
 | Toggle | Key | View |
 | --- | --- | --- |
 | Outline | ⌘⌥O | Sticky outline beside the column, the heading being read marked |
-| Comments (count) | ⌘⌥C | Threads, level with their passages when docked |
+| Comments (count) | ⌘⌥C | Threads in reading order, a comment box pinned to the foot |
 | Linked work | ⌘⌥L | Issues and pages that link here |
 | Version history | ⌘⌥H | The history mode (below) |
 
-- **Docking.** The margin docks inside the page's scroll when the scroller is at least 1104px
-  wide (column, sides and the 340px margin); the column moves left so the margin never covers
-  text. Below that it opens over the page from the right with a scrim; Escape or the scrim
+- **Docking.** The margin docks beside the page when the page area is at least 1104px wide
+  (column, sides and the 340px margin); the column centres in what is left so the margin never
+  covers text. The outline docks inside the page's scroll so it can stick; a panel (comments,
+  linked work) docks outside it and stays put while the page scrolls, with its own scroll. Below that it opens over the page from the right with a scrim; Escape or the scrim
   closes it. The brief says "below 1280px"; measuring the scroller instead of the window keeps
   the rule true with the sidebar open, collapsed or on a laptop (decision recorded here).
 - **Resting outline.** The outline is the margin's resting view where it fits. It opens over a
@@ -64,11 +65,14 @@ One margin shows one view at a time, chosen from header toggles with tooltips an
 - **Comment markers.** While comments are closed, each anchored line has a marker in the margin
   (first commenter's face, number of comments). Markers that would overlap stack. A click
   opens comments with that thread in focus. Hidden on phones.
-- **Aligned threads.** Docked, open inline threads sit level with their highlighted passages;
-  comments on the whole page (and threads whose text is gone) come first under "On the whole
-  page". Overlapping cards stack downwards; the focused card keeps its line and the ones before
-  it make room. Cards move with transform only. Over the page (narrow screens) they are a list
-  in reading order.
+- **Fixed comments panel.** Threads are a list in reading order: inline threads in page order,
+  then comments on the whole page and threads whose text is gone, oldest first. Focusing a
+  card scrolls the page to its passage; clicking a highlight scrolls the list to its card. A
+  comment box is pinned to the panel's foot for comments on the whole page (no Cancel; ⌘↵
+  sends). A comment started from a selection takes over that box, its quote above it, with
+  Cancel; sending or cancelling gives the page box back. Readers get no box. This replaced
+  threads aligned level with their passages, which scrolled away with the page (decision
+  recorded here, 2026-10-20).
 - **Keyboard.** ↑↓ or J K walk the threads in reading order, Enter focuses a thread's text,
   R replies, E resolves (or reopens). Resolve happens at once with Undo for about six seconds.
 

@@ -11,7 +11,8 @@ export interface CommentBoxProps {
   submitLabel?: string;
   initialBody?: RichText | null;
   onSubmit: (body: RichText) => Promise<unknown>;
-  onCancel: () => void;
+  /** Without it the box stays open and has no Cancel: the margin's pinned page comment box. */
+  onCancel?: () => void;
   autoFocus?: boolean;
 }
 
@@ -70,9 +71,11 @@ export function CommentBox({
           <div className="flex flex-wrap items-center gap-2 text-12 text-tx-3">
             {toolbar}
             <span className="ml-auto flex gap-1.5">
-              <Button size="xs" variant="ghost" onClick={onCancel}>
-                Cancel
-              </Button>
+              {onCancel && (
+                <Button size="xs" variant="ghost" onClick={onCancel}>
+                  Cancel
+                </Button>
+              )}
               <Button
                 size="xs"
                 variant="primary"
