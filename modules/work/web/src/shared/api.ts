@@ -4,6 +4,7 @@ import {
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
   workCodeLinkEndpoints,
+  workDashboardEndpoints,
   workFiltersEndpoints,
   workIssueActivityEndpoints,
   workIssueEndpoints,
@@ -56,6 +57,7 @@ export const api = {
     ...workReportEndpoints(client.http),
     ...workReportTimeTrackingEndpoints(client.http),
     ...workReportStatsEndpoints(client.http),
+    ...workDashboardEndpoints(client.http),
     automation: workAutomationEndpoints(client.http),
   },
 };

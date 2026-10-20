@@ -29,6 +29,8 @@ function projectInPath(pathname: string): string | null {
     'roadmap',
     'pairing',
     'reports',
+    'dashboards',
+    'quarter',
     'members',
     'settings',
     'workflows',
@@ -70,6 +72,14 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
       <SidebarRow child label="Roadmap" icon="roadmap" path={workPaths.roadmap(key)} keys="G R" />
       <SidebarRow child label="Pairing" icon="grid" path={workPaths.pairing(key)} keys="G P" />
       <SidebarRow child label="Reports" icon="reports" path={workPaths.reports(key)} keys="G E" />
+      <SidebarRow
+        child
+        label="Dashboards"
+        icon="pulse"
+        path={workPaths.dashboards(key)}
+        keys="G D"
+      />
+      <SidebarRow child label="Quarter" icon="calendar" path={workPaths.quarter(key)} keys="G Q" />
       <SidebarRow
         child
         label="Settings"
