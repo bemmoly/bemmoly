@@ -4,6 +4,7 @@ export { workBoardIssuesEndpoints } from './board-issues.ts';
 export { workBoardsEndpoints, type ProjectsFilter } from './boards.ts';
 export { workCodeLinkEndpoints } from './code-links.ts';
 export { savedFilterKeys, workFiltersEndpoints } from './filters.ts';
+export { workInitiativeEndpoints } from './initiatives.ts';
 export { workIssueActivityEndpoints } from './issue-activity.ts';
 export { workIssueEndpoints, type HistoryFilter, type IssuesFilter } from './issues.ts';
 export { workMembersEndpoints, workMembersKeys } from './members.ts';

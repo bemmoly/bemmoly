@@ -80,16 +80,21 @@ export function seedRoadmapIssues(): Row[] {
   return [...mobile, ...planned, ...shipping];
 }
 
-/** Billing v2 holds up Observability, and offline mode waits on the auth service. */
+/**
+ * Billing v2 holds up Observability, offline mode waits on the auth service, and a Mobile card
+ * blocks one under Self-serve onboarding: a dependency across teams below the epics.
+ */
 export function seedRoadmapLinks(issues: readonly Row[]): Row[] {
   const id = (key: string) => issues.find((issue) => issue['key'] === key)?.id ?? '';
+  const under = (key: string) => issues.find((issue) => issue['parentId'] === id(key))?.id ?? '';
   return [
-    ['PLT-150', 'PLT-240'],
-    ['PLT-190', 'MOB-1'],
+    [id('PLT-150'), id('PLT-240')],
+    [id('PLT-190'), id('MOB-1')],
+    [id('MOB-3'), under('PLT-240')],
   ].map(([source = '', target = ''], n) => ({
     id: uid(0xd80 + n),
-    sourceId: id(source),
-    targetId: id(target),
+    sourceId: source,
+    targetId: target,
     kind: 'blocks',
     createdBy: USER_IDS.lena,
     createdAt: ago(60 * 24 * 10),

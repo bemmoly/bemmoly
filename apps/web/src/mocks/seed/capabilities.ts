@@ -58,6 +58,12 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
       ['work.issue.edit', 'Create and edit issues', null, [1, 1, 1, 0, 1]],
       ['work.issue.delete', 'Delete issues', 'Soft delete, 30-day recovery', [1, 1, 0, 0, 0]],
       ['work.issue.view', 'View issues', null, [1, 1, 1, 1, 1]],
+      [
+        'work.initiative.manage',
+        'Manage initiatives',
+        'Create, edit and archive initiatives, link their epics',
+        [1, 1, 1, 0, 0],
+      ],
     ],
   },
   {

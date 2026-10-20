@@ -38,6 +38,12 @@ const CAPABILITIES: ReadonlyArray<readonly [string, string, string | null, Cells
   ['work.board.configure', 'Configure board', 'Columns, lanes, cards, settings', ADMINS],
   ['work.board.method', 'Change method', 'Switch Scrum and Kanban', ADMINS],
   ['work.board.wip', 'Edit WIP limits', 'Without opening settings', ADMINS],
+  [
+    'work.initiative.manage',
+    'Manage initiatives',
+    'Create, edit and archive initiatives, link their epics',
+    COLLEAGUES,
+  ],
 ];
 
 export const WORK_CAPABILITIES: readonly CapabilityDefinition[] = CAPABILITIES.map(

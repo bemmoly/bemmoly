@@ -1,6 +1,11 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
-import type { RoadmapItem, RoadmapQuery, RoadmapView } from '../../../../shared/roadmap.ts';
+import type {
+  RoadmapDependency,
+  RoadmapItem,
+  RoadmapQuery,
+  RoadmapView,
+} from '../../../../shared/roadmap.ts';
 import type { PlanningDeps } from '../boards/context.ts';
 import {
   accessibleProjectIds,
@@ -12,15 +17,18 @@ import { buildEpic, buildVersion, missingForecast, shareTheTeam, type Built } fr
 import { dayOf, fromDay } from './days.ts';
 import { forecastAll, type ForecastProject } from './forecast.ts';
 import { projectHistory } from './history.ts';
+import { initiativeById } from '../initiatives/rows.ts';
 import {
   loadBlocks,
   loadEpics,
+  loadInitiativeEpicIds,
   loadProjects,
   loadRecords,
   loadTargetFields,
   loadTeams,
   loadVersions,
   loadWork,
+  type BlockRow,
   type ProjectRow,
   type WorkRow,
 } from './load.ts';
@@ -32,14 +40,37 @@ import {
  * history, audit and realtime stay theirs.
  */
 
-/** The projects in view: the ones named, each authorized, or every one the person can open. */
+/** The projects an initiative's live epics belong to. */
+async function initiativeProjectIds(sql: SqlExecutor, epicIds: ReadonlySet<string>) {
+  const rows = await sql<{ project_id: string }[]>`
+    select distinct project_id from issues
+    where id = any(${[...epicIds]}::uuid[]) and deleted_at is null`;
+  return rows.map((row) => row.project_id);
+}
+
+/**
+ * The projects in view: the ones named, each authorized, or every one the person can open;
+ * for an initiative, only the ones its epics belong to.
+ */
 async function projectsInView(
   ctx: RequestContext,
   sql: SqlExecutor,
   query: RoadmapQuery,
+  initiativeEpics: ReadonlySet<string> | null,
 ): Promise<ProjectRow[]> {
   const keys = query.projects ?? null;
   const teamId = query.teamId ?? null;
+  if (initiativeEpics) {
+    const member = await accessibleProjectIds(ctx, sql);
+    const ids = (await initiativeProjectIds(sql, initiativeEpics)).filter(
+      (id) => member === null || member.includes(id),
+    );
+    const rows = await loadProjects(sql, { keys, teamId, ids });
+    const allowed = await Promise.all(
+      rows.map((row) => ctx.authz.can(ctx.actor, 'work.issue.view', projectResource(row.id))),
+    );
+    return rows.filter((_, index) => allowed[index]);
+  }
   if (keys) {
     const rows = await loadProjects(sql, { keys, teamId, ids: null });
     const missing = keys.filter((key) => !rows.some((row) => row.key === key));
@@ -81,6 +112,26 @@ async function schedulers(ctx: RequestContext, projects: readonly ProjectRow[]) 
   return new Map(entries);
 }
 
+/** The links whose ends are both on screen, each saying whether its dates conflict. */
+function dependenciesBetween(items: readonly RoadmapItem[], blocks: readonly BlockRow[]) {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  return blocks.flatMap((link): RoadmapDependency[] => {
+    const from = byId.get(link.from_id);
+    const to = byId.get(link.to_id);
+    if (!from || !to) return [];
+    return [
+      {
+        id: link.id,
+        fromId: link.from_id,
+        toId: link.to_id,
+        via: link.direct ? 'epic' : 'issue',
+        links: link.links,
+        conflict: Boolean(from.end && to.start && to.start < from.end),
+      },
+    ];
+  });
+}
+
 export function createRoadmapService(deps: PlanningDeps) {
   const now = () => deps.now?.() ?? new Date();
 
@@ -90,7 +141,11 @@ export function createRoadmapService(deps: PlanningDeps) {
       const sql = requireDatabase(deps);
       const at = now();
       const today = dayOf(at);
-      const projects = await projectsInView(ctx, sql, query);
+      if (query.initiative) await initiativeById(sql, query.initiative);
+      const initiativeEpics = query.initiative
+        ? await loadInitiativeEpicIds(sql, query.initiative)
+        : null;
+      const projects = await projectsInView(ctx, sql, query, initiativeEpics);
       const ids = projects.map((project) => project.id);
       const [epics, work, versions, records, may, targets] = await Promise.all([
         loadEpics(sql, ids),
@@ -125,13 +180,16 @@ export function createRoadmapService(deps: PlanningDeps) {
         if (record) histories.set(project.id, { name: project.name, ...projectHistory(record) });
       }
       const inputs = shareTheTeam(built);
-      const dependencies = blocks.map((link) => ({
-        id: link.id,
-        fromId: link.source_id,
-        toId: link.target_id,
-      }));
-      const forecasts = forecastAll(inputs, { today, projects: histories, dependencies });
-      const items: RoadmapItem[] = built.map((entry, index) => {
+      const forecasts = forecastAll(inputs, {
+        today,
+        projects: histories,
+        dependencies: blocks.map((link) => ({
+          id: link.id,
+          fromId: link.from_id,
+          toId: link.to_id,
+        })),
+      });
+      const all: RoadmapItem[] = built.map((entry, index) => {
         const allowed = may.get(entry.item.projectId);
         return {
           ...entry.item,
@@ -139,6 +197,9 @@ export function createRoadmapService(deps: PlanningDeps) {
           forecast: forecasts.get(entry.item.id) ?? missingForecast(inputs[index] ?? entry.input),
         };
       });
+      // An initiative's forecasts count every epic sharing its teams; it shows only its own.
+      const items = initiativeEpics ? all.filter((item) => initiativeEpics.has(item.id)) : all;
+      const dependencies = dependenciesBetween(items, blocks);
       return {
         today: fromDay(today),
         projects: projects.map((project) => ({

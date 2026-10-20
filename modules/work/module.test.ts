@@ -114,6 +114,7 @@ describe('work module', () => {
       'work.board.configure',
       'work.board.method',
       'work.board.wip',
+      'work.initiative.manage',
     ]);
     expect(capabilities.every((capability) => capability.group === 'Projects')).toBe(true);
     const view = capabilities.find((capability) => capability.name === 'work.issue.view');

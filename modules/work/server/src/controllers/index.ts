@@ -7,6 +7,7 @@ import { createCodeLinksController } from './code-links.controller.ts';
 import { createComponentsController } from './components.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
 import { createFiltersController } from './filters.controller.ts';
+import { createInitiativesController } from './initiatives.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
 import { createLabelsController } from './labels.controller.ts';
 import { createLqlController } from './lql.controller.ts';
@@ -47,6 +48,7 @@ export function createWorkControllers(services: WorkServices) {
     metrics: createMetricsController(services.metrics),
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
+    initiatives: createInitiativesController(services.initiatives),
     pairing: createPairingController(services.pairing),
     reports: createReportsController(services.reports),
     timeTracking: createTimeTrackingController(services.timeTracking),

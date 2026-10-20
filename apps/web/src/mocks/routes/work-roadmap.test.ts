@@ -47,7 +47,7 @@ describe('the roadmap mock', () => {
     expect(billing?.forecast.likely).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(view.dependencies).toEqual(
       expect.arrayContaining([
-        { id: expect.any(String), fromId: billing?.id, toId: observability?.id },
+        expect.objectContaining({ fromId: billing?.id, toId: observability?.id, via: 'epic' }),
       ]),
     );
     expect(observability?.forecast.waitsOn).toEqual([billing?.id]);
