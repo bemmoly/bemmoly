@@ -1,6 +1,7 @@
 import { buildSettingsNav, canOpen, flattenSettings, KERNEL_SETTINGS } from '@bemmoly/core-web';
 import type { MeResponse } from '@bemmoly/shared';
 import { createRoute, lazyRouteComponent, redirect } from '@tanstack/react-router';
+import { PageBodyPending, PagePending } from '../components/page-pending.tsx';
 import { viewerOf } from '../lib/session.ts';
 import { appRoute } from './app-routes.tsx';
 
@@ -31,6 +32,7 @@ export const settingsRoute = createRoute({
     () => import('../pages/settings/settings-layout.tsx'),
     'SettingsLayout',
   ),
+  pendingComponent: PagePending,
 });
 
 const settingsIndexRoute = createRoute({
@@ -57,6 +59,8 @@ function page<const P extends string>(
       load as () => Promise<Record<string, never>>,
       exportName as never,
     ),
+    // The settings frame is already drawn; only the page's own blocks wait.
+    pendingComponent: PageBodyPending,
   });
 }
 
@@ -163,6 +167,8 @@ const moduleSettingsRoute = createRoute({
     () => import('../pages/settings/module-settings-page.tsx'),
     'ModuleSettingsPage',
   ),
+  // A module's settings bring their own layout, so the frame steps aside for them (see layout).
+  pendingComponent: PagePending,
 });
 
 export const settingsTree = settingsRoute.addChildren([

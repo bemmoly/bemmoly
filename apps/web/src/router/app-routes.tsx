@@ -1,5 +1,6 @@
 import { setPreferenceOwner } from '@bemmoly/core-web';
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { PagePending } from '../components/page-pending.tsx';
 import { AppShell } from '../components/shell/app-shell.tsx';
 import { requireSession } from './guards.ts';
 import { rootRoute } from './root.tsx';
@@ -22,6 +23,7 @@ export const homeRoute = createRoute({
   path: '/',
   // Lazy like every other page: Home is where most visits land, but its cards are not the shell.
   component: lazyRouteComponent(() => import('../pages/home-page.tsx'), 'HomePage'),
+  pendingComponent: PagePending,
 });
 
 export interface InboxSearch {
@@ -45,12 +47,14 @@ export const inboxRoute = createRoute({
     return { ...(item ? { item } : {}), ...(filter ? { filter } : {}), ...(view ? { view } : {}) };
   },
   component: lazyRouteComponent(() => import('../pages/inbox-page.tsx'), 'InboxPage'),
+  pendingComponent: PagePending,
 });
 
 export const devMailboxRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'dev/mailbox',
   component: lazyRouteComponent(() => import('../pages/dev-mailbox-page.tsx'), 'DevMailboxPage'),
+  pendingComponent: PagePending,
 });
 
 const modulePage = lazyRouteComponent(() => import('../pages/module-page.tsx'), 'ModulePage');
@@ -60,10 +64,12 @@ export const moduleRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '$moduleId',
   component: modulePage,
+  pendingComponent: PagePending,
 });
 
 export const moduleDeepRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '$moduleId/$',
   component: modulePage,
+  pendingComponent: PagePending,
 });
