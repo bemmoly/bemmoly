@@ -43,7 +43,11 @@ What each check runs:
   `pnpm --filter @bemmoly/web test:a11y` with `A11Y_THEME` set: every screen through axe with
   every rule on, colour contrast included, light and dark, desktop and 390px, on the dev mock
   backend; the Bemmoly runner also runs the keyboard, focus and semantics checks. Any violation
-  fails. See `docs/accessibility-conformance.md`.
+  fails. See `docs/accessibility-conformance.md`. On a pull request it runs only when the
+  **UI changes** job finds a change to what it renders: `apps/web`, `packages/ui`,
+  `core-web`, `shared`, `api-client` or `editor`, a module's `web` or `shared` folder, the
+  root `package.json`, the lockfile, a root `tsconfig`, or this workflow. Otherwise it is
+  skipped. The merge queue and `main` always run it.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
 - **Load budgets (k6)**, nightly: the server from `main` and Postgres pinned to two CPUs (the

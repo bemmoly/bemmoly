@@ -325,8 +325,44 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  # Whether a pull request touches what the accessibility audit renders: the web shell, the
+  # packages and module screens it builds from, dependencies, or this workflow. Merge queue
+  # and main always count as yes.
+  ui-changes:
+    name: UI changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
+        with:
+          persist-credentials: false
+          # The pull request's merge commit and its first parent, the base it merges into.
+          fetch-depth: 2
+
+      - name: Compare with the base
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          UI_PATHS: '^(apps/web/|packages/(ui|core-web|shared|api-client|editor)/|modules/[^/]+/(web|shared)/|package\.json$|pnpm-(lock|workspace)\.yaml$|tsconfig[^/]*\.json$|\.github/workflows/ci\.yml$|\.github/actions/setup/)'
+        run: |
+          if [ "$EVENT" != pull_request ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only HEAD^1 HEAD | grep -Eq "$UI_PATHS"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No UI changes; the accessibility audit is skipped."
+          fi
+
   a11y:
     name: Accessibility (${{ matrix.theme }})
+    needs: ui-changes
+    if: needs.ui-changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
