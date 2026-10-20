@@ -156,6 +156,7 @@ describe('catalog writes and application.yaml sync', () => {
           paths: [],
           read: async () => `# keep me\n${file}`,
         }),
+        visible: async () => [],
       },
       pullRequests: {
         openPullRequest: async (input) => {

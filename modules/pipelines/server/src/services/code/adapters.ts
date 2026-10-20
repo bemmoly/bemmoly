@@ -37,5 +37,14 @@ export function codeHostRepositories(hosts: PipelinesCodeHosts): RepositoryReade
         read: (path) => client.readFile(repository, path, ref),
       };
     },
+    async visible() {
+      const found = await hosts.repositories();
+      return found.map((repository) => ({
+        fullName: repository.fullName,
+        provider: repository.hostKind,
+        defaultBranch: repository.defaultBranch,
+        url: repository.url,
+      }));
+    },
   };
 }

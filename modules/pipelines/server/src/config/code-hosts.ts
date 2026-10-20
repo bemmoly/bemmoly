@@ -1,6 +1,6 @@
 import type { ModuleContext } from '@bemmoly/core';
 import { z } from 'zod';
-import { DISCOVERY_JOB } from '../services/discovery/index.ts';
+import { DISCOVERY_JOB, DISCOVERY_SWEEP_JOB } from '../services/discovery/index.ts';
 import { INBOX_DRAIN_JOB, INBOX_SWEEP_JOB } from '../services/inbox/index.ts';
 import type { PipelinesServices } from '../services/index.ts';
 
@@ -74,9 +74,13 @@ export function registerCodeHostWork(ctx: ModuleContext, services: PipelinesServ
   });
 }
 
+const sweepPayload = z.object({ rescan: z.boolean().default(false) });
+
 /**
- * Discovery runs when the app is installed on a repository, on repository events and
- * nightly (architecture §9); a repository archived or removed stops being scanned.
+ * Discovery finds repositories by itself (architecture §9): every few minutes a sweep asks
+ * the hosts what Pipelines may read and scans what it has not seen, so connecting GitHub is
+ * enough; nightly it scans everything again. Repository events scan one; a repository
+ * archived or removed stops being scanned.
  */
 function registerDiscoveryTriggers(ctx: ModuleContext, services: PipelinesServices): void {
   const scan = (fullName: string, provider: string, defaultBranch: string | null) =>
@@ -98,17 +102,23 @@ function registerDiscoveryTriggers(ctx: ModuleContext, services: PipelinesServic
     }
   });
   ctx.jobs.add({
+    name: DISCOVERY_SWEEP_JOB,
+    schedule: '*/5 * * * *',
+    singleton: true,
+    // A failed sweep is recorded for setup to show; the next one is minutes away.
+    retryLimit: 0,
+    async handle(payload) {
+      if (!ctx.database) return;
+      await services.discovery.sweep(sweepPayload.parse(payload ?? {}).rescan);
+    },
+  });
+  ctx.jobs.add({
     name: DISCOVERY_NIGHTLY_JOB,
     schedule: '30 2 * * *',
     singleton: true,
     async handle() {
       if (!ctx.database) return;
-      const rows = await ctx.database<
-        { full_name: string; provider: string; default_branch: string }[]
-      >`
-        select full_name, provider, default_branch from pipeline_repositories
-        where archived_at is null order by full_name`;
-      for (const row of rows) await scan(row.full_name, row.provider, row.default_branch);
+      await ctx.jobs.send(DISCOVERY_SWEEP_JOB, { rescan: true });
     },
   });
 }

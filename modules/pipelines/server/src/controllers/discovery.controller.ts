@@ -5,11 +5,11 @@ import {
   acceptProposalsBodySchema,
   dismissProposalsBodySchema,
   listProposalsQuerySchema,
-  scanRepositoryBodySchema,
 } from '../../../shared/catalog-writes.ts';
+import { scanBodySchema } from '../../../shared/discovery.ts';
 import type { DiscoveryService } from '../services/discovery/index.ts';
 
-/** Discovery under /api/v1/pipelines: proposals, bulk accept and dismiss, scans. */
+/** Discovery under /api/v1/pipelines: proposals, bulk accept and dismiss, scans, status. */
 export function createDiscoveryController(service: DiscoveryService) {
   return {
     proposals(request: FastifyRequest) {
@@ -29,10 +29,13 @@ export function createDiscoveryController(service: DiscoveryService) {
       return result;
     },
     async scan(request: FastifyRequest, reply: FastifyReply) {
-      const { repository } = parseOrThrow(scanRepositoryBodySchema, request.body);
+      const { repository } = parseOrThrow(scanBodySchema, request.body ?? {});
       const result = await service.scan(contextOf(request), repository);
       reply.code(201);
       return result;
+    },
+    status(request: FastifyRequest) {
+      return service.status(contextOf(request));
     },
   };
 }

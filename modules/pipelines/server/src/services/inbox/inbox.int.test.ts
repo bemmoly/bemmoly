@@ -43,6 +43,7 @@ const directory: CodeHostDirectory = {
     };
     return client as CodeHostClient;
   },
+  repositories: async () => [],
 };
 
 describe('the webhook inbox', () => {
