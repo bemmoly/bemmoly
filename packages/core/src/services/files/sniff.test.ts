@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeFileName, sniffImage } from './sniff.ts';
+import { safeFileName, sniffFile, sniffImage } from './sniff.ts';
 
 const bytes = (...values: number[]) => new Uint8Array(values);
 const text = (value: string) => new TextEncoder().encode(value);
@@ -32,6 +32,40 @@ describe('sniffImage', () => {
   });
 });
 
+describe('sniffFile', () => {
+  it('reads PDFs by signature and HTML by how it opens', () => {
+    expect(sniffFile(text('%PDF-1.7\n...'), 'x.png')).toEqual({
+      kind: 'document',
+      mime: 'application/pdf',
+    });
+    expect(sniffFile(text('\uFEFF\n<!DOCTYPE html><title>x</title>'), undefined)).toMatchObject({
+      mime: 'text/html',
+    });
+    expect(sniffFile(text('<!-- made by an agent -->\n<html lang="en">'), 'a.txt')).toMatchObject({
+      mime: 'text/html',
+    });
+  });
+
+  it('takes markup without a doctype only under an .html name', () => {
+    expect(sniffFile(text('<div><svg></svg></div>'), 'chart.html')).toMatchObject({
+      mime: 'text/html',
+    });
+    expect(sniffFile(text('<div>hi</div>'), 'notes.txt')).toEqual({ kind: 'other' });
+    expect(sniffFile(text('plain words'), 'notes.html')).toEqual({ kind: 'other' });
+  });
+
+  it('keeps images first and refuses SVG and binary', () => {
+    expect(sniffFile(bytes(0xff, 0xd8, 0xff, 0xe0), 'a.html')).toMatchObject({
+      mime: 'image/jpeg',
+    });
+    expect(sniffFile(text('<svg xmlns="http://www.w3.org/2000/svg"/>'), 'a.svg')).toEqual({
+      kind: 'svg',
+    });
+    expect(sniffFile(bytes(0x3c, 0x68, 0x00, 0x74), 'a.html')).toEqual({ kind: 'other' });
+    expect(sniffFile(bytes(0xc3, 0x28), 'a.html')).toEqual({ kind: 'other' });
+  });
+});
+
 describe('safeFileName', () => {
   it('keeps the last segment and ends it in the real type', () => {
     expect(safeFileName('../../etc/passwd.svg', 'image/png')).toBe('passwd.png');
@@ -39,5 +73,7 @@ describe('safeFileName', () => {
     expect(safeFileName('a\u0000b\u001f.gif', 'image/gif')).toBe('ab.gif');
     expect(safeFileName(undefined, 'image/webp')).toBe('image.webp');
     expect(safeFileName('.png', 'image/png')).toBe('image.png');
+    expect(safeFileName('Q3 report.htm', 'text/html')).toBe('Q3 report.html');
+    expect(safeFileName('', 'application/pdf')).toBe('file.pdf');
   });
 });

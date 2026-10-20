@@ -1,4 +1,5 @@
 import type { Readable } from 'node:stream';
+import type { UploadFileType } from '@bemmoly/shared';
 import type { RequestContext } from '../services/authz/index.ts';
 
 /** What a person may do with the files of one target: add them, read them, or neither. */
@@ -12,6 +13,11 @@ export type FileAccess = 'write' | 'read' | 'deny';
 export interface FileTargetDefinition {
   /** Namespaced by module: "docs.page". */
   kind: string;
+  /**
+   * The types it takes, as sniffed from the bytes; images only when left out, so a target
+   * takes HTML or PDF only when it can show them safely.
+   */
+  accepts?: readonly UploadFileType[];
   /** Checked on every upload ('write') and every read ('read' or 'write'); throwing denies. */
   authorize(ctx: RequestContext, targetId: string): Promise<FileAccess>;
   /**
