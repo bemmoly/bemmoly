@@ -127,6 +127,7 @@ describe('files api', () => {
       'content-type': 'text/html; charset=utf-8',
       'x-content-type-options': 'nosniff',
       'x-frame-options': 'SAMEORIGIN',
+      vary: 'Sec-Fetch-Dest',
     });
     const policy = String(report.headers['content-security-policy']);
     expect(policy).toMatch(/^sandbox allow-scripts[ a-z-]*;/);

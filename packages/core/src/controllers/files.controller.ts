@@ -82,6 +82,8 @@ export function createFilesController(service: FilesService) {
       const file = await service.read(contextOf(request), id);
       const served = servedAs(file.mime, request);
       if (served.framed) reply.header('x-frame-options', 'SAMEORIGIN');
+      // A copy cached for a frame must never answer a tab, which gets the download.
+      if (file.mime === 'text/html') reply.header('vary', 'Sec-Fetch-Dest');
       reply
         .header('content-type', served.type)
         .header('content-length', String(file.size))
