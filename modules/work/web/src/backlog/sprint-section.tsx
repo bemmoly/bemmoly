@@ -2,6 +2,7 @@ import type { Issue } from '@bemmoly/module-work/shared';
 import { CapacityBar, SprintContainer, SprintHeader, type SprintPoints } from '@bemmoly/ui';
 import { useId, type ReactNode, type RefObject } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
+import type { ProjectActions } from '../hooks/project-actions.ts';
 import type { RowHandlers } from './backlog-item.tsx';
 import { BacklogRows } from './backlog-rows.tsx';
 import { ContainerEmpty } from './container-empty.tsx';
@@ -17,6 +18,8 @@ export interface SprintSectionProps {
   handlers: RowHandlers;
   entryId: string | null;
   scrollRef: RefObject<HTMLElement | null>;
+  /** Start and Complete show only to someone whose role may take them. */
+  allowed: ProjectActions;
   onAction: () => void;
   onMore?: () => void;
   onCreateIssue: (title: string) => Promise<unknown>;
@@ -54,6 +57,11 @@ function capacityOf(container: Container): ReactNode {
 }
 
 const ACTIONS = { active: 'Complete sprint', future: 'Start sprint', closed: undefined } as const;
+const SPRINT_ACTIONS = {
+  active: 'work.sprint.complete',
+  future: 'work.sprint.start',
+  closed: 'work.sprint.complete',
+} as const;
 
 /**
  * A sprint or the backlog: the header with dates, goal, counts and capacity,
@@ -68,6 +76,7 @@ export function SprintSection({
   handlers,
   entryId,
   scrollRef,
+  allowed,
   onAction,
   onMore,
   onCreateIssue,
@@ -100,7 +109,11 @@ export function SprintSection({
               issueCount={visible.length}
               {...(sprintPoints ? { points: sprintPoints } : {})}
               {...(capacity ? { capacity } : {})}
-              action={sprint ? ACTIONS[sprint.state] : undefined}
+              action={
+                sprint && allowed.can(SPRINT_ACTIONS[sprint.state])
+                  ? ACTIONS[sprint.state]
+                  : undefined
+              }
               onAction={onAction}
               {...(onMore ? { onMore } : {})}
               open={open}

@@ -12,6 +12,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
+import { useProjectActions } from '../hooks/project-actions.ts';
 import { LinkIssueDialog } from '../issue/link-issue-dialog.tsx';
 
 /*
@@ -66,6 +67,8 @@ export function IssueActionsMenu({
   const many = keys.length > 1;
   const mine = meId !== undefined && assigneeId === meId;
   const [linking, setLinking] = useState(false);
+  // An issue key starts with its project's key, which is all the permissions read needs.
+  const allowed = useProjectActions(issueKey.slice(0, issueKey.lastIndexOf('-')) || undefined);
   return (
     <>
       <Menu
@@ -156,14 +159,16 @@ export function IssueActionsMenu({
         >
           {many ? `Archive ${keys.length} issues` : 'Archive issue'}
         </MenuItem>
-        <MenuItem
-          tone="danger"
-          icon={<Icon name="trash" size={14} />}
-          hint="Delete"
-          onSelect={() => actions.remove(keys)}
-        >
-          {many ? `Delete ${keys.length} issues` : 'Delete issue'}
-        </MenuItem>
+        {allowed.can('work.issue.delete') && (
+          <MenuItem
+            tone="danger"
+            icon={<Icon name="trash" size={14} />}
+            hint="Delete"
+            onSelect={() => actions.remove(keys)}
+          >
+            {many ? `Delete ${keys.length} issues` : 'Delete issue'}
+          </MenuItem>
+        )}
       </Menu>
       {linking && <LinkIssueDialog issueKey={issueKey} open onClose={() => setLinking(false)} />}
     </>

@@ -10,6 +10,7 @@ import {
   type ProjectMember,
   type ProjectMembersResponse,
 } from '../../../shared/members.ts';
+import type { ProjectPermissions } from '../../../shared/actions.ts';
 import type { ProjectMembersService } from '../services/projects/members.ts';
 
 export function createMembersController(service: ProjectMembersService) {
@@ -21,6 +22,9 @@ export function createMembersController(service: ProjectMembersService) {
   return {
     async list(request: FastifyRequest): Promise<ProjectMembersResponse> {
       return service.list(contextOf(request), project(request));
+    },
+    async permissions(request: FastifyRequest): Promise<ProjectPermissions> {
+      return service.permissions(contextOf(request), project(request));
     },
     async add(request: FastifyRequest, reply: FastifyReply): Promise<AddProjectMembersResponse> {
       const body = parseOrThrow(addProjectMembersBodySchema, request.body);

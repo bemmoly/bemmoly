@@ -4,6 +4,7 @@ import { HeaderActions } from '@bemmoly/core-web';
 import { Button, MetricSparkline, MetricTile, SprintProgress } from '@bemmoly/ui';
 import { Fragment } from 'react';
 import { navigateTo } from '../hooks/issue-navigation.ts';
+import { useProjectActions } from '../hooks/project-actions.ts';
 import { BoardActionsMenu } from './board-actions-menu.tsx';
 
 const DAY = 86_400_000;
@@ -72,6 +73,7 @@ export function BoardHeader({
   doingPoints,
 }: BoardHeaderProps) {
   const kanban = project.method === 'kanban';
+  const allowed = useProjectActions(project.key);
   const flow = metrics ?? view.metrics;
   const committed = flow.committedPoints;
   const completed = flow.completedPoints;
@@ -162,7 +164,7 @@ export function BoardHeader({
             </div>
           )
         )}
-        {!kanban && sprint && (
+        {!kanban && sprint && allowed.can('work.sprint.complete') && (
           <Button onClick={() => navigateTo(`/work/backlog/${project.key}?complete=${sprint.id}`)}>
             Complete sprint
           </Button>

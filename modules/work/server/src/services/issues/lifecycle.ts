@@ -5,6 +5,7 @@ import { between, last, needsRebalance } from '../../../../shared/lexorank.ts';
 import { recordHistory } from '../history/index.ts';
 import { WORK_RANK_REBALANCE_JOB } from '../jobs.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueChange } from './notify.ts';
 import { loadIssueById, loadIssueByKey, toIssue } from './rows.ts';
 
@@ -24,6 +25,7 @@ export async function deleteIssue(
   const sql = requireDatabase(deps);
   const row = await loadIssueByKey(sql, key);
   await ctx.authz.authorize(ctx.actor, 'work.issue.delete', projectResource(row.project_id));
+  await authorizeEpics(ctx, sql, projectResource(row.project_id), [row.type_id]);
   await sql.begin(async (tx) => {
     await tx`update issues set deleted_at = now(), updated_at = now() where id = ${row.id}`;
     await recordHistory(tx, row.id, actorUserId(ctx), [{ field: 'deleted', from: null, to: true }]);

@@ -8,6 +8,7 @@ import { WorkflowEditorSkeleton } from '../skeletons/settings-skeleton.tsx';
 import { draftChanges } from './draft-changes.ts';
 import { statusById, transitionById } from './draft-model.ts';
 import { EditorCanvas } from './editor-canvas.tsx';
+import { useProjectActions } from '../hooks/project-actions.ts';
 import { EditorHeader } from './editor-header.tsx';
 import { PublishDialog } from './publish-dialog.tsx';
 import { StatusPanel } from './status-panel.tsx';
@@ -51,6 +52,7 @@ export function WorkflowEditor({ workflowId, listPath }: WorkflowEditorProps) {
     [workflow, draft],
   );
   const leaving = useDraftLeaveGuard(draftState);
+  const allowed = useProjectActions(workflow?.projectId ?? undefined);
   useUndoKey(actions.undo);
 
   if (model.workflowError || draftState.loadError)
@@ -85,6 +87,7 @@ export function WorkflowEditor({ workflowId, listPath }: WorkflowEditorProps) {
         workflow={workflow}
         listPath={listPath}
         changeCount={changes.length}
+        canPublish={!workflow.projectId || allowed.can('work.workflow.configure')}
         saveState={draftState.saveState}
         isValidating={validation.isValidating}
         canUndo={model.canUndo}

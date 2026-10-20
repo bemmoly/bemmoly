@@ -59,7 +59,7 @@ export async function startSprint(
 ): Promise<Sprint> {
   const sql = requireDatabase(deps);
   const found = await loadSprint(sql, id);
-  await ctx.authz.authorize(ctx.actor, 'work.sprint.manage', projectResource(found.project_id));
+  await ctx.authz.authorize(ctx.actor, 'work.sprint.start', projectResource(found.project_id));
   const row = await sql.begin(async (tx) => {
     const project = await lockProject(tx, found.project_id);
     if (project.method !== 'scrum') {
@@ -132,7 +132,7 @@ export async function completeSprint(
   const body = completeSprintBodySchema.parse(input);
   const sql = requireDatabase(deps);
   const found = await loadSprint(sql, id);
-  await ctx.authz.authorize(ctx.actor, 'work.sprint.manage', projectResource(found.project_id));
+  await ctx.authz.authorize(ctx.actor, 'work.sprint.complete', projectResource(found.project_id));
   const row = await sql.begin(async (tx) => {
     await lockProject(tx, found.project_id);
     const sprint = await loadSprint(tx, id, { lock: true });

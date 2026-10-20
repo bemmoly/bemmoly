@@ -10,6 +10,7 @@ import { last } from '../../../../shared/lexorank.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueEvent } from './events.ts';
 import { loadFieldDefinitions, requiredFields, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
@@ -106,6 +107,7 @@ export async function createIssue(
     await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(body.projectId));
   }
   const sql = requireDatabase(deps);
+  await authorizeEpics(ctx, sql, projectResource(body.projectId), [body.typeId]);
   const actorId = actorUserId(ctx);
   const created = await sql.begin(async (tx) => {
     const [projectKey, status] = await Promise.all([
