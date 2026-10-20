@@ -207,8 +207,9 @@ describe('removing orphans left by earlier deletes', () => {
       modules: [{ module: 'work', changelog: workModule.changelog }],
       appVersion: '0.2.0',
     });
-    const rolled = await runner.rollback('work', { count: 1 });
-    expect(rolled.map((entry) => entry.id)).toEqual(['0033-work-remove-orphans']);
+    // Back to just before 0033, whatever later changesets there are, then forward again.
+    const rolled = await runner.rollback('work', { toId: '0032-work-dependent-cleanup' });
+    expect(rolled.map((entry) => entry.id)).toContain('0033-work-remove-orphans');
     await runner.update({ contexts: ['production'] });
 
     expect(await orphans(work.sql)).toEqual(NONE);
