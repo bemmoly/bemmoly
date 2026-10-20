@@ -11,7 +11,7 @@ import { createCodeRegistry } from './code-registry.ts';
 import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
-import type { FileReader } from './files.ts';
+import type { FileStoreAccess } from './files.ts';
 import type { ObjectStore } from '../contracts/object-store.ts';
 import { createModuleObjects } from './objects.ts';
 import { createReferenceRegistries } from './references.ts';
@@ -35,7 +35,7 @@ export interface ModuleContextOptions {
   /** The AI facade, read on every call so it can be bound after modules register. */
   ai?: () => AiFacade | undefined;
   /** The files service, read on every call so it can be bound after modules register. */
-  files?: () => FileReader | undefined;
+  files?: () => FileStoreAccess | undefined;
   /** The object store, read on every call so it can be bound after modules register. */
   objects?: () => ObjectStore | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
@@ -124,6 +124,7 @@ export function createModuleContext(
   const fail = (message: string): never => {
     throw new ModuleLoadError(`Module "${module.id}": ${message}`, module.id);
   };
+  const filesOf = () => options.files?.() ?? fail('files are not available in this process');
   const settings: SettingsRegistry = {
     define(setting) {
       if (!setting.key.startsWith(`${module.id}.`)) {
@@ -255,15 +256,13 @@ export function createModuleContext(
         }
         into.fileTargets.push(definition);
       },
-      async read(ctx, fileId) {
-        const reader = options.files?.();
-        if (!reader) {
-          throw new ModuleLoadError(
-            `Module "${module.id}": files are not available in this process`,
-            module.id,
-          );
+      read: (ctx, fileId) => filesOf().read(ctx, fileId),
+      stat: (ctx, fileId) => filesOf().stat(ctx, fileId),
+      upload(ctx, query, body) {
+        if (!query.target.startsWith(`${module.id}.`)) {
+          fail(`may only upload into its own file targets, not "${query.target}"`);
         }
-        return reader.read(ctx, fileId);
+        return filesOf().upload(ctx, query, body);
       },
     },
     objects: createModuleObjects(module.id, options.objects),

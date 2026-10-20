@@ -14,6 +14,7 @@ import type { ObjectStore } from '../../contracts/object-store.ts';
 import {
   fileUrl,
   type FileAccess,
+  type FileInfo,
   type FileContent,
   type FileTargetDefinition,
 } from '../../modules/files.ts';
@@ -107,6 +108,20 @@ export function createFilesService(deps: FilesServiceDeps) {
     return target.authorize(ctx, targetId);
   }
 
+  /** The file's row when the person may read its target; anyone else is told it does not exist. */
+  async function readable(ctx: RequestContext, id: string): Promise<FileRow> {
+    const [row] = await deps.sql<FileRow[]>`
+      select id, target_kind, target_id, storage_key, filename, mime, size
+      from files where id = ${id}`;
+    if (!row) throw new NotFoundError('The file was not found');
+    const verdict = await access(ctx, row.target_kind, row.target_id).catch((error: unknown) => {
+      if (error instanceof ForbiddenError) return 'deny' as const;
+      throw error;
+    });
+    if (verdict === 'deny') throw new NotFoundError('The file was not found');
+    return row;
+  }
+
   return {
     maxBytes: deps.maxBytes,
 
@@ -144,17 +159,15 @@ export function createFilesService(deps: FilesServiceDeps) {
       return toUploaded(row!);
     },
 
+    /** What a file is, for anyone who may read the target, without reading its bytes. */
+    async stat(ctx: RequestContext, id: string): Promise<FileInfo> {
+      const row = await readable(ctx, id);
+      return { name: row.filename, mime: row.mime, size: Number(row.size) };
+    },
+
     /** The bytes, for anyone who may read the target; anyone else is told it does not exist. */
     async read(ctx: RequestContext, id: string): Promise<StoredFile> {
-      const [row] = await deps.sql<FileRow[]>`
-        select id, target_kind, target_id, storage_key, filename, mime, size
-        from files where id = ${id}`;
-      if (!row) throw new NotFoundError('The file was not found');
-      const verdict = await access(ctx, row.target_kind, row.target_id).catch((error: unknown) => {
-        if (error instanceof ForbiddenError) return 'deny' as const;
-        throw error;
-      });
-      if (verdict === 'deny') throw new NotFoundError('The file was not found');
+      const row = await readable(ctx, id);
       const object = await deps.store.get(row.storage_key);
       return { name: row.filename, mime: row.mime, size: Number(row.size), body: object.body };
     },

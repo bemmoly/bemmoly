@@ -9,7 +9,7 @@ import type { AiFacade } from '../contracts/ai.ts';
 import type { CodeHostDirectory } from './code.ts';
 import type { CollabTransactor } from './collab.ts';
 import type { ActorContextFactory, BemmolyModule } from './contract.ts';
-import type { FileReader } from './files.ts';
+import type { FileStoreAccess } from './files.ts';
 import type { ObjectStore } from '../contracts/object-store.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
@@ -41,7 +41,7 @@ export interface LoadModulesOptions {
   /** What ctx.ai calls through once the server binds the runtime; see createAiHandle. */
   ai?: () => AiFacade | undefined;
   /** What ctx.files.read goes through once the server creates the files service. */
-  files?: () => FileReader | undefined;
+  files?: () => FileStoreAccess | undefined;
   /** What ctx.objects goes through once the server creates the object store. */
   objects?: () => ObjectStore | undefined;
   /**

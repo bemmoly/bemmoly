@@ -1,5 +1,5 @@
 import type { Readable } from 'node:stream';
-import type { UploadFileType } from '@bemmoly/shared';
+import type { UploadedFile, UploadFileQuery, UploadFileType } from '@bemmoly/shared';
 import type { RequestContext } from '../services/authz/index.ts';
 
 /** What a person may do with the files of one target: add them, read them, or neither. */
@@ -27,22 +27,31 @@ export interface FileTargetDefinition {
   referenced(fileIds: readonly string[]): Promise<ReadonlySet<string>>;
 }
 
-/** A stored file's bytes and what they are, as the kernel serves them. */
-export interface FileContent {
+/** What a stored file is, without its bytes. */
+export interface FileInfo {
   name: string;
   /** Sniffed from the bytes when it was uploaded. */
   mime: string;
   size: number;
+}
+
+/** A stored file's bytes and what they are, as the kernel serves them. */
+export interface FileContent extends FileInfo {
   body: Readable;
 }
 
-/** Reads a stored file for a person, with the same checks as GET /api/v1/files/:id. */
-export interface FileReader {
+/**
+ * Stored files for a person, with the same checks as the files API: reading as GET
+ * /api/v1/files/:id does, adding as POST /api/v1/files does (an agent's upload, say).
+ */
+export interface FileStoreAccess {
   read(ctx: RequestContext, fileId: string): Promise<FileContent>;
+  stat(ctx: RequestContext, fileId: string): Promise<FileInfo>;
+  upload(ctx: RequestContext, query: UploadFileQuery, body: Buffer): Promise<UploadedFile>;
 }
 
-/** What a module sees as `ctx.files`. */
-export interface FilesRegistry extends FileReader {
+/** What a module sees as `ctx.files`; it uploads only into its own targets. */
+export interface FilesRegistry extends FileStoreAccess {
   addTarget(definition: FileTargetDefinition): void;
 }
 
