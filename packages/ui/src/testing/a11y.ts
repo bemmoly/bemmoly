@@ -3,10 +3,12 @@ import { expect } from 'vitest';
 
 /**
  * Runs axe on a rendered container and fails with the rule ids and targets. Colour contrast is
- * checked in the browser (Storybook), since jsdom computes no styles.
+ * checked in the browser (Storybook), since jsdom computes no styles. Frames are checked as
+ * elements (a title, say) but not entered: the test DOM loads nothing into them.
  */
 export async function expectAccessible(container: Element): Promise<void> {
   const result = await axe.run(container, {
+    iframes: false,
     rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
   });
   const problems = result.violations.map(

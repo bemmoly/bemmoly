@@ -5,11 +5,12 @@ import { usePresence } from '../../lib/presence.ts';
 import { useDialog } from '../../lib/use-dialog.ts';
 import { IconButton } from '../button/icon-button.tsx';
 
-export type ModalWidth = 'sm' | 'md' | 'lg' | 'composer' | 'xl';
+export type ModalWidth = 'sm' | 'md' | 'lg' | 'composer' | 'xl' | 'full';
 
 /**
  * sm 400 (a confirmation), md 480 (a short form), lg 640 (a form with a list), composer 720
- * (Create issue, the review's width), xl 760 (a side-by-side comparison).
+ * (Create issue, the review's width), xl 760 (a side-by-side comparison), full the whole
+ * window less a 16px margin (a file seen full screen).
  */
 const WIDTHS: Record<ModalWidth, string> = {
   sm: 'w-100',
@@ -17,6 +18,7 @@ const WIDTHS: Record<ModalWidth, string> = {
   lg: 'w-160',
   composer: 'w-180',
   xl: 'w-190',
+  full: 'w-[calc(100vw-32px)] h-[calc(100dvh-32px)]',
 };
 
 /**
@@ -81,9 +83,10 @@ export function Modal({
       onClick={onBackdropClick}
       data-state={presence.leaving ? 'closed' : 'open'}
       className={cx(
-        'm-auto max-h-[calc(100vh-96px)] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-card p-0 text-13 text-tx shadow-e3 open:flex',
+        'm-auto max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-card p-0 text-13 text-tx shadow-e3 open:flex',
         'backdrop:bg-scrim',
         DIALOG_MOTION,
+        width !== 'full' && 'max-h-[calc(100vh-96px)]',
         WIDTHS[width],
         SHEET,
         className,

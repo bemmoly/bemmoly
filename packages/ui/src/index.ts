@@ -20,6 +20,7 @@ export * from './components/empty-state/index.ts';
 export * from './components/entity-tile/index.ts';
 export * from './components/epic-panel/index.ts';
 export * from './components/facet-panel/index.ts';
+export * from './components/file-embed/index.ts';
 export * from './components/filter-bar/index.ts';
 export * from './components/form-layout/index.ts';
 export * from './components/gate-list/index.ts';
