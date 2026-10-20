@@ -56,5 +56,7 @@ describe('historyVerb', () => {
     expect(historyVerb(entry('created', null, 'PLT-1'), names)).toBe('created the issue');
     expect(historyVerb(entry('deleted', null, true), names)).toBe('deleted the issue');
     expect(historyVerb(entry('deleted', true, null), names)).toBe('restored the issue');
+    expect(historyVerb(entry('archived', null, true), names)).toBe('archived the issue');
+    expect(historyVerb(entry('archived', true, null), names)).toBe('unarchived the issue');
   });
 });

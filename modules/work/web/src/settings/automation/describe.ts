@@ -104,6 +104,7 @@ const ACTION_WORDS: Record<string, string> = {
   [AUTOMATION_ACTIONS.addLabel]: 'add a label',
   [AUTOMATION_ACTIONS.sendWebhook]: 'send a webhook',
   [AUTOMATION_ACTIONS.notify]: 'notify people',
+  [AUTOMATION_ACTIONS.archive]: 'archive it',
 };
 
 /** "then assign it, add a label". */

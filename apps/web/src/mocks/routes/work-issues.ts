@@ -4,6 +4,7 @@ import * as seed from '../seed/work-issues.ts';
 import { datedVersions, seedRoadmapLinks } from '../seed/work-roadmap.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { issueActivityRoutes, type IssuesState } from './work-issue-activity.ts';
+import { issueArchiveRoutes } from './work-issue-archive.ts';
 import { mockEpicColor } from './work-backlog-state.ts';
 import { issueDetail, statuses } from './work-issue-detail.ts';
 import { cardFields, issueStore, nextKey } from './work-issue-store.ts';
@@ -233,11 +234,12 @@ const issueRoutes: MockRoute[] = [
     handle: (request, db) => {
       const parentId = request.query.get('parentId');
       const projectId = request.query.get('projectId');
-      const typeId = request.query.get('typeId');
+      const [typeId, archived] = [request.query.get('typeId'), request.query.get('archived')];
       const rows = state(db).issues.filter((row) => !row['deletedAt']);
       const items = rows
         .filter(
           (row) =>
+            Boolean(row['archivedAt']) === (archived === 'true') &&
             (!parentId || row['parentId'] === parentId) &&
             (!projectId || row['projectId'] === projectId) &&
             (!typeId || row['typeId'] === typeId),
@@ -279,6 +281,7 @@ const issueRoutes: MockRoute[] = [
       return ok(issue);
     },
   },
+  ...issueArchiveRoutes({ issueOf, record }),
   {
     method: 'DELETE',
     pattern: '/api/v1/work/issues/:key',

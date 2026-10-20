@@ -51,7 +51,7 @@ function inScope(db: MockDb, project: Row, sprintId: string | null) {
       .map((status) => status.id),
   );
   return (issue: MockIssue) => {
-    if (issue.projectId !== project.id || isEpic(db, issue)) return false;
+    if (issue.projectId !== project.id || issue.archivedAt || isEpic(db, issue)) return false;
     if (project['method'] === 'scrum') return sprintId !== null && issue.sprintId === sprintId;
     return !done.has(issue.statusId) || Date.now() - Date.parse(issue.statusChangedAt) < 14 * DAY;
   };

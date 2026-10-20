@@ -115,6 +115,17 @@ export function IssueBulkBar({
       <Button
         size="xs"
         variant="ghost"
+        icon={<Icon name="archive" size={14} />}
+        onClick={() => {
+          void actions.archive(keys, true);
+          onClear();
+        }}
+      >
+        Archive
+      </Button>
+      <Button
+        size="xs"
+        variant="ghost"
         icon={<Icon name="trash" size={14} />}
         className="text-red-tx"
         onClick={() => {

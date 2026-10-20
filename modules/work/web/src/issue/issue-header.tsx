@@ -3,6 +3,7 @@ import { Button, IconButton, Menu, MenuItem, Modal, useToast } from '@bemmoly/ui
 import { Icon } from '@bemmoly/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useIssueArchive } from '../hooks/issue-archive.ts';
 import { issueKeys } from '../hooks/issue-keys.ts';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { projectKeyOf } from '../hooks/issue-vocabulary.ts';
@@ -128,7 +129,7 @@ export function IssueStepper({ neighbours }: { neighbours: IssueNeighbours }) {
   );
 }
 
-/** ···: copy the key, or delete the issue after a confirmation. */
+/** ···: copy the key, archive or unarchive, or delete the issue after a confirmation. */
 export interface IssueMoreMenuProps {
   issue: IssueDetail;
   /** page: the header's 30px button. panel: the drawer header's 28px button. */
@@ -143,6 +144,7 @@ export interface IssueMoreMenuProps {
 export function IssueMoreMenu({ issue, size, onDeleted }: IssueMoreMenuProps) {
   const [confirm, setConfirm] = useState(false);
   const toast = useToast();
+  const archive = useIssueArchive();
   const queryClient = useQueryClient();
   const remove = useMutation({
     mutationFn: () => api.work.issues.remove(issue.key),
@@ -172,6 +174,9 @@ export function IssueMoreMenu({ issue, size, onDeleted }: IssueMoreMenuProps) {
         <MenuItem onSelect={() => void copyIssueLink(issue.key, toast)}>Copy link</MenuItem>
         <MenuItem onSelect={() => void navigator.clipboard?.writeText(issue.key)}>
           Copy key
+        </MenuItem>
+        <MenuItem onSelect={() => void archive([issue.key], !issue.archivedAt)}>
+          {issue.archivedAt ? 'Unarchive' : 'Archive issue'}
         </MenuItem>
         <MenuItem tone="danger" onSelect={() => setConfirm(true)}>
           Delete issue

@@ -75,6 +75,8 @@ function valuesOf(field: string, issue: MockIssue, ctx: LqlContext): Array<strin
       return issue.dueAt ? [Date.parse(issue.dueAt)] : [];
     case 'updated':
       return [Date.parse(issue.updatedAt)];
+    case 'archived':
+      return issue.archivedAt ? [Date.parse(issue.archivedAt)] : [];
     case 'text':
       return lower(issue.title);
     default:

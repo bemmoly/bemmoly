@@ -37,6 +37,8 @@ export interface MockIssue {
   customFields: Record<string, unknown>;
   statusChangedAt: string;
   updatedAt: string;
+  /** Set by the archive route; an archived issue leaves the board. */
+  archivedAt?: string | null;
 }
 
 /** The board's labels beyond the issue mock's auth, infra and customer, which keep its ids. */

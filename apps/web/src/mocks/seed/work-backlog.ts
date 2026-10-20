@@ -36,6 +36,7 @@ export interface BacklogIssueRow {
   statusChangedAt: string;
   resolvedAt: string | null;
   deletedAt: string | null;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

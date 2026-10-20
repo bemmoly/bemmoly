@@ -18,6 +18,7 @@ export function workSearchHits(db: MockDb, q: string) {
     .issues.filter(
       (row) =>
         !row['deletedAt'] &&
+        (!row['archivedAt'] || String(row['key']).toLowerCase() === query) &&
         (String(row['key']).toLowerCase().startsWith(query) ||
           String(row['title']).toLowerCase().includes(query)),
     )

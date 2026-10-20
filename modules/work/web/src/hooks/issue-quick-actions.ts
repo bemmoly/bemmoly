@@ -2,14 +2,15 @@ import type { CreateIssueBody, Issue } from '@bemmoly/module-work/shared';
 import { useToast } from '@bemmoly/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { create } from 'zustand';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
+import { useHiddenIssues } from './hidden-issues.ts';
+import { useIssueArchive } from './issue-archive.ts';
 import { plural, useIssueEdits } from './issue-edits.ts';
 
 /*
- * The small edits a list screen makes without opening an issue: assign, priority, sprint, and
- * delete. They apply to one issue or to a selection. Assign, priority and sprint show at once
+ * The small edits a list screen makes without opening an issue: assign, priority, sprint,
+ * archive and delete. They apply to one issue or to a selection. Assign, priority and sprint show at once
  * and go back for any issue the server refuses (issue-edits.ts). Delete waits out an Undo window
  * before it reaches the server, and the issues leave the screen at once, so undoing only puts
  * them back.
@@ -18,19 +19,7 @@ import { plural, useIssueEdits } from './issue-edits.ts';
 /** How long a deleted issue waits for Undo before the delete is sent. */
 export const UNDO_MS = 6000;
 
-interface Hidden {
-  keys: ReadonlySet<string>;
-  hide(keys: readonly string[]): void;
-  show(keys: readonly string[]): void;
-}
-
-/** Issues deleted but still inside their Undo window; list screens leave them out. */
-export const useHiddenIssues = create<Hidden>()((set) => ({
-  keys: new Set(),
-  hide: (keys) => set((state) => ({ keys: new Set([...state.keys, ...keys]) })),
-  show: (keys) =>
-    set((state) => ({ keys: new Set([...state.keys].filter((key) => !keys.includes(key))) })),
-}));
+export { useHiddenIssues } from './hidden-issues.ts';
 
 export type { QuickPatch } from './issue-edit-patch.ts';
 
@@ -44,6 +33,7 @@ export function useIssueQuickActions() {
   );
 
   const update = useIssueEdits();
+  const archive = useIssueArchive();
 
   const remove = useCallback(
     (keys: readonly string[]) => {
@@ -95,7 +85,7 @@ export function useIssueQuickActions() {
     [refresh],
   );
 
-  return useMemo(() => ({ update, remove, create }), [update, remove, create]);
+  return useMemo(() => ({ update, archive, remove, create }), [update, archive, remove, create]);
 }
 
 export type IssueQuickActions = ReturnType<typeof useIssueQuickActions>;

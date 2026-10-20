@@ -7,6 +7,7 @@ import { useCustomFields } from '../hooks/issue-fields.ts';
 import { projectKeyOf, useIssueVocabulary } from '../hooks/issue-vocabulary.ts';
 import { AcceptanceCriteria } from './acceptance-criteria.tsx';
 import { ActivitySection } from './activity-section.tsx';
+import { ArchivedNote } from './archived-note.tsx';
 import { DevelopmentSection } from './development-section.tsx';
 import { IssueAiSummary } from './issue-ai-summary.tsx';
 import { IssueRail } from './issue-rail.tsx';
@@ -55,6 +56,7 @@ export function IssueBody({ issue, size, railInline = size === 'panel' }: IssueB
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2.5">
         <IssueTitle issue={issue} size={size} />
+        {issue.archivedAt && <ArchivedNote issueKey={issue.key} />}
         <div className="-ml-2 flex flex-wrap gap-1">
           {canHaveSubtasks && (
             <Button
