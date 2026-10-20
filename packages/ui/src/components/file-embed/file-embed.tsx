@@ -21,7 +21,7 @@ const LOOK: Record<FileEmbedKind, { icon: IconName; label: string }> = {
 
 /*
  * HTML runs with scripts on but without allow-same-origin: the frame gets an origin of its own,
- * so it can reach neither the session nor the page around it (ADR 0037). Browsers refuse to
+ * so it can reach neither the session nor the page around it (ADR 0047). Browsers refuse to
  * draw a PDF in a sandbox, so a PDF frame has none; the browser's viewer runs it.
  */
 const HTML_SANDBOX = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';

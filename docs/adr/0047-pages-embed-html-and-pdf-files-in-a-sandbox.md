@@ -1,4 +1,4 @@
-# ADR 0037: Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own
+# ADR 0047: Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own
 
 - Status: accepted
 - Date: 2026-10-20
