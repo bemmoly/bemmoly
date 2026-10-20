@@ -6,4 +6,4 @@ export {
   type FilesServiceDeps,
   type StoredFile,
 } from './service.ts';
-export { safeFileName, sniffImage, type Sniffed } from './sniff.ts';
+export { safeFileName, sniffFile, sniffImage, type Sniffed, type SniffedFile } from './sniff.ts';

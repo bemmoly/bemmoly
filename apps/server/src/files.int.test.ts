@@ -7,7 +7,7 @@ import {
 } from './boot-harness.ts';
 
 /*
- * Images in pages through the kernel's files API, on the real boot path: who may add and
+ * Images, PDFs and HTML in pages through the kernel's files API, on the real boot path: who may add and
  * read them (the page's edit and view rights), what is accepted (the bytes decide, never the
  * name or the Content-Type), the size and rate limits, the headers they are served with,
  * and the cleanup of files no page refers to any more.
@@ -18,8 +18,10 @@ const PNG = Buffer.from(
   'base64',
 );
 const SVG = Buffer.from('<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>');
-const HTML = Buffer.from('<html><script>alert(1)</script></html>');
-const UPLOADS_PER_MINUTE = 9;
+const HTML = Buffer.from('<!doctype html><html><script>alert(1)</script></html>');
+const PDF = Buffer.from('%PDF-1.7\n1 0 obj << >> endobj\ntrailer << >>\n%%EOF\n');
+const ZIP = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]);
+const UPLOADS_PER_MINUTE = 12;
 
 describe('files api', () => {
   let harness: BootHarness | undefined;
@@ -111,13 +113,36 @@ describe('files api', () => {
       'content-security-policy': "default-src 'none'; sandbox",
     });
 
-    // SVG, anything that is not an image, and nothing at all are refused.
+    // Pages take HTML and PDF too. HTML runs only in a sandbox with an origin of its own,
+    // which may load libraries from the web but never send anything anywhere.
+    const html = await upload(HTML, undefined, 'report.png', 'image/png');
+    expect(html.statusCode).toBe(201);
+    expect(html.json()).toMatchObject({ mime: 'text/html', name: 'report.html' });
+    const report = await read(html.json().id);
+    expect(report.headers).toMatchObject({
+      'content-type': 'text/html; charset=utf-8',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'SAMEORIGIN',
+    });
+    const policy = String(report.headers['content-security-policy']);
+    expect(policy).toMatch(/^sandbox allow-scripts[ a-z-]*;/);
+    expect(policy).not.toContain('allow-same-origin');
+    expect(policy).toContain("connect-src 'none'");
+    expect(policy).toContain("frame-ancestors 'self'");
+    const pdf = await upload(PDF, undefined, 'spec');
+    expect(pdf.json()).toMatchObject({ mime: 'application/pdf', name: 'spec.pdf' });
+    expect((await read(pdf.json().id)).headers).toMatchObject({
+      'content-type': 'application/pdf',
+      'x-frame-options': 'SAMEORIGIN',
+    });
+
+    // SVG, anything else, and nothing at all are refused.
     const svg = await upload(SVG, undefined, 'logo.png');
     expect(svg.statusCode).toBe(400);
     expect(svg.json().details).toMatchObject({ reason: 'svg_refused' });
-    const html = await upload(HTML, undefined, 'cat.png');
-    expect(html.statusCode).toBe(400);
-    expect(html.json().details).toMatchObject({ reason: 'unsupported_type' });
+    const zip = await upload(ZIP, undefined, 'notes.html');
+    expect(zip.statusCode).toBe(400);
+    expect(zip.json().details).toMatchObject({ reason: 'unsupported_type' });
     expect((await upload(Buffer.alloc(0))).statusCode).toBe(400);
     // Over the size limit, before the service reads a byte.
     const big = Buffer.concat([PNG, Buffer.alloc(70 * 1024)]);
@@ -147,7 +172,13 @@ describe('files api', () => {
     const sql = app.instance.database!.sql;
     const snapshot = {
       type: 'doc',
-      content: [{ type: 'image', attrs: { src: file.url, alt: 'Diagram' } }],
+      content: [
+        { type: 'image', attrs: { src: file.url, alt: 'Diagram' } },
+        ...[html.json(), pdf.json()].map((doc: { url: string; name: string; mime: string }) => ({
+          type: 'file',
+          attrs: { src: doc.url, name: doc.name, mime: doc.mime },
+        })),
+      ],
     };
     await sql`update pages set snapshot = ${JSON.stringify(snapshot)}::jsonb where id = ${page.id}`;
     await sql`update files set created_at = now() - interval '2 days'`;
