@@ -34,7 +34,10 @@ export function pageQuery(request: MockRequest): BoardPageQuery | string {
   if (text && !column) return 'A cursor pages one column';
   const cursor =
     text && text.length > UUID_LENGTH && text[UUID_LENGTH] === '.'
-      ? { issueId: text.slice(0, UUID_LENGTH), rank: text.slice(UUID_LENGTH + 1) }
+      ? {
+          issueId: text.slice(0, UUID_LENGTH),
+          rank: text.slice(UUID_LENGTH + 1).split('.')[0] ?? '',
+        }
       : null;
   if (text && !cursor) return 'The cursor is not one this board gave';
   const ids = request.query.get('issueIds');

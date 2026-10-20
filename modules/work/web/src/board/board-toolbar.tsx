@@ -1,3 +1,4 @@
+import type { LqlFieldCatalog } from '@bemmoly/shared';
 import { FilterChipButton } from '@bemmoly/ui';
 import { useState, type ReactNode } from 'react';
 import type { LqlValueSources } from '../hooks/board-lql.ts';
@@ -15,6 +16,8 @@ export interface BoardToolbarProps {
   grouping: BoardGrouping;
   onGrouping: (grouping: BoardGrouping) => void;
   lqlSources: LqlValueSources;
+  /** The project's fields for the query bar, custom fields included. */
+  lqlCatalog?: LqlFieldCatalog;
   lqlError: string | null;
   savedFilters: SavedFilters;
   /** The Display menu, at the row's end. */
@@ -31,6 +34,7 @@ export function BoardToolbar({
   grouping,
   onGrouping,
   lqlSources,
+  lqlCatalog,
   lqlError,
   savedFilters,
   display,
@@ -58,6 +62,7 @@ export function BoardToolbar({
               onApply={(query) => setQuery(query)}
               onClose={() => setLqlOpen(false)}
               sources={lqlSources}
+              {...(lqlCatalog ? { catalog: lqlCatalog } : {})}
               serverError={lqlError}
             />
           </div>

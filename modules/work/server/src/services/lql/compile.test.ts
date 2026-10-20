@@ -2,7 +2,7 @@ import { parseLql, validateLql, type Query } from '@bemmoly/shared';
 import { ValidationError } from '@bemmoly/shared';
 import { describe, expect, it } from 'vitest';
 import { catalogOf } from './catalog.ts';
-import { compileQuery, compileWhere, type CompileCatalog } from './compile.ts';
+import { compileOrder, compileQuery, compileWhere, type CompileCatalog } from './compile.ts';
 import { render, unitSql } from './render.test-helper.ts';
 
 const sql = unitSql();
@@ -205,5 +205,18 @@ describe('LQL compiler: ordering', () => {
       params: ['points'],
     });
     expect(compiled.directions).toEqual(['DESC', 'ASC', 'ASC']);
+  });
+});
+
+describe('LQL compiler: ORDER BY alone', () => {
+  it('gives each key with its direction and nulls last, custom fields by their cast', () => {
+    const keys = compileOrder(sql, parse('ORDER BY cf.points DESC, due'), catalog).map(
+      (key) => render(key).text,
+    );
+    expect(keys).toEqual([
+      '(issues.custom_fields ->> $1)::numeric desc nulls last',
+      'issues.due_at asc nulls last',
+    ]);
+    expect(compileOrder(sql, parse('estimate > 1'), catalog)).toEqual([]);
   });
 });

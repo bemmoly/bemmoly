@@ -1,6 +1,7 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { Backlog, Project } from '@bemmoly/module-work/shared';
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import type { Backlog, BacklogSortRule, Project } from '@bemmoly/module-work/shared';
+import type { LqlFieldCatalog } from '@bemmoly/shared';
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { backlogKeys } from '../api/index.ts';
 import {
@@ -13,20 +14,33 @@ import {
   type Lookups,
 } from '../backlog/model.ts';
 import { api, useProject, workKeys } from '../shared/index.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
 import { planning } from './backlog-client.ts';
+import { backlogQuickFilters, serverQuery, type QuickFilter } from './board-filters.ts';
+import { useProjectLqlCatalog } from './project-lql-catalog.ts';
 
-export const backlogQuery = (projectKey: string) =>
+/** The Backlog read; `q` is the LQL the query bar and the board's backlog filters add up to. */
+export const backlogQuery = (projectKey: string, q = '') =>
   queryOptions({
-    queryKey: backlogKeys.backlog(projectKey),
-    queryFn: () => planning.get(projectKey),
+    queryKey: backlogKeys.backlog(projectKey, q),
+    queryFn: () => planning.get(projectKey, q ? { q } : {}),
   });
 
 const USERS = { limit: 100 } as const;
+const NO_RULES: readonly BacklogSortRule[] = [];
 
 export interface BacklogData {
   project: Project | undefined;
   projectKey: string | null;
   backlog: Backlog | undefined;
+  /** The LQL sent with the read; '' when the lists are unfiltered. */
+  q: string;
+  /** The chips above the list: the built-ins, then the board's backlog filters. */
+  quickFilters: QuickFilter[];
+  /** The fields the query bar may name, custom fields included. */
+  lqlCatalog: LqlFieldCatalog;
+  /** The board's backlog sort rules, in the order they apply. */
+  sortRules: readonly BacklogSortRule[];
   containers: Container[];
   lookups: Lookups;
   /** The board's sprint length, the default span of a sprint being started. */
@@ -56,7 +70,6 @@ export function useBacklogData(pathKey: string | undefined): BacklogData {
   const projectId = project?.id ?? '';
   const enabled = Boolean(project);
 
-  const backlog = useQuery({ ...backlogQuery(key), enabled });
   const workflows = useQuery({
     queryKey: workKeys.workflows(projectId),
     queryFn: () => api.work.workflows.list(projectId),
@@ -80,6 +93,12 @@ export function useBacklogData(pathKey: string | undefined): BacklogData {
   });
 
   const board = boards.data?.[0];
+  const { filters } = useIssueFilters();
+  const quickFilters = useMemo(() => backlogQuickFilters(board?.config), [board]);
+  const q = serverQuery(filters, quickFilters);
+  // The last answer stays on screen while a new query runs, as the board's does.
+  const backlog = useQuery({ ...backlogQuery(key, q), enabled, placeholderData: keepPreviousData });
+  const lqlCatalog = useProjectLqlCatalog(project?.id);
   const lookups = useMemo<Lookups>(() => {
     const statuses = workflows.data?.flatMap((workflow) => workflow.statuses) ?? [];
     return {
@@ -100,6 +119,10 @@ export function useBacklogData(pathKey: string | undefined): BacklogData {
     project,
     projectKey,
     backlog: backlog.data,
+    q,
+    quickFilters,
+    lqlCatalog,
+    sortRules: board?.config.backlog.sortRules ?? NO_RULES,
     containers,
     lookups,
     cadenceDays: board?.config.cadenceDays ?? 14,

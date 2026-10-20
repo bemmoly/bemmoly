@@ -137,6 +137,20 @@ export function compileWhere(
 }
 
 /**
+ * The query's ORDER BY alone, each key with its direction and nulls last, for callers that
+ * put it in front of their own order (the backlog's rank, the board's). Empty without one.
+ */
+export function compileOrder(sql: SqlClient, query: Query, catalog: CompileCatalog): SqlFragment[] {
+  const builtIns = builtInFields(sql);
+  return query.orderBy.map((item) => {
+    const expression = resolve(item.field.name, catalog, builtIns).sort(sql);
+    return item.direction === 'DESC'
+      ? sql`${expression} desc nulls last`
+      : sql`${expression} asc nulls last`;
+  });
+}
+
+/**
  * Compiles a validated query. Without ORDER BY the list keeps its board
  * order (rank); with one, the id tiebreak is appended so paging is stable
  * even where many rows share a sort value.

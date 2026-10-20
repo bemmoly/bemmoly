@@ -3,7 +3,10 @@ import {
   parseLql,
   validateLql,
   type Expression,
+  CUSTOM_FIELD_PREFIX,
   type LqlError,
+  type LqlFieldCatalog,
+  type Query,
   type Value,
 } from '@bemmoly/shared';
 import type { MockIssue } from '../seed/work-board.ts';
@@ -23,9 +26,11 @@ export interface LqlContext {
   labelName(id: string): string;
   issueKey(id: string | null): string | null;
   sprintName(id: string | null): string | null;
+  /** The issue fields plus the project's custom fields; the issue fields alone when absent. */
+  catalog?: LqlFieldCatalog;
 }
 
-const catalog = createIssueFieldCatalog();
+const ISSUE_FIELDS = createIssueFieldCatalog();
 const HOUR = 3_600_000;
 const UNIT = { h: HOUR, d: 24 * HOUR, w: 7 * 24 * HOUR } as const;
 
@@ -80,8 +85,51 @@ function valuesOf(field: string, issue: MockIssue, ctx: LqlContext): Array<strin
     case 'text':
       return lower(issue.title);
     default:
-      return [];
+      return field.startsWith(CUSTOM_FIELD_PREFIX)
+        ? customValues(issue.customFields[field.slice(CUSTOM_FIELD_PREFIX.length)])
+        : [];
   }
+}
+
+/** A custom field's stored value as the evaluator compares it: numbers, else lowercased text. */
+function customValues(value: unknown): Array<string | number> {
+  if (value === null || value === undefined || value === '') return [];
+  if (Array.isArray(value)) return value.flatMap(customValues);
+  if (typeof value === 'number') return [value];
+  const text = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}/.test(text) ? Date.parse(text) : NaN;
+  return [Number.isNaN(date) ? text.toLowerCase() : date];
+}
+
+const PRIORITY_ORDER = ['lowest', 'low', 'medium', 'high', 'highest'];
+
+/** One issue's sort value for a field: priority by its rank, the rest by their first value. */
+function sortValue(field: string, issue: MockIssue, ctx: LqlContext): string | number | null {
+  if (field === 'priority') return PRIORITY_ORDER.indexOf(issue.priority);
+  return valuesOf(field, issue, ctx)[0] ?? null;
+}
+
+/** The ORDER BY as a comparator, nulls last whatever the direction; null without one. */
+export function orderOf(
+  query: Pick<Query, 'orderBy'>,
+  ctx: LqlContext,
+): ((a: MockIssue, b: MockIssue) => number) | null {
+  if (query.orderBy.length === 0) return null;
+  const keys = query.orderBy.map((item) => ({
+    field: fieldKey(item.field.name, ctx),
+    sign: item.direction === 'DESC' ? -1 : 1,
+  }));
+  return (a, b) => {
+    for (const { field, sign } of keys) {
+      const x = sortValue(field, a, ctx);
+      const y = sortValue(field, b, ctx);
+      if (x === y) continue;
+      if (x === null) return 1;
+      if (y === null) return -1;
+      return (x < y ? -1 : 1) * sign;
+    }
+    return 0;
+  };
 }
 
 function compare(actual: string | number, operator: string, expected: string | number | null) {
@@ -115,17 +163,17 @@ function test(expression: Expression, issue: MockIssue, ctx: LqlContext): boolea
     case 'not':
       return !test(expression.operand, issue, ctx);
     case 'empty': {
-      const empty = valuesOf(fieldKey(expression.field.name), issue, ctx).length === 0;
+      const empty = valuesOf(fieldKey(expression.field.name, ctx), issue, ctx).length === 0;
       return expression.negated ? !empty : empty;
     }
     case 'membership': {
-      const actual = valuesOf(fieldKey(expression.field.name), issue, ctx);
+      const actual = valuesOf(fieldKey(expression.field.name, ctx), issue, ctx);
       const wanted = expression.values.map((value) => literal(value, ctx));
       const hit = actual.some((value) => wanted.includes(value));
       return expression.operator === 'IN' ? hit : !hit;
     }
     case 'comparison': {
-      const actual = valuesOf(fieldKey(expression.field.name), issue, ctx);
+      const actual = valuesOf(fieldKey(expression.field.name, ctx), issue, ctx);
       const expected = literal(expression.value, ctx);
       if (expression.operator === '!=' || expression.operator === '!~')
         return actual.every((value) => compare(value, expression.operator, expected));
@@ -134,17 +182,29 @@ function test(expression: Expression, issue: MockIssue, ctx: LqlContext): boolea
   }
 }
 
-const fieldKey = (name: string) => catalog.resolve(name)?.key ?? name;
+const fieldKey = (name: string, ctx: LqlContext) =>
+  (ctx.catalog ?? ISSUE_FIELDS).resolve(name)?.key ?? name;
 
 /** A predicate for the query, or the first problem in it, as the server would answer 400. */
 export function compileLql(
   text: string,
   ctx: LqlContext,
-): { ok: true; test: (issue: MockIssue) => boolean } | { ok: false; error: LqlError } {
+):
+  | {
+      ok: true;
+      test: (issue: MockIssue) => boolean;
+      order: ((a: MockIssue, b: MockIssue) => number) | null;
+    }
+  | { ok: false; error: LqlError } {
   const parsed = parseLql(text);
   if (!parsed.ok) return parsed;
-  const problem = validateLql(parsed.value, catalog)[0];
+  const fields = ctx.catalog ?? ISSUE_FIELDS;
+  const problem = validateLql(parsed.value, fields)[0];
   if (problem) return { ok: false, error: problem };
   const where = parsed.value.where;
-  return { ok: true, test: (issue) => (where ? test(where, issue, ctx) : true) };
+  return {
+    ok: true,
+    test: (issue) => (where ? test(where, issue, ctx) : true),
+    order: orderOf(parsed.value, ctx),
+  };
 }

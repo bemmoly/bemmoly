@@ -5,16 +5,18 @@ import {
   parseLql,
   validateLql,
   type LqlError,
+  type LqlFieldCatalog,
   type LqlSuggestion,
 } from '@bemmoly/shared';
 
 /*
  * The filter bar's language support, pure: parse and validate against the issue field
- * catalog, and complete at the cursor, answering the value providers (people, statuses,
+ * catalog (with the project's custom fields once they load), and complete at the cursor, answering the value providers (people, statuses,
  * types, labels, epics, sprints) from what the board has already loaded.
  */
 
-const catalog = createIssueFieldCatalog();
+/** The issue fields alone, until the project's custom fields have loaded. */
+const ISSUE_FIELDS = createIssueFieldCatalog();
 
 /** Names per provider, as `autocompleteLql` names them; each list is what the bar may offer. */
 export type LqlValueSources = Partial<Record<string, readonly string[]>>;
@@ -22,7 +24,7 @@ export type LqlValueSources = Partial<Record<string, readonly string[]>>;
 const MAX_SUGGESTIONS = 12;
 
 /** The first problem in a query, or null when it is empty or valid. */
-export function checkLql(text: string): LqlError | null {
+export function checkLql(text: string, catalog: LqlFieldCatalog = ISSUE_FIELDS): LqlError | null {
   if (text.trim() === '') return null;
   const parsed = parseLql(text);
   if (!parsed.ok) return parsed.error;
@@ -40,6 +42,7 @@ export function completeLql(
   text: string,
   cursor: number,
   sources: LqlValueSources,
+  catalog: LqlFieldCatalog = ISSUE_FIELDS,
 ): LqlCompletionList {
   const completion = autocompleteLql(text, cursor, catalog);
   const items = [...completion.suggestions];

@@ -45,6 +45,7 @@ function sampleCards(today: string): [ViewCard, ViewCard] {
     subtasks: { done: 2, total: 5 },
     parentId: SAMPLE.epic,
     docs: ['RFC'],
+    sortIndex: null,
     ageDays: 2,
     reporterId: SAMPLE.reporter,
     createdAt: dayFrom(today, -9),

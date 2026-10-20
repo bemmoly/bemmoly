@@ -1,7 +1,7 @@
 import { contextOf } from '@bemmoly/core';
 import { parseOrThrow } from '@bemmoly/shared';
 import type { FastifyRequest } from 'fastify';
-import { moveIssueBodySchema, type Backlog } from '../../../shared/backlog.ts';
+import { backlogQuerySchema, moveIssueBodySchema, type Backlog } from '../../../shared/backlog.ts';
 import { projectRefParamsSchema } from '../../../shared/boards.ts';
 import { issueKeyParamsSchema } from '../../../shared/common.ts';
 import type { Issue } from '../../../shared/issues.ts';
@@ -11,7 +11,8 @@ export function createBacklogController(service: BacklogService) {
   return {
     async get(request: FastifyRequest): Promise<Backlog> {
       const { key } = parseOrThrow(projectRefParamsSchema, request.params);
-      return service.get(contextOf(request), key);
+      const query = parseOrThrow(backlogQuerySchema, request.query);
+      return service.get(contextOf(request), key, query);
     },
     async move(request: FastifyRequest): Promise<Issue> {
       const { key } = parseOrThrow(issueKeyParamsSchema, request.params);

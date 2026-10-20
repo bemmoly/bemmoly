@@ -23,6 +23,7 @@ import { InheritanceNote } from '../inheritance-note.tsx';
 import { OrgDefaultNote } from '../org-default-note.tsx';
 import { orgSettingsPath, type SettingsScope } from '../pages.ts';
 import { BoardDialogs } from './board-dialogs.tsx';
+import { BacklogTab } from './backlog-tab.tsx';
 import { CardsTab } from './cards-tab.tsx';
 import { ColumnsTab } from './columns-tab.tsx';
 import { FiltersTab } from './filters-tab.tsx';
@@ -62,6 +63,7 @@ export function BoardSettingsPage({ scope }: BoardSettingsPageProps) {
     columns: spec('columns'),
     lanes: spec('lanes'),
     filters: spec('filters'),
+    backlog: spec('backlog'),
     cards: spec('cards'),
     method: spec('method'),
   });
@@ -115,6 +117,7 @@ export function BoardSettingsPage({ scope }: BoardSettingsPageProps) {
     columns: <ColumnsTab {...tabProps('columns')} />,
     lanes: <LanesTab {...tabProps('lanes')} values={values} />,
     filters: <FiltersTab {...tabProps('filters')} values={values} />,
+    backlog: <BacklogTab {...tabProps('backlog')} values={values} />,
     cards: <CardsTab {...tabProps('cards')} values={values} />,
     method: <MethodTab {...tabProps('method')} />,
   }[tab];
