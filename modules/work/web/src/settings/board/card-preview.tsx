@@ -96,6 +96,7 @@ export function CardPreview({
     doneColumns: new Set(),
     today,
     epicColors: new Map([[SAMPLE.epic, 'epic-1']]),
+    epicTargets: new Map(),
     ruleColor: () => ruleColor ?? null,
   };
   const style = ruleColor ? ({ '--card-rule': ruleColor } as CSSProperties) : undefined;

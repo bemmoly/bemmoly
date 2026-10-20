@@ -22,6 +22,10 @@ interface Column {
 }
 
 const DAY = 86_400_000;
+
+/** An epic's Target date field as a day, when it holds one. */
+const isoDayOrNull = (value: unknown) =>
+  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null;
 const PRIORITIES = ['highest', 'high', 'medium', 'low', 'lowest'];
 
 export function lqlContext(db: MockDb): LqlContext {
@@ -201,7 +205,14 @@ export function boardView(
             const siblings = issues.filter(
               (other) => other.projectId === epic.projectId && isEpic(db, other),
             );
-            const entry = { id: epic.id, key: epic.key, color: mockEpicColor(siblings, epic.id) };
+            const target = isoDayOrNull(epic.customFields['target_date']);
+            const entry = {
+              id: epic.id,
+              key: epic.key,
+              color: mockEpicColor(siblings, epic.id),
+              endAt: target ?? epic.dueAt,
+              targetField: target ? 'target_date' : 'dueAt',
+            };
             return [[epic.id, entry] as const];
           }),
         ).values(),

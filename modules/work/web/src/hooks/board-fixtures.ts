@@ -94,7 +94,7 @@ export function testView(cards: Card[] = defaultCards()): BoardView {
       { id: 'none', label: 'No epic', color: null, issueKey: null, dueAt: null },
     ],
     cards,
-    epics: [{ id: EPIC, key: 'PLT-1', color: null }],
+    epics: [{ id: EPIC, key: 'PLT-1', color: null, endAt: null, targetField: 'dueAt' }],
     metrics: {
       throughputPerWeek: 4,
       cycleTimeDays: 3,

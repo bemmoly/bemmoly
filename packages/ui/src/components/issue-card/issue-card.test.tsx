@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { DateWarningChip } from './issue-atoms.tsx';
 import { IssueCard } from './issue-card.tsx';
 
 const base = {
@@ -118,5 +119,20 @@ describe('IssueCard', () => {
     expect(right()).toEqual(['Jonas M.', '3 points', 'Medium priority']);
     rerender(<IssueCard {...props} />);
     expect(right()).toEqual(['Medium priority', '3 points', 'Jonas M.']);
+  });
+
+  it('shows a date warning that takes its own click instead of opening the card', () => {
+    const onSelect = vi.fn();
+    const onWarning = vi.fn();
+    render(
+      <IssueCard
+        {...base}
+        onSelect={onSelect}
+        warning={<DateWarningChip onClick={onWarning}>Due after PLT-1</DateWarningChip>}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Due after PLT-1' }));
+    expect(onWarning).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

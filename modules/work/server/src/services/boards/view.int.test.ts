@@ -127,7 +127,16 @@ describe('the board view against a real database', () => {
     expect(view.lanes.map((lane) => lane.label)).toEqual(['Checkout', 'No epic']);
     expect(pay).toMatchObject({ epicId: epic.id, reporterId: ana });
     expect(pay?.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(view.epics).toEqual([{ id: epic.id, key: epic.key, color: expect.anything() }]);
+    // The epic's target, from its Target date field, is what a card due later warns against.
+    expect(view.epics).toEqual([
+      {
+        id: epic.id,
+        key: epic.key,
+        color: expect.anything(),
+        endAt: '2026-12-01',
+        targetField: 'target_date',
+      },
+    ]);
 
     // The card layout saved in settings is the one the view hands every card, and the epic
     // the "by epic" stripe paints from is there whatever the lanes.
