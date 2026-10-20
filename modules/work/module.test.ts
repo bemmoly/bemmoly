@@ -38,6 +38,13 @@ describe('work module', () => {
           keys: 'G R',
         },
         {
+          id: 'work.initiatives',
+          label: 'Initiatives',
+          path: '/work/initiatives',
+          placement: 'command',
+          icon: 'target',
+        },
+        {
           id: 'work.pairing',
           label: 'Pairing',
           path: '/work/pairing',
@@ -89,6 +96,12 @@ describe('work module', () => {
             icon: 'layers',
           },
           { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
+          {
+            id: 'work.initiatives',
+            label: 'Initiatives',
+            path: '/work/initiatives',
+            icon: 'target',
+          },
         ],
         primary: [
           { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },

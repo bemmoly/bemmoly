@@ -14,6 +14,8 @@ export interface SettingsAccess {
   editWip: boolean;
   /** The project's method and its schemes: "Configure project". */
   configureProject: boolean;
+  /** Initiatives and their epics: "Manage initiatives". */
+  manageInitiatives: boolean;
 }
 
 /**
@@ -36,6 +38,7 @@ export function useSettingsAccess(): SettingsAccess {
     configureBoard,
     editWip: configureBoard || can('work.board.wip'),
     configureProject: can('work.project.configure'),
+    manageInitiatives: can('work.initiative.manage'),
   };
 }
 
@@ -49,6 +52,7 @@ export function orgDefaultsAccess(access: SettingsAccess): SettingsAccess {
     configureBoard: access.orgAdmin,
     editWip: access.orgAdmin,
     configureProject: false,
+    manageInitiatives: access.manageInitiatives,
   };
 }
 

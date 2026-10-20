@@ -1,4 +1,5 @@
 import { ModuleTile, type PageCrumb, type PageHeaderProps, type PageTab } from '@bemmoly/core-web';
+import { useInitiative } from '../hooks/initiatives.ts';
 import type { ModuleManifest } from '@bemmoly/shared';
 import type { Project } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
@@ -118,7 +119,10 @@ export function useWorkFrame(
   rest: readonly string[],
 ): WorkFrame {
   const issueKey = name === 'issue' ? pathKey?.toUpperCase() : undefined;
-  const { project, projects } = useProject(issueKey ? issueKey.split('-')[0] : pathKey);
+  const { project, projects } = useProject(
+    issueKey ? issueKey.split('-')[0] : name === 'initiatives' ? undefined : pathKey,
+  );
+  const initiativeName = useInitiative(name === 'initiatives' ? pathKey : undefined).data?.name;
   const work: PageCrumb = {
     label: manifest.name ?? 'Work',
     path: workPaths.projects(),
@@ -145,6 +149,26 @@ export function useWorkFrame(
       },
       title: ['Roadmap', 'All projects'],
     };
+  }
+  if (name === 'initiatives') {
+    const list: PageCrumb = {
+      label: 'Initiatives',
+      path: workPaths.initiatives(),
+      icon: <Icon name="target" size={15} />,
+    };
+    return pathKey
+      ? {
+          layout: 'full',
+          header: {
+            crumbs: [
+              work,
+              list,
+              { label: initiativeName ?? '', path: workPaths.initiatives(pathKey) },
+            ],
+          },
+          title: [initiativeName ?? 'Initiative', 'Initiatives'],
+        }
+      : { layout: 'contained', header: { crumbs: [work, list] }, title: ['Initiatives'] };
   }
   if (!isProjectScreen(name)) {
     return {

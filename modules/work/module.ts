@@ -38,6 +38,12 @@ export default defineModule({
     links: [
       { id: 'work.all-projects', label: 'All projects', path: '/work/projects', icon: 'layers' },
       { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
+      {
+        id: 'work.initiatives',
+        label: 'Initiatives',
+        path: '/work/initiatives',
+        icon: 'target',
+      },
     ],
     primary: [{ id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' }],
     add: { create: 'work.create-project', label: 'New project' },
@@ -77,6 +83,13 @@ export default defineModule({
       placement: 'command',
       icon: 'roadmap',
       keys: 'G R',
+    });
+    ctx.navigation.add({
+      id: 'work.initiatives',
+      label: 'Initiatives',
+      path: '/work/initiatives',
+      placement: 'command',
+      icon: 'target',
     });
     ctx.navigation.add({
       id: 'work.pairing',

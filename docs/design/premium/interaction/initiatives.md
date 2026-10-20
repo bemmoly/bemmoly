@@ -48,4 +48,4 @@ of the Roadmap (↑ ↓ J K, ← →, F, T, W M Q, Enter, Esc); none is new or g
   drags and keys.
 - At risk counts forecasts "At risk" and "Late"; date conflicts are counted on their own,
   because a conflict can hold up an epic that is still on track.
-- Group by team is the program view's default, since a program is read team by team.
+- The timeline groups by project, as the all-projects Roadmap does; Team is one click away.

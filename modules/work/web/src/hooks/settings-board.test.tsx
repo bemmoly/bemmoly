@@ -191,22 +191,31 @@ describe('useSettingsAccess', () => {
       configureBoard: false,
       editWip: true,
       configureProject: false,
+      manageInitiatives: false,
     });
     expect(orgDefaultsAccess(result.current)).toEqual({
       orgAdmin: false,
       configureBoard: false,
       editWip: false,
       configureProject: false,
+      manageInitiatives: false,
     });
   });
 
   it('gives a workspace admin the org defaults, never a project method', () => {
-    const admin = { orgAdmin: true, configureBoard: true, editWip: true, configureProject: true };
+    const admin = {
+      orgAdmin: true,
+      configureBoard: true,
+      editWip: true,
+      configureProject: true,
+      manageInitiatives: true,
+    };
     expect(orgDefaultsAccess(admin)).toEqual({
       orgAdmin: true,
       configureBoard: true,
       editWip: true,
       configureProject: false,
+      manageInitiatives: true,
     });
   });
 });

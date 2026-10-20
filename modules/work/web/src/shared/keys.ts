@@ -25,6 +25,10 @@ export const workKeys = {
   /** Every cached roadmap, whatever its projects or team. */
   roadmaps: () => [...queryKeys.work(), 'roadmap'] as const,
   roadmap: (query: RoadmapQueryInput) => [...workKeys.roadmaps(), query] as const,
+  /** Every cached initiative list and initiative. */
+  initiatives: () => [...queryKeys.work(), 'initiatives'] as const,
+  initiativeList: (archived: boolean) => [...workKeys.initiatives(), 'list', archived] as const,
+  initiative: (id: string) => [...workKeys.initiatives(), 'one', id] as const,
   pairing: (projectKey: string, range: string) =>
     [...queryKeys.work(), 'pairing', projectKey, range] as const,
   sprintReport: (sprintId: string) => [...queryKeys.work(), 'sprint-report', sprintId] as const,
