@@ -8,5 +8,6 @@ export function discoveryRoutes(controller: DiscoveryController): FastifyPluginA
     app.post('/discovery/acceptances', async (request, reply) => controller.accept(request, reply));
     app.post('/discovery/dismissals', async (request, reply) => controller.dismiss(request, reply));
     app.post('/discovery/scans', async (request, reply) => controller.scan(request, reply));
+    app.get('/discovery/status', async (request) => controller.status(request));
   };
 }

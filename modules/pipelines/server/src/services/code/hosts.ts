@@ -1,4 +1,4 @@
-import type { CodeHostClient, CodeHostDirectory } from '@bemmoly/core';
+import type { CodeHostClient, CodeHostDirectory, CodeHostRepository } from '@bemmoly/core';
 import { createTokenBucket, type HostPriority, type TokenBucket } from './rate.ts';
 
 /*
@@ -10,6 +10,8 @@ import { createTokenBucket, type HostPriority, type TokenBucket } from './rate.t
 export interface PipelinesCodeHosts {
   /** A client for the host covering `repository`, or null when none is connected. */
   client(repository: string, priority: HostPriority): Promise<CodeHostClient | null>;
+  /** Every repository the connected hosts let Pipelines read. */
+  repositories(): Promise<CodeHostRepository[]>;
 }
 
 const METHODS = [
@@ -38,5 +40,7 @@ export function createPipelinesCodeHosts(
       }
       return metered;
     },
+    // A sweep's listing is a page per hundred repositories, a few times an hour: unmetered.
+    repositories: () => directory.repositories(),
   };
 }

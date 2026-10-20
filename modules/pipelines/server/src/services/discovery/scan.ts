@@ -73,7 +73,8 @@ export async function scanRepository(
       delete from pipeline_discovery_proposals
       where repository_id = ${repo.id}::uuid and state = 'proposed'
         and not (path = any(${paths}::text[]))`;
-    await tx`update pipeline_repositories set discovered_at = now(), updated_at = now()
+    await tx`update pipeline_repositories
+      set discovered_at = now(), discovery_error = null, updated_at = now()
       where id = ${repo.id}::uuid`;
     return { repository: repo.full_name, proposed: detected.length, removed: removed.count };
   });

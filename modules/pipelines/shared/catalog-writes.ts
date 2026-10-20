@@ -217,7 +217,6 @@ export const acceptProposalsResultSchema = z.object({
 
 export const dismissProposalsBodySchema = z.object({ ids: z.array(idSchema).min(1).max(500) });
 export const dismissProposalsResultSchema = z.object({ dismissed: z.number().int() });
-export const scanRepositoryBodySchema = z.object({ repository: repositoryInputSchema });
 export const scanResultSchema = z.object({
   repository: z.string(),
   /** Deployables found and proposed (or still proposed) in this scan. */
@@ -249,5 +248,4 @@ export type ProposalsPage = z.infer<typeof proposalsPageSchema>;
 export type AcceptProposalsBody = z.infer<typeof acceptProposalsBodySchema>;
 export type AcceptProposalsResult = z.infer<typeof acceptProposalsResultSchema>;
 export type DismissProposalsBody = z.infer<typeof dismissProposalsBodySchema>;
-export type ScanRepositoryBody = z.infer<typeof scanRepositoryBodySchema>;
 export type ScanResultBody = z.infer<typeof scanResultSchema>;

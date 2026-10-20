@@ -1,4 +1,4 @@
-import { decodeCursor, toPage, type RequestContext } from '@bemmoly/core';
+import { decodeCursor, toPage, type RequestContext, type SendJobOptions } from '@bemmoly/core';
 import { ProviderError } from '@bemmoly/shared';
 import type {
   AcceptProposalsBody,
@@ -6,8 +6,8 @@ import type {
   DismissProposalsBody,
   ListProposalsQuery,
   ProposalsPage,
-  RepositoryInput,
 } from '../../../../shared/catalog-writes.ts';
+import type { DiscoveryStatus } from '../../../../shared/discovery.ts';
 import type { ProposalRow } from '../../models/catalog-writes.ts';
 import type { CatalogWritesService } from '../catalog-writes/index.ts';
 import type { RepositoryTree } from '../code/repository-reader.ts';
@@ -15,46 +15,108 @@ import { requireAccess, requireDatabase, type PipelinesServiceDeps } from '../de
 import { acceptProposals } from './accept.ts';
 import { PROPOSAL_FROM, PROPOSAL_SELECT, toProposal } from './present.ts';
 import { scanRepository, type ScanResult } from './scan.ts';
+import {
+  discoveryStatus,
+  recordScanFailure,
+  sweepRepositories,
+  type RepositoryRef,
+  type SweepResult,
+} from './sweep.ts';
 
 /*
  * Discovery (architecture §9): a scan per repository proposes applications, a Platform
- * admin accepts them in bulk or dismisses them. Scans run from the job below (on install,
- * repository events and nightly, which the code host wiring enqueues) or on request.
+ * admin accepts them in bulk or dismisses them. A sweep finds the repositories by itself
+ * (every few minutes for new ones, nightly for all, or when asked) and queues their scans
+ * as the job below; repository events queue one too.
  */
 
 export const DISCOVERY_JOB = 'pipelines.discover-repository';
+export const DISCOVERY_SWEEP_JOB = 'pipelines.discovery-sweep';
 
 export type { ScanResult } from './scan.ts';
+export type { SweepResult } from './sweep.ts';
 export { detectApplications, type DetectedApplication } from './detect.ts';
 
-type RepositoryRef = Pick<RepositoryInput, 'fullName'> & Partial<RepositoryInput>;
+export interface DiscoveryDeps extends PipelinesServiceDeps {
+  /** Queues scans and sweeps as jobs; without it (tests) they run in the call. */
+  sendJob?: (
+    name: string,
+    payload: Record<string, unknown>,
+    options?: SendJobOptions,
+  ) => Promise<unknown>;
+}
 
-export function createDiscoveryService(deps: PipelinesServiceDeps, writes: CatalogWritesService) {
+export function createDiscoveryService(deps: DiscoveryDeps, writes: CatalogWritesService) {
   const sql = () => requireDatabase(deps);
   const access = requireAccess(deps);
 
   /** Scans one repository; `tree` given by tests and callers that already hold it. */
   async function discover(repository: RepositoryRef, tree?: RepositoryTree): Promise<ScanResult> {
-    const read =
-      tree ??
-      (await writes.ports.repositories.tree(
-        repository.fullName,
-        repository.defaultBranch ?? 'main',
-      ));
-    if (!read) {
-      throw new ProviderError(
-        `Pipelines cannot read ${repository.fullName} yet. Connect the code host in Settings, then scan again.`,
+    try {
+      const read =
+        tree ??
+        (await writes.ports.repositories.tree(
+          repository.fullName,
+          repository.defaultBranch ?? 'main',
+        ));
+      if (!read) {
+        throw new ProviderError(
+          `Pipelines cannot read ${repository.fullName} yet. Connect the code host in Settings, then scan again.`,
+        );
+      }
+      return await scanRepository(sql(), repository, read);
+    } catch (error) {
+      await recordScanFailure(sql(), repository, error);
+      throw error;
+    }
+  }
+
+  /** Asks for each repository's scan: a job apiece, keyed by when it was asked for. */
+  async function request(repositories: RepositoryRef[], requestedAt: Date): Promise<void> {
+    for (const repository of repositories) {
+      if (!deps.sendJob) {
+        // A failure is kept on the repository's row, for the status; the others still scan.
+        await discover(repository).catch(() => undefined);
+        continue;
+      }
+      await deps.sendJob(
+        DISCOVERY_JOB,
+        { repository },
+        {
+          idempotencyKey: `discover:${repository.fullName.toLowerCase()}:${requestedAt.toISOString()}`,
+        },
       );
     }
-    return scanRepository(sql(), repository, read);
+  }
+
+  async function sweep(rescan: boolean): Promise<SweepResult> {
+    return sweepRepositories(sql(), writes.ports.repositories, rescan, request);
   }
 
   return {
     discover,
+    sweep,
 
-    async scan(ctx: RequestContext, repository: RepositoryRef): Promise<ScanResult> {
+    /** One repository's scan now, or with none a sweep of all of them again, queued. */
+    async scan(
+      ctx: RequestContext,
+      repository: RepositoryRef | undefined,
+    ): Promise<ScanResult | { queued: true }> {
       await access.authorizeAction(ctx, 'platform', {});
-      return discover(repository);
+      if (repository) return discover(repository);
+      if (deps.sendJob) {
+        await deps.sendJob(
+          DISCOVERY_SWEEP_JOB,
+          { rescan: true },
+          { idempotencyKey: `sweep:${Math.floor(Date.now() / 10_000)}` },
+        );
+      } else await sweep(true);
+      return { queued: true };
+    },
+
+    async status(ctx: RequestContext): Promise<DiscoveryStatus> {
+      await access.authorizeAction(ctx, 'view', {});
+      return discoveryStatus(sql());
     },
 
     async list(ctx: RequestContext, query: ListProposalsQuery): Promise<ProposalsPage> {
