@@ -7,7 +7,7 @@ import { issueActivityRoutes, type IssuesState } from './work-issue-activity.ts'
 import { issueArchiveRoutes } from './work-issue-archive.ts';
 import { mockEpicColor } from './work-backlog-state.ts';
 import { issueDetail, statuses } from './work-issue-detail.ts';
-import { cardFields, issueStore, nextKey } from './work-issue-store.ts';
+import { cardFields, issueStore, nextKey, withEpicOwner } from './work-issue-store.ts';
 import { mergeCustomFields, touch, workState, type Row } from './work-state.ts';
 
 /*
@@ -85,7 +85,7 @@ function record(db: MockDb, issue: Row, field: string, from: unknown, to: unknow
 }
 
 function createIssue(request: MockRequest, db: MockDb) {
-  const body = bodyOf<Row>(request);
+  const body = withEpicOwner(db, null, bodyOf<Row>(request));
   const project = projectOf(db, String(body['projectId'] ?? ''));
   if (!project) return invalid('projectId', 'Choose a project.');
   const title = String(body['title'] ?? '').trim();
@@ -263,7 +263,7 @@ const issueRoutes: MockRoute[] = [
     handle: (request, db) => {
       const issue = issueOf(db, of(request, 'key'));
       if (!issue) return notFound('Issue');
-      const body = bodyOf<Row>(request);
+      const body = withEpicOwner(db, issue, bodyOf<Row>(request));
       if (body['title'] !== undefined && !String(body['title']).trim()) {
         return invalid('title', 'Give the issue a title.');
       }

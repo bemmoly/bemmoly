@@ -67,6 +67,31 @@ describe('the shared Work issue store', () => {
     expect(boardCards(api).map((card) => card.key)).toContain(created.key);
   });
 
+  it("assigns an issue joining an epic to the epic's owner, unless someone is on it", () => {
+    const api = createMockApi('ready');
+    const owner = '01900000-0000-7000-8000-0000000000aa';
+    const create = (body: Record<string, unknown>) =>
+      api.dispatch('POST', `${W}/issues`, { projectId: WORK_IDS.project, ...body })
+        ?.body as Issue & { assigneeId: string | null };
+    const epic = create({
+      typeId: TYPE_IDS['epic'],
+      title: 'Billing',
+      customFields: { owner },
+    });
+    const joined = create({ typeId: TYPE_IDS['task'], title: 'Invoices', parentId: epic.id });
+    expect(joined.assigneeId).toBe(owner);
+    const loose = create({ typeId: TYPE_IDS['task'], title: 'Refunds' });
+    const moved = api.dispatch('PATCH', `${W}/issues/${loose.key}`, { parentId: epic.id })
+      ?.body as { assigneeId: string | null };
+    expect(moved.assigneeId).toBe(owner);
+    const someone = '01900000-0000-7000-8000-0000000000bb';
+    const taken = create({ typeId: TYPE_IDS['task'], title: 'Tax', assigneeId: someone });
+    const kept = api.dispatch('PATCH', `${W}/issues/${taken.key}`, { parentId: epic.id })?.body as {
+      assigneeId: string | null;
+    };
+    expect(kept.assigneeId).toBe(someone);
+  });
+
   it('shows a status change made on the issue page on the board and in the backlog', () => {
     const api = createMockApi('ready');
     const card = boardCards(api).find((entry) => entry.key === 'PLT-204')!;

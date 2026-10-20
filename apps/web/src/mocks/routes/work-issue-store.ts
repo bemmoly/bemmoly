@@ -83,3 +83,18 @@ export function removeFrom<T>(rows: T[], row: T): void {
   const index = rows.indexOf(row);
   if (index >= 0) rows.splice(index, 1);
 }
+
+/**
+ * An issue joining an epic with nobody on it takes the epic's Owner field, as the server does; an
+ * assignee named in the same request wins.
+ */
+export function withEpicOwner(db: MockDb, current: Row | null, body: Partial<Row>): Partial<Row> {
+  const parentId = body['parentId'];
+  if (!parentId || parentId === current?.['parentId'] || body['assigneeId'] !== undefined) {
+    return body;
+  }
+  if (current?.['assigneeId']) return body;
+  const epic = issueStore(db).issues.find((row) => row.id === parentId);
+  const owner = (epic?.['customFields'] as Row | undefined)?.['owner'];
+  return typeof owner === 'string' ? { ...body, assigneeId: owner } : body;
+}
