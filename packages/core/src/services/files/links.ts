@@ -64,8 +64,12 @@ const actorOf = (row: LinkRow): Actor => ({
 /** Targets are namespaced by module: "docs.page" belongs to docs. */
 const moduleOf = (kind: string) => kind.slice(0, kind.indexOf('.'));
 
-const linkUrl = (publicUrl: string, token: string) =>
-  `${publicUrl.replace(/\/+$/, '')}/api/v1/upload-links/${token}`;
+/** The public address may end in slashes; trimmed by hand, since a regex here is quadratic. */
+function linkUrl(publicUrl: string, token: string): string {
+  let end = publicUrl.length;
+  while (end > 0 && publicUrl[end - 1] === '/') end -= 1;
+  return `${publicUrl.slice(0, end)}/api/v1/upload-links/${token}`;
+}
 
 export function createUploadLinks(deps: UploadLinkDeps) {
   /**
