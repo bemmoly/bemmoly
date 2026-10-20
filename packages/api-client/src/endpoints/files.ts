@@ -3,11 +3,11 @@ import type { Http } from '../http.ts';
 import type { UploadProgressOptions } from '../xhr-upload.ts';
 import { validated } from './validate.ts';
 
-/** Files people add to a module's content (images in a page). */
+/** Files people add to a module's content (images, PDFs and HTML in a page). */
 export function filesEndpoints(http: Http) {
   return {
     files: {
-      /** Stores one image for the target; the answer's url is what content keeps. */
+      /** Stores one file for the target; the answer's url is what content keeps. */
       upload: async (
         file: Blob,
         target: { target: string; targetId: string; name?: string },
