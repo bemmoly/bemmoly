@@ -8,7 +8,7 @@ export { fromAdf, type AdfNode, type AdfOptions } from './from-adf.ts';
 export { fromJiraWiki, type JiraWikiOptions } from './from-jira-wiki.ts';
 export { asFileBlocks, imageSources, type StoredDocument } from './file-blocks.ts';
 export { fromMarkdown } from './from-markdown.ts';
-export { fitBase, fromMarkdownBase } from './markdown-base.ts';
+export { fitBase, fromMarkdownBase, type FitOptions } from './markdown-base.ts';
 export type { ExportOptions } from './options.ts';
 export {
   buildToc,
