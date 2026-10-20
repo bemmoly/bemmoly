@@ -114,7 +114,7 @@ export {
   type SettingsRequirement,
   type SettingsViewer,
 } from './settings/sections.ts';
-export { AppFrame, NARROW, PHONE, type AppFrameProps } from './shell/app-frame.tsx';
+export { AppFrame, NARROW, PHONE, SIDEBAR_WIDTH, type AppFrameProps } from './shell/app-frame.tsx';
 export { BottomBar, type BottomBarItem } from './shell/bottom-bar.tsx';
 export {
   CREATE_PARAM,

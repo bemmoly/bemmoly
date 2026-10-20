@@ -64,6 +64,41 @@ describe('the app frame', () => {
     expect(screen.getByText('bottom bar')).toBeTruthy();
     expect(screen.queryByText('sidebar')).toBeNull();
   });
+
+  it('lets the person set the docked sidebar’s width from its edge, within bounds', () => {
+    widths(false, false);
+    const onWidthChange = vi.fn();
+    const drawWidth = (collapsed: boolean, width: number) =>
+      render(
+        <AppFrame
+          pathname="/"
+          navigate={() => undefined}
+          collapsed={collapsed}
+          onCollapsedChange={() => undefined}
+          width={width}
+          onWidthChange={onWidthChange}
+          sidebar={<p>sidebar</p>}
+        >
+          <p>page</p>
+        </AppFrame>,
+      );
+    const { container, unmount } = drawWidth(false, 300);
+    expect(container.querySelector('aside')?.style.width).toBe('300px');
+    const handle = screen.getByRole('separator', { name: 'Resize sidebar' });
+    expect(handle.getAttribute('aria-valuenow')).toBe('300');
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(onWidthChange).toHaveBeenLastCalledWith(316);
+    fireEvent.keyDown(handle, { key: 'End' });
+    expect(onWidthChange).toHaveBeenLastCalledWith(420);
+    fireEvent.doubleClick(handle);
+    expect(onWidthChange).toHaveBeenLastCalledWith(240);
+    unmount();
+    // A stored width out of bounds is drawn within them; the rail has no handle.
+    expect(drawWidth(false, 9000).container.querySelector('aside')?.style.width).toBe('420px');
+    cleanup();
+    drawWidth(true, 300);
+    expect(screen.queryByRole('separator')).toBeNull();
+  });
 });
 
 describe('the page header', () => {

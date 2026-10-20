@@ -6,6 +6,7 @@ import {
   knownIcon,
   useFrame,
   useGlobalKeys,
+  SIDEBAR_WIDTH,
   usePreference,
   useT,
 } from '@bemmoly/core-web';
@@ -116,6 +117,7 @@ export function AppShell() {
   const shortcutsOpened = useOpenedOnce(useUiStore((state) => state.shortcutsOpen));
   const aboutOpened = useOpenedOnce(useUiStore((state) => state.aboutOpen));
   const [collapsed, setCollapsed] = usePreference('sidebar.collapsed', false);
+  const [sidebarWidth, setSidebarWidth] = usePreference('sidebar.width', SIDEBAR_WIDTH);
   const settings = pathname === '/settings' || pathname.startsWith('/settings/');
   const go = useCallback((path: string) => void navigate({ to: path }), [navigate]);
   useRealtimeSync(true);
@@ -143,6 +145,8 @@ export function AppShell() {
       navigate={go}
       collapsed={collapsed}
       onCollapsedChange={setCollapsed}
+      width={sidebarWidth}
+      onWidthChange={setSidebarWidth}
       sidebar={
         settings ? (
           <Suspense fallback={null}>
