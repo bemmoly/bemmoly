@@ -101,6 +101,21 @@ describe('initiatives against a real database', () => {
       }),
     ]);
 
+    // Quinn manages initiatives but cannot open Platform: its epic answers as not linked.
+    await expect(
+      services.initiatives.unlinkEpic(planning.ctx(quinn), created.id, build.id),
+    ).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'The epic is not in this initiative',
+    });
+    await expect(
+      services.initiatives.unlinkEpic(planning.ctx(quinn), created.id, card.id),
+    ).rejects.toMatchObject({
+      name: 'NotFoundError',
+      message: 'The epic is not in this initiative',
+    });
+    expect((await services.initiatives.get(as, created.id)).epics.total).toBe(2);
+
     await services.initiatives.unlinkEpic(as, created.id, verify.id);
     const archived = await services.initiatives.archive(as, created.id);
     expect(archived.archivedAt).not.toBeNull();

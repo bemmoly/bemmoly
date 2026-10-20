@@ -238,6 +238,13 @@ export function createInitiativesService(deps: InitiativesServiceDeps) {
       if (initiative.archived_at) {
         throw new ConflictError('Unarchive the initiative before changing its epics');
       }
+      // An epic the person cannot open answers as if it were not linked, so nobody can probe
+      // which hidden epics an initiative holds.
+      const [ref] = await loadEpicRefs(sql, [epicId]);
+      const visible =
+        ref !== undefined &&
+        (await ctx.authz.can(ctx.actor, 'work.issue.view', projectResource(ref.project_id)));
+      if (!visible) throw new NotFoundError('The epic is not in this initiative');
       const removed = await sql<{ epic_id: string }[]>`
         delete from initiative_epics where initiative_id = ${id} and epic_id = ${epicId}
         returning epic_id`;
