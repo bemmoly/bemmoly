@@ -89,16 +89,40 @@ function sprintReport(db: MockDb, sprint: Row) {
     (row) => {
       const pick = seeded(`velocity-${row.id}`);
       const committed = 18 + Math.round(pick() * 12);
+      const committedIssues = 6 + Math.round(pick() * 4);
+      const addedIssues = Math.round(pick() * 3);
+      const addedPoints = addedIssues * 2;
+      const carriedOverIssues = Math.round(pick() * 3);
+      const completed = Math.round(committed * (0.7 + pick() * 0.3));
       return {
         sprintId: row.id,
         name: String(row['name']),
         committedPoints: committed,
-        completedPoints: Math.round(committed * (0.7 + pick() * 0.3)),
+        completedPoints: completed,
+        committedIssues,
+        completedIssues: Math.round(committedIssues * (completed / committed)),
+        scopeIssues: committedIssues + addedIssues,
+        scopePoints: committed + addedPoints,
+        carriedOverIssues,
+        carriedOverPoints: carriedOverIssues * 3,
+        addedIssues,
+        addedPoints,
       };
     },
   );
+  const carried = members.filter((issue) => !added.includes(issue)).slice(0, closed ? 1 : 2);
+  const held = [...finished, ...open];
+  const sum = (list: Row[]) => list.reduce((total, issue) => total + points(issue), 0);
   return {
     sprint,
+    changes: {
+      scopeIssues: held.length,
+      scopePoints: sum(held),
+      carriedOverIssues: carried.length,
+      carriedOverPoints: sum(carried),
+      addedIssues: added.length,
+      addedPoints,
+    },
     burndown: burnup.map((point) => ({
       date: point.date,
       remainingPoints: Math.max(0, point.scopePoints - point.completedPoints),
@@ -110,6 +134,7 @@ function sprintReport(db: MockDb, sprint: Row) {
       notCompleted: open.map(brief),
       added: added.map(brief),
       removed: removed.map(brief),
+      carriedOver: carried.map(brief),
     },
   };
 }

@@ -66,12 +66,23 @@ const REPORT = {
     { date: '2026-10-10', scopePoints: 8, completedPoints: 0 },
     { date: '2026-10-11', scopePoints: 10, completedPoints: 5 },
   ],
-  velocity: [{ sprintId: CLOSED.id, name: 'Sprint 14', committedPoints: 12, completedPoints: 9 }],
+  velocity: [
+    {
+      ...{ sprintId: CLOSED.id, name: 'Sprint 14', committedPoints: 12, completedPoints: 9 },
+      ...{ committedIssues: 4, completedIssues: 3, scopeIssues: 5, scopePoints: 15 },
+      ...{ carriedOverIssues: 4, carriedOverPoints: 9, addedIssues: 1, addedPoints: 3 },
+    },
+  ],
   scope: {
     completed: [issue(1, 'Session store migration', 5)],
     notCompleted: [issue(2, 'Billing v2', 3), issue(3, 'Rate limits', 2)],
     added: [issue(3, 'Rate limits', 2)],
     removed: [],
+    carriedOver: [issue(2, 'Billing v2', 3)],
+  },
+  changes: {
+    ...{ scopeIssues: 3, scopePoints: 10, carriedOverIssues: 1, carriedOverPoints: 3 },
+    ...{ addedIssues: 1, addedPoints: 2 },
   },
 };
 
@@ -212,6 +223,11 @@ describe('Reports screen', () => {
     const added = screen.getByRole('region', { name: /Added after the start/ });
     expect(within(added).getByRole('button', { name: /PLT-3 Rate limits/ })).toBeTruthy();
     expect(screen.getByText('No issues left the sprint.')).toBeTruthy();
+    const carried = screen.getByRole('region', { name: /Carried over/ });
+    expect(within(carried).getByRole('button', { name: /PLT-2 Billing v2/ })).toBeTruthy();
+    expect(screen.getByText('4 issues, 9 pts')).toBeTruthy();
+    expect(screen.getByText('33% of issues, 20% of points')).toBeTruthy();
+    expect(screen.getByText('20% of issues, 20% of pts')).toBeTruthy();
     expect(screen.getByText('2 created, 2 resolved')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Time tracking' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Statistics' })).toBeTruthy();

@@ -50,3 +50,11 @@ export function runningTotals(days: readonly FlowReportDay[]) {
 }
 
 export const points = (value: number | null) => (value === null ? 'Unestimated' : `${value} pts`);
+
+/** A part of a whole as a rounded percentage; nothing of nothing is 0%. */
+export const share = (part: number, whole: number) =>
+  `${whole > 0 ? Math.round((part / whole) * 100) : 0}%`;
+
+/** "2 issues, 7 pts". */
+export const issuesAndPoints = (issues: number, value: number) =>
+  `${issues} ${issues === 1 ? 'issue' : 'issues'}, ${value} pts`;
