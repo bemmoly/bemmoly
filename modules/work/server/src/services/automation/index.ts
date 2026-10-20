@@ -9,6 +9,7 @@ import { insertRun, ruleById, runById, toRun } from './rows.ts';
 import { authorizeRules, createRuleStore } from './rules.ts';
 import { createRunner, postActionPayloadSchema, queuedRunPayloadSchema } from './runner.ts';
 import { queueDueRuns } from './schedule.ts';
+import { queueStayRuns } from './stays.ts';
 import { TRIGGER_EVENT_KINDS } from './triggers/index.ts';
 
 export type { AutomationDeps, AutomationServices } from './contract.ts';
@@ -84,7 +85,12 @@ export function createAutomationService(deps: AutomationDeps) {
       return execute(runId, requestId);
     },
 
-    tick: (now?: Date) => queueDueRuns(sql(), engine, now ?? deps.now?.() ?? new Date()),
+    /** The scheduler's minute: cron rules that fired, then issues overdue in a status. */
+    async tick(now?: Date): Promise<number> {
+      const at = now ?? deps.now?.() ?? new Date();
+      const scheduled = await queueDueRuns(sql(), engine, at);
+      return scheduled + (await queueStayRuns(deps, sql(), engine, at));
+    },
   };
 }
 

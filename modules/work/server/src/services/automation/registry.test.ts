@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type { IssueEventPayload } from '../issues/events.ts';
 import { findAction } from './actions/index.ts';
 import { chainOf } from './engine.ts';
-import { findTrigger, lastFireTime, SCHEDULED_TRIGGERS, triggersFor } from './triggers/index.ts';
+import {
+  findTrigger,
+  lastFireTime,
+  SCHEDULED_TRIGGERS,
+  STAY_TRIGGERS,
+  triggersFor,
+} from './triggers/index.ts';
 import { assertValidRule } from './validate.ts';
 
 const payload = (extra: Partial<IssueEventPayload> = {}): IssueEventPayload => ({
@@ -78,5 +84,21 @@ describe('the automation registries', () => {
         actions: [{ name: 'transition', args: { status: 'Done' } }],
       }),
     ).not.toThrow();
+  });
+
+  it('reads a time-in-status trigger as a status and a span, and listens to no event', () => {
+    const trigger = findTrigger('time_in_status');
+    expect(STAY_TRIGGERS).toEqual(['time_in_status']);
+    expect(SCHEDULED_TRIGGERS).not.toContain('time_in_status');
+    expect(trigger?.events).toEqual([]);
+    const args = trigger!.params.parse({ status: 'Verification', amount: 5, unit: 'days' });
+    expect(trigger?.stay?.(args)).toEqual({ status: 'Verification', ms: 5 * 24 * 3_600_000 });
+    expect(trigger?.stay?.({ status: 'Review', amount: 3, unit: 'hours' })?.ms).toBe(3 * 3_600_000);
+    expect(trigger?.params.safeParse({ status: 'x', amount: 1.5, unit: 'days' }).success).toBe(
+      false,
+    );
+    expect(trigger?.params.safeParse({ status: 'x', amount: 2, unit: 'weeks' }).success).toBe(
+      false,
+    );
   });
 });

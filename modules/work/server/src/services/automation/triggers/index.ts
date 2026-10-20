@@ -4,6 +4,7 @@ import { fieldChanged } from './field-changed.ts';
 import { issueCreated } from './issue-created.ts';
 import { issueTransitioned } from './issue-transitioned.ts';
 import { scheduled } from './scheduled.ts';
+import { timeInStatus } from './time-in-status.ts';
 
 /*
  * Every trigger a rule can start from. Adding one is its file plus a line here; the rule
@@ -16,6 +17,7 @@ const TRIGGERS: readonly TriggerDefinition<any>[] = [
   issueTransitioned,
   commentAdded,
   scheduled,
+  timeInStatus,
 ];
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -37,6 +39,10 @@ export const TRIGGER_EVENT_KINDS: readonly string[] = [
 
 export const SCHEDULED_TRIGGERS: readonly string[] = TRIGGERS.filter(
   (entry) => entry.cron !== undefined,
+).map((entry) => entry.name);
+
+export const STAY_TRIGGERS: readonly string[] = TRIGGERS.filter(
+  (entry) => entry.stay !== undefined,
 ).map((entry) => entry.name);
 
 export const allTriggers = (): readonly TriggerDefinition[] => TRIGGERS;

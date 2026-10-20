@@ -13,6 +13,7 @@ export const AUTOMATION_TRIGGERS = {
   issueTransitioned: 'issue_transitioned',
   commentAdded: 'comment_added',
   scheduled: 'scheduled',
+  timeInStatus: 'time_in_status',
 } as const;
 
 export const AUTOMATION_ACTIONS = {
@@ -71,6 +72,18 @@ export const scheduledArgsSchema = z.object({
     .string()
     .trim()
     .regex(/^(\S+\s+){4}\S+$/, 'Use a five-field cron expression, e.g. "0 9 * * 1"'),
+});
+
+export const TIME_IN_STATUS_UNITS = ['hours', 'days'] as const;
+
+/**
+ * Fires once per stay, when an issue has been in the status longer than the duration and the
+ * conditions match. The scheduler checks every minute; leaving and coming back starts over.
+ */
+export const timeInStatusArgsSchema = z.object({
+  status: statusNameSchema,
+  amount: z.number().int().min(1).max(10_000),
+  unit: z.enum(TIME_IN_STATUS_UNITS),
 });
 
 /** Fields the set-field action writes; custom fields by key. */
@@ -134,6 +147,7 @@ export const scheduledConditionsSchema = z.array(lqlQuerySchema).min(1);
 export type FieldChangedArgs = z.infer<typeof fieldChangedArgsSchema>;
 export type IssueTransitionedArgs = z.infer<typeof issueTransitionedArgsSchema>;
 export type ScheduledArgs = z.infer<typeof scheduledArgsSchema>;
+export type TimeInStatusArgs = z.infer<typeof timeInStatusArgsSchema>;
 export type SetFieldArgs = z.infer<typeof setFieldArgsSchema>;
 export type TransitionArgs = z.infer<typeof transitionArgsSchema>;
 export type AssignArgs = z.infer<typeof assignArgsSchema>;
