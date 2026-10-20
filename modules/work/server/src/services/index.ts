@@ -14,6 +14,7 @@ import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
 import { createCodeLinksService } from './code-links/index.ts';
 import { createCommentsService } from './comments/index.ts';
+import { createDashboardsService } from './dashboards/index.ts';
 import { createComponentsService } from './components/index.ts';
 import { createFieldsService } from './fields/index.ts';
 import { createFiltersService } from './filters/index.ts';
@@ -29,6 +30,7 @@ import { createMetricsService } from './metrics/index.ts';
 import { createPairingService } from './pairing/index.ts';
 import { createReportsService } from './reports/index.ts';
 import { createTimeTrackingService } from './reports/time-tracking-service.ts';
+import { createQuarterService } from './reports/quarter-service.ts';
 import { createStatsService } from './reports/stats-service.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
@@ -127,6 +129,8 @@ export function createWorkServices(deps: WorkServiceDeps) {
     reports: createReportsService({ ...deps, ...issueDeps }),
     timeTracking: createTimeTrackingService({ ...deps, ...issueDeps }),
     stats: createStatsService(deps),
+    quarter: createQuarterService({ ...deps, ...issueDeps }),
+    dashboards: createDashboardsService(deps),
   };
 }
 
