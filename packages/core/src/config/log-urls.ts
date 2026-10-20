@@ -18,6 +18,9 @@ const WEB_TOKEN_PREFIXES = ['/invitations/', '/password-reset/'];
 /** Web pages an email link opens with the token anywhere after the page's path. */
 const WEB_TOKEN_PAGES = ['/accept-invitation', '/reset-password'];
 
+/** API paths whose next segment is a credential: an upload link's token (ADR 0048). */
+const API_TOKEN_SEGMENTS = ['/upload-links/'];
+
 function tokenPage(path: string): string | undefined {
   return WEB_TOKEN_PAGES.find((page) => path === page || path.startsWith(`${page}/`));
 }
@@ -34,6 +37,15 @@ function redactWebPath(path: string): string | undefined {
 function redactPath(path: string): string {
   const web = redactWebPath(path);
   if (web !== undefined) return web;
+  for (const marker of API_TOKEN_SEGMENTS) {
+    const at = path.indexOf(marker);
+    if (at === -1) continue;
+    const rest = path
+      .slice(at + marker.length)
+      .split('/')
+      .slice(1);
+    return [`${path.slice(0, at + marker.length)}${REDACTED}`, ...rest].join('/');
+  }
   const marker = path.indexOf('/auth/');
   if (marker === -1) return path;
   const head = path.slice(0, marker + '/auth/'.length);

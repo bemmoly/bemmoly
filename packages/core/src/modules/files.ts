@@ -1,5 +1,5 @@
 import type { Readable } from 'node:stream';
-import type { UploadedFile, UploadFileQuery, UploadFileType } from '@bemmoly/shared';
+import type { UploadedFile, UploadFileQuery, UploadFileType, UploadLink } from '@bemmoly/shared';
 import type { RequestContext } from '../services/authz/index.ts';
 
 /** What a person may do with the files of one target: add them, read them, or neither. */
@@ -35,6 +35,11 @@ export interface FileInfo {
   size: number;
 }
 
+/** What a stored file is and what it was uploaded into. */
+export interface FileDetails extends FileInfo {
+  target: { kind: string; id: string };
+}
+
 /** A stored file's bytes and what they are, as the kernel serves them. */
 export interface FileContent extends FileInfo {
   body: Readable;
@@ -46,8 +51,13 @@ export interface FileContent extends FileInfo {
  */
 export interface FileStoreAccess {
   read(ctx: RequestContext, fileId: string): Promise<FileContent>;
-  stat(ctx: RequestContext, fileId: string): Promise<FileInfo>;
+  stat(ctx: RequestContext, fileId: string): Promise<FileDetails>;
   upload(ctx: RequestContext, query: UploadFileQuery, body: Buffer): Promise<UploadedFile>;
+  /**
+   * A single-use link that takes one file's bytes for the target as this person, for a file
+   * too large to send through a tool call (ADR 0048); checked like an upload, now and on use.
+   */
+  createUploadLink(ctx: RequestContext, query: UploadFileQuery): Promise<UploadLink>;
 }
 
 /** What a module sees as `ctx.files`; it uploads only into its own targets. */

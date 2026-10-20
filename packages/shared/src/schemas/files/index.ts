@@ -47,3 +47,20 @@ export const uploadedFileSchema = z.object({
   size: z.number().int().nonnegative(),
 });
 export type UploadedFile = z.output<typeof uploadedFileSchema>;
+
+/** How long an upload link works, from when an MCP tool hands it out (ADR 0048). */
+export const UPLOAD_LINK_TTL_MINUTES = 15;
+
+/** PUT /api/v1/upload-links/:token: the token is the credential; the body is the bytes. */
+export const uploadLinkParamsSchema = z.object({
+  token: z.string().regex(/^bmu_[A-Za-z0-9_-]{43}$/),
+});
+
+/** A single-use address that takes one file's bytes for one target, as the person who asked. */
+export const uploadLinkSchema = z.object({
+  url: z.url(),
+  method: z.literal('PUT'),
+  expiresAt: z.iso.datetime({ offset: true }),
+  maxBytes: z.number().int().positive(),
+});
+export type UploadLink = z.output<typeof uploadLinkSchema>;

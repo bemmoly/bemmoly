@@ -14,7 +14,7 @@ import type { ObjectStore } from '../../contracts/object-store.ts';
 import {
   fileUrl,
   type FileAccess,
-  type FileInfo,
+  type FileDetails,
   type FileContent,
   type FileTargetDefinition,
 } from '../../modules/files.ts';
@@ -22,6 +22,7 @@ import type { FromModule } from '../../modules/registry.ts';
 import type { RequestContext } from '../authz/index.ts';
 import { putContent } from '../storage/index.ts';
 import { cleanupFiles } from './cleanup.ts';
+import { createUploadLinks } from './links.ts';
 import { safeFileName, sniffFile, type SniffedFile } from './sniff.ts';
 
 /** Under the backed-up attachments folder, apart from other attachments' keys. */
@@ -37,6 +38,8 @@ export interface FilesServiceDeps {
   /** Live enabled state; a disabled module's files are neither written nor served. */
   isEnabled?: (moduleId: string) => boolean;
   maxBytes: number;
+  /** The install's public address, which upload links point at. */
+  publicUrl: string;
   logger: Logger;
 }
 
@@ -122,59 +125,99 @@ export function createFilesService(deps: FilesServiceDeps) {
     return row;
   }
 
+  async function assertWritable(ctx: RequestContext, kind: string, targetId: string) {
+    if ((await access(ctx, kind, targetId)) !== 'write') {
+      throw new ForbiddenError('Only people who can edit this may add files to it');
+    }
+  }
+
+  async function upload(
+    ctx: RequestContext,
+    query: UploadFileQuery,
+    body: Buffer,
+  ): Promise<UploadedFile> {
+    await assertWritable(ctx, query.target, query.targetId);
+    if (body.byteLength === 0) throw new ValidationError('The file is empty');
+    if (body.byteLength > deps.maxBytes) {
+      throw new ValidationError('The file is too large', {
+        details: { reason: 'too_large', maxBytes: deps.maxBytes },
+      });
+    }
+    const accepts = targetOf(query.target).accepts ?? IMAGES_ONLY;
+    const sniffed = sniffFile(body, query.name);
+    if (sniffed.kind === 'svg' || sniffed.kind === 'other' || !accepts.includes(sniffed.mime)) {
+      throw refusal(sniffed, accepts);
+    }
+    const stored = await putContent(deps.store, body, {
+      contentType: sniffed.mime,
+      prefix: FILES_PREFIX,
+      spoolDir: deps.spoolDir,
+    });
+    const [row] = await deps.sql<FileRow[]>`
+      insert into files (target_kind, target_id, storage_key, filename, mime, size, sha256,
+        uploaded_by)
+      values (${query.target}, ${query.targetId}, ${stored.key},
+        ${safeFileName(query.name, sniffed.mime)}, ${sniffed.mime}, ${body.byteLength},
+        ${stored.checksumSha256}, ${userOf(ctx.actor)})
+      returning id, target_kind, target_id, storage_key, filename, mime, size`;
+    deps.logger.info(
+      { file: row!.id, target: query.target, size: body.byteLength, requestId: ctx.requestId },
+      'file uploaded',
+    );
+    return toUploaded(row!);
+  }
+
+  const links = createUploadLinks({
+    sql: deps.sql,
+    publicUrl: deps.publicUrl,
+    maxBytes: deps.maxBytes,
+    logger: deps.logger,
+    assertWritable,
+    upload,
+  });
+
   return {
     maxBytes: deps.maxBytes,
 
-    async upload(ctx: RequestContext, query: UploadFileQuery, body: Buffer): Promise<UploadedFile> {
-      if ((await access(ctx, query.target, query.targetId)) !== 'write') {
-        throw new ForbiddenError('Only people who can edit this may add files to it');
-      }
-      if (body.byteLength === 0) throw new ValidationError('The file is empty');
-      if (body.byteLength > deps.maxBytes) {
-        throw new ValidationError('The file is too large', {
-          details: { reason: 'too_large', maxBytes: deps.maxBytes },
-        });
-      }
-      const accepts = targetOf(query.target).accepts ?? IMAGES_ONLY;
-      const sniffed = sniffFile(body, query.name);
-      if (sniffed.kind === 'svg' || sniffed.kind === 'other' || !accepts.includes(sniffed.mime)) {
-        throw refusal(sniffed, accepts);
-      }
-      const stored = await putContent(deps.store, body, {
-        contentType: sniffed.mime,
-        prefix: FILES_PREFIX,
-        spoolDir: deps.spoolDir,
-      });
-      const [row] = await deps.sql<FileRow[]>`
-        insert into files (target_kind, target_id, storage_key, filename, mime, size, sha256,
-          uploaded_by)
-        values (${query.target}, ${query.targetId}, ${stored.key},
-          ${safeFileName(query.name, sniffed.mime)}, ${sniffed.mime}, ${body.byteLength},
-          ${stored.checksumSha256}, ${userOf(ctx.actor)})
-        returning id, target_kind, target_id, storage_key, filename, mime, size`;
-      deps.logger.info(
-        { file: row!.id, target: query.target, size: body.byteLength, requestId: ctx.requestId },
-        'file uploaded',
-      );
-      return toUploaded(row!);
-    },
+    upload,
+
+    /** A single-use link an agent sends one file's bytes to (ADR 0048). */
+    createUploadLink: links.create,
+
+    /** Stores the bytes sent to a link, as the person it was made for. */
+    uploadByLink: links.use,
 
     /** What a file is, for anyone who may read the target, without reading its bytes. */
-    async stat(ctx: RequestContext, id: string): Promise<FileInfo> {
+    async stat(ctx: RequestContext, id: string): Promise<FileDetails> {
       const row = await readable(ctx, id);
-      return { name: row.filename, mime: row.mime, size: Number(row.size) };
+      return {
+        name: row.filename,
+        mime: row.mime,
+        size: Number(row.size),
+        target: { kind: row.target_kind, id: row.target_id },
+      };
     },
 
     /** The bytes, for anyone who may read the target; anyone else is told it does not exist. */
     async read(ctx: RequestContext, id: string): Promise<StoredFile> {
       const row = await readable(ctx, id);
       const object = await deps.store.get(row.storage_key);
-      return { name: row.filename, mime: row.mime, size: Number(row.size), body: object.body };
+      return {
+        name: row.filename,
+        mime: row.mime,
+        size: Number(row.size),
+        body: object.body,
+      };
     },
 
     /** Deletes files no content has referred to for a day; the housekeeping job calls it. */
     async cleanup(now: Date = new Date()): Promise<number> {
       return cleanupFiles(deps, now);
+    },
+
+    /** Deletes upload links a day past their expiry; the housekeeping job calls it. */
+    async cleanupLinks(now: Date = new Date()): Promise<number> {
+      return links.cleanup(now);
     },
   };
 }

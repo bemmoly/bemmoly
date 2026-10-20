@@ -52,6 +52,7 @@ export interface DataKernelInput {
     | 'BEMMOLY_DB_CONTEXTS'
     | 'BEMMOLY_VERSION'
     | 'BEMMOLY_UPLOAD_MAX_BYTES'
+    | 'BEMMOLY_PUBLIC_URL'
   > &
     StorageS3Env & { DATABASE_URL: string };
   sql: SqlClient;
@@ -139,6 +140,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     targets: () => modules.fileTargets(),
     isEnabled: (moduleId) => moduleState.isEnabled(moduleId),
     maxBytes: env.BEMMOLY_UPLOAD_MAX_BYTES ?? DEFAULT_UPLOAD_MAX_BYTES,
+    publicUrl: env.BEMMOLY_PUBLIC_URL,
     logger: logger.child({ component: 'files' }),
   });
   const jobs = createJobsService({
@@ -153,6 +155,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
       housekeepingJob(sql, logger, [
         ...(identity.housekeeping ?? []),
         { name: 'files', run: (now) => files.cleanup(now) },
+        { name: 'file-upload-links', run: (now) => files.cleanupLinks(now) },
         { name: 'webhook-deliveries', run: (now) => deleteOldWebhookDeliveries(sql, now) },
       ]),
     ],
