@@ -1,5 +1,6 @@
 import { timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
+import { sprintChangesSchema } from './reports.ts';
 
 /*
  * The flow and sprint metrics a board shows, computed from issue_history and
@@ -8,11 +9,15 @@ import { z } from 'zod';
  * since it was computed, and recomputes it in place otherwise.
  */
 
+/** One closed sprint: its commitment and result, with its spillover and added scope. */
 export const velocityPointSchema = z.object({
   sprintId: z.uuid(),
   name: z.string(),
-  committedPoints: z.number().nonnegative(),
+  committedPoints: z.number().nonnegative().default(0),
   completedPoints: z.number().nonnegative(),
+  committedIssues: z.number().int().nonnegative().default(0),
+  completedIssues: z.number().int().nonnegative().default(0),
+  ...sprintChangesSchema.shape,
 });
 
 export const burndownPointSchema = z.object({

@@ -44,8 +44,18 @@ export function burnup(input: BurndownInput): BurnupPoint[] {
 const byKey = (a: SprintReportIssue, b: SprintReportIssue) =>
   a.key.localeCompare(b.key, undefined, { numeric: true });
 
-export function sprintScope(input: SprintReportInput): SprintScope {
-  const scope: SprintScope = { completed: [], notCompleted: [], added: [], removed: [] };
+/** `carriedIn` is the unfinished work earlier sprints handed this one, with its points then. */
+export function sprintScope(
+  input: SprintReportInput,
+  carriedIn: ReadonlyMap<string, number | null> = new Map(),
+): SprintScope {
+  const scope: SprintScope = {
+    completed: [],
+    notCompleted: [],
+    added: [],
+    removed: [],
+    carriedOver: [],
+  };
   const byIssue = newestFirstByIssue(input.changes);
   for (const issue of input.issues) {
     const changes = byIssue.get(issue.id) ?? [];
@@ -63,6 +73,9 @@ export function sprintScope(input: SprintReportInput): SprintScope {
     else if (isIn) scope.notCompleted.push(row);
     if (isIn && !wasIn) scope.added.push(row);
     if (wasIn && !isIn) scope.removed.push(row);
+    if (wasIn && carriedIn.has(issue.id)) {
+      scope.carriedOver.push({ ...row, estimate: carriedIn.get(issue.id) ?? null });
+    }
   }
   for (const list of Object.values(scope)) list.sort(byKey);
   return scope;
