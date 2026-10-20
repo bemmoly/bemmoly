@@ -1,5 +1,25 @@
 # @bemmoly/shared
 
+## 1.3.0
+
+### Minor Changes
+
+- 5dae368: Pages can hold PDF and HTML files. Add one with the new File block (/file), or drop or paste
+  it into a page; it shows as a preview with Expand to full screen, and images gain Expand too.
+  Agents add files over MCP with `docs_upload_file`, at the end of a page or anywhere in its
+  Markdown. HTML runs in a sandbox with an origin of its own: it may load scripts, styles, fonts
+  and images over https but cannot send data anywhere, and opened outside a page it downloads
+  instead of showing (ADR 0047). No schema or configuration change; uploads keep the
+  `BEMMOLY_UPLOAD_MAX_BYTES` limit.
+- 4fae3da: Issues can be archived. Archive an issue from its ··· menu, from a card's or row's menu, or from
+  the bulk bar, and Undo puts it back. An archived issue leaves the board, the backlog, lists,
+  search, My work and the roadmap, but still opens by its key and still counts in reports. Its page
+  says it is archived and offers Unarchive. In a query, `archived IS NOT EMPTY` lists archived
+  issues. Automation rules have a new Archive action.
+
+  Schema: one changeset (0034) adds `issues.archived_at` and an index on archived issues. It is
+  fast and reversible.
+
 ## 1.2.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @bemmoly/pipelines-cli
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [d6208c1]
+  - @bemmoly/module-pipelines@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

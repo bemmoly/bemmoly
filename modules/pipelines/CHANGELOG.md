@@ -1,5 +1,19 @@
 # @bemmoly/module-pipelines
 
+## 1.3.0
+
+### Patch Changes
+
+- d6208c1: Pipelines finds your repositories by itself once GitHub is connected. The second setup step
+  shows how far the scan got, then the applications it found, or what it looked through with
+  Scan again when it found nothing. Before, repositories that already existed when GitHub was
+  connected were never scanned, and the step had nothing to press.
+- Updated dependencies [5dae368]
+- Updated dependencies [4fae3da]
+- Updated dependencies [d6208c1]
+  - @bemmoly/core@1.3.0
+  - @bemmoly/shared@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

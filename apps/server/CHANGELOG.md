@@ -1,5 +1,20 @@
 # @bemmoly/server
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [da321bb]
+- Updated dependencies [debc7b4]
+- Updated dependencies [5dae368]
+- Updated dependencies [4fae3da]
+- Updated dependencies [d6208c1]
+  - @bemmoly/module-work@1.3.0
+  - @bemmoly/module-docs@1.3.0
+  - @bemmoly/core@1.3.0
+  - @bemmoly/shared@1.3.0
+  - @bemmoly/module-pipelines@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
