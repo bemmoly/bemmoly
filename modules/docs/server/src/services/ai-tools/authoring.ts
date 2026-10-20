@@ -83,7 +83,14 @@ export function authoringTools(services: DocsServices): AiToolDefinition[] {
         spaceId: space.id,
         parentId: input.parentId ?? null,
         title: input.title,
-        ...(input.body ? { snapshot: markdownDocument(input.body) } : {}),
+        ...(input.body
+          ? {
+              snapshot: await services.attachments.withFileBlocks(
+                ctx,
+                markdownDocument(input.body),
+              ),
+            }
+          : {}),
       });
       return {
         undo: { pageId: page.id },
@@ -106,7 +113,8 @@ export function authoringTools(services: DocsServices): AiToolDefinition[] {
     kind: 'write',
     description:
       'Replace a page title and/or its whole body with Markdown. Read it first with ' +
-      'docs_get_page (markdown: true) to keep what should stay. Returns id and title.',
+      'docs_get_page (markdown: true) to keep what should stay. A file from docs_upload_file ' +
+      'goes anywhere in the body as ![name](url) and shows there as a preview. Returns id and title.',
     input: updateInput,
     idempotent: true,
     describe: async (ctx, { pageId, title, body }) => {
@@ -132,7 +140,9 @@ export function authoringTools(services: DocsServices): AiToolDefinition[] {
       const before = await services.pages.get(ctx, pageId);
       const page = await services.pages.update(ctx, pageId, {
         ...(title !== undefined ? { title } : {}),
-        ...(body !== undefined ? { snapshot: markdownDocument(body) } : {}),
+        ...(body !== undefined
+          ? { snapshot: await services.attachments.withFileBlocks(ctx, markdownDocument(body)) }
+          : {}),
       });
       return {
         undo: {
