@@ -20,6 +20,7 @@ import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
 import { requireDatabase } from './issues/deps.ts';
 import { createIssueImportService } from './import/mcp/index.ts';
+import { createInitiativesService } from './initiatives/index.ts';
 import { createIssuesService } from './issues/index.ts';
 import { notify } from './issues/notify.ts';
 import { createLabelsService } from './labels/index.ts';
@@ -123,6 +124,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     filters: createFiltersService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
     roadmap: createRoadmapService({ ...deps, ...issueDeps, lql }),
+    initiatives: createInitiativesService(deps),
     pairing: createPairingService({ ...deps, ...issueDeps }),
     reports: createReportsService({ ...deps, ...issueDeps }),
     timeTracking: createTimeTrackingService({ ...deps, ...issueDeps }),

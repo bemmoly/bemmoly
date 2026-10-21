@@ -114,11 +114,19 @@ export const roadmapItemSchema = z.object({
   children: z.array(roadmapChildSchema),
 });
 
-/** `fromId` blocks `toId`: an epic-level "blocks" link. */
+/**
+ * `fromId` blocks `toId`. A "blocks" link between two epics, or between issues under them
+ * (in the same project or across projects), drawn once per pair of items: `via` says which,
+ * `links` how many issue links it stands for.
+ */
 export const roadmapDependencySchema = z.object({
   id: z.uuid(),
   fromId: z.uuid(),
   toId: z.uuid(),
+  via: z.enum(['epic', 'issue']).default('epic'),
+  links: z.number().int().positive().default(1),
+  /** The waiting item is planned to start before its blocker ends. */
+  conflict: z.boolean().default(false),
 });
 
 export const roadmapProjectSchema = z.object({
@@ -155,6 +163,8 @@ export const roadmapQuerySchema = z.object({
   /** Project keys, comma separated; every project the person can open when left out. */
   projects: projectKeysSchema.optional(),
   teamId: z.uuid().optional(),
+  /** Only this initiative's epics, across every project of theirs the person can open. */
+  initiative: z.uuid().optional(),
 });
 
 export type RoadmapZoom = z.infer<typeof roadmapZoomSchema>;

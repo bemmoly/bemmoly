@@ -12,6 +12,7 @@ export * from './enums.ts';
 export * from './filters.ts';
 export * from './issue-import.ts';
 export * from './issue-types.ts';
+export * from './initiatives.ts';
 export * from './issues.ts';
 export * from './lexorank.ts';
 export * from './links-labels.ts';

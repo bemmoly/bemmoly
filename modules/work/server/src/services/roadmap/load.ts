@@ -106,12 +106,46 @@ export async function loadVersions(sql: SqlExecutor, projectIds: readonly string
     order by project_id, release_at nulls last, lower(name), id`;
 }
 
+export interface BlockRow {
+  id: string;
+  from_id: string;
+  to_id: string;
+  direct: boolean;
+  links: number;
+}
+
+/**
+ * The "blocks" links between epics in view, and between the issues under them, each end
+ * lifted to its epic, one row per pair: a card in QA blocking a card in Platform makes the QA
+ * epic block the Platform one. A pair's id is its epic-level link when there is one.
+ */
 export async function loadBlocks(sql: SqlExecutor, epicIds: readonly string[]) {
-  return sql<{ id: string; source_id: string; target_id: string }[]>`
-    select id, source_id, target_id from issue_links
-    where kind = 'blocks' and source_id = any(${epicIds}::uuid[])
-      and target_id = any(${epicIds}::uuid[])
+  if (epicIds.length === 0) return [];
+  return sql<BlockRow[]>`
+    with ends as (
+      select l.id,
+        case when s.id = any(${epicIds}::uuid[]) then s.id else s.parent_id end as from_id,
+        case when t.id = any(${epicIds}::uuid[]) then t.id else t.parent_id end as to_id,
+        s.id = any(${epicIds}::uuid[]) and t.id = any(${epicIds}::uuid[]) as direct
+      from issue_links l
+      join issues s on s.id = l.source_id and s.deleted_at is null and s.archived_at is null
+      join issues t on t.id = l.target_id and t.deleted_at is null and t.archived_at is null
+      where l.kind = 'blocks'
+        and (s.id = any(${epicIds}::uuid[]) or s.parent_id = any(${epicIds}::uuid[]))
+        and (t.id = any(${epicIds}::uuid[]) or t.parent_id = any(${epicIds}::uuid[]))
+    )
+    select (array_agg(id order by direct desc, id))[1] as id, from_id, to_id,
+      bool_or(direct) as direct, count(*)::int as links
+    from ends where from_id <> to_id
+    group by from_id, to_id
     order by id`;
+}
+
+/** The epics an initiative gathers. */
+export async function loadInitiativeEpicIds(sql: SqlExecutor, initiativeId: string) {
+  const rows = await sql<{ epic_id: string }[]>`
+    select epic_id from initiative_epics where initiative_id = ${initiativeId}`;
+  return new Set(rows.map((row) => row.epic_id));
 }
 
 /**
