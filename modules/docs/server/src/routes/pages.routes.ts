@@ -8,6 +8,7 @@ export function pagesRoutes(controller: PagesController): FastifyPluginAsync {
     app.get('/pages/:pageId', async (request) => controller.get(request));
     app.patch('/pages/:pageId', async (request) => controller.update(request));
     app.delete('/pages/:pageId', async (request, reply) => controller.remove(request, reply));
+    app.post('/pages/:pageId/files', async (request) => controller.attachFile(request));
     app.post('/pages/:pageId/restore', async (request) => controller.restore(request));
     app.get('/spaces/:spaceKey/trash', async (request) => controller.trash(request));
     app.delete('/spaces/:spaceKey/trash', async (request) => controller.emptyTrash(request));

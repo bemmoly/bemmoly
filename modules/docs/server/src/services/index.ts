@@ -41,7 +41,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     comments: createCommentsService(deps),
     transfer: createTransferService(deps),
     pdfExport: createPdfExportService(deps),
-    attachments: createAttachmentsService(deps),
+    attachments: createAttachmentsService(deps, pages),
   };
 }
 

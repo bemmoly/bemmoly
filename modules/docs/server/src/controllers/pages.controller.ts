@@ -3,6 +3,7 @@ import { parseOrThrow } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { pageIdParamsSchema } from '../../../shared/common.ts';
 import {
+  attachPageFileBodySchema,
   createPageBodySchema,
   getPageQuerySchema,
   listTrashQuerySchema,
@@ -12,13 +13,14 @@ import {
   type PageDetail,
   type TrashPage,
 } from '../../../shared/pages.ts';
+import type { AttachmentsService } from '../services/attachments/index.ts';
 import type { PagesService } from '../services/pages/index.ts';
 import { spaceRefOf } from './spaces.controller.ts';
 
 export const pageIdOf = (request: FastifyRequest) =>
   parseOrThrow(pageIdParamsSchema, request.params).pageId;
 
-export function createPagesController(service: PagesService) {
+export function createPagesController(service: PagesService, attachments: AttachmentsService) {
   return {
     async create(request: FastifyRequest, reply: FastifyReply): Promise<PageDetail> {
       const body = parseOrThrow(createPageBodySchema, request.body);
@@ -32,6 +34,10 @@ export function createPagesController(service: PagesService) {
     async update(request: FastifyRequest): Promise<PageDetail> {
       const body = parseOrThrow(updatePageBodySchema, request.body);
       return service.update(contextOf(request), pageIdOf(request), body);
+    },
+    async attachFile(request: FastifyRequest): Promise<PageDetail> {
+      const { fileId } = parseOrThrow(attachPageFileBodySchema, request.body);
+      return attachments.attach(contextOf(request), pageIdOf(request), fileId);
     },
     async remove(request: FastifyRequest, reply: FastifyReply): Promise<void> {
       await service.remove(contextOf(request), pageIdOf(request));

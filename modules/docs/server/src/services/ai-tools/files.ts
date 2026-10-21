@@ -1,5 +1,4 @@
 import { defineWriteTool, type AiToolDefinition, type RequestContext } from '@bemmoly/core';
-import { isUploadImageType, type UploadedFile } from '@bemmoly/shared';
 import { z } from 'zod';
 import { pageIdParamsSchema, type RichText } from '../../../../shared/common.ts';
 import type { DocsServices } from '../index.ts';
@@ -44,8 +43,6 @@ interface UploadUndo {
   snapshot: RichText | null;
 }
 
-const EMPTY_DOCUMENT: RichText = { type: 'doc', content: [{ type: 'paragraph' }] };
-
 /** Whoever may add a file to the page: the page's editors. */
 async function authorizeEdit(services: DocsServices, ctx: RequestContext, pageId: string) {
   const page = await services.pages.get(ctx, pageId);
@@ -79,25 +76,6 @@ function storedFile(services: DocsServices, ctx: RequestContext, input: UploadIn
   return services.attachments.upload(ctx, pageId, name ?? '', Buffer.from(content!, encoding));
 }
 
-/** The page with the file as its last block; the body before it, for undo. */
-async function appendFile(
-  services: DocsServices,
-  ctx: RequestContext,
-  pageId: string,
-  stored: UploadedFile,
-): Promise<RichText> {
-  const before = await services.pages.get(ctx, pageId);
-  const snapshot = before.snapshot ?? EMPTY_DOCUMENT;
-  const content = (snapshot as { content?: unknown[] }).content ?? [];
-  const block = isUploadImageType(stored.mime)
-    ? { type: 'image', attrs: { src: stored.url, alt: stored.name } }
-    : { type: 'file', attrs: { src: stored.url, name: stored.name, mime: stored.mime } };
-  await services.pages.update(ctx, pageId, {
-    snapshot: { ...snapshot, content: [...content, block] } as RichText,
-  });
-  return snapshot;
-}
-
 export function fileTools(services: DocsServices): AiToolDefinition[] {
   const upload = defineWriteTool<UploadInput, UploadUndo>({
     name: 'docs_upload_file',
@@ -121,7 +99,9 @@ export function fileTools(services: DocsServices): AiToolDefinition[] {
       const { pageId, append } = input;
       const stored = await storedFile(services, ctx, input);
       const markdown = `![${stored.name.replace(/[[\]]/g, '')}](${stored.url})`;
-      const snapshot = append ? await appendFile(services, ctx, pageId, stored) : null;
+      const snapshot = append
+        ? (await services.attachments.append(ctx, pageId, stored)).before
+        : null;
       return {
         undo: { pageId, snapshot },
         result: { ...stored, markdown, appended: append, href: pageHref(pageId) },
