@@ -1,8 +1,8 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import type { BoardConfig } from '../../../../shared/boards.ts';
 import type { BurndownPoint, VelocityPoint } from '../../../../shared/metrics.ts';
-import { sprintSnapshotSchema } from '../../../../shared/sprints.ts';
 import { burndown } from './burndown.ts';
+import { handoffsByTarget, velocityPoint, type Handoffs } from './changes.ts';
 import { flowMetrics, flowWindowStart, type Flow } from './flow.ts';
 import { loadSprintInput, type ReportSprint } from './load-report.ts';
 
@@ -40,29 +40,61 @@ export async function statusSets(
   };
 }
 
-/** The last closed sprints, oldest first, read from their completion snapshots. */
+/** The unfinished work closed sprints of the project handed to the given sprints. */
+export async function loadHandoffs(
+  sql: SqlExecutor,
+  projectId: string,
+  sprintIds: readonly string[],
+): Promise<Handoffs> {
+  if (sprintIds.length === 0) return new Map();
+  const rows = await sql<{ snapshot: unknown }[]>`
+    select completed_snapshot as snapshot from sprints
+    where project_id = ${projectId} and state = 'closed'
+      and completed_snapshot ->> 'carriedOverTo' = any(${[...sprintIds]}::text[])`;
+  return handoffsByTarget(rows.map((row) => row.snapshot));
+}
+
+const issueIds = (commitment: unknown): string[] | null => {
+  const ids = (commitment as { issueIds?: unknown } | null)?.issueIds;
+  return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : null;
+};
+
+/**
+ * The last closed sprints, oldest first, read from their completion snapshots
+ * and start commitments, with the spillover each one received.
+ */
 export async function loadVelocity(
   sql: SqlExecutor,
   projectId: string,
   count: number,
 ): Promise<VelocityPoint[]> {
-  const rows = await sql<{ id: string; name: string; snapshot: unknown }[]>`
-    select s.id, s.name, coalesce(m.data, s.completed_snapshot) as snapshot
+  const rows = await sql<{ id: string; name: string; snapshot: unknown; commitment: unknown }[]>`
+    select s.id, s.name, coalesce(m.data, s.completed_snapshot) as snapshot,
+      c.data as commitment
     from sprints s
     left join sprint_metrics m
       on m.scope_kind = 'sprint' and m.scope_id = s.id and m.kind = 'completion'
+    left join sprint_metrics c
+      on c.scope_kind = 'sprint' and c.scope_id = s.id and c.kind = 'commitment'
     where s.project_id = ${projectId} and s.state = 'closed'
     order by s.closed_at desc nulls last, s.id desc
     limit ${count}`;
-  return rows.reverse().map((row) => {
-    const snapshot = sprintSnapshotSchema.safeParse(row.snapshot);
-    return {
-      sprintId: row.id,
-      name: row.name,
-      committedPoints: snapshot.success ? snapshot.data.committedPoints : 0,
-      completedPoints: snapshot.success ? snapshot.data.completedPoints : 0,
-    };
-  });
+  const handoffs = await loadHandoffs(
+    sql,
+    projectId,
+    rows.map((row) => row.id),
+  );
+  return rows.reverse().map((row) =>
+    velocityPoint(
+      {
+        id: row.id,
+        name: row.name,
+        snapshot: row.snapshot,
+        startIssueIds: issueIds(row.commitment),
+      },
+      handoffs,
+    ),
+  );
 }
 
 export async function loadBurndown(

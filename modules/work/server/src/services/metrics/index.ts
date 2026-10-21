@@ -9,8 +9,16 @@ import { loadBoard, parseConfig, type BoardRow } from '../boards/rows.ts';
 import { activeSprint, loadSprint, toSprint } from '../sprints/rows.ts';
 import { burndown, utcDate } from './burndown.ts';
 import { burnup, sprintScope } from './burnup.ts';
+import { sprintChanges } from './changes.ts';
 import { loadFlowReport, loadSprintInput } from './load-report.ts';
-import { loadBurndown, loadFlow, loadVelocity, loadWorkInProgress, statusSets } from './load.ts';
+import {
+  loadBurndown,
+  loadFlow,
+  loadHandoffs,
+  loadVelocity,
+  loadWorkInProgress,
+  statusSets,
+} from './load.ts';
 
 /*
  * Velocity, burndown, cycle time and throughput, computed from history and
@@ -96,23 +104,26 @@ export function createMetricsService(deps: PlanningDeps) {
       return computeBoardMetrics(sql, board, query.sprints, now());
     },
 
-    /** A sprint's burndown and the project's velocity up to it, for the sprint report. */
+    /** A sprint's burndown, burnup, scope changes and the project's velocity, for the report. */
     async sprintReport(ctx: RequestContext, sprintId: string): Promise<SprintReport> {
       const sql = requireDatabase(deps);
       const row = await loadSprint(sql, sprintId);
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', projectResource(row.project_id));
       const sets = await statusSets(sql, row.project_id, null);
-      const [input, velocity] = await Promise.all([
+      const [input, velocity, handoffs] = await Promise.all([
         loadSprintInput(sql, row, sets.done, now()),
         loadVelocity(sql, row.project_id, 6),
+        loadHandoffs(sql, row.project_id, [row.id]),
       ]);
+      const scope = input
+        ? sprintScope(input, handoffs.get(row.id))
+        : { completed: [], notCompleted: [], added: [], removed: [], carriedOver: [] };
       return {
         sprint: toSprint(row),
         burndown: input ? burndown(input) : [],
         burnup: input ? burnup(input) : [],
-        scope: input
-          ? sprintScope(input)
-          : { completed: [], notCompleted: [], added: [], removed: [] },
+        scope,
+        changes: sprintChanges(scope),
         velocity,
       };
     },

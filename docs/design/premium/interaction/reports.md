@@ -15,9 +15,14 @@ versions has the kind and the epic or version. Time tracking follows the Flow ra
   first day's points to zero.
 - Burnup: the same sprint's scope and completed points per day, so scope added mid-sprint
   shows as the scope line rising.
-- Sprint report: completed, not completed, added after the start and removed, each with its
-  issue count and points; every issue opens in the peek.
-- Velocity: committed and completed points of the last six closed sprints.
+- Sprint report: completed, not completed, added after the start, removed and carried over
+  from an earlier sprint, each with its issue count and points; every issue opens in the peek.
+  Above the lists, two figures: the work carried over (issues and points) and the share of
+  issues and points that joined after the start.
+- Velocity: committed and completed points of the last six closed sprints, beside the burndown
+  and burnup on wide screens.
+- Spillover and added scope: per closed sprint, newest first, its committed and completed
+  points, the work carried over into it and the share added after its start.
 - Cumulative flow: issues in to do, in progress and done at the end of each day of the range,
   stacked.
 - Created vs resolved: running totals of issues created and resolved over the range.

@@ -1,10 +1,14 @@
-import type { SprintReport } from '@bemmoly/module-work/shared';
-import { BarChart, LineChart } from '@bemmoly/ui';
-import { dayLabel, guideline } from './model.ts';
+import type { SprintChanges, SprintReport } from '@bemmoly/module-work/shared';
+import { LineChart, MetricTile } from '@bemmoly/ui';
+import { dayLabel, guideline, issuesAndPoints, share } from './model.ts';
 import { ReportCard, ReportNote } from './report-card.tsx';
 import { SprintIssues } from './sprint-issues.tsx';
+import { SprintChangesTable, VelocityChart } from './velocity-report.tsx';
 
-/** The chosen sprint's burndown and burnup, its report, and the velocity up to now. */
+/**
+ * The chosen sprint's burndown, burnup and the velocity up to now side by side, then its
+ * report with spillover and late scope, and those two per closed sprint.
+ */
 export function SprintReports({
   report,
   onOpenIssue,
@@ -12,11 +16,11 @@ export function SprintReports({
   report: SprintReport;
   onOpenIssue: (key: string) => void;
 }) {
-  const { sprint, burndown, burnup, velocity, scope } = report;
+  const { sprint, burndown, burnup, velocity, scope, changes } = report;
   const labels = burndown.map((point) => dayLabel(point.date));
   return (
     <>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
         <ReportCard title="Burndown" hint={`${sprint.name}, points remaining`}>
           {burndown.length === 0 ? (
             <ReportNote>This sprint has no days to draw yet.</ReportNote>
@@ -66,34 +70,32 @@ export function SprintReports({
             />
           )}
         </ReportCard>
+        <VelocityChart velocity={velocity} />
       </div>
       <ReportCard title="Sprint report" hint={sprint.goal ?? sprint.name}>
+        <SprintChangeTiles changes={changes} />
         <SprintIssues scope={scope} onOpen={onOpenIssue} />
       </ReportCard>
-      <ReportCard title="Velocity" hint="Committed and completed points, last closed sprints">
-        {velocity.length === 0 ? (
-          <ReportNote>No sprint has closed yet. Velocity starts with the first one.</ReportNote>
-        ) : (
-          <BarChart
-            label="Velocity"
-            xLabels={velocity.map((point) => point.name)}
-            series={[
-              {
-                id: 'committed',
-                label: 'Committed',
-                tone: 'todo',
-                values: velocity.map((point) => point.committedPoints),
-              },
-              {
-                id: 'completed',
-                label: 'Completed',
-                tone: 'done',
-                values: velocity.map((point) => point.completedPoints),
-              },
-            ]}
-          />
-        )}
-      </ReportCard>
+      <SprintChangesTable velocity={velocity} />
     </>
+  );
+}
+
+/** The sprint's spillover and late scope as two figures above its lists. */
+function SprintChangeTiles({ changes }: { changes: SprintChanges }) {
+  return (
+    <div className="mb-4 flex flex-wrap gap-2">
+      <MetricTile
+        label="Carried over"
+        value={issuesAndPoints(changes.carriedOverIssues, changes.carriedOverPoints)}
+      />
+      <MetricTile
+        label="Added after the start"
+        value={`${share(changes.addedIssues, changes.scopeIssues)} of issues, ${share(
+          changes.addedPoints,
+          changes.scopePoints,
+        )} of points`}
+      />
+    </div>
   );
 }
