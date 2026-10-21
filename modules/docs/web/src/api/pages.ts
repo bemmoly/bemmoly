@@ -1,6 +1,7 @@
 import type { Http } from '@bemmoly/api-client';
 import { enc, validated } from '@bemmoly/api-client';
 import {
+  attachPageFileBodySchema,
   createPageBodySchema,
   createSpaceBodySchema,
   emptyTrashResultSchema,
@@ -18,6 +19,7 @@ import {
   treeQuerySchema,
   updatePageBodySchema,
   updateSpaceBodySchema,
+  type AttachPageFileBody,
   type CreatePageBody,
   type CreateSpaceBody,
   type ListSpacesQuery,
@@ -84,6 +86,12 @@ export function docsPagesEndpoints(http: Http) {
         http.request(page(id), pageDetailSchema, {
           method: 'PATCH',
           body: validated(updatePageBodySchema, body),
+        }),
+      /** Adds a file already stored for the page at the end of its body. */
+      attachFile: async (id: string, body: AttachPageFileBody) =>
+        http.request(page(id, '/files'), pageDetailSchema, {
+          method: 'POST',
+          body: validated(attachPageFileBodySchema, body),
         }),
       remove: async (id: string) => http.send(page(id), { method: 'DELETE' }),
       restore: async (id: string) =>

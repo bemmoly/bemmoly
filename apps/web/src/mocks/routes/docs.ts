@@ -2,6 +2,7 @@ import { can, emit, type MockDb } from '../db.ts';
 import type { MockPage } from '../seed/docs.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRequest, type MockRoute } from '../types.ts';
+import { mockFiles } from '../uploads.ts';
 import { writeBody } from './docs-history-state.ts';
 import {
   childrenOf,
@@ -181,6 +182,24 @@ export const docsRoutes: MockRoute[] = [
       }
       emit(db, 'docs.tree', [row.id]);
       return ok();
+    },
+  },
+  {
+    method: 'POST',
+    pattern: `${BASE}/pages/:pageId/files`,
+    handle: (request, db) => {
+      if (!can(db, 'docs.page.edit')) return denied();
+      const row = pageOf(db, request);
+      if (!row) return notFound('The page');
+      const file = mockFiles.get(String(bodyOf<{ fileId: string }>(request).fileId));
+      if (!file) return notFound('The file');
+      const before = (row.snapshot ?? { type: 'doc', content: [] }) as { content?: object[] };
+      const block = file.mime.startsWith('image/')
+        ? { type: 'image', attrs: { src: file.url, alt: file.name } }
+        : { type: 'file', attrs: { src: file.url, name: file.name, mime: file.mime } };
+      writeBody(row, { type: 'doc', content: [...(before.content ?? []), block] });
+      emit(db, 'docs.page', [row.id]);
+      return ok(detail(db, row));
     },
   },
   {

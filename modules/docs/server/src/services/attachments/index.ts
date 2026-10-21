@@ -1,6 +1,7 @@
 import { fileIdOf, fileUrl, type RequestContext } from '@bemmoly/core';
 import { asFileBlocks, imageSources, type StoredDocument } from '@bemmoly/editor/convert';
 import {
+  isUploadImageType,
   NotFoundError,
   ValidationError,
   type UploadedFile,
@@ -9,15 +10,26 @@ import {
 import type { RichText } from '../../../../shared/common.ts';
 import { DOCS_PAGE_KIND } from '../collab/index.ts';
 import type { DocsServiceDeps } from '../common.ts';
+import type { PagesService } from '../pages/index.ts';
 
 type Readable = Parameters<typeof imageSources>[0];
 
+const EMPTY_DOCUMENT: RichText = { type: 'doc', content: [{ type: 'paragraph' }] };
+
+/** A stored file as the block that shows it: an image, or a File block for a document. */
+function blockOf(file: { url: string; name: string; mime: string }) {
+  return isUploadImageType(file.mime)
+    ? { type: 'image', attrs: { src: file.url, alt: file.name } }
+    : { type: 'file', attrs: { src: file.url, name: file.name, mime: file.mime } };
+}
+
 /**
- * Files an agent adds to pages: stored against the page like the editor's uploads, and found
- * again in Markdown, where image syntax is the only way to name one, so a stored PDF or HTML
- * file written into a body lands as a File block in its place.
+ * Files added to pages from outside the editor: by an agent, or as a page of its own (New
+ * page, Upload). They are stored against the page like the editor's uploads, added at the
+ * end of its body, and found again in Markdown, where image syntax is the only way to name
+ * one, so a stored PDF or HTML file written into a body lands as a File block in its place.
  */
-export function createAttachmentsService(deps: DocsServiceDeps) {
+export function createAttachmentsService(deps: DocsServiceDeps, pages: PagesService) {
   const upload = deps.files?.upload;
   const stat = deps.files?.stat;
   const createUploadLink = deps.files?.createUploadLink;
@@ -48,6 +60,30 @@ export function createAttachmentsService(deps: DocsServiceDeps) {
       }
       const { name, mime, size } = file;
       return { id: fileId, url: fileUrl(fileId), name, mime, size } as UploadedFile;
+    },
+
+    /**
+     * Adds a stored file at the end of the page's body, through the same edit path as any
+     * other change. Returns the body as it was before, for an undo.
+     */
+    async append(
+      ctx: RequestContext,
+      pageId: string,
+      file: { url: string; name: string; mime: string },
+    ): Promise<{ before: RichText }> {
+      const page = await pages.get(ctx, pageId);
+      const before = page.snapshot ?? EMPTY_DOCUMENT;
+      const content = (before as { content?: unknown[] }).content ?? [];
+      await pages.update(ctx, pageId, {
+        snapshot: { ...before, content: [...content, blockOf(file)] } as RichText,
+      });
+      return { before };
+    },
+
+    /** Adds a file already stored on the page (a browser upload) at the end of its body. */
+    async attach(ctx: RequestContext, pageId: string, fileId: string) {
+      await this.append(ctx, pageId, await this.onPage(ctx, pageId, fileId));
+      return pages.get(ctx, pageId);
     },
 
     /** The document with every image that is a stored PDF or HTML file made a File block. */

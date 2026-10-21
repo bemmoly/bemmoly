@@ -134,6 +134,28 @@ describe('docs_upload_file', () => {
     ]);
   });
 
+  it('makes a page that is one stored HTML file, for New page > Upload', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const member = h.as(h.users.member);
+    const page = await write('docs_create_page', member, { spaceKey: 'RPT', title: 'Q3 report' });
+    const pageId = String(page.result['id']);
+    const stored = await fakeFiles.upload(
+      member,
+      { target: 'docs.page', targetId: pageId, name: 'q3.html' },
+      Buffer.from('<!doctype html>'),
+    );
+    const detail = await h.services.attachments.attach(member, pageId, stored.id);
+    expect(detail.id).toBe(pageId);
+    const types = (await blocks(member, pageId)).map((block) => [block.type, block.attrs?.['src']]);
+    expect(types.at(-1)).toEqual(['file', stored.url]);
+    await expect(
+      h.services.attachments.attach(h.as(h.users.viewer), pageId, stored.id),
+    ).rejects.toThrow();
+    await expect(
+      h.services.attachments.attach(member, pageId, '0199c0de-0000-7000-8000-00000000eeee'),
+    ).rejects.toThrow('The file was not found');
+  });
+
   it('refuses people who may only read the page', async (ctx) => {
     if (!h) return ctx.skip(skipped);
     const page = await write('docs_create_page', h.as(h.users.member), {

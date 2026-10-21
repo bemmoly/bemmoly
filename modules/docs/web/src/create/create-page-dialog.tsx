@@ -1,7 +1,10 @@
 import type { PageDetail } from '@bemmoly/module-docs/shared';
 import { Button, Field, Input, Modal, Select, TemplatePicker } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { useRef } from 'react';
 import { useSpaces, useTemplates } from '../hooks/queries.ts';
 import { useCreatePageForm, type CreatePagePlace } from './use-create-page-form.ts';
+import { PAGE_FILE_ACCEPT } from './use-upload-page.ts';
 
 export interface CreatePageDialogProps extends CreatePagePlace {
   open: boolean;
@@ -14,7 +17,8 @@ export interface CreatePageDialogProps extends CreatePagePlace {
 /**
  * New page: the template picker, with the space to put it in when it is not already
  * known, and an optional title. Blank is chosen first, so Enter makes an empty page at
- * once; a double click on a template makes the page from it.
+ * once; a double click on a template makes the page from it. Upload makes a page that is
+ * one HTML or PDF file, named after it unless a title is typed.
  */
 export function CreatePageDialog(props: CreatePageDialogProps) {
   return props.open ? <CreatePageForm {...props} /> : null;
@@ -34,6 +38,7 @@ function CreatePageForm({
   const form = useCreatePageForm({ spaceId: fallback, parentId, templateId }, onCreated);
   const spaceId = form.spaceId;
   const templates = useTemplates(spaceId ?? undefined);
+  const picker = useRef<HTMLInputElement>(null);
   const space = spaces.data?.find((item) => item.id === spaceId);
   const where = parentTitle
     ? `Inside ${parentTitle || 'Untitled'}, in ${space?.name ?? 'this space'}.`
@@ -50,6 +55,26 @@ function CreatePageForm({
       description={where}
       footer={
         <>
+          <input
+            ref={picker}
+            type="file"
+            accept={PAGE_FILE_ACCEPT}
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (file) form.upload(file);
+            }}
+          />
+          <Button
+            variant="secondary"
+            icon={<Icon name="upload" />}
+            className={form.error ? undefined : 'mr-auto'}
+            disabled={form.isSubmitting}
+            onClick={() => picker.current?.click()}
+          >
+            Upload HTML or PDF
+          </Button>
           {form.error && (
             <span role="alert" className="mr-auto text-13 text-red">
               {form.error}

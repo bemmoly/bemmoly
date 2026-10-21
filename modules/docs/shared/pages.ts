@@ -100,6 +100,10 @@ export const updatePageBodySchema = z
   })
   .partial();
 
+/** POST /pages/:pageId/files: a file already stored for the page, added at the end of its body. */
+export const attachPageFileBodySchema = z.object({ fileId: z.uuid() });
+export type AttachPageFileBody = z.infer<typeof attachPageFileBodySchema>;
+
 export const listTrashQuerySchema = keysetQuerySchema;
 
 /** Days a page stays in the trash before the purge job deletes it for good. */

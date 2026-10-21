@@ -30,6 +30,9 @@ function sniff(bytes: Uint8Array, name: string): UploadFileType | null {
   return match?.[0] ?? (looksLikeHtml(bytes, name) ? 'text/html' : null);
 }
 
+/** Every file the mock has stored this session, so a page can be made of one. */
+export const mockFiles = new Map<string, UploadedFile>();
+
 const refuse = (status: number, code: string, message: string, details?: object) =>
   HttpResponse.json(
     { code, message, requestId: 'mock', ...(details ? { details } : {}) },
@@ -61,6 +64,7 @@ export function mockUploadHandler(api: MockApi, fallback: boolean): AnyHandler {
       mime,
       size: bytes.byteLength,
     };
+    mockFiles.set(body.id, body);
     return HttpResponse.json(body, { status: 201 });
   });
 }

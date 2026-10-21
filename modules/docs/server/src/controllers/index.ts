@@ -16,7 +16,7 @@ export function createDocsControllers(services: DocsServices) {
   return {
     spaces: createSpacesController(services.spaces),
     members: createMembersController(services.members),
-    pages: createPagesController(services.pages),
+    pages: createPagesController(services.pages, services.attachments),
     tree: createTreeController(services.tree, services.status),
     library: createLibraryController(services),
     search: createSearchController(services.search),
