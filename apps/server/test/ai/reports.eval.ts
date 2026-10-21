@@ -1,12 +1,26 @@
-import { reportSpecSchema, type ReportSpec } from '@bemmoly/module-work/shared';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { evalCase, replyOf } from './harness.ts';
 
 /*
  * Reports asked for in words: the prompt is called as the ask-reports service calls it
  * (structured output against the report spec, temperature 0) over the Acme Labs PLT project,
- * and the spec it returns must pick the options the question names.
+ * and the spec it returns must pick the options the question names. Apps never import a
+ * module, so the spec's shape is restated here with only what the checks read.
  */
+
+const reportSpecSchema = z.object({
+  title: z.string().min(1),
+  metric: z.string(),
+  groupBy: z.string(),
+  filters: z.object({
+    sprint: z.string().optional(),
+    types: z.array(z.string()).optional(),
+  }),
+  chart: z.string(),
+});
+
+type ReportSpec = z.infer<typeof reportSpecSchema>;
 
 describe('work.report_spec', () => {
   it('turns open bugs per person in this sprint into a grouped, filtered bar report', async () => {
