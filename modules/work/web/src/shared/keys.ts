@@ -46,6 +46,8 @@ export const workKeys = {
   dashboards: (projectKey: string) => [...queryKeys.work(), 'dashboards', projectKey] as const,
   quarterReport: (projectKey: string, quarter: string) =>
     [...queryKeys.work(), 'quarter-report', projectKey, quarter] as const,
+  pinnedReports: (projectKey: string) =>
+    [...queryKeys.work(), 'pinned-reports', projectKey] as const,
   issueTransitions: (key: string) => [...workKeys.issue(key), 'transitions'] as const,
   boardMetrics: (boardId: string) => [...queryKeys.work(), 'board-metrics', boardId] as const,
   /** Mutation keys of card moves in flight; a board's view is not read again while one is. */

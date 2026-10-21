@@ -1,6 +1,7 @@
 import { useRecordRecent } from '@bemmoly/core-web';
 import { SegmentedControl, Select } from '@bemmoly/ui';
 import { workPaths } from '../hooks/issue-navigation.ts';
+import { useAiEnabled } from '../issue/issue-ai-summary.tsx';
 import { IssueSlideOver } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { useWorkRealtime } from '../shared/index.ts';
@@ -11,6 +12,8 @@ import { RANGE_LABELS, RANGES } from './model.ts';
 import { ControlChartCard, TimeInStatusCard } from './cycle-reports.tsx';
 import { ReportSection } from './report-card.tsx';
 import { NoSprints, ReportsError, ReportsSkeleton } from './reports-empty.tsx';
+import { AskReport } from './ask-report.tsx';
+import { PinnedReports } from './pinned-reports.tsx';
 import { ScopeReportSection } from './scope-report.tsx';
 import { SprintReports } from './sprint-reports.tsx';
 import { StatsSection } from './stats-section.tsx';
@@ -23,6 +26,8 @@ import { useCycleReports } from './use-tier-two.ts';
  * sprint (burndown, burnup, report, velocity), the project's flow over a range (cumulative
  * flow, created vs resolved, control chart, time in status) and an epic's or version's burnup.
  * Each section's choice lives in the address; an issue in the sprint report opens in the peek.
+ * Above them, with AI on, a question box builds a report on request, and the person's pinned
+ * reports come first.
  */
 export default function ReportsScreen({ projectKey }: WorkScreenProps) {
   const reports = useReports(projectKey);
@@ -30,6 +35,7 @@ export default function ReportsScreen({ projectKey }: WorkScreenProps) {
   const cycle = useCycleReports(project?.key ?? '', Number(range));
   useWorkRealtime(project?.id);
   const peek = useIssuePeek(() => []);
+  const aiEnabled = useAiEnabled();
   useRecordRecent(
     project
       ? {
@@ -55,6 +61,8 @@ export default function ReportsScreen({ projectKey }: WorkScreenProps) {
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col gap-8 overflow-auto px-6 py-4 max-md:px-4">
         <h1 className="sr-only">Reports</h1>
+        {aiEnabled && <AskReport projectKey={project.key} />}
+        <PinnedReports projectKey={project.key} />
         <ReportSection
           title="Sprint"
           controls={

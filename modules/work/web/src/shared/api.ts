@@ -1,5 +1,6 @@
 import { createApiClient } from '@bemmoly/api-client';
 import {
+  workAskReportEndpoints,
   workAutomationEndpoints,
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
@@ -60,6 +61,7 @@ export const api = {
     ...workReportTimeTrackingEndpoints(client.http),
     ...workReportStatsEndpoints(client.http),
     ...workDashboardEndpoints(client.http),
+    ...workAskReportEndpoints(client.http),
     automation: workAutomationEndpoints(client.http),
   },
 };
