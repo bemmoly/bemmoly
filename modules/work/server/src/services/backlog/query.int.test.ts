@@ -34,6 +34,11 @@ describe('backlog queries and sort rules against a real database', () => {
       typeId: bugType!.id,
       title: 'Support request',
       priority: 'low',
+      customFields: {
+        severity: 'sev3',
+        environment: 'production',
+        steps_to_reproduce: { type: 'doc', content: [] },
+      },
     });
     const urgent = await planning.issue(as, { projectId, title: 'Urgent', priority: 'highest' });
     const last = await planning.issue(as, { projectId, title: 'Last', priority: 'low' });

@@ -24969,13 +24969,35 @@ var acceptProposalsResultSchema = external_exports.object({
 });
 var dismissProposalsBodySchema = external_exports.object({ ids: external_exports.array(idSchema).min(1).max(500) });
 var dismissProposalsResultSchema = external_exports.object({ dismissed: external_exports.number().int() });
-var scanRepositoryBodySchema = external_exports.object({ repository: repositoryInputSchema });
 var scanResultSchema = external_exports.object({
   repository: external_exports.string(),
   /** Deployables found and proposed (or still proposed) in this scan. */
   proposed: external_exports.number().int(),
   /** Proposals dropped because their folder no longer holds a deployable. */
   removed: external_exports.number().int()
+});
+
+// ../../../modules/pipelines/shared/discovery.ts
+var scanBodySchema = external_exports.object({ repository: repositoryInputSchema.optional() });
+var sweepQueuedSchema = external_exports.object({ queued: external_exports.literal(true) });
+var discoverySweepSchema = external_exports.object({
+  startedAt: isoDateTimeSchema,
+  finishedAt: isoDateTimeSchema.nullable(),
+  /** How many repositories the hosts listed; null until it finished. */
+  repositories: external_exports.number().int().nullable(),
+  /** Why the hosts could not be asked, in plain words. */
+  error: external_exports.string().nullable()
+});
+var discoveryStatusSchema = external_exports.object({
+  /** Repositories Pipelines knows of, archived ones left out. */
+  repositories: external_exports.number().int(),
+  /** Scanned since a scan was last asked for. */
+  scanned: external_exports.number().int(),
+  /** Whose last scan could not read the repository. */
+  failed: external_exports.number().int(),
+  /** A sweep or a repository's scan has not finished yet. */
+  scanning: external_exports.boolean(),
+  lastSweep: discoverySweepSchema.nullable()
 });
 
 // ../../../modules/pipelines/shared/environments.ts

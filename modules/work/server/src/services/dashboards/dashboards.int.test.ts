@@ -103,7 +103,12 @@ describe('dashboards and the quarter view against a real database', () => {
     const asAna = planning.ctx(ana);
     const [epicType] = await sql<{ id: string }[]>`
       select id from issue_types where project_id is null and level = 'epic' limit 1`;
-    const epic = await planning.issue(asAna, { projectId, title: 'Billing', typeId: epicType!.id });
+    const epic = await planning.issue(asAna, {
+      projectId,
+      title: 'Billing',
+      typeId: epicType!.id,
+      customFields: { target_date: '2026-12-31', owner: ana },
+    });
     const open = await planning.issue(asAna, { projectId, title: 'Invoices', parentId: epic.id });
     const shipped = await planning.issue(asAna, { projectId, title: 'Refunds', parentId: epic.id });
     await planning.setStatus(shipped.key, 'Done');

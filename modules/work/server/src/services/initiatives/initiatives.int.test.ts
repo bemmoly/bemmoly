@@ -39,7 +39,7 @@ describe('initiatives against a real database', () => {
         title,
         typeId: epicType?.id ?? '',
         startAt,
-        customFields: { target_date: target },
+        customFields: { target_date: target, owner: ana },
       });
     const build = await epic(platform, 'Checkout', '2026-10-01', '2026-11-30');
     const verify = await epic(testing, 'Checkout QA', '2026-11-01', '2026-12-15');
