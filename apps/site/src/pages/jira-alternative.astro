@@ -12,6 +12,7 @@ import AlsoCompare from '../components/alternatives/AlsoCompare.astro';
 import Comparison from '../components/alternatives/Comparison.astro';
 import Lead from '../components/alternatives/Lead.astro';
 import Promises from '../components/alternatives/Promises.astro';
+import Savings from '../components/alternatives/Savings.astro';
 import Shot from '../components/alternatives/Shot.astro';
 import Steps from '../components/alternatives/Steps.astro';
 import Capabilities from '../components/topics/Capabilities.astro';
@@ -193,6 +194,18 @@ const FAQ: readonly FaqItem[] = [
       </li>
     </ul>
     <p>Bemmoly is built to run on your own server from the first release.</p>
+  </Section>
+
+  <Section title="What your team saves" id="savings">
+    <p>
+      Enter your team size and the plan you pay for to see the Jira subscription you would stop
+      paying.
+    </p>
+    <Savings />
+    <p class="text-13">
+      An estimate from public list prices, not a quote. It leaves out tax, annual billing discounts,
+      volume pricing, apps from the marketplace and the time a move takes.
+    </p>
   </Section>
 
   <Section title="Moving your projects across">
