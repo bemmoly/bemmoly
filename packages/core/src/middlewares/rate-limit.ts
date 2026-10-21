@@ -26,7 +26,10 @@ export interface RateLimitBudgets {
   failedCredentialsPerIp: RateLimitBudget;
   /** Each route that calls a model, keyed by person: see rate-limit-ai.ts. */
   aiPerActor: RateLimitBudget;
-  /** File uploads (POST /files, POST /workspace/logo), keyed by person. */
+  /**
+   * File uploads (POST /files, POST /workspace/logo), keyed by person; uploads to a link
+   * (PUT /upload-links/:token) are anonymous, so keyed by address.
+   */
   uploadsPerActor: RateLimitBudget;
 }
 
@@ -106,7 +109,7 @@ const BOOT_READS = ['/setup/status', '/auth/sso/providers'];
 const SCIM_PREFIX = '/scim/v2/';
 
 /** Uploads write to disk, so they have a per-person budget of their own. */
-const UPLOAD_PATHS = ['/files', '/workspace/logo'];
+const UPLOAD_PATHS = ['POST /files', 'POST /workspace/logo', 'PUT /upload-links/:token'];
 
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;
@@ -191,7 +194,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
           timeWindow: ai.windowMs,
           keyGenerator: (request: FastifyRequest) => `ai|${actorKey(request)}`,
         };
-      } else if (method === 'POST' && UPLOAD_PATHS.includes(path)) {
+      } else if (UPLOAD_PATHS.includes(`${method} ${path}`)) {
         route.config.rateLimit = {
           max: uploads.max,
           timeWindow: uploads.windowMs,

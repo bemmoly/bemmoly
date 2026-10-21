@@ -32,6 +32,7 @@ export {
   fileUrl,
   type FileAccess,
   type FileContent,
+  type FileDetails,
   type FileInfo,
   type FileStoreAccess,
   type FilesRegistry,

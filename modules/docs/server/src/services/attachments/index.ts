@@ -1,6 +1,11 @@
-import { fileIdOf, type RequestContext } from '@bemmoly/core';
+import { fileIdOf, fileUrl, type RequestContext } from '@bemmoly/core';
 import { asFileBlocks, imageSources, type StoredDocument } from '@bemmoly/editor/convert';
-import { NotFoundError, ValidationError, type UploadedFile } from '@bemmoly/shared';
+import {
+  NotFoundError,
+  ValidationError,
+  type UploadedFile,
+  type UploadLink,
+} from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import { DOCS_PAGE_KIND } from '../collab/index.ts';
 import type { DocsServiceDeps } from '../common.ts';
@@ -15,6 +20,7 @@ type Readable = Parameters<typeof imageSources>[0];
 export function createAttachmentsService(deps: DocsServiceDeps) {
   const upload = deps.files?.upload;
   const stat = deps.files?.stat;
+  const createUploadLink = deps.files?.createUploadLink;
 
   return {
     async upload(
@@ -25,6 +31,23 @@ export function createAttachmentsService(deps: DocsServiceDeps) {
     ): Promise<UploadedFile> {
       if (!upload) throw new ValidationError('Files cannot be added on this install');
       return upload(ctx, { target: DOCS_PAGE_KIND, targetId: pageId, name }, body);
+    },
+
+    /** A single-use link the agent sends a file too large for a tool call to (ADR 0048). */
+    async createUploadLink(ctx: RequestContext, pageId: string, name: string): Promise<UploadLink> {
+      if (!createUploadLink) throw new ValidationError('Files cannot be added on this install');
+      return createUploadLink(ctx, { target: DOCS_PAGE_KIND, targetId: pageId, name });
+    },
+
+    /** A file already stored on this page (sent to an upload link), as the person sees it. */
+    async onPage(ctx: RequestContext, pageId: string, fileId: string): Promise<UploadedFile> {
+      if (!stat) throw new ValidationError('Files cannot be added on this install');
+      const file = await stat(ctx, fileId);
+      if (file.target.kind !== DOCS_PAGE_KIND || file.target.id !== pageId) {
+        throw new ValidationError('That file belongs to another page; upload it to this one');
+      }
+      const { name, mime, size } = file;
+      return { id: fileId, url: fileUrl(fileId), name, mime, size } as UploadedFile;
     },
 
     /** The document with every image that is a stored PDF or HTML file made a File block. */

@@ -1,17 +1,18 @@
-import type { ModuleContext, RequestContext } from '@bemmoly/core';
+import { aiToolContribution, type ModuleContext, type RequestContext } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
 import { toMarkdown } from '@bemmoly/editor/convert';
 import { pageIdParamsSchema, type RichText } from '../../../../shared/common.ts';
 import type { PageDetail } from '../../../../shared/pages.ts';
 import { listSpacesQuerySchema } from '../../../../shared/spaces.ts';
 import { treeQuerySchema } from '../../../../shared/tree.ts';
+import { uploadLinkTool } from '../ai-tools/files.ts';
 import type { DocsServices } from '../index.ts';
 import { pagePath } from '../palette/index.ts';
 
 /*
  * What Docs offers MCP clients besides its AI tools: spaces and pages as resources, a page's
- * text as Markdown, and a review prompt. Reads go through the services the screens call, as
- * the person behind the token.
+ * text as Markdown, a review prompt, and upload links for files too large for a tool call.
+ * Everything goes through the services the screens call, as the person behind the token.
  */
 
 const pageUri = (id: string) => `bemmoly://docs/pages/${id}`;
@@ -42,8 +43,9 @@ async function readPage(services: DocsServices, ctx: RequestContext, pageId: str
   return services.pages.get(ctx, parsed.data.pageId);
 }
 
-/** Registers Docs' MCP resources and prompts with the kernel. */
+/** Registers Docs' MCP resources, prompts and MCP-only tools with the kernel. */
 export function registerDocsMcp(mcp: ModuleContext['mcp'], services: DocsServices): void {
+  mcp.addTool(aiToolContribution(uploadLinkTool(services)));
   mcp.addResource({
     name: 'docs.space',
     title: 'Space',

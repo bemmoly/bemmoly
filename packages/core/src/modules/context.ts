@@ -264,6 +264,12 @@ export function createModuleContext(
         }
         return filesOf().upload(ctx, query, body);
       },
+      createUploadLink(ctx, query) {
+        if (!query.target.startsWith(`${module.id}.`)) {
+          fail(`may only hand out links into its own file targets, not "${query.target}"`);
+        }
+        return filesOf().createUploadLink(ctx, query);
+      },
     },
     objects: createModuleObjects(module.id, options.objects),
     code: createCodeRegistry(module.id, into, options.codeHosts),

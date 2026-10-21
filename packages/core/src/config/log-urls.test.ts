@@ -25,6 +25,7 @@ describe('URL redaction in logs', () => {
     [`/accept-invitation/${TOKEN}`, '/accept-invitation/[redacted]'],
     [`/reset-password?k=${TOKEN}&next=%2F`, '/reset-password?k=[redacted]&next=[redacted]'],
     [`/reset-password/${TOKEN}`, '/reset-password/[redacted]'],
+    [`/api/v1/upload-links/bmu_${TOKEN}`, '/api/v1/upload-links/[redacted]'],
   ])('redacts %s', (url, expected) => {
     expect(redactUrl(url)).toBe(expected);
     expect(redactUrl(url)).not.toContain(TOKEN);

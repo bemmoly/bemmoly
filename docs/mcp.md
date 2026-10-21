@@ -127,6 +127,21 @@ Names are namespaced by module, so a client connected to one module sees only th
   `customFields` by field key, a starting `status` by name (any status of the workflow, so done
   work arrives done), `assigneeEmail`, `parentKey` and a Markdown description; then
   `work.update_issue`, `work.delete_issue` and `work.link_issues` tidy up.
+- **Files in pages.** `docs.upload_file` adds an HTML page, a PDF or an image to a page, sent
+  inline (text for HTML, base64 otherwise) while it fits in one request, about 700 KB. A larger
+  file, up to `BEMMOLY_UPLOAD_MAX_BYTES` (10 MiB by default), goes in three steps, so the bytes
+  never pass through the model:
+  1. `docs.create_upload_link` with `pageId` and `name` answers with a single-use `url`, valid
+     for 15 minutes, and the `command` to send the file.
+  2. The agent sends the raw bytes there with HTTP `PUT` and no other credential, for example
+     `curl --fail-with-body -T report.pdf '<url>'`. It answers `201` with the stored file's `id`.
+  3. `docs.upload_file` with `pageId` and that `fileId` adds it at the end of the page (or, with
+     `append: false`, returns the Markdown to place with `docs.update_page`).
+
+  The link stores one file for that page as you, with the same checks as the editor's uploads:
+  you must still be able to edit the page and the connection must still be live, so revoking a
+  token or disconnecting an app ends its links. Bytes the server refuses (empty, too large, not
+  an accepted type) leave the link usable until it expires. ADR 0048 has the reasoning.
 - **Resources.** `bemmoly://work/projects/{key}`, `bemmoly://work/issues/{key}`,
   `bemmoly://docs/spaces/{key}` and `bemmoly://docs/pages/{id}`, as Markdown. Projects and spaces
   are listed; issues and pages are reachable through the templates.
@@ -143,6 +158,10 @@ Names are namespaced by module, so a client connected to one module sees only th
 - `403`: MCP is turned off (`details.reason: "mcp_disabled"`).
 - `404`: the module in the URL is not enabled or not exposed.
 - A tool the person may not use answers with a tool error the model can read, not a failure.
+- Upload links: `404` with `details.reason` `used`, `expired` or `unknown`; `403` when the
+  person may no longer edit the page or the connection has ended (`details.reason: "revoked"`);
+  `413` over `BEMMOLY_UPLOAD_MAX_BYTES`. They share the upload budget of 30 a minute per address
+  (`BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER`).
 
 ## For module authors
 

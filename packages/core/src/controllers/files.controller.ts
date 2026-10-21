@@ -2,7 +2,9 @@ import type { Readable } from 'node:stream';
 import {
   fileIdParamsSchema,
   parseOrThrow,
+  UnauthenticatedError,
   uploadFileQuerySchema,
+  uploadLinkParamsSchema,
   ValidationError,
   type UploadedFile,
 } from '@bemmoly/shared';
@@ -69,6 +71,20 @@ export function createFilesController(service: FilesService) {
       const query = parseOrThrow(uploadFileQuerySchema, request.query);
       if (!Buffer.isBuffer(request.body)) throw new ValidationError('Send the file as the body');
       const file = await service.upload(contextOf(request), query, request.body);
+      reply.code(201);
+      return file;
+    },
+
+    /** Anonymous by design: the token in the path is the credential (ADR 0048). */
+    async uploadByLink(request: FastifyRequest, reply: FastifyReply): Promise<UploadedFile> {
+      const { token } = parseOrThrow(uploadLinkParamsSchema, request.params);
+      if (!Buffer.isBuffer(request.body)) throw new ValidationError('Send the file as the body');
+      if (!request.authz) throw new UnauthenticatedError();
+      const file = await service.uploadByLink(token, request.body, {
+        authz: request.authz,
+        ip: request.ip,
+        requestId: request.id,
+      });
       reply.code(201);
       return file;
     },
