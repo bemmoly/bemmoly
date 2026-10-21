@@ -1,5 +1,6 @@
 import type { ControlChart, TimeInStatus } from '@bemmoly/module-work/shared';
 import { BarChart, ScatterChart } from '@bemmoly/ui';
+import type { ReactNode } from 'react';
 import { dayLabel } from './model.ts';
 import { ReportCard, ReportNote, ReportPending } from './report-card.tsx';
 
@@ -18,13 +19,15 @@ function dateTicks(from: string, to: string) {
 export function ControlChartCard({
   chart,
   error,
+  actions,
 }: {
   chart: ControlChart | undefined;
   error: Error | null;
+  actions?: ReactNode;
 }) {
   const hint = chart?.meanDays != null ? `Mean ${chart.meanDays} days` : 'Cycle time per issue';
   return (
-    <ReportCard title="Control chart" hint={hint}>
+    <ReportCard title="Control chart" hint={hint} actions={actions}>
       {!chart ? (
         <ReportPending error={error} />
       ) : chart.points.length === 0 ? (
@@ -76,12 +79,18 @@ export function ControlChartCard({
 export function TimeInStatusCard({
   report,
   error,
+  actions,
 }: {
   report: TimeInStatus | undefined;
   error: Error | null;
+  actions?: ReactNode;
 }) {
   return (
-    <ReportCard title="Time in status" hint="Average days an issue stands in each status">
+    <ReportCard
+      title="Time in status"
+      hint="Average days an issue stands in each status"
+      actions={actions}
+    >
       {!report ? (
         <ReportPending error={error} />
       ) : report.statuses.length === 0 ? (

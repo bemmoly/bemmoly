@@ -1,14 +1,25 @@
 import type { VelocityPoint } from '@bemmoly/module-work/shared';
 import { BarChart, Table, type TableColumn } from '@bemmoly/ui';
+import type { ReactNode } from 'react';
 import { issuesAndPoints, share } from './model.ts';
 import { ReportCard, ReportNote } from './report-card.tsx';
 
 const EMPTY = 'No sprint has closed yet. Velocity starts with the first one.';
 
 /** Committed against completed points, last closed sprints. */
-export function VelocityChart({ velocity }: { velocity: readonly VelocityPoint[] }) {
+export function VelocityChart({
+  velocity,
+  actions,
+}: {
+  velocity: readonly VelocityPoint[];
+  actions?: ReactNode;
+}) {
   return (
-    <ReportCard title="Velocity" hint="Committed and completed points, last closed sprints">
+    <ReportCard
+      title="Velocity"
+      hint="Committed and completed points, last closed sprints"
+      actions={actions}
+    >
       {velocity.length === 0 ? (
         <ReportNote>{EMPTY}</ReportNote>
       ) : (

@@ -9,6 +9,8 @@ export const workPaths = {
   roadmap: (projectKey?: string) => (projectKey ? `/work/roadmap/${projectKey}` : '/work/roadmap'),
   pairing: (projectKey: string) => `/work/pairing/${projectKey}`,
   reports: (projectKey: string) => `/work/reports/${projectKey}`,
+  dashboards: (projectKey: string) => `/work/dashboards/${projectKey}`,
+  quarter: (projectKey: string) => `/work/quarter/${projectKey}`,
   /** A project's settings open on their first section, Members. */
   settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',

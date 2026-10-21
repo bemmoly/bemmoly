@@ -108,6 +108,22 @@ export default defineModule({
       keys: 'G E',
     });
     ctx.navigation.add({
+      id: 'work.dashboards',
+      label: 'Dashboards',
+      path: '/work/dashboards',
+      placement: 'command',
+      icon: 'pulse',
+      keys: 'G D',
+    });
+    ctx.navigation.add({
+      id: 'work.quarter',
+      label: 'Quarter',
+      path: '/work/quarter',
+      placement: 'command',
+      icon: 'calendar',
+      keys: 'G Q',
+    });
+    ctx.navigation.add({
       id: 'work.projects',
       label: 'Projects',
       path: '/work/projects',

@@ -7,15 +7,22 @@ export function ReportCard({
   hint,
   children,
   className,
+  actions,
 }: {
   title: string;
   hint?: string;
   children: ReactNode;
   className?: string;
+  /** Controls on the header's right, such as a dashboard widget's menu. */
+  actions?: ReactNode;
 }) {
   return (
     <Card className={className}>
-      <CardHeader title={<h3 className="m-0 text-14 font-semibold">{title}</h3>} hint={hint} />
+      <CardHeader
+        title={<h3 className="m-0 text-14 font-semibold">{title}</h3>}
+        hint={hint}
+        actions={actions}
+      />
       <CardBody>{children}</CardBody>
     </Card>
   );

@@ -61,6 +61,22 @@ describe('work module', () => {
           keys: 'G E',
         },
         {
+          id: 'work.dashboards',
+          label: 'Dashboards',
+          path: '/work/dashboards',
+          placement: 'command',
+          icon: 'pulse',
+          keys: 'G D',
+        },
+        {
+          id: 'work.quarter',
+          label: 'Quarter',
+          path: '/work/quarter',
+          placement: 'command',
+          icon: 'calendar',
+          keys: 'G Q',
+        },
+        {
           id: 'work.projects',
           label: 'Projects',
           path: '/work/projects',
