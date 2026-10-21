@@ -120,6 +120,13 @@ describe('buildApp', () => {
               keys: 'G R',
             },
             {
+              id: 'work.initiatives',
+              label: 'Initiatives',
+              path: '/work/initiatives',
+              placement: 'command',
+              icon: 'target',
+            },
+            {
               id: 'work.pairing',
               label: 'Pairing',
               path: '/work/pairing',
@@ -134,6 +141,22 @@ describe('buildApp', () => {
               placement: 'command',
               icon: 'reports',
               keys: 'G E',
+            },
+            {
+              id: 'work.dashboards',
+              label: 'Dashboards',
+              path: '/work/dashboards',
+              placement: 'command',
+              icon: 'pulse',
+              keys: 'G D',
+            },
+            {
+              id: 'work.quarter',
+              label: 'Quarter',
+              path: '/work/quarter',
+              placement: 'command',
+              icon: 'calendar',
+              keys: 'G Q',
             },
             {
               id: 'work.projects',
@@ -172,6 +195,12 @@ describe('buildApp', () => {
                 icon: 'layers',
               },
               { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
+              {
+                id: 'work.initiatives',
+                label: 'Initiatives',
+                path: '/work/initiatives',
+                icon: 'target',
+              },
             ],
             primary: [
               { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },
