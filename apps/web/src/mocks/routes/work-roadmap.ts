@@ -3,7 +3,9 @@ import { THROUGHPUT } from '../seed/work-roadmap.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { projectsOf } from './work-board-state.ts';
 import { statuses } from './work-issue-detail.ts';
-import { linksOf, versionsOf } from './work-issues.ts';
+import { versionsOf } from './work-issues.ts';
+import { initiativeEpicIds } from './work-initiatives.ts';
+import { mockDependencies } from './work-roadmap-links.ts';
 import { issueStore } from './work-issue-store.ts';
 import {
   dayOf,
@@ -64,10 +66,21 @@ function view(request: MockRequest, db: MockDb) {
   );
   if (missing.length > 0)
     return fail(404, 'not_found', `There is no project ${missing.join(', ')}`);
+  const initiative = request.query.get('initiative');
+  const only = initiative ? initiativeEpicIds(db, initiative) : null;
+  if (initiative && !only) return notFound('The initiative');
+  const epicProjects = only
+    ? new Set(
+        issueStore(db)
+          .issues.filter((row) => only.has(row.id))
+          .map((row) => String(row['projectId'])),
+      )
+    : null;
   const projects = all.filter(
     (project) =>
       (!keys || keys.some((key) => key.toUpperCase() === project['key'])) &&
-      (!teamId || project['teamId'] === teamId),
+      (!teamId || project['teamId'] === teamId) &&
+      (!epicProjects || epicProjects.has(project.id)),
   );
   const ids = new Set(projects.map((project) => project.id));
   const status = statuses(db);
@@ -186,19 +199,10 @@ function view(request: MockRequest, db: MockDb) {
   for (const { input, item } of built)
     if (input.kind === 'epic' && !input.done && input.started && input.remaining > 0)
       inFlight.set(String(item['projectId']), (inFlight.get(String(item['projectId'])) ?? 0) + 1);
-  const known = new Set(built.map(({ item }) => item.id));
-  const dependencies = linksOf(db)
-    .filter(
-      (link) =>
-        link['kind'] === 'blocks' &&
-        known.has(String(link['sourceId'])) &&
-        known.has(String(link['targetId'])),
-    )
-    .map((link) => ({
-      id: link.id,
-      fromId: String(link['sourceId']),
-      toId: String(link['targetId']),
-    }));
+  const dependencies = mockDependencies(
+    db,
+    built.map(({ item }) => item),
+  );
   const ends = new Map<string, [number, number, number]>();
   const forecasts = new Map<string, MockForecast>();
   // Blockers first: one pass per level of the dependency chain is enough for the seeded plan.
@@ -221,6 +225,9 @@ function view(request: MockRequest, db: MockDb) {
     forecasts.set(item.id, result.forecast);
     if (result.ends) ends.set(item.id, result.ends);
   }
+  // An initiative's forecasts count every item sharing its teams; it shows only its own epics.
+  const shown = only ? built.filter(({ item }) => only.has(item.id)) : built;
+  const shownIds = new Set(shown.map(({ item }) => item.id));
   return ok({
     today: new Date(now * 86_400_000).toISOString().slice(0, 10),
     projects: projects.map((project) => ({
@@ -236,8 +243,8 @@ function view(request: MockRequest, db: MockDb) {
     teams: db.teams
       .filter((team) => projects.some((project) => project['teamId'] === team.id))
       .map((team) => ({ id: team.id, name: team.name })),
-    items: built.map(({ item }) => ({ ...item, forecast: forecasts.get(item.id) })),
-    dependencies,
+    items: shown.map(({ item }) => ({ ...item, forecast: forecasts.get(item.id) })),
+    dependencies: dependencies.filter((d) => shownIds.has(d.fromId) && shownIds.has(d.toId)),
     computedAt: new Date().toISOString(),
   });
 }

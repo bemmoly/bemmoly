@@ -29,9 +29,9 @@ export function RulesSection({ automation, access, onOpen, onNew, onTest }: Rule
         <h2 id="project-rules" className="m-0 text-14 font-semibold text-tx">
           This project
         </h2>
-        {access.configureProject ? null : (
+        {access.editRules ? null : (
           <p className="m-0 text-12 text-tx-3">
-            You can read these rules. Changing them needs “Configure project”.
+            You can read these rules. Changing them needs “Edit automation”.
           </p>
         )}
         <RulesTable
@@ -44,7 +44,7 @@ export function RulesSection({ automation, access, onOpen, onNew, onTest }: Rule
               title="No rules yet"
               description="Rules move issues, assign people and tell other tools when something happens."
               action={
-                access.configureProject ? (
+                access.editRules ? (
                   <Button variant="primary" icon={<Icon name="plus" />} onClick={onNew}>
                     New rule
                   </Button>

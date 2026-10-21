@@ -1,4 +1,5 @@
 import { ModuleTile, type PageCrumb, type PageHeaderProps, type PageTab } from '@bemmoly/core-web';
+import { useInitiative } from '../hooks/initiatives.ts';
 import type { ModuleManifest } from '@bemmoly/shared';
 import type { Project } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
@@ -15,6 +16,8 @@ const PROJECT_SCREENS = [
   'roadmap',
   'pairing',
   'reports',
+  'dashboards',
+  'quarter',
   'issue',
   'members',
   'settings',
@@ -25,13 +28,21 @@ type ProjectScreen = (typeof PROJECT_SCREENS)[number];
 const isProjectScreen = (name: string): name is ProjectScreen =>
   (PROJECT_SCREENS as readonly string[]).includes(name);
 
-/** Board, Backlog, Roadmap, Pairing and Reports: views of the same project, as header tabs with their chords. */
+/** Board, Backlog, Roadmap, Pairing, Reports, Dashboards and Quarter: views of the same project, as header tabs with their chords. */
 export const viewTabs = (key: string): PageTab[] => [
   { id: 'board', label: 'Board', icon: 'board', path: workPaths.board(key), keys: 'G B' },
   { id: 'backlog', label: 'Backlog', icon: 'backlog', path: workPaths.backlog(key), keys: 'G L' },
   { id: 'roadmap', label: 'Roadmap', icon: 'roadmap', path: workPaths.roadmap(key), keys: 'G R' },
   { id: 'pairing', label: 'Pairing', icon: 'grid', path: workPaths.pairing(key), keys: 'G P' },
   { id: 'reports', label: 'Reports', icon: 'reports', path: workPaths.reports(key), keys: 'G E' },
+  {
+    id: 'dashboards',
+    label: 'Dashboards',
+    icon: 'pulse',
+    path: workPaths.dashboards(key),
+    keys: 'G D',
+  },
+  { id: 'quarter', label: 'Quarter', icon: 'calendar', path: workPaths.quarter(key), keys: 'G Q' },
 ];
 
 /** A project's settings sections, as header tabs; Members moved in from its own page. */
@@ -61,6 +72,8 @@ function samePlace(screen: ProjectScreen, rest: readonly string[], key: string):
   if (screen === 'roadmap') return workPaths.roadmap(key);
   if (screen === 'pairing') return workPaths.pairing(key);
   if (screen === 'reports') return workPaths.reports(key);
+  if (screen === 'dashboards') return workPaths.dashboards(key);
+  if (screen === 'quarter') return workPaths.quarter(key);
   if (screen === 'members') return `/work/members/${key}`;
   if (screen === 'workflows') return workflowPaths.list(key);
   if (screen === 'settings') return settingsPath(key, isSettingsPage(rest[0]) ? rest[0] : 'board');
@@ -118,7 +131,10 @@ export function useWorkFrame(
   rest: readonly string[],
 ): WorkFrame {
   const issueKey = name === 'issue' ? pathKey?.toUpperCase() : undefined;
-  const { project, projects } = useProject(issueKey ? issueKey.split('-')[0] : pathKey);
+  const { project, projects } = useProject(
+    issueKey ? issueKey.split('-')[0] : name === 'initiatives' ? undefined : pathKey,
+  );
+  const initiativeName = useInitiative(name === 'initiatives' ? pathKey : undefined).data?.name;
   const work: PageCrumb = {
     label: manifest.name ?? 'Work',
     path: workPaths.projects(),
@@ -146,6 +162,26 @@ export function useWorkFrame(
       title: ['Roadmap', 'All projects'],
     };
   }
+  if (name === 'initiatives') {
+    const list: PageCrumb = {
+      label: 'Initiatives',
+      path: workPaths.initiatives(),
+      icon: <Icon name="target" size={15} />,
+    };
+    return pathKey
+      ? {
+          layout: 'full',
+          header: {
+            crumbs: [
+              work,
+              list,
+              { label: initiativeName ?? '', path: workPaths.initiatives(pathKey) },
+            ],
+          },
+          title: [initiativeName ?? 'Initiative', 'Initiatives'],
+        }
+      : { layout: 'contained', header: { crumbs: [work, list] }, title: ['Initiatives'] };
+  }
   if (!isProjectScreen(name)) {
     return {
       layout: 'contained',
@@ -160,7 +196,9 @@ export function useWorkFrame(
     name === 'backlog' ||
     name === 'roadmap' ||
     name === 'pairing' ||
-    name === 'reports'
+    name === 'reports' ||
+    name === 'dashboards' ||
+    name === 'quarter'
   ) {
     return { layout: 'full', header: { crumbs: [crumb], tabs: viewTabs(key), activeTab: name } };
   }

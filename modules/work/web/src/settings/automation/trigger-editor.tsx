@@ -1,6 +1,7 @@
 import {
   AUTOMATION_TRIGGERS,
   AUTOMATION_WATCHED_FIELDS,
+  TIME_IN_STATUS_UNITS,
   type AutomationCatalogEntry,
 } from '@bemmoly/module-work/shared';
 import { Checkbox, Field, Input, Select, type SelectOption } from '@bemmoly/ui';
@@ -11,6 +12,11 @@ import { withCurrent } from './use-rule-options.ts';
 /** The Select needs a value for "Any status"; it is sent as no argument at all. */
 const ANY = 'any-status';
 const status = (value: string) => (value === ANY ? undefined : value);
+
+const UNIT_OPTIONS: SelectOption[] = TIME_IN_STATUS_UNITS.map((unit) => ({
+  value: unit,
+  label: unit === 'days' ? 'Days' : 'Hours',
+}));
 
 interface TriggerEditorProps {
   trigger: Step;
@@ -108,6 +114,33 @@ export function TriggerEditor({
             onChange={(event) => onArgs({ cron: event.target.value })}
           />
         </Field>
+      ) : null}
+      {trigger.name === AUTOMATION_TRIGGERS.timeInStatus ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Field label="Status" error={problems['trigger.args.status']}>
+            <Select
+              options={withCurrent(statuses, args['status'])}
+              placeholder="Pick a status"
+              value={String(args['status'] ?? '')}
+              onChange={(event) => onArgs({ status: event.value })}
+            />
+          </Field>
+          <Field label="For more than" error={problems['trigger.args.amount']}>
+            <Input
+              type="number"
+              min={1}
+              value={String(args['amount'] ?? '')}
+              onChange={(event) => onArgs({ amount: Number(event.target.value) })}
+            />
+          </Field>
+          <Field label="Unit" error={problems['trigger.args.unit']}>
+            <Select
+              options={UNIT_OPTIONS}
+              value={String(args['unit'] ?? 'days')}
+              onChange={(event) => onArgs({ unit: event.value })}
+            />
+          </Field>
+        </div>
       ) : null}
     </div>
   );

@@ -95,3 +95,25 @@ own (Mod+Z, Delete). Checked against the global map: no single letters are added
 - **Reset to default** on a project's board now drops the project's override mark too, so later
   changes to the default reach it again; before, it copied the default once and the project
   stayed overridden.
+
+## Permissions tab
+
+Settings › Work › **Permissions** (`/settings/work/permissions`), after Board: which role may
+take which Work action, such as only a Scrum Master creating, starting and completing sprints.
+The cells are the workspace roles matrix's own Work rows (Settings › Roles shows the same), drawn
+as that matrix draws them: a column per role, custom roles in accent with "custom" under the
+name, Org admin fixed and dimmed, rows grouped by area (Projects, Issues, Sprints, Boards,
+Workflows and automation). Inside a project, the person's project role decides.
+
+- **Primary job.** Grant or deny one action for one role, and save.
+- **Top three actions.** (1) Toggle a cell (click, or Tab to the checkbox and Space). (2) Save,
+  in the header, enabled once something changed. (3) Discard, which puts every cell back.
+- **Keyboard.** Nothing new: Tab moves through the cells in reading order, Space toggles.
+- **States.** Loading shows row skeletons; an error shows "Permissions did not load" with Try
+  again; a refused save keeps the draft and toasts the server's reason. Never empty: the
+  catalog always has rows. No permission: the page sits behind Settings › Work, which only
+  workspace admins reach; the server refuses the read and every save to anyone else.
+- **Phone.** The card scrolls sideways inside itself; the page does not.
+- **Elsewhere.** Controls follow the same cells per project: Create sprint, Start and Complete
+  sprint, the epics panel's create, Delete issue in issue menus, Review and publish in the
+  workflow editor, and New rule in automation hide or disable for a role without the action.

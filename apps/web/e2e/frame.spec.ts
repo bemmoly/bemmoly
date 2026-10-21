@@ -14,7 +14,7 @@ test('the sidebar moves between Home, Inbox, a project and its views', async ({ 
 
   await sidebar.getByRole('link', { name: 'Platform Core' }).click();
   await expect(page).toHaveURL(/\/work\/board\/PLT$/);
-  await expect(sidebar.getByRole('link', { name: 'Board' })).toHaveAttribute(
+  await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
   );

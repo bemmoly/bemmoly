@@ -1,5 +1,5 @@
 import { ValidationError } from '@bemmoly/shared';
-import type { BoardConfig } from '../../../../shared/boards.ts';
+import { sortRuleQuery, type BoardConfig } from '../../../../shared/boards.ts';
 
 /*
  * The rules a board config must keep beyond its schema: every column maps
@@ -56,6 +56,14 @@ export function configQueries(config: BoardConfig): { path: string; query: strin
     ...config.colorRules.map((rule, index) => ({
       path: `colorRules.${index}.query`,
       query: rule.query,
+    })),
+    ...config.backlog.filters.map((filter, index) => ({
+      path: `backlog.filters.${index}.query`,
+      query: filter.query,
+    })),
+    ...config.backlog.sortRules.map((rule, index) => ({
+      path: `backlog.sortRules.${index}.${rule.kind === 'match' ? 'query' : 'field'}`,
+      query: rule.kind === 'match' ? rule.query : sortRuleQuery(rule),
     })),
   ];
 }

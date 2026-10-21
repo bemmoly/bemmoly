@@ -1,4 +1,5 @@
 import { defineModule, importerContribution, loadChangelogFolder } from '@bemmoly/core';
+import { registerAskReports } from './server/src/config/ask-reports.ts';
 import { WORK_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
@@ -38,6 +39,12 @@ export default defineModule({
     links: [
       { id: 'work.all-projects', label: 'All projects', path: '/work/projects', icon: 'layers' },
       { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
+      {
+        id: 'work.initiatives',
+        label: 'Initiatives',
+        path: '/work/initiatives',
+        icon: 'target',
+      },
     ],
     primary: [{ id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' }],
     add: { create: 'work.create-project', label: 'New project' },
@@ -79,6 +86,13 @@ export default defineModule({
       keys: 'G R',
     });
     ctx.navigation.add({
+      id: 'work.initiatives',
+      label: 'Initiatives',
+      path: '/work/initiatives',
+      placement: 'command',
+      icon: 'target',
+    });
+    ctx.navigation.add({
       id: 'work.pairing',
       label: 'Pairing',
       path: '/work/pairing',
@@ -93,6 +107,22 @@ export default defineModule({
       placement: 'command',
       icon: 'reports',
       keys: 'G E',
+    });
+    ctx.navigation.add({
+      id: 'work.dashboards',
+      label: 'Dashboards',
+      path: '/work/dashboards',
+      placement: 'command',
+      icon: 'pulse',
+      keys: 'G D',
+    });
+    ctx.navigation.add({
+      id: 'work.quarter',
+      label: 'Quarter',
+      path: '/work/quarter',
+      placement: 'command',
+      icon: 'calendar',
+      keys: 'G Q',
     });
     ctx.navigation.add({
       id: 'work.projects',
@@ -161,12 +191,20 @@ export default defineModule({
     registerWorkAiTools(ctx.ai, services);
     registerWorkMcp(ctx.mcp, services);
     registerWorkAi(ctx, ctx.database);
+    const askReports = registerAskReports(ctx);
     const importDeps = {
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
     };
     ctx.importers.add(importerContribution(createJiraImporter(importDeps)));
     ctx.importers.add(importerContribution(createCsvImporter(importDeps)));
-    ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
+    const routes = workRoutes(createWorkControllers(services));
+    ctx.routes.add({
+      prefix: '/work',
+      plugin: async (app) => {
+        await app.register(routes);
+        await app.register(askReports);
+      },
+    });
   },
 });

@@ -35,11 +35,14 @@ import { workAutomationRoutes } from './work-automation.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
 import { workReportRoutes } from './work-reports.ts';
+import { workAskReportRoutes } from './work-ask-reports.ts';
 import { workCodeLinkRoutes } from './work-code-links.ts';
+import { workDashboardRoutes } from './work-dashboards.ts';
 import { workFilterRoutes } from './work-filters.ts';
 import { workIssuesRoutes } from './work-issues.ts';
 import { workMembersRoutes } from './work-members.ts';
 import { workMyIssuesRoutes } from './work-my-issues.ts';
+import { workInitiativeRoutes } from './work-initiatives.ts';
 import { workRoadmapRoutes } from './work-roadmap.ts';
 import { workSettingsBoardRoutes } from './work-settings-boards.ts';
 import { workSettingsRoutes } from './work-settings.ts';
@@ -74,11 +77,14 @@ export const ROUTES: readonly MockRoute[] = [
   ...workBacklogRoutes,
   ...workBoardRoutes,
   ...workReportRoutes,
+  ...workDashboardRoutes,
+  ...workAskReportRoutes,
   ...workFilterRoutes,
   ...workIssuesRoutes,
   ...workMembersRoutes,
   ...workMyIssuesRoutes,
   ...workRoadmapRoutes,
+  ...workInitiativeRoutes,
   ...workSettingsRoutes,
   ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,

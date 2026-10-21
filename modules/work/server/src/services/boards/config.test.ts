@@ -107,3 +107,24 @@ describe('board view query', () => {
     expect(onlyWipChanged(config(), config({ colorRule: 'priority' }))).toBe(false);
   });
 });
+
+describe('configQueries for the backlog', () => {
+  it('checks backlog filters, match rules and field rules as LQL with their paths', () => {
+    const queries = configQueries(
+      config({
+        backlog: {
+          filters: [{ name: 'Support', query: 'type = Support' }],
+          sortRules: [
+            { kind: 'match', name: 'Bugs', query: 'type = Bug' },
+            { kind: 'field', field: 'cf.severity', direction: 'desc' },
+          ],
+        },
+      }),
+    );
+    expect(queries).toEqual([
+      { path: 'backlog.filters.0.query', query: 'type = Support' },
+      { path: 'backlog.sortRules.0.query', query: 'type = Bug' },
+      { path: 'backlog.sortRules.1.field', query: 'ORDER BY cf.severity DESC' },
+    ]);
+  });
+});

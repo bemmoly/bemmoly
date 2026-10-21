@@ -43,6 +43,19 @@ export const AUTOMATION_CATALOG = {
       'At set times, on every issue the conditions match',
       object({ cron: text }, ['cron']),
     ),
+    entry(
+      'time_in_status',
+      'Time in status',
+      'When an issue has been in a status for longer than a number of hours or days',
+      object(
+        {
+          status: text,
+          amount: { type: 'integer', minimum: 1 },
+          unit: { enum: ['hours', 'days'] },
+        },
+        ['status', 'amount', 'unit'],
+      ),
+    ),
   ],
   actions: [
     entry(
@@ -114,6 +127,9 @@ export function ruleProblem(rule: Record<string, unknown>): Problem | null {
   const trigger = (rule['trigger'] ?? {}) as Entry;
   const known = AUTOMATION_CATALOG.triggers.some((row) => row.name === trigger.name);
   if (!known) return { path: 'trigger.name', message: 'Pick a trigger' };
+  const args = trigger.args ?? {};
+  if (trigger.name === 'time_in_status' && blank(args['status']))
+    return { path: 'trigger.args.status', message: 'Pick a status' };
   const conditions = (rule['conditions'] as unknown[] | undefined) ?? [];
   if (trigger.name === 'scheduled' && conditions.length === 0)
     return { path: 'conditions', message: 'A scheduled rule needs at least one condition' };

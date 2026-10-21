@@ -10,6 +10,7 @@ import {
   notifyArgsSchema,
   scheduledArgsSchema,
   sendWebhookArgsSchema,
+  timeInStatusArgsSchema,
   setFieldArgsSchema,
   transitionArgsSchema,
   type AutomationRule,
@@ -47,6 +48,7 @@ export const stepKey = () => `step-${(counter += 1)}`;
 export function startArgs(name: string): Record<string, unknown> {
   if (name === AUTOMATION_TRIGGERS.fieldChanged) return { fields: [] };
   if (name === AUTOMATION_TRIGGERS.scheduled) return { cron: '0 9 * * 1-5' };
+  if (name === AUTOMATION_TRIGGERS.timeInStatus) return { status: '', amount: 5, unit: 'days' };
   if (name === AUTOMATION_ACTIONS.assign) return { to: 'reporter' };
   if (name === AUTOMATION_ACTIONS.notify)
     return { recipients: ['assignee'], userIds: [], message: '' };
@@ -102,6 +104,7 @@ const TRIGGER_ARGS: Record<string, z.ZodType> = {
   [AUTOMATION_TRIGGERS.fieldChanged]: fieldChangedArgsSchema,
   [AUTOMATION_TRIGGERS.issueTransitioned]: issueTransitionedArgsSchema,
   [AUTOMATION_TRIGGERS.scheduled]: scheduledArgsSchema,
+  [AUTOMATION_TRIGGERS.timeInStatus]: timeInStatusArgsSchema,
 };
 
 const ACTION_ARGS: Record<string, z.ZodType> = {

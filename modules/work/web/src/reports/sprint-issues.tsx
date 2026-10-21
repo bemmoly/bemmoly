@@ -7,6 +7,11 @@ const SECTIONS: { id: keyof SprintScope; title: string; empty: string }[] = [
   { id: 'notCompleted', title: 'Not completed', empty: 'Everything was finished.' },
   { id: 'added', title: 'Added after the start', empty: 'No issues joined after the start.' },
   { id: 'removed', title: 'Removed', empty: 'No issues left the sprint.' },
+  {
+    id: 'carriedOver',
+    title: 'Carried over',
+    empty: 'Nothing was carried over from an earlier sprint.',
+  },
 ];
 
 const total = (issues: readonly SprintReportIssue[]) =>

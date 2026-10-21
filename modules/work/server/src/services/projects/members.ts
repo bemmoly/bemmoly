@@ -15,6 +15,7 @@ import {
   type ProjectMembersResponse,
 } from '../../../../shared/members.ts';
 import { WORK_REALTIME_KINDS } from '../../../../shared/realtime.ts';
+import { projectPermissions } from './permissions.ts';
 import { auditMeta, projectByKey, projectResource, type ProjectRow } from './rows.ts';
 
 export interface ProjectMembersDeps {
@@ -108,6 +109,12 @@ export function createProjectMembersService(deps: ProjectMembersDeps) {
         roles: roles.map(({ id, key, name }) => ({ id, key, name })),
         canManage,
       };
+    },
+
+    /** The Work actions the person asking holds in the project. */
+    async permissions(ctx: RequestContext, ref: string) {
+      if (!deps.database) throw new ProviderError('Project permissions need the database');
+      return projectPermissions(ctx, deps.database, ref);
     },
 
     async add(ctx: RequestContext, ref: string, body: AddProjectMembersBody) {

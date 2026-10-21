@@ -22,7 +22,7 @@ type View = 'rules' | 'runs';
  */
 export function AutomationPage({ projectKey }: { projectKey: string | undefined }) {
   const automation = useAutomation(projectKey);
-  const access = useAutomationAccess();
+  const access = useAutomationAccess(projectKey);
   const view: View = useSearchParam('view') === 'runs' ? 'runs' : 'rules';
   const runs = useAutomationRuns(automation.projectId, view === 'runs');
   const options = useRuleOptions(projectKey, automation.projectId);
@@ -35,7 +35,7 @@ export function AutomationPage({ projectKey }: { projectKey: string | undefined 
     rule && !access.canChange(rule)
       ? rule.projectId === null
         ? 'A global rule. Only workspace admins can change it.'
-        : 'You need “Configure project” to change this rule.'
+        : 'You need “Edit automation” to change this rule.'
       : null;
   const count = automation.projectRules.length + automation.globalRules.length;
 
@@ -54,8 +54,8 @@ export function AutomationPage({ projectKey }: { projectKey: string | undefined 
         <Button
           variant="primary"
           icon={<Icon name="plus" />}
-          disabled={!access.configureProject}
-          title={access.configureProject ? undefined : 'You need “Configure project” to add rules.'}
+          disabled={!access.editRules}
+          title={access.editRules ? undefined : 'You need “Edit automation” to add rules.'}
           onClick={() => openRule('new')}
         >
           New rule

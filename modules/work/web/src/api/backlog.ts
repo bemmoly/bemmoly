@@ -1,8 +1,10 @@
 import {
+  backlogQuerySchema,
   backlogSchema,
   createIssueBodySchema,
   issueSchema,
   moveIssueBodySchema,
+  type BacklogQueryInput,
   type CreateIssueBody,
   type MoveIssueBody,
 } from '../../../shared/index.ts';
@@ -15,7 +17,11 @@ const BASE = '/api/v1/work';
 export const backlogKeys = {
   /** Every cached backlog, whatever its project. */
   backlogs: () => [...queryKeys.work(), 'backlog'] as const,
-  backlog: (projectKey: string) => [...backlogKeys.backlogs(), projectKey] as const,
+  /** A project's backlog; with a query, that query's answer, under the project's key. */
+  backlog: (projectKey: string, q = '') =>
+    q === ''
+      ? ([...backlogKeys.backlogs(), projectKey] as const)
+      : ([...backlogKeys.backlogs(), projectKey, q] as const),
 };
 
 /**
@@ -25,8 +31,11 @@ export const backlogKeys = {
 export function workBacklogEndpoints(http: Http) {
   return {
     backlog: {
-      get: async (projectKey: string) =>
-        http.request(`${BASE}/projects/${enc(projectKey)}/backlog`, backlogSchema),
+      /** `q` is LQL over every list; the board's sort rules apply whatever it says. */
+      get: async (projectKey: string, query: BacklogQueryInput = {}) =>
+        http.request(`${BASE}/projects/${enc(projectKey)}/backlog`, backlogSchema, {
+          query: validated(backlogQuerySchema, query),
+        }),
       /**
        * `beforeIssueId` is the row that ends up above the issue and
        * `afterIssueId` the one below it, as the server's rank reads them;

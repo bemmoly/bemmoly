@@ -1,4 +1,5 @@
 import type { Issue } from '@bemmoly/module-work/shared';
+import { useToast } from '@bemmoly/ui';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { RowHandlers } from '../backlog/backlog-item.tsx';
 import { issueMatches, type Container } from '../backlog/model.ts';
@@ -79,13 +80,25 @@ export function useBacklogScreen(pathKey: string | undefined) {
     if (pruned !== ui.selection) ui.setSelection(pruned);
   }, [layout]);
 
-  const { drop } = useMoveIssues(projectKey);
+  const { drop } = useMoveIssues(projectKey, data.q);
+  const sorted = data.backlog?.sorted ?? false;
+  const { show } = useToast();
   const onDrop = useCallback(
     (ids: readonly string[], target: DropTarget) => {
       const container = current.current.layout.find((entry) => entry.id === target.containerId);
+      // A sorted list would put a dropped row back where the sort says: ranking waits until the
+      // sort is cleared, moving to another sprint or the backlog does not.
+      if (sorted && ids.every((id) => container?.visibleIds.includes(id))) {
+        show({
+          tone: 'info',
+          title: 'This list is sorted',
+          body: 'Sort rules or the query order the backlog. Clear them to rank by dragging.',
+        });
+        return;
+      }
       drop(ids, target, container?.visibleIds ?? []);
     },
-    [drop],
+    [drop, sorted, show],
   );
   const peek = useIssuePeek(() =>
     screenOrder(current.current.layout).flatMap((id) => {

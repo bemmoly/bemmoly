@@ -25,6 +25,10 @@ export const workKeys = {
   /** Every cached roadmap, whatever its projects or team. */
   roadmaps: () => [...queryKeys.work(), 'roadmap'] as const,
   roadmap: (query: RoadmapQueryInput) => [...workKeys.roadmaps(), query] as const,
+  /** Every cached initiative list and initiative. */
+  initiatives: () => [...queryKeys.work(), 'initiatives'] as const,
+  initiativeList: (archived: boolean) => [...workKeys.initiatives(), 'list', archived] as const,
+  initiative: (id: string) => [...workKeys.initiatives(), 'one', id] as const,
   pairing: (projectKey: string, range: string) =>
     [...queryKeys.work(), 'pairing', projectKey, range] as const,
   sprintReport: (sprintId: string) => [...queryKeys.work(), 'sprint-report', sprintId] as const,
@@ -38,6 +42,12 @@ export const workKeys = {
     [...queryKeys.work(), 'time-tracking-report', projectKey, days, sprintId] as const,
   reportStats: (projectKey: string, by: string, by2: string | null) =>
     [...queryKeys.work(), 'report-stats', projectKey, by, by2] as const,
+  /** The caller's dashboards on a project. */
+  dashboards: (projectKey: string) => [...queryKeys.work(), 'dashboards', projectKey] as const,
+  quarterReport: (projectKey: string, quarter: string) =>
+    [...queryKeys.work(), 'quarter-report', projectKey, quarter] as const,
+  pinnedReports: (projectKey: string) =>
+    [...queryKeys.work(), 'pinned-reports', projectKey] as const,
   issueTransitions: (key: string) => [...workKeys.issue(key), 'transitions'] as const,
   boardMetrics: (boardId: string) => [...queryKeys.work(), 'board-metrics', boardId] as const,
   /** Mutation keys of card moves in flight; a board's view is not read again while one is. */

@@ -1,5 +1,11 @@
 import type { BoardConfig, SchemeDiffEntry } from '@bemmoly/module-work/shared';
-import { CARD_FIELD_LABELS, ESTIMATE_LABELS, LANE_LABELS, COLOR_RULE_LABELS } from './labels.ts';
+import {
+  CARD_FIELD_LABELS,
+  COLOR_RULE_LABELS,
+  ESTIMATE_LABELS,
+  LANE_LABELS,
+  sortRuleLabel,
+} from './labels.ts';
 
 /*
  * The diff of two board configs, row by row in the shape of the scheme diff
@@ -188,6 +194,19 @@ export function boardConfigDiff(
       onOff,
     ),
     ...namedRows('quickFilters', 'Quick filter', before.quickFilters, after.quickFilters),
+    ...namedRows(
+      'backlog.filters',
+      'Backlog filter',
+      before.backlog.filters,
+      after.backlog.filters,
+    ),
+    ...scalar(
+      'backlog.sortRules',
+      'Backlog sort',
+      before.backlog.sortRules,
+      after.backlog.sortRules,
+      (r) => list(r.map(sortRuleLabel)),
+    ),
     ...scalar('cardFields', 'Card fields', before.cardFields, after.cardFields, fields),
     ...scalar(
       'colorRule',

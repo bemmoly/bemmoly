@@ -3,26 +3,27 @@ import type { AutomationRule, CreateAutomationRuleBody } from '@bemmoly/module-w
 import { useToast } from '@bemmoly/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { automationKeys } from '../../api/index.ts';
-import { useSettingsAccess } from '../../hooks/settings-access.ts';
+import { useProjectActions } from '../../hooks/project-actions.ts';
 import { api, useProject } from '../../shared/index.ts';
 
 /** Org admins alone hold "Delete workspace"; it stands for them where no capability does. */
 const ORG_ADMIN_SIGNAL = 'workspace.delete';
 
-/** Who may change which rules: project rules with "Configure project", global ones as an org admin. */
-export function useAutomationAccess() {
-  const access = useSettingsAccess();
+/** Who may change which rules: project rules with "Edit automation" there, global ones as an org admin. */
+export function useAutomationAccess(projectKey: string | undefined) {
+  const allowed = useProjectActions(projectKey);
   const me = useQuery({
     queryKey: queryKeys.me(),
     queryFn: () => api.auth.me(),
     staleTime: 60_000,
   });
   const orgAdmin = (me.data?.capabilities ?? []).includes(ORG_ADMIN_SIGNAL);
+  const editRules = orgAdmin || allowed.can('work.automation.edit');
   return {
-    configureProject: access.configureProject || orgAdmin,
+    editRules,
     orgAdmin,
     canChange: (rule: Pick<AutomationRule, 'projectId'>) =>
-      rule.projectId === null ? orgAdmin : access.configureProject || orgAdmin,
+      rule.projectId === null ? orgAdmin : editRules,
   };
 }
 

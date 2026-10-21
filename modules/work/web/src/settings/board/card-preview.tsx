@@ -45,6 +45,7 @@ function sampleCards(today: string): [ViewCard, ViewCard] {
     subtasks: { done: 2, total: 5 },
     parentId: SAMPLE.epic,
     docs: ['RFC'],
+    sortIndex: null,
     ageDays: 2,
     reporterId: SAMPLE.reporter,
     createdAt: dayFrom(today, -9),
@@ -96,6 +97,7 @@ export function CardPreview({
     doneColumns: new Set(),
     today,
     epicColors: new Map([[SAMPLE.epic, 'epic-1']]),
+    epicTargets: new Map(),
     ruleColor: () => ruleColor ?? null,
   };
   const style = ruleColor ? ({ '--card-rule': ruleColor } as CSSProperties) : undefined;

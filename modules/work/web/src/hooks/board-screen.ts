@@ -26,6 +26,7 @@ import {
   type BoardModel,
   type ViewCard,
 } from './board-model.ts';
+import { useProjectLqlCatalog } from './project-lql-catalog.ts';
 
 /*
  * The Board screen's state in one place: the data, the filters applied over it, the laid-out
@@ -110,6 +111,12 @@ export function useBoardScreen(projectKey: string | undefined) {
         [...epics.values()].map((epic): [string, EpicColor] => [
           epic.id,
           epicColor(epic.color, epic.id),
+        ]),
+      ),
+      epicTargets: new Map(
+        [...epics.values()].map((epic) => [
+          epic.id,
+          { key: epic.key, endAt: epic.endAt, targetField: epic.targetField },
         ]),
       ),
       ruleColor: compileColorRules(boardConfig?.colorRules ?? [], {
@@ -210,6 +217,7 @@ export function useBoardScreen(projectKey: string | undefined) {
     [kanban, data.project, data.sprints, view?.sprintId],
   );
 
+  const lqlCatalog = useProjectLqlCatalog(data.project?.id);
   const laneKind = boardConfig?.lanes.kind ?? 'none';
   return {
     ...data,
@@ -230,6 +238,7 @@ export function useBoardScreen(projectKey: string | undefined) {
     grouping,
     setGrouping,
     lqlSources,
+    lqlCatalog,
     moveTargets,
     display,
     serverQuery: q,

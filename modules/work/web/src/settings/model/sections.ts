@@ -7,13 +7,21 @@ import type { BoardConfig, WorkMethod } from '@bemmoly/module-work/shared';
  * unsaved draft in another tab is never saved by accident.
  */
 
-export const BOARD_SECTIONS = ['columns', 'lanes', 'filters', 'cards', 'method'] as const;
+export const BOARD_SECTIONS = [
+  'columns',
+  'lanes',
+  'filters',
+  'backlog',
+  'cards',
+  'method',
+] as const;
 export type BoardSection = (typeof BOARD_SECTIONS)[number];
 
 export const SECTION_TITLES: Record<BoardSection, string> = {
   columns: 'Columns',
   lanes: 'Swimlanes',
   filters: 'Quick filters',
+  backlog: 'Backlog',
   cards: 'Cards',
   method: 'Method and estimation',
 };
@@ -22,6 +30,7 @@ export const SECTION_KEYS: Record<BoardSection, readonly (keyof BoardConfig)[]> 
   columns: ['columns', 'collapseEmptyColumns', 'showColumnCounts', 'showUnassigned'],
   lanes: ['lanes'],
   filters: ['quickFilters'],
+  backlog: ['backlog'],
   cards: ['cardFields', 'colorRule', 'colorRules'],
   method: ['estimationUnit', 'cadenceDays', 'workingDays'],
 };

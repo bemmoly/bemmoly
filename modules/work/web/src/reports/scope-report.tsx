@@ -1,4 +1,6 @@
+import type { ScopeKind, ScopeReport } from '@bemmoly/module-work/shared';
 import { LineChart, SegmentedControl, Select } from '@bemmoly/ui';
+import type { ReactNode } from 'react';
 import { setSearchParams } from '../shared/url-state.ts';
 import { dayLabel } from './model.ts';
 import { ReportCard, ReportNote, ReportPending, ReportSection } from './report-card.tsx';
@@ -9,11 +11,56 @@ const KINDS = [
   { value: 'version', label: 'Versions' },
 ] as const;
 
+/** One epic's or version's weekly burnup, or what it says while there is none to draw. */
+export function ScopeBurnupCard({
+  kind,
+  data,
+  error,
+  actions,
+}: {
+  kind: ScopeKind;
+  data: ScopeReport | undefined;
+  error: Error | null;
+  actions?: ReactNode;
+}) {
+  return (
+    <ReportCard
+      title={kind === 'epic' ? 'Epic burnup' : 'Version burnup'}
+      hint={data?.target ? `${data.target.label}, points by week` : undefined}
+      actions={actions}
+    >
+      {!data ? (
+        <ReportPending error={error} />
+      ) : !data.target ? (
+        <ReportNote>This project has no {kind} yet.</ReportNote>
+      ) : (
+        <LineChart
+          label={`${data.target.label} burnup`}
+          xLabels={data.weeks.map((week) => dayLabel(week.date))}
+          series={[
+            {
+              id: 'scope',
+              label: 'Scope',
+              tone: 'ink',
+              values: data.weeks.map((week) => week.scopePoints),
+            },
+            {
+              id: 'completed',
+              label: 'Completed',
+              tone: 'done',
+              values: data.weeks.map((week) => week.completedPoints),
+            },
+          ]}
+        />
+      )}
+    </ReportCard>
+  );
+}
+
 /** An epic's or version's points week by week: how its scope grew and how much of it is done. */
 export function ScopeReportSection({ projectKey }: { projectKey: string }) {
   const { kind, report } = useScopeReport(projectKey);
   const data = report.data;
-  const noun = kind === 'epic' ? 'epic' : 'version';
   return (
     <ReportSection
       title="Epics and versions"
@@ -43,35 +90,7 @@ export function ScopeReportSection({ projectKey }: { projectKey: string }) {
         </>
       }
     >
-      <ReportCard
-        title={kind === 'epic' ? 'Epic burnup' : 'Version burnup'}
-        hint={data?.target ? `${data.target.label}, points by week` : undefined}
-      >
-        {!data ? (
-          <ReportPending error={report.error} />
-        ) : !data.target ? (
-          <ReportNote>This project has no {noun} yet.</ReportNote>
-        ) : (
-          <LineChart
-            label={`${data.target.label} burnup`}
-            xLabels={data.weeks.map((week) => dayLabel(week.date))}
-            series={[
-              {
-                id: 'scope',
-                label: 'Scope',
-                tone: 'ink',
-                values: data.weeks.map((week) => week.scopePoints),
-              },
-              {
-                id: 'completed',
-                label: 'Completed',
-                tone: 'done',
-                values: data.weeks.map((week) => week.completedPoints),
-              },
-            ]}
-          />
-        )}
-      </ReportCard>
+      <ScopeBurnupCard kind={kind} data={data} error={report.error} />
     </ReportSection>
   );
 }

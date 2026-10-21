@@ -17,6 +17,7 @@ import {
   WEEK,
   type ReportContext,
 } from './work-reports-data.ts';
+import { quarterReport } from './work-quarter.ts';
 import { workState, type Row } from './work-state.ts';
 
 /*
@@ -90,7 +91,7 @@ function scopeReport(context: ReportContext, request: MockRequest, db: MockDb) {
   };
 }
 
-function bucketsOf(field: string, issue: Row, db: MockDb, context: ReportContext): Bucket[] {
+export function bucketsOf(field: string, issue: Row, db: MockDb, context: ReportContext): Bucket[] {
   const store = issueStore(db);
   switch (field) {
     case 'assignee':
@@ -235,4 +236,5 @@ export const reportMoreRoutes = (route: ProjectRoute): MockRoute[] => [
   route('scope', scopeReport),
   route('stats', stats),
   route('time-tracking', timeTracking),
+  route('quarter', quarterReport),
 ];

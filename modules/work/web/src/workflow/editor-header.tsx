@@ -22,6 +22,8 @@ export interface EditorHeaderProps {
   onValidate: () => void;
   onAddStatus: () => void;
   onPublish: () => void;
+  /** False when the person's project role withholds "Configure workflows". */
+  canPublish: boolean;
 }
 
 /**
@@ -75,7 +77,12 @@ export function EditorHeader(props: EditorHeaderProps) {
           <Button onClick={props.onAddStatus} icon={<Icon name="plus" size={14} />}>
             Add status
           </Button>
-          <Button variant="primary" onClick={props.onPublish} disabled={changeCount === 0}>
+          <Button
+            variant="primary"
+            onClick={props.onPublish}
+            disabled={changeCount === 0 || !props.canPublish}
+            title={props.canPublish ? undefined : 'You need “Configure workflows” to publish.'}
+          >
             Review and publish
           </Button>
         </div>

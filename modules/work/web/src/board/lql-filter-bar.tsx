@@ -1,3 +1,4 @@
+import type { LqlFieldCatalog } from '@bemmoly/shared';
 import { IconButton, Input } from '@bemmoly/ui';
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
@@ -14,6 +15,8 @@ export interface LqlFilterBarProps {
   onApply(query: string): void;
   onClose(): void;
   sources: LqlValueSources;
+  /** The fields the query may name, custom fields included; the issue fields when left out. */
+  catalog?: LqlFieldCatalog;
   /** The server's word on an applied query it could not run, e.g. an unknown status name. */
   serverError?: string | null;
 }
@@ -28,6 +31,7 @@ export function LqlFilterBar({
   onApply,
   onClose,
   sources,
+  catalog,
   serverError,
 }: LqlFilterBarProps) {
   const [draft, setDraft] = useState(applied);
@@ -36,8 +40,11 @@ export function LqlFilterBar({
   const [listOpen, setListOpen] = useState(true);
   const input = useRef<HTMLInputElement>(null);
   const listId = useId();
-  const error = useMemo(() => checkLql(draft), [draft]);
-  const list = useMemo(() => completeLql(draft, cursor, sources), [draft, cursor, sources]);
+  const error = useMemo(() => checkLql(draft, catalog), [draft, catalog]);
+  const list = useMemo(
+    () => completeLql(draft, cursor, sources, catalog),
+    [draft, cursor, sources, catalog],
+  );
   const showList = listOpen && list.items.length > 0;
   const message = error
     ? `${error.message} (at character ${error.position + 1}).`

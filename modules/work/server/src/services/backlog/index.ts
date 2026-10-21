@@ -1,6 +1,11 @@
 import type { RequestContext } from '@bemmoly/core';
-import { ValidationError } from '@bemmoly/shared';
-import type { Backlog, EpicProgress, MoveIssueBody } from '../../../../shared/backlog.ts';
+import { NotFoundError, ValidationError } from '@bemmoly/shared';
+import type {
+  Backlog,
+  BacklogQuery,
+  EpicProgress,
+  MoveIssueBody,
+} from '../../../../shared/backlog.ts';
 import type { Issue } from '../../../../shared/issues.ts';
 import { resolveProject, type PlanningDeps } from '../boards/context.ts';
 import { parseConfig, projectBoards } from '../boards/rows.ts';
@@ -10,6 +15,7 @@ import { ISSUE_COLUMNS, loadIssueByKey, toIssue, type IssueRow } from '../issues
 import { statusSets } from '../metrics/load.ts';
 import { openSprints, toSprint } from '../sprints/rows.ts';
 import { groupBacklog } from './group.ts';
+import { compileListOrder, orderWithRank } from './order.ts';
 
 interface EpicRow {
   id: string;
@@ -32,7 +38,7 @@ export function createBacklogService(deps: PlanningDeps) {
   const issues = createIssuesService(deps);
 
   return {
-    async get(ctx: RequestContext, projectRef: string): Promise<Backlog> {
+    async get(ctx: RequestContext, projectRef: string, query: BacklogQuery = {}): Promise<Backlog> {
       const sql = requireDatabase(deps);
       const project = await resolveProject(sql, projectRef);
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', projectResource(project.id));
@@ -41,15 +47,34 @@ export function createBacklogService(deps: PlanningDeps) {
         openSprints(sql, project.id),
       ]);
       const sprintIds = sprintRows.map((sprint) => sprint.id);
+      const board = query.boardId ? boards.find((row) => row.id === query.boardId) : boards[0];
+      if (query.boardId && !board) throw new NotFoundError('The board is not one of this project');
+      const config = board ? parseConfig(board.config) : null;
+      const order = await compileListOrder(
+        sql,
+        deps.lql,
+        ctx,
+        project.id,
+        config?.backlog.sortRules ?? [],
+        query.q,
+      );
       const [sets, rows, epics, blockers] = await Promise.all([
-        statusSets(sql, project.id, boards[0] ? parseConfig(boards[0].config) : null),
-        sql<IssueRow[]>`
-          select ${sql.unsafe(ISSUE_COLUMNS)} from issues i
-          where i.project_id = ${project.id} and i.deleted_at is null and i.archived_at is null
-            and (i.sprint_id is null or i.sprint_id = any(${sprintIds}::uuid[]))
-            and not exists (select 1 from issue_types t
-              where t.id = i.type_id and t.level = 'epic')
-          order by i.rank, i.id`,
+        statusSets(sql, project.id, config),
+        // Ordered and filtered in a CTE over `issues` itself, the table the LQL names.
+        sql<(IssueRow & { matches: boolean })[]>`
+          with listed as (
+            select issues.id, (${order.filter ?? sql`true`}) as matches,
+              row_number() over (order by ${orderWithRank(sql, order.keys)}) as position
+            from issues
+            where issues.project_id = ${project.id} and issues.deleted_at is null
+              and issues.archived_at is null
+              and (issues.sprint_id is null or issues.sprint_id = any(${sprintIds}::uuid[]))
+              and not exists (select 1 from issue_types t
+                where t.id = issues.type_id and t.level = 'epic')
+          )
+          select ${sql.unsafe(ISSUE_COLUMNS)}, listed.matches
+          from listed join issues i on i.id = listed.id
+          order by listed.position`,
         sql<EpicRow[]>`
           select e.id, e.key, e.title, e.status_id, e.color,
             count(c.id)::int as total,
@@ -75,10 +100,18 @@ export function createBacklogService(deps: PlanningDeps) {
           where bl.kind = 'blocks'
           group by bl.target_id`,
       ]);
-      const grouped = groupBacklog(sprintRows.map(toSprint), rows.map(toIssue), sets.done);
+      const matching = new Set(rows.filter((row) => row.matches).map((row) => row.id));
+      const grouped = groupBacklog(
+        sprintRows.map(toSprint),
+        rows.map(toIssue),
+        sets.done,
+        matching,
+      );
       return {
         projectId: project.id,
         ...grouped,
+        sorted: order.keys.length > 0,
+        boardId: board?.id ?? null,
         blocked: Object.fromEntries(blockers.map((row) => [row.target_id, row.keys])),
         epics: epics.map((epic): EpicProgress => ({
           id: epic.id,

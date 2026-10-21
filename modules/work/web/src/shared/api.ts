@@ -1,10 +1,13 @@
 import { createApiClient } from '@bemmoly/api-client';
 import {
+  workAskReportEndpoints,
   workAutomationEndpoints,
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
   workCodeLinkEndpoints,
+  workDashboardEndpoints,
   workFiltersEndpoints,
+  workInitiativeEndpoints,
   workIssueActivityEndpoints,
   workIssueEndpoints,
   workMembersEndpoints,
@@ -51,11 +54,14 @@ export const api = {
     myWork: workMyWorkEndpoints(client.http),
     members: workMembersEndpoints(client.http),
     filters: workFiltersEndpoints(client.http),
+    initiatives: workInitiativeEndpoints(client.http),
     ...workRoadmapEndpoints(client.http),
     ...workPairingEndpoints(client.http),
     ...workReportEndpoints(client.http),
     ...workReportTimeTrackingEndpoints(client.http),
     ...workReportStatsEndpoints(client.http),
+    ...workDashboardEndpoints(client.http),
+    ...workAskReportEndpoints(client.http),
     automation: workAutomationEndpoints(client.http),
   },
 };

@@ -17,7 +17,13 @@ import {
 import type { IssueQueryParams, IssueSummariesPage, IssuesPage } from '../../../../shared/index.ts';
 import { accessFilter, userIdOf } from './access.ts';
 import { loadCatalog } from './catalog.ts';
-import { compileQuery, compileWhere, type CompileCatalog, type Compiled } from './compile.ts';
+import {
+  compileOrder,
+  compileQuery,
+  compileWhere,
+  type CompileCatalog,
+  type Compiled,
+} from './compile.ts';
 import type { LqlEvaluator } from './contract.ts';
 import { issueColumns, toIssue, type IssueRow } from './rows.ts';
 import { summaryColumns, toIssueSummary, type IssueSummaryRow } from './summaries.ts';
@@ -25,7 +31,13 @@ import type { ValueContext } from './values.ts';
 
 export type { LqlEvaluator } from './contract.ts';
 export { catalogOf, loadCatalog } from './catalog.ts';
-export { compileQuery, compileWhere, type CompileCatalog, type Compiled } from './compile.ts';
+export {
+  compileOrder,
+  compileQuery,
+  compileWhere,
+  type CompileCatalog,
+  type Compiled,
+} from './compile.ts';
 
 export interface LqlServiceDeps {
   database?: SqlClient;
@@ -103,6 +115,8 @@ export function createLqlService(deps: LqlServiceDeps) {
     compile,
     catalog: (projectId: string | null) => loadCatalog(db(), projectId),
     parse: parseOrReject,
+    /** A parsed query's ORDER BY keys, for a statement with its own order after them. */
+    order: (query: Query, catalog: CompileCatalog) => compileOrder(db(), query, catalog),
 
     /**
      * One page of issues for a query. Paging is keyset on the sort tuple with

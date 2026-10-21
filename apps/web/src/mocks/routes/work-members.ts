@@ -66,6 +66,19 @@ const canManage = (db: MockDb, rows: Membership[]) =>
   can(db, PROJECT_CONFIGURE) ||
   rows.some((row) => row.userId === db.signedInAs && row.roleId === ROLE_IDS.projectAdmin);
 
+/**
+ * The Work actions the signed-in person holds in a project: their project role's column of
+ * the roles matrix, else their org role's, as the server resolves it. Org admins hold all.
+ */
+function projectActions(db: MockDb, rows: Membership[]): string[] {
+  const user = currentUser(db);
+  const work = db.capabilities.filter((row) => row.moduleId === 'work').map((row) => row.name);
+  const orgRole = db.roles.find((role) => role.id === user?.roleId);
+  if (!user || orgRole?.key === 'org_admin') return user ? work : [];
+  const roleId = rows.find((row) => row.userId === user.id)?.roleId ?? user.roleId;
+  return work.filter((name) => db.cells[name]?.[roleId]?.allowed);
+}
+
 const lastAdmin = (rows: Membership[], userId: string) =>
   rows.filter((row) => row.roleId === ROLE_IDS.projectAdmin).length === 1 &&
   rows.some((row) => row.userId === userId && row.roleId === ROLE_IDS.projectAdmin);
@@ -96,6 +109,15 @@ export const workMembersRoutes: MockRoute[] = [
         .sort((a, b) => a.name.localeCompare(b.name));
       const roles = db.roles.map(({ id, key, name }) => ({ id, key, name }));
       return ok({ items, roles, canManage: canManage(db, rows) && Boolean(currentUser(db)) });
+    },
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/work/projects/:key/permissions',
+    handle: (request, db) => {
+      const project = projectOf(db, request.params['key']);
+      if (!project) return notFound('Project');
+      return ok({ projectId: project.id, actions: projectActions(db, membersOf(db, project)) });
     },
   },
   {

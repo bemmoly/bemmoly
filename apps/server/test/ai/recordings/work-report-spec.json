@@ -1,0 +1,22 @@
+{
+  "prompt": {
+    "id": "work.report_spec",
+    "version": 1
+  },
+  "replies": {
+    "work.report_spec": [
+      {
+        "object": {
+          "title": "Open bugs per person, current sprint",
+          "metric": "open_issues",
+          "groupBy": "assignee",
+          "filters": {
+            "sprint": "active",
+            "types": ["Bug"]
+          },
+          "chart": "bar"
+        }
+      }
+    ]
+  }
+}

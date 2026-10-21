@@ -5,9 +5,11 @@ import type { Issue, UpdateIssueBody } from '../../../../shared/issues.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueUpdate } from './events.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange, watcherIds } from './notify.ts';
+import { epicOwnerOf } from './epic-owner.ts';
 import { assertOwnReferences } from './references.ts';
 import { loadIssueById, loadIssueByKey, toIssue, type IssueRow } from './rows.ts';
 
@@ -151,6 +153,24 @@ async function writeScalars(tx: SqlExecutor, row: IssueRow, body: UpdateIssueBod
   }
 }
 
+/**
+ * An issue moved into an epic with nobody on it takes the epic's owner, written as part of the
+ * same update so it is recorded and announced like any other assignment.
+ */
+async function withEpicOwner(
+  tx: SqlExecutor,
+  current: Issue,
+  body: UpdateIssueBody,
+): Promise<UpdateIssueBody> {
+  // An assignee named in the same request wins, even nobody.
+  if (!body.parentId || body.parentId === current.parentId || body.assigneeId !== undefined) {
+    return body;
+  }
+  if (current.assigneeId || (current.assigneeIds?.length ?? 0) > 0) return body;
+  const owner = await epicOwnerOf(tx, current.projectId, body.parentId);
+  return owner ? { ...body, assigneeId: owner } : body;
+}
+
 async function tellPeople(
   deps: IssueServiceDeps,
   ctx: RequestContext,
@@ -186,12 +206,14 @@ export async function updateIssue(
   deps: IssueServiceDeps,
   ctx: RequestContext,
   key: string,
-  body: UpdateIssueBody,
+  request: UpdateIssueBody,
 ): Promise<Issue> {
   const sql = requireDatabase(deps);
-  const resource = projectResource((await loadIssueByKey(sql, key)).project_id);
+  const issue = await loadIssueByKey(sql, key);
+  const resource = projectResource(issue.project_id);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', resource);
-  if (body.statusId !== undefined) {
+  await authorizeEpics(ctx, sql, resource, [issue.type_id, request.typeId]);
+  if (request.statusId !== undefined) {
     await ctx.authz.authorize(ctx.actor, 'work.issue.transition', resource);
   }
   const actorId = actorUserId(ctx);
@@ -199,6 +221,7 @@ export async function updateIssue(
   const updated = await sql.begin(async (tx) => {
     const row = await loadIssueByKey(tx, key, { lock: true });
     const current = toIssue(row);
+    const body = await withEpicOwner(tx, current, request);
     const changes = diffIssue(current, body);
     if (changes.length === 0) return current;
     assertDatesOrdered(current, body);

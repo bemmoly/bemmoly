@@ -3,16 +3,19 @@ import { createActivityController } from './activity.controller.ts';
 import { createAutomationController } from './automation.controller.ts';
 import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
+import { createDashboardsController } from './dashboards.controller.ts';
 import { createCodeLinksController } from './code-links.controller.ts';
 import { createComponentsController } from './components.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
 import { createFiltersController } from './filters.controller.ts';
+import { createInitiativesController } from './initiatives.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
 import { createLabelsController } from './labels.controller.ts';
 import { createLqlController } from './lql.controller.ts';
 import { createMembersController } from './members.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
 import { createPairingController } from './pairing.controller.ts';
+import { createQuarterController } from './quarter.controller.ts';
 import { createReportsController } from './reports.controller.ts';
 import { createTimeTrackingController } from './time-tracking.controller.ts';
 import { createStatsController } from './stats.controller.ts';
@@ -47,10 +50,13 @@ export function createWorkControllers(services: WorkServices) {
     metrics: createMetricsController(services.metrics),
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
+    initiatives: createInitiativesController(services.initiatives),
     pairing: createPairingController(services.pairing),
     reports: createReportsController(services.reports),
     timeTracking: createTimeTrackingController(services.timeTracking),
     stats: createStatsController(services.stats),
+    quarter: createQuarterController(services.quarter),
+    dashboards: createDashboardsController(services.dashboards),
     codeLinks: createCodeLinksController(services.codeLinks),
     automation: createAutomationController(services.automation),
   };

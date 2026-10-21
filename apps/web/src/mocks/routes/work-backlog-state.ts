@@ -1,6 +1,7 @@
 import type { MockDb } from '../db.ts';
 import type { BacklogIssueRow, BacklogSprintRow } from '../seed/work-backlog.ts';
 import { WORK_IDS } from '../seed/work-settings.ts';
+import type { BacklogQueryAnswer } from './work-backlog-query.ts';
 import { issueStore } from './work-issue-store.ts';
 import { workState } from './work-state.ts';
 
@@ -78,12 +79,16 @@ const points = (issues: BacklogIssueRow[]) =>
   Math.round(issues.reduce((sum, issue) => sum + (issue.estimate ?? 0), 0) * 100) / 100;
 
 /** The `backlogSchema` response: open sprints, the unsprinted list and the epic panel. */
-export function backlogResponse(db: MockDb) {
+export function backlogResponse(db: MockDb, query: BacklogQueryAnswer | null = null) {
   const state = backlogState(db);
   const categories = statusCategories(db);
   const epicTypes = epicTypeIds(db);
   const done = (issue: BacklogIssueRow) => categories.get(issue.statusId) === 'done';
   const live = state.issues.filter((issue) => !issue.deletedAt && !issue.archivedAt).sort(byRank);
+  const order = query?.order;
+  const keep = query?.keep ?? (() => true);
+  // Sorting is stable, so rank still orders whatever the rules leave tied.
+  const listed = order ? [...live].sort(order) : live;
   const open = state.sprints
     .filter((sprint) => sprint.state !== 'closed')
     .sort(
@@ -92,7 +97,7 @@ export function backlogResponse(db: MockDb) {
         (a.startsAt ?? '￿').localeCompare(b.startsAt ?? '￿') ||
         a.id.localeCompare(b.id),
     );
-  const planned = live.filter((issue) => !epicTypes.has(issue.typeId));
+  const planned = listed.filter((issue) => !epicTypes.has(issue.typeId));
   const allEpics = state.issues.filter((issue) => epicTypes.has(issue.typeId));
   const epics = live.filter((issue) => epicTypes.has(issue.typeId) && !done(issue));
   return {
@@ -101,12 +106,14 @@ export function backlogResponse(db: MockDb) {
       const held = planned.filter((issue) => issue.sprintId === sprint.id);
       return {
         sprint,
-        issues: held,
+        issues: held.filter(keep),
         committedPoints: points(held),
         committedIssues: held.length,
       };
     }),
-    issues: planned.filter((issue) => issue.sprintId === null && !done(issue)),
+    issues: planned.filter((issue) => issue.sprintId === null && !done(issue) && keep(issue)),
+    sorted: Boolean(order),
+    boardId: query?.boardId ?? null,
     blocked: Object.fromEntries(
       live.flatMap((issue) => {
         const keys = (issue as { blockedBy?: string[] }).blockedBy ?? [];

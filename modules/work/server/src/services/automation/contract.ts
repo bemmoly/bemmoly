@@ -38,6 +38,8 @@ export interface TriggerDefinition<Args = unknown> {
   matches(args: Args, event: TriggerEvent): boolean;
   /** A scheduled trigger's cron expression, read by the scheduler. */
   cron?(args: Args): string;
+  /** A time-in-status trigger's status name and how long an issue must stay in it, in ms. */
+  stay?(args: Args): { status: string; ms: number };
 }
 
 /** The services an action calls: the same ones a request goes through, nothing else. */

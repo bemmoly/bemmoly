@@ -3,6 +3,7 @@ import { WorkflowEditor } from '../workflow/workflow-editor.tsx';
 import { WorkflowsList } from '../workflow/workflows-list.tsx';
 import { BoardSettingsPage } from './board/board-settings-page.tsx';
 import { OrgDefaultNote } from './org-default-note.tsx';
+import { PermissionsPage } from './permissions/permissions-page.tsx';
 import { ORG_SCOPE, orgSettingsPath, type OrgSettingsPage } from './pages.ts';
 import { FieldsPage } from './schemes/fields-page.tsx';
 import { IssueTypesPage } from './schemes/issue-types-page.tsx';
@@ -44,5 +45,6 @@ export default function OrgDefaultsScreen({
   if (page === 'fields') return <FieldsPage scope={ORG_SCOPE} />;
   if (page === 'workflow') return <OrgWorkflow workflowId={workflowId} />;
   if (page === 'board') return <BoardSettingsPage scope={ORG_SCOPE} />;
+  if (page === 'permissions') return <PermissionsPage />;
   return <IssueTypesPage scope={ORG_SCOPE} />;
 }

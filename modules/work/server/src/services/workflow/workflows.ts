@@ -29,13 +29,13 @@ const MODULE: ResourceRef = { kind: 'module', moduleId: 'work' };
 export const resourceOf = (row: Pick<WorkflowRow, 'project_id'>): ResourceRef =>
   row.project_id ? { kind: 'project', id: row.project_id, moduleId: 'work' } : MODULE;
 
-/** Changing a project's workflow needs "Configure project" there; an org default, an admin. */
+/** Changing a project's workflow needs "Configure workflows" there; an org default, an admin. */
 export async function authorizeConfigure(
   ctx: RequestContext,
   row: Pick<WorkflowRow, 'project_id'>,
 ): Promise<void> {
   if (!row.project_id) return authorizeOrgDefaults(ctx);
-  await ctx.authz.authorize(ctx.actor, 'work.project.configure', resourceOf(row));
+  await ctx.authz.authorize(ctx.actor, 'work.workflow.configure', resourceOf(row));
 }
 
 export function requireDatabase(deps: WorkflowServiceDeps): SqlClient {

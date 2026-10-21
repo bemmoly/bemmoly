@@ -1,3 +1,4 @@
+import { createIssueFieldCatalog, type LqlFieldKind } from '@bemmoly/shared';
 import type { MockDb } from '../db.ts';
 import { ago } from '../seed/time.ts';
 import type { MockIssue } from '../seed/work-board.ts';
@@ -22,6 +23,10 @@ interface Column {
 }
 
 const DAY = 86_400_000;
+
+/** An epic's Target date field as a day, when it holds one. */
+const isoDayOrNull = (value: unknown) =>
+  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null;
 const PRIORITIES = ['highest', 'high', 'medium', 'low', 'lowest'];
 
 export function lqlContext(db: MockDb): LqlContext {
@@ -38,7 +43,28 @@ export function lqlContext(db: MockDb): LqlContext {
     labelName: (id) => String(labels.find((label) => label.id === id)?.['name'] ?? ''),
     issueKey: (id) => issues.find((issue) => issue.id === id)?.key ?? null,
     sprintName: (id) => String(sprints.find((sprint) => sprint.id === id)?.['name'] ?? '') || null,
+    catalog: mockFieldCatalog(db),
   };
+}
+
+const LQL_KIND: Record<string, LqlFieldKind> = {
+  number: 'number',
+  select: 'option',
+  multiselect: 'option',
+  user: 'user',
+  date: 'date',
+  datetime: 'date',
+};
+
+/** The issue fields plus the seeded custom fields, as `cf.<key>`, the way the server lists them. */
+function mockFieldCatalog(db: MockDb) {
+  return createIssueFieldCatalog(
+    workState(db).fields.map((field) => ({
+      key: String(field['key']),
+      label: String(field['name']),
+      kind: LQL_KIND[String(field['kind'])] ?? 'text',
+    })),
+  );
 }
 
 const isEpic = (db: MockDb, issue: MockIssue) =>
@@ -140,9 +166,15 @@ export function boardView(
   const filter = q ? compileLql(q, lqlContext(db)) : null;
   if (filter && !filter.ok) return { ok: false, error: filter.error.message } as const;
   const scoped = issues.filter(inScope(db, project, sprintId));
+  const byRank = (a: MockIssue, b: MockIssue) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0);
   const shown = scoped
     .filter((issue) => columnOf.has(issue.statusId) && (!filter || filter.test(issue)))
-    .sort((a, b) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0));
+    .sort(byRank);
+  // A query's ORDER BY gives each card its place, the way the server's sort index does.
+  const order = filter?.ok ? filter.order : null;
+  const sortIndex = order
+    ? new Map([...shown].sort((a, b) => order(a, b) || byRank(a, b)).map((i, at) => [i.id, at]))
+    : null;
   const kind = config.lanes.kind;
   const byId = new Map(issues.map((issue) => [issue.id, issue]));
   const epicOf = (issue: MockIssue) => {
@@ -165,6 +197,7 @@ export function boardView(
     subtasks: issue.subtasks,
     parentId: issue.parentId,
     docs: issue.docs,
+    sortIndex: sortIndex?.get(issue.id) ?? null,
     ageDays: Math.floor((Date.now() - Date.parse(issue.statusChangedAt)) / DAY),
     reporterId: null,
     createdAt: ago(60 * 24 * 20).slice(0, 10),
@@ -201,7 +234,14 @@ export function boardView(
             const siblings = issues.filter(
               (other) => other.projectId === epic.projectId && isEpic(db, other),
             );
-            const entry = { id: epic.id, key: epic.key, color: mockEpicColor(siblings, epic.id) };
+            const target = isoDayOrNull(epic.customFields['target_date']);
+            const entry = {
+              id: epic.id,
+              key: epic.key,
+              color: mockEpicColor(siblings, epic.id),
+              endAt: target ?? epic.dueAt,
+              targetField: target ? 'target_date' : 'dueAt',
+            };
             return [[epic.id, entry] as const];
           }),
         ).values(),

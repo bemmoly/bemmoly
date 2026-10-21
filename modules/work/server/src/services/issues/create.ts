@@ -10,9 +10,11 @@ import { last } from '../../../../shared/lexorank.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueEvent } from './events.ts';
 import { loadFieldDefinitions, requiredFields, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
+import { epicOwnerOf } from './epic-owner.ts';
 import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
 
@@ -106,6 +108,7 @@ export async function createIssue(
     await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(body.projectId));
   }
   const sql = requireDatabase(deps);
+  await authorizeEpics(ctx, sql, projectResource(body.projectId), [body.typeId]);
   const actorId = actorUserId(ctx);
   const created = await sql.begin(async (tx) => {
     const [projectKey, status] = await Promise.all([
@@ -138,6 +141,7 @@ export async function createIssue(
     const [tail] = await tx<{ rank: string | null }[]>`
       select max(rank) as rank from issues
       where project_id = ${body.projectId} and deleted_at is null`;
+    const assigneeId = body.assigneeId ?? (await epicOwnerOf(tx, body.projectId, body.parentId));
     const description = body.description ?? null;
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,
@@ -146,7 +150,7 @@ export async function createIssue(
       values (${body.projectId}, ${number}, ${`${projectKey}-${number}`}, ${body.typeId},
         ${body.title}, ${description ? JSON.stringify(description) : null}::jsonb,
         ${richTextToPlain(description)}, ${status.id}, ${body.priority},
-        ${body.assigneeId ?? null}, ${actorId}, ${body.parentId ?? null},
+        ${assigneeId}, ${actorId}, ${body.parentId ?? null},
         ${body.sprintId ?? null}, ${body.estimate ?? null}, ${body.startAt ?? null},
         ${body.dueAt ?? null},
         ${body.fixVersionId ?? null}, ${body.componentId ?? null},

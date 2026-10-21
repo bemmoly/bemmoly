@@ -24,8 +24,11 @@ export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
   settings: lazy(() => import('./settings/settings-screen.tsx')),
   backlog: lazy(() => import('./backlog/backlog-screen.tsx')),
   roadmap: lazy(() => import('./roadmap/roadmap-screen.tsx')),
+  initiatives: lazy(() => import('./initiatives/initiatives-screen.tsx')),
   pairing: lazy(() => import('./pairing/pairing-screen.tsx')),
   reports: lazy(() => import('./reports/reports-screen.tsx')),
+  dashboards: lazy(() => import('./dashboards/dashboards-screen.tsx')),
+  quarter: lazy(() => import('./quarter/quarter-screen.tsx')),
   'my-issues': lazy(() => import('./home/my-issues-screen.tsx')),
 };
 

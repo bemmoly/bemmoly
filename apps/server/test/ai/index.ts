@@ -75,6 +75,16 @@ export const EVAL_INDEX: readonly EvalEntry[] = [
     ],
   },
   {
+    promptId: 'work.report_spec',
+    file: 'reports.eval.ts',
+    cases: ['work-report-spec'],
+    checks: [
+      'counts open issues per assignee',
+      'filters to the active sprint and the Bug type',
+      'draws a bar chart',
+    ],
+  },
+  {
     promptId: 'docs.tldr',
     file: 'insights.eval.ts',
     cases: ['docs-tldr'],

@@ -70,4 +70,14 @@ describe('sprintScope', () => {
     const scope = sprintScope({ ...INPUT, issues: [late] });
     expect(scope.added.map((row) => row.key)).toEqual(['R-E']);
   });
+
+  it('lists the work an earlier sprint handed on that the sprint started with', () => {
+    const carriedIn = new Map([
+      ['B', 4],
+      ['C', 2],
+    ]);
+    expect(sprintScope(INPUT, carriedIn).carriedOver).toEqual([
+      { issueId: 'B', key: 'R-B', title: 'Issue B', estimate: 4 },
+    ]);
+  });
 });

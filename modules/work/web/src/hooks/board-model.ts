@@ -27,7 +27,7 @@ export interface LaneModel {
   dueAt: string | null;
   /** The epic's stored colour, a palette colour for other lanes; null for the catch-all grey. */
   color: EpicColor | null;
-  /** Card lists by column id, in rank order. */
+  /** Card lists by column id, in rank order (or the query's, when it sorts). */
   cells: Readonly<Record<string, readonly ViewCard[]>>;
   count: number;
   points: number;
@@ -48,8 +48,15 @@ export const ALL_LANE = 'all';
 /** The catch-all lanes ("No epic", "Unassigned") are grey; every other lane takes a hue. */
 const NO_LANE = new Set(['none']);
 
+/** Rank order, or the query's order when its ORDER BY gave every card a sort index. */
 export const byRank = (a: ViewCard, b: ViewCard) =>
-  a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0;
+  a.sortIndex !== null && b.sortIndex !== null && a.sortIndex !== b.sortIndex
+    ? a.sortIndex - b.sortIndex
+    : a.rank < b.rank
+      ? -1
+      : a.rank > b.rank
+        ? 1
+        : 0;
 
 /** Where a card is drawn under a grouping; with "none" every card is in the one lane. */
 export const laneOfCard = (card: ViewCard, grouping: BoardGrouping) =>

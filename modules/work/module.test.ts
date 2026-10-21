@@ -38,6 +38,13 @@ describe('work module', () => {
           keys: 'G R',
         },
         {
+          id: 'work.initiatives',
+          label: 'Initiatives',
+          path: '/work/initiatives',
+          placement: 'command',
+          icon: 'target',
+        },
+        {
           id: 'work.pairing',
           label: 'Pairing',
           path: '/work/pairing',
@@ -52,6 +59,22 @@ describe('work module', () => {
           placement: 'command',
           icon: 'reports',
           keys: 'G E',
+        },
+        {
+          id: 'work.dashboards',
+          label: 'Dashboards',
+          path: '/work/dashboards',
+          placement: 'command',
+          icon: 'pulse',
+          keys: 'G D',
+        },
+        {
+          id: 'work.quarter',
+          label: 'Quarter',
+          path: '/work/quarter',
+          placement: 'command',
+          icon: 'calendar',
+          keys: 'G Q',
         },
         {
           id: 'work.projects',
@@ -89,6 +112,12 @@ describe('work module', () => {
             icon: 'layers',
           },
           { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
+          {
+            id: 'work.initiatives',
+            label: 'Initiatives',
+            path: '/work/initiatives',
+            icon: 'target',
+          },
         ],
         primary: [
           { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },
@@ -110,10 +139,17 @@ describe('work module', () => {
       'work.issue.edit',
       'work.issue.delete',
       'work.issue.transition',
+      'work.epic.manage',
+      'work.sprint.create',
+      'work.sprint.start',
+      'work.sprint.complete',
       'work.sprint.manage',
       'work.board.configure',
       'work.board.method',
       'work.board.wip',
+      'work.workflow.configure',
+      'work.automation.edit',
+      'work.initiative.manage',
     ]);
     expect(capabilities.every((capability) => capability.group === 'Projects')).toBe(true);
     const view = capabilities.find((capability) => capability.name === 'work.issue.view');

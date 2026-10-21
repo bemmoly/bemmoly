@@ -75,21 +75,29 @@ export function seedRoadmapIssues(): Row[] {
     createdAt: ago(60 * 24 * 12),
     updatedAt: ago(60 * 24 * 2),
     statusChangedAt: ago(60 * 24 * 2),
+    // The sync conflicts screen runs past Offline mode's target, so the roadmap and the board
+    // show the epic date warning and its fixes.
+    ...(number === 3 ? { startAt: dayFromToday(20), dueAt: dayFromToday(38) } : {}),
   }));
   const shipping = SHIPS.map(([key, fixVersionId]) => ({ id: `ship:${key}`, key, fixVersionId }));
   return [...mobile, ...planned, ...shipping];
 }
 
-/** Billing v2 holds up Observability, and offline mode waits on the auth service. */
+/**
+ * Billing v2 holds up Observability, offline mode waits on the auth service, and a Mobile card
+ * blocks one under Self-serve onboarding: a dependency across teams below the epics.
+ */
 export function seedRoadmapLinks(issues: readonly Row[]): Row[] {
   const id = (key: string) => issues.find((issue) => issue['key'] === key)?.id ?? '';
+  const under = (key: string) => issues.find((issue) => issue['parentId'] === id(key))?.id ?? '';
   return [
-    ['PLT-150', 'PLT-240'],
-    ['PLT-190', 'MOB-1'],
+    [id('PLT-150'), id('PLT-240')],
+    [id('PLT-190'), id('MOB-1')],
+    [id('MOB-3'), under('PLT-240')],
   ].map(([source = '', target = ''], n) => ({
     id: uid(0xd80 + n),
-    sourceId: id(source),
-    targetId: id(target),
+    sourceId: source,
+    targetId: target,
     kind: 'blocks',
     createdBy: USER_IDS.lena,
     createdAt: ago(60 * 24 * 10),

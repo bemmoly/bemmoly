@@ -195,7 +195,16 @@ export function roadmapView(): RoadmapView {
         }),
       }),
     ],
-    dependencies: [{ id: id(40), fromId: IDS.billing, toId: IDS.observability }],
+    dependencies: [
+      {
+        id: id(40),
+        fromId: IDS.billing,
+        toId: IDS.observability,
+        via: 'epic',
+        links: 1,
+        conflict: false,
+      },
+    ],
     computedAt: '2026-10-05T09:00:00.000Z',
   };
 }

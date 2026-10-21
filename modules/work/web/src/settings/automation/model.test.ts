@@ -82,6 +82,17 @@ describe('the rule draft', () => {
     expect(problems['trigger.args.cron']).toMatch(/five-field cron/);
   });
 
+  it('asks a time-in-status rule for a status and a whole number of days or hours', () => {
+    const draft = withActions(emptyDraft(), { ...newStep('transition'), args: { status: 'Done' } });
+    draft.trigger = newStep('time_in_status');
+    expect(draft.trigger.args).toEqual({ status: '', amount: 5, unit: 'days' });
+    expect(draftProblems(draft)['trigger.args.status']).toBe('Pick a status');
+    draft.trigger.args = { status: 'Verification', amount: 0, unit: 'days' };
+    expect(draftProblems(draft)['trigger.args.amount']).toBeDefined();
+    draft.trigger.args = { status: 'Verification', amount: 5, unit: 'days' };
+    expect(draftProblems(draft)).toEqual({});
+  });
+
   it('checks each condition with the query checker it is given', () => {
     const draft = withActions(emptyDraft(), { ...newStep('add_label'), args: { label: 'x' } });
     draft.conditions = [{ key: 'c', query: 'colour = red' }];
@@ -106,6 +117,15 @@ describe('rules and runs in words', () => {
         trigger: { name: 'field_changed', args: { fields: ['priority', 'assigneeId'] } },
       }),
     ).toBe('When Priority or Assignee changes');
+    expect(
+      triggerSentence({
+        ...rule,
+        trigger: {
+          name: 'time_in_status',
+          args: { status: 'Verification', amount: 5, unit: 'days' },
+        },
+      }),
+    ).toBe('When an issue has been in “Verification” for more than 5 days');
   });
 
   it('reads a run result, and nothing from a run without one', () => {

@@ -46,4 +46,18 @@ describe('pageBoardCards', () => {
     expect(readBoardCursor('not-a-cursor')).toBeNull();
     expect(readBoardCursor(boardCursor(card(9, 'zz')))).toEqual({ issueId: id(9), rank: 'zz' });
   });
+
+  it('orders and pages a sorted board by its sort index, rank only breaking ties', () => {
+    const sorted = [
+      { ...card(1, 'b'), sortIndex: 2 },
+      { ...card(2, 'c'), sortIndex: 0 },
+      { ...card(3, 'd'), sortIndex: 1 },
+    ];
+    const page = pageBoardCards(sorted, ['todo'], { limit: 2 });
+    expect(page.cards.map((entry) => entry.issueId)).toEqual([id(2), id(3)]);
+    const cursor = readBoardCursor(page.next.get('todo')!);
+    expect(cursor).toEqual({ issueId: id(3), rank: 'd', sortIndex: 1 });
+    const next = pageBoardCards(sorted, ['todo'], { limit: 2, column: 'todo', cursor });
+    expect(next.cards.map((entry) => entry.issueId)).toEqual([id(1)]);
+  });
 });

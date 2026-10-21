@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { IconButton } from '../button/icon-button.tsx';
 import { cardStripe } from './card-stripe.ts';
+import { DateWarningChip } from './issue-atoms.tsx';
 import { IssueCard } from './issue-card.tsx';
 import { IssueCardSkeleton } from './issue-card-skeleton.tsx';
 
@@ -63,6 +64,16 @@ export const States: Story = {
         blockedBy="PLT-204"
         estimate={2}
         assignee={null}
+      />
+      <IssueCard
+        issueKey="PLT-230"
+        title="Usage-based invoice line items"
+        type="story"
+        priority="medium"
+        due={{ label: 'Dec 9' }}
+        warning={<DateWarningChip>Due after PLT-12</DateWarningChip>}
+        estimate={5}
+        assignee={{ name: 'Lena T.', hue: 'pink' }}
       />
       <IssueCard
         issueKey="PLT-226"

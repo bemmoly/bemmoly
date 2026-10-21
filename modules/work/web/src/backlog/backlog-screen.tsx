@@ -18,6 +18,7 @@ import {
   type BacklogRowShared,
 } from './backlog-row-context.ts';
 import { rowMenu } from './backlog-row-menu.tsx';
+import { useBacklogQueryBar } from '../hooks/backlog-query-bar.ts';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
 import { keepLinksInApp } from '../hooks/issue-navigation.ts';
@@ -43,8 +44,7 @@ type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
 
 /**
  * The Backlog at /work/backlog/PLT: the filter row, the epics panel and the sprint containers
- * above the backlog, as the Backlog mock lays them out. The frame's header holds the project,
- * the Board and Backlog tabs and Create sprint.
+ * above the backlog, as the Backlog mock lays them out; the frame's header holds Create sprint.
  */
 export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) {
   const screen = useBacklogScreen(pathKey);
@@ -72,6 +72,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   const { peek, meId, lookups } = screen;
   const order = useMemo(() => backlogIssueOrder(screen.sections), [screen.sections]);
+  const queryBar = useBacklogQueryBar(screen);
   useRememberIssueList(screen.project ? { label: 'Backlog', keys: order } : null);
 
   const sprints = screen.containers.flatMap((c) => (c.sprint ? [c.sprint] : []));
@@ -102,13 +103,9 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
         look: lookups.types.get(type.id) ?? 'task',
       })),
       labels: [],
-      quick: [
-        { id: 'mine', name: 'Only my issues' },
-        { id: 'blocked', name: 'Blocked' },
-        { id: 'recent', name: 'Recently updated' },
-      ],
+      quick: screen.quickFilters.map((chip) => ({ id: chip.id, name: chip.name })),
     }),
-    [screen.people, screen.standardTypes, epics, lookups.types, meId],
+    [screen.people, screen.standardTypes, screen.quickFilters, epics, lookups.types, meId],
   );
   const keyOf = useMemo(
     () => new Map(screen.containers.flatMap((c) => c.issues.map((issue) => [issue.id, issue.key]))),
@@ -175,14 +172,16 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
     <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
       <WorkPresence projectId={screen.project?.id} view="backlog" />
       <HeaderActions>
-        <Button loading={actions.create.isPending} onClick={createSprint}>
-          Create sprint
-        </Button>
+        {actions.allowed.can('work.sprint.create') && (
+          <Button loading={actions.create.isPending} onClick={createSprint}>
+            Create sprint
+          </Button>
+        )}
       </HeaderActions>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* The trail names the screen; the heading gives it to a screen reader's outline. */}
         <h1 className="sr-only">Backlog</h1>
-        <BacklogToolbar options={options} />
+        <BacklogToolbar options={options} {...queryBar} />
         <SprintPulse
           sprintId={
             screen.sections.find(({ container }) => container.sprint?.state === 'active')?.container
@@ -195,7 +194,9 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             <BacklogEpics
               epics={epics}
               loading={screen.isPending}
-              onCreate={createIssue(null, epicTypeId)}
+              {...(actions.allowed.can('work.epic.manage')
+                ? { onCreate: createIssue(null, epicTypeId) }
+                : {})}
               className="max-md:hidden"
             />
           )}
@@ -230,6 +231,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
                       handlers={screen.handlers}
                       entryId={screen.entryId}
                       scrollRef={screen.scrollRef}
+                      allowed={actions.allowed}
                       onAction={() =>
                         container.sprint
                           ? setDialog({

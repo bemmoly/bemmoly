@@ -2,6 +2,7 @@ import type { RequestContext, SqlClient, SqlFragment } from '@bemmoly/core';
 import { ValidationError } from '@bemmoly/shared';
 import { pageBoardCards, readBoardCursor } from '../../../../shared/board-paging.ts';
 import type { BoardConfig, BoardView, BoardViewQuery } from '../../../../shared/boards.ts';
+import { compileListOrder } from '../backlog/order.ts';
 import { computeBoardMetrics } from '../metrics/index.ts';
 import { activeSprint } from '../sprints/rows.ts';
 import { laneExpression, loadCards } from './cards.ts';
@@ -143,19 +144,17 @@ export async function buildBoardView(
   if (!sprintId && project.method === 'scrum')
     sprintId = (await activeSprint(sql, project.id))?.id ?? null;
   const laneTexts = config.lanes.kind === 'query' ? config.lanes.queries.map((q) => q.query) : [];
-  const compiled = await compileLql(deps, ctx, project.id, [
-    ...(query.q ? [query.q] : []),
-    ...laneTexts,
+  const [lanes, order] = await Promise.all([
+    compileLql(deps, ctx, project.id, laneTexts),
+    compileListOrder(sql, deps.lql, ctx, project.id, [], query.q),
   ]);
-  const filter = query.q ? (compiled[0] ?? null) : null;
-  const lanes = query.q ? compiled.slice(1) : compiled;
   const noSprint = project.method === 'scrum' && !sprintId;
   const [cards, metrics] = await Promise.all([
     loadCards(
       sql,
       project,
       config,
-      { sprintId, noSprint, filter },
+      { sprintId, noSprint, filter: order.filter, sortKeys: order.keys },
       laneExpression(sql, lanes),
       now,
     ),

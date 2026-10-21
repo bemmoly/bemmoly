@@ -44,6 +44,26 @@ export const sprintScopeSchema = z.object({
   added: z.array(sprintReportIssueSchema),
   /** In the sprint when it started but gone by its end, finished or not. */
   removed: z.array(sprintReportIssueSchema),
+  /** In the sprint when it started, handed on unfinished by a sprint that closed before it. */
+  carriedOver: z.array(sprintReportIssueSchema).default([]),
+});
+
+const count = z.number().int().nonnegative().default(0);
+const pointsField = z.number().nonnegative().default(0);
+
+/**
+ * How a sprint's scope moved, as totals: what it held at its end (now, for an
+ * active one), the spillover a previous sprint handed it, and the work that
+ * joined after the start and was still in at the end. Shares are left to the
+ * reader, from the added and scope figures.
+ */
+export const sprintChangesSchema = z.object({
+  scopeIssues: count,
+  scopePoints: pointsField,
+  carriedOverIssues: count,
+  carriedOverPoints: pointsField,
+  addedIssues: count,
+  addedPoints: pointsField,
 });
 
 export const burnupPointSchema = z.object({
@@ -58,6 +78,7 @@ export type FlowReportDay = z.infer<typeof flowReportDaySchema>;
 export type FlowReport = z.infer<typeof flowReportSchema>;
 export type SprintReportIssue = z.infer<typeof sprintReportIssueSchema>;
 export type SprintScope = z.infer<typeof sprintScopeSchema>;
+export type SprintChanges = z.infer<typeof sprintChangesSchema>;
 export type BurnupPoint = z.infer<typeof burnupPointSchema>;
 
 /** The window the control chart and time in status read, as days back from today. */
