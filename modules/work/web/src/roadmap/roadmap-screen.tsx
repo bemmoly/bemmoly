@@ -48,14 +48,17 @@ function NewEpic({ projectKey }: { projectKey: string | undefined }) {
   );
 }
 
-function RoadmapBody({
+export function RoadmapBody({
   view,
   oneProject,
   projectKey,
+  heading = true,
 }: {
   view: RoadmapView;
   oneProject: boolean;
   projectKey: string | undefined;
+  /** False where the page around it already names the screen, as an initiative does. */
+  heading?: boolean;
 }) {
   const screen = useRoadmapScreen(view, oneProject);
   const aiEnabled = useAiEnabled();
@@ -67,7 +70,7 @@ function RoadmapBody({
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
         {/* The trail names the screen; the heading gives it to a screen reader's outline. */}
-        <h1 className="sr-only">Roadmap</h1>
+        {heading && <h1 className="sr-only">Roadmap</h1>}
         <RoadmapToolbar
           view={view}
           state={state}

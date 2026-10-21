@@ -12,6 +12,8 @@ export const workPaths = {
   /** A project's settings open on their first section, Members. */
   settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',
+  /** Every initiative, or one initiative's program view. */
+  initiatives: (id?: string) => (id ? `/work/initiatives/${id}` : '/work/initiatives'),
   myIssues: () => '/work/my-issues',
 };
 
