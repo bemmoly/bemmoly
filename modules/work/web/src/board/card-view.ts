@@ -18,6 +18,7 @@ import {
   type Priority,
 } from '@bemmoly/ui';
 import type { ViewCard } from '../hooks/board-model.ts';
+import type { EpicTarget } from '../shared/epic-date-warning.tsx';
 
 /*
  * From a view card to what the design system's card draws, under the board's card fields and
@@ -47,6 +48,8 @@ export interface CardVocabulary {
   today: string;
   /** Each epic's stored colour by id, for the "by epic" stripe when lanes are not epics. */
   epicColors: ReadonlyMap<string, EpicColor>;
+  /** Each epic's key and target by id: a card due after its epic's target warns. */
+  epicTargets: ReadonlyMap<string, EpicTarget>;
   /** The colour of the first colour rule the card matches, painted as its stripe. */
   ruleColor: (card: ViewCard) => string | null;
 }

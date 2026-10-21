@@ -16,6 +16,7 @@ import { childBar } from '../hooks/roadmap-bars.ts';
 import type { RoadmapRow } from '../hooks/roadmap-model.ts';
 import { datesWords } from '../hooks/roadmap-schedule.ts';
 import { cx } from '../issue/cx.ts';
+import { EpicDateWarning } from '../shared/epic-date-warning.tsx';
 import { useRoadmapRow } from './roadmap-context.ts';
 
 /*
@@ -214,6 +215,21 @@ export function RoadmapRowView({
           >
             {row.child.title}
           </button>
+          {row.parent.kind === 'epic' &&
+            row.parent.key &&
+            row.parent.targetField !== 'releaseAt' && (
+              <span className="ml-auto flex shrink-0">
+                <EpicDateWarning
+                  story={row.child}
+                  epic={{
+                    key: row.parent.key,
+                    endAt: row.parent.endAt,
+                    targetField: row.parent.targetField,
+                  }}
+                  canEdit={row.parent.canSchedule}
+                />
+              </span>
+            )}
         </div>
         <Lane width={width}>
           {bar && (

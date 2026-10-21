@@ -201,7 +201,17 @@ export const boardViewSchema = z.object({
   cards: z.array(boardCardSchema.extend({ columnId: z.string(), laneId: z.string() })),
   /** The epics the cards roll up to, whatever the lanes: their key and stored colour. */
   epics: z
-    .array(z.object({ id: z.uuid(), key: z.string(), color: z.string().nullable() }))
+    .array(
+      z.object({
+        id: z.uuid(),
+        key: z.string(),
+        color: z.string().nullable(),
+        /** The epic's target (its Target date, else its due date); cards due later warn. */
+        endAt: z.iso.date().nullable().default(null),
+        /** Where "Extend the epic" writes the new target. */
+        targetField: z.enum(['target_date', 'dueAt']).default('dueAt'),
+      }),
+    )
     .default([]),
   metrics: z.object({
     throughputPerWeek: z.number().nonnegative(),

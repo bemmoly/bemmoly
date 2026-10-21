@@ -10,6 +10,7 @@ export * from './code-links.ts';
 export * from './comments.ts';
 export * from './common.ts';
 export * from './enums.ts';
+export * from './epic-dates.ts';
 export * from './filters.ts';
 export * from './issue-import.ts';
 export * from './issue-types.ts';

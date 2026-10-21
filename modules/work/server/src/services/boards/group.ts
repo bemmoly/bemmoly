@@ -11,8 +11,8 @@ export interface GroupCard {
   card: BoardCard;
   /** The epic the card rolls up to, when its parent is one. */
   epicId: string | null;
-  /** That epic's key and stored colour, read in the same statement. */
-  epic?: { id: string; key: string; color: string | null } | null;
+  /** That epic's key, stored colour and target, read in the same statement. */
+  epic?: BoardView['epics'][number] | null;
   /** The first named lane query the card matches, by index, or null for none. */
   queryLane: number | null;
 }

@@ -1,5 +1,7 @@
 import { Icon } from '../../icons/icon.tsx';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { focusRing } from '../../lib/focus.ts';
 import { AvatarStack } from '../avatar/avatar-stack.tsx';
 import { Avatar, UnassignedAvatar, type AvatarHue } from '../avatar/avatar.tsx';
 
@@ -41,6 +43,45 @@ export function BlockedChip({ by, className }: { by: string; className?: string 
       <Icon name="lock" size={11} />
       Blocked by {by}
     </span>
+  );
+}
+
+export interface DateWarningChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** What is wrong, short: "Due after PLT-1". */
+  children: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
+}
+
+/**
+ * Amber, beside the blocked chip: the issue's dates run past its epic's target. It is a button
+ * because it opens the fixes (extend the epic, pull the issue in); a menu trigger spreads its
+ * props on it.
+ */
+export function DateWarningChip({ children, className, ref, ...rest }: DateWarningChipProps) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      {...rest}
+      onClick={(event) => {
+        // The chip sits on a card that opens on click; the chip's own menu must not open it.
+        event.stopPropagation();
+        rest.onClick?.(event);
+      }}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        rest.onPointerDown?.(event);
+      }}
+      draggable={false}
+      className={cx(
+        'inline-flex h-4.5 shrink-0 cursor-pointer items-center gap-1 self-start rounded-chip border-0 bg-amber-50 px-1.5 font-sans text-11 font-semibold whitespace-nowrap text-amber-tx',
+        focusRing,
+        className,
+      )}
+    >
+      <Icon name="warning" size={11} />
+      {children}
+    </button>
   );
 }
 

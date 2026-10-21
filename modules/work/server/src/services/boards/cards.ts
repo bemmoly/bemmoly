@@ -1,5 +1,6 @@
 import type { SqlClient, SqlFragment } from '@bemmoly/core';
 import type { BoardCard, BoardConfig } from '../../../../shared/boards.ts';
+import { isoDayOrNull } from '../../../../shared/epic-dates.ts';
 import type { PlanningProject } from './context.ts';
 import type { GroupCard } from './group.ts';
 
@@ -46,6 +47,8 @@ interface CardRow {
   epic_id: string | null;
   epic_key: string | null;
   epic_color: string | null;
+  epic_due_at: Date | string | null;
+  epic_target: string | null;
   query_lane: number | null;
   sort_index: string | number | null;
 }
@@ -95,8 +98,15 @@ function toCard(row: CardRow, now: number): GroupCard {
     epicId: row.epic_id,
     sortIndex: row.sort_index === null ? null : Number(row.sort_index),
   };
+  const target = isoDayOrNull(row.epic_target);
   const epic = row.epic_id
-    ? { id: row.epic_id, key: row.epic_key ?? '', color: row.epic_color }
+    ? {
+        id: row.epic_id,
+        key: row.epic_key ?? '',
+        color: row.epic_color,
+        endAt: target ?? (row.epic_due_at ? isoDay(row.epic_due_at) : null),
+        targetField: target ? ('target_date' as const) : ('dueAt' as const),
+      }
     : null;
   return { card, epicId: row.epic_id, epic, queryLane: row.query_lane };
 }
@@ -172,7 +182,8 @@ export async function loadCards(
       coalesce(assignees.user_ids, '{}') as assignee_ids,
       coalesce(blockers.keys, '{}') as blocked_by,
       coalesce(children.done, 0) as subtasks_done, coalesce(children.total, 0) as subtasks_total,
-      epic.id as epic_id, epic.key as epic_key, epic.color as epic_color
+      epic.id as epic_id, epic.key as epic_key, epic.color as epic_color,
+      epic.due_at as epic_due_at, epic.custom_fields ->> 'target_date' as epic_target
     from board
     left join labels on labels.issue_id = board.id
     left join assignees on assignees.issue_id = board.id

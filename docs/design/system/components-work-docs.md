@@ -50,6 +50,11 @@ Foundations/Glyphs, Components/Board vocabulary
   (accent tint); `checked` and `selecting` (the round check on the corner); `pending` (dims to
   60% after a 160ms beat while an optimistic edit is in flight); dragging (lifted, `shadow-e1h`);
   dropped (`animate-settle`); skeleton.
+- Date warning: `warning` takes a `DateWarningChip` (amber, the `warning` icon, under the blocked
+  chip) when the issue's dates run past its epic's target. It is a button: it opens a `Menu`
+  with the two fixes, "Extend <epic> to <day>" and "Move <issue> to end <day>". The roadmap's
+  issue rows show the same chip at the end of the name cell. Without permission to change
+  dates it only names the problem.
 
 ### FilterBar
 

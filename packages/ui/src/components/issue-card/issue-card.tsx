@@ -66,6 +66,8 @@ export interface IssueCardProps {
    * whenever focus is inside the card, so the keyboard reaches them too.
    */
   tools?: ReactNode;
+  /** Always shown under the blocked chip: a DateWarningChip when the dates run past the epic. */
+  warning?: ReactNode;
   /** Answers the pointer with the lifted shadow; on by default when the card selects itself. */
   interactive?: boolean;
   onSelect?: () => void;
@@ -160,6 +162,7 @@ export function IssueCard({
   density = 'comfortable',
   stripeClassName,
   tools,
+  warning,
   onSelect,
   interactive = onSelect !== undefined,
   className,
@@ -220,6 +223,7 @@ export function IssueCard({
         />
       )}
       {blockedBy && <BlockedChip by={blockedBy} />}
+      {warning}
       <div
         className={cx(
           'leading-card font-medium text-pretty',

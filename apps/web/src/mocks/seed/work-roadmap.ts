@@ -75,6 +75,9 @@ export function seedRoadmapIssues(): Row[] {
     createdAt: ago(60 * 24 * 12),
     updatedAt: ago(60 * 24 * 2),
     statusChangedAt: ago(60 * 24 * 2),
+    // The sync conflicts screen runs past Offline mode's target, so the roadmap and the board
+    // show the epic date warning and its fixes.
+    ...(number === 3 ? { startAt: dayFromToday(20), dueAt: dayFromToday(38) } : {}),
   }));
   const shipping = SHIPS.map(([key, fixVersionId]) => ({ id: `ship:${key}`, key, fixVersionId }));
   return [...mobile, ...planned, ...shipping];

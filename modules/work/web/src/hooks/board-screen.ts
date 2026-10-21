@@ -113,6 +113,12 @@ export function useBoardScreen(projectKey: string | undefined) {
           epicColor(epic.color, epic.id),
         ]),
       ),
+      epicTargets: new Map(
+        [...epics.values()].map((epic) => [
+          epic.id,
+          { key: epic.key, endAt: epic.endAt, targetField: epic.targetField },
+        ]),
+      ),
       ruleColor: compileColorRules(boardConfig?.colorRules ?? [], {
         meId: data.meId,
         statusName: (id) => statuses.get(id)?.name,

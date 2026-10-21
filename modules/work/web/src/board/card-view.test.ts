@@ -29,6 +29,7 @@ function vocab(fields: readonly CardField[], extra: Partial<CardVocabulary> = {}
       [EPIC, 'epic-3'],
       [OTHER_EPIC, 'epic-6'],
     ]),
+    epicTargets: new Map(),
     ruleColor: () => null,
     ...extra,
   };

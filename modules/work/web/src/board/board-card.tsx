@@ -15,6 +15,7 @@ import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { useIssuePending } from '../hooks/issue-edits.ts';
 import { clearBoardSelection, useBoardSelectionStore } from '../hooks/board-selection.ts';
+import { EpicDateWarning } from '../shared/epic-date-warning.tsx';
 import { openRowMenu, ROW_MENU } from '../shared/issue-actions-menu.tsx';
 import { useSearchParamIs } from '../shared/url-state.ts';
 import { CardTools } from './card-tools.tsx';
@@ -56,6 +57,16 @@ interface CardFaceProps {
   tools: boolean;
 }
 
+/** The amber chip when the card's dates run past its epic's target, with the two fixes. */
+function CardEpicWarning({ card, epicId }: { card: ViewCard; epicId: string }) {
+  const { vocab } = useBoardShared();
+  const epic = vocab.epicTargets.get(epicId);
+  if (!epic) return null;
+  return (
+    <EpicDateWarning story={{ key: card.key, startAt: null, dueAt: card.dueAt }} epic={epic} />
+  );
+}
+
 /**
  * What the card shows, apart from where it sits: it renders only when the card, its look or its
  * tools change, never because a drop moved the cards around it up or down a place.
@@ -86,6 +97,11 @@ const CardFace = memo(function CardFace({
       {...(boxed
         ? { onCheck: (event: MouseEvent<HTMLElement>) => select.check(event, card.key) }
         : {})}
+      warning={
+        card.epicId && !vocab.doneColumns.has(card.columnId) ? (
+          <CardEpicWarning card={card} epicId={card.epicId} />
+        ) : undefined
+      }
       tools={
         tools && carried === null && <CardTools card={card} {...(checked ? { targets } : {})} />
       }
