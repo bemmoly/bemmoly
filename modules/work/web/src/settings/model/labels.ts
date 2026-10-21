@@ -1,4 +1,5 @@
 import type {
+  BacklogSortRule,
   BoardLaneKind,
   CardColorRule,
   CardField,
@@ -65,3 +66,9 @@ export const ESTIMATE_LABELS: Record<EstimationUnit, string> = {
 };
 
 export const METHOD_LABELS: Record<WorkMethod, string> = { scrum: 'Scrum', kanban: 'Kanban' };
+
+/** A backlog sort rule as the settings and the backlog name it: "Support first", "due ascending". */
+export function sortRuleLabel(rule: BacklogSortRule): string {
+  if (rule.kind === 'match') return `${rule.name} first`;
+  return `${rule.field} ${rule.direction === 'desc' ? 'descending' : 'ascending'}`;
+}

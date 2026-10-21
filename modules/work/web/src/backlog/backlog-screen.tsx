@@ -18,6 +18,7 @@ import {
   type BacklogRowShared,
 } from './backlog-row-context.ts';
 import { rowMenu } from './backlog-row-menu.tsx';
+import { useBacklogQueryBar } from '../hooks/backlog-query-bar.ts';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
 import { keepLinksInApp } from '../hooks/issue-navigation.ts';
@@ -71,6 +72,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   const { peek, meId, lookups } = screen;
   const order = useMemo(() => backlogIssueOrder(screen.sections), [screen.sections]);
+  const queryBar = useBacklogQueryBar(screen);
   useRememberIssueList(screen.project ? { label: 'Backlog', keys: order } : null);
 
   const sprints = screen.containers.flatMap((c) => (c.sprint ? [c.sprint] : []));
@@ -101,13 +103,9 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
         look: lookups.types.get(type.id) ?? 'task',
       })),
       labels: [],
-      quick: [
-        { id: 'mine', name: 'Only my issues' },
-        { id: 'blocked', name: 'Blocked' },
-        { id: 'recent', name: 'Recently updated' },
-      ],
+      quick: screen.quickFilters.map((chip) => ({ id: chip.id, name: chip.name })),
     }),
-    [screen.people, screen.standardTypes, epics, lookups.types, meId],
+    [screen.people, screen.standardTypes, screen.quickFilters, epics, lookups.types, meId],
   );
   const keyOf = useMemo(
     () => new Map(screen.containers.flatMap((c) => c.issues.map((issue) => [issue.id, issue.key]))),
@@ -183,7 +181,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* The trail names the screen; the heading gives it to a screen reader's outline. */}
         <h1 className="sr-only">Backlog</h1>
-        <BacklogToolbar options={options} />
+        <BacklogToolbar options={options} {...queryBar} />
         <SprintPulse
           sprintId={
             screen.sections.find(({ container }) => container.sprint?.state === 'active')?.container

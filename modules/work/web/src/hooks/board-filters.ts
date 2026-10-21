@@ -35,6 +35,20 @@ export function quickFiltersOf(config: BoardConfig | undefined): QuickFilter[] {
   ];
 }
 
+/** The Backlog's chips: its built-ins, answered on the client, then the board's backlog filters. */
+export function backlogQuickFilters(config: BoardConfig | undefined): QuickFilter[] {
+  return [
+    { id: 'mine', name: 'Only my issues' },
+    { id: 'blocked', name: 'Blocked' },
+    { id: 'recent', name: 'Recently updated' },
+    ...(config?.backlog.filters ?? []).map((filter, index) => ({
+      id: `backlog-${index}`,
+      name: filter.name,
+      query: filter.query,
+    })),
+  ];
+}
+
 interface LaneState {
   collapsed: readonly string[];
   toggle(laneId: string): void;

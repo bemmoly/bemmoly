@@ -35,6 +35,21 @@ export const backlogSchema = z.object({
   epics: z.array(epicProgressSchema),
   /** The keys of the open issues blocking each issue, by issue id; rows show a red lock. */
   blocked: z.record(z.string(), z.array(z.string())).default({}),
+  /**
+   * Whether the lists are in an order other than rank, by the board's sort rules or the
+   * query's ORDER BY. Dragging to rank is off while it is: the order would not show the drop.
+   */
+  sorted: z.boolean().default(false),
+  /** The board whose backlog settings applied, or null when the project has no board. */
+  boardId: z.uuid().nullable().default(null),
+});
+
+/** `GET /work/projects/:key/backlog`: which board's rules apply and an LQL query on top. */
+export const backlogQuerySchema = z.object({
+  /** The board whose sort rules and filters apply; the project's first board when left out. */
+  boardId: z.uuid().optional(),
+  /** LQL: its WHERE filters every list, its ORDER BY sorts after the board's rules. */
+  q: z.string().trim().max(4000).optional(),
 });
 
 /**
@@ -48,5 +63,7 @@ export const moveIssueBodySchema = rankIssueBodySchema;
 
 export type BacklogSprint = z.infer<typeof backlogSprintSchema>;
 export type EpicProgress = z.infer<typeof epicProgressSchema>;
+export type BacklogQuery = z.infer<typeof backlogQuerySchema>;
+export type BacklogQueryInput = z.input<typeof backlogQuerySchema>;
 export type Backlog = z.infer<typeof backlogSchema>;
 export type MoveIssueBody = z.input<typeof moveIssueBodySchema>;

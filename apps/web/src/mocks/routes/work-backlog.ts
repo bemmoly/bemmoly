@@ -11,6 +11,7 @@ import {
   renumber,
   unfinishedOf,
 } from './work-backlog-state.ts';
+import { backlogQuery } from './work-backlog-query.ts';
 import { removeFrom } from './work-issue-store.ts';
 import { workIssuesRoutes } from './work-issues.ts';
 
@@ -166,8 +167,15 @@ export const workBacklogRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/work/projects/:key/backlog',
-    handle: (request, db) =>
-      projectMatches(request.params['key']) ? ok(backlogResponse(db)) : notFound('Project'),
+    handle: (request, db) => {
+      if (!projectMatches(request.params['key'])) return notFound('Project');
+      const answer = backlogQuery(
+        db,
+        request.query.get('q')?.trim() || null,
+        request.query.get('boardId'),
+      );
+      return 'error' in answer ? invalid('q', answer.error) : ok(backlogResponse(db, answer));
+    },
   },
   {
     method: 'POST',

@@ -13,10 +13,10 @@ import { planning } from './backlog-client.ts';
  * so a second drop waits for the first instead of racing it. A failure puts
  * the backlog back and says why.
  */
-export function useMoveIssues(projectKey: string) {
+export function useMoveIssues(projectKey: string, q = '') {
   const queryClient = useQueryClient();
   const { show } = useToast();
-  const key = backlogKeys.backlog(projectKey);
+  const key = backlogKeys.backlog(projectKey, q);
 
   const mutation = useMutation({
     scope: { id: `backlog-move:${projectKey}` },
@@ -38,18 +38,19 @@ export function useMoveIssues(projectKey: string) {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
       show({ tone: 'danger', title: 'The move was not saved', body: error.message });
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    // Every query's answer of this project, so the unfiltered backlog is fresh on the way back.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: backlogKeys.backlog(projectKey) }),
   });
 
   const { mutate } = mutation;
   const drop = useCallback(
     (ids: readonly string[], target: DropTarget, visibleIds: readonly string[]): boolean => {
-      const data = queryClient.getQueryData<Backlog>(backlogKeys.backlog(projectKey));
+      const data = queryClient.getQueryData<Backlog>(key);
       const plan = data ? planMove(data, ids, target, visibleIds) : null;
       if (plan) mutate(plan);
       return plan !== null;
     },
-    [queryClient, mutate, projectKey],
+    [queryClient, mutate, key],
   );
 
   return { drop, isMoving: mutation.isPending };

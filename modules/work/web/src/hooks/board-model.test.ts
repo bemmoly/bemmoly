@@ -58,3 +58,19 @@ describe('shareModel', () => {
     expect(shareModel(null, next)).toBe(next);
   });
 });
+
+describe('cell order', () => {
+  it("follows a query's sort index when the cards carry one, rank otherwise", () => {
+    const sorted = testView().cards.map((card, at, all) => ({
+      ...card,
+      sortIndex: all.length - at,
+    }));
+    const model = buildBoardModel({ ...testView(), cards: sorted });
+    for (const lane of model.lanes) {
+      for (const cell of Object.values(lane.cells)) {
+        const indexes = cell.map((card) => card.sortIndex ?? 0);
+        expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
+      }
+    }
+  });
+});

@@ -1,4 +1,4 @@
-import type { BoardConfig, Field } from '@bemmoly/module-work/shared';
+import { sortRuleQuery, type BoardConfig, type Field } from '@bemmoly/module-work/shared';
 import {
   createIssueFieldCatalog,
   parseLql,
@@ -69,6 +69,15 @@ export function configLqlProblems(config: BoardConfig, catalog: LqlFieldCatalog)
       path: `colorRules.${index}.query`,
       query: rule.query,
     })),
+    ...config.backlog.filters.map((filter, index) => ({
+      path: `backlog.filters.${index}.query`,
+      query: filter.query,
+    })),
+    ...config.backlog.sortRules.map((rule, index) =>
+      rule.kind === 'match'
+        ? { path: `backlog.sortRules.${index}.query`, query: rule.query }
+        : { path: `backlog.sortRules.${index}.field`, query: sortRuleQuery(rule) },
+    ),
   ];
   return queries.flatMap(({ path, query }) => {
     const error = checkLql(query, catalog);

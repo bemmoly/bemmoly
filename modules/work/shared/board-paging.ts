@@ -15,24 +15,39 @@ export interface RankedCard {
   issueId: string;
   rank: string;
   columnId: string;
+  /** The card's place in a query's ORDER BY; when set it orders the column instead of rank. */
+  sortIndex?: number | null | undefined;
 }
 
-type CardKey = Pick<RankedCard, 'issueId' | 'rank'>;
+type CardKey = Pick<RankedCard, 'issueId' | 'rank' | 'sortIndex'>;
 
 const UUID_LENGTH = 36;
 
+/** `<issue id>.<rank>`, then `.<sort index>` on a sorted board; ranks hold no dots. */
 export function boardCursor(card: CardKey): string {
-  return `${card.issueId}.${card.rank}`;
+  const base = `${card.issueId}.${card.rank}`;
+  return card.sortIndex === null || card.sortIndex === undefined
+    ? base
+    : `${base}.${card.sortIndex}`;
 }
 
 /** The card a cursor names, or null for text that is not a cursor. */
 export function readBoardCursor(cursor: string): CardKey | null {
   if (cursor.length <= UUID_LENGTH || cursor[UUID_LENGTH] !== '.') return null;
-  return { issueId: cursor.slice(0, UUID_LENGTH), rank: cursor.slice(UUID_LENGTH + 1) };
+  const [rank = '', index] = cursor.slice(UUID_LENGTH + 1).split('.');
+  const issueId = cursor.slice(0, UUID_LENGTH);
+  if (index === undefined) return { issueId, rank };
+  const sortIndex = Number(index);
+  return Number.isInteger(sortIndex) ? { issueId, rank, sortIndex } : null;
 }
 
-/** Board order: rank, then issue id, compared as the database's "C" collation compares them. */
+/**
+ * Board order: a query's sort index when both cards carry one, else rank, then issue id,
+ * compared as the database's "C" collation compares them.
+ */
 export function compareRanked(a: CardKey, b: CardKey): number {
+  const sorted = typeof a.sortIndex === 'number' && typeof b.sortIndex === 'number';
+  if (sorted && a.sortIndex !== b.sortIndex) return (a.sortIndex ?? 0) - (b.sortIndex ?? 0);
   if (a.rank !== b.rank) return a.rank < b.rank ? -1 : 1;
   if (a.issueId !== b.issueId) return a.issueId < b.issueId ? -1 : 1;
   return 0;

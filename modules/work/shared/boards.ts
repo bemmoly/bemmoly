@@ -53,6 +53,35 @@ export const boardLanesSchema = z.object({
   totals: z.boolean().default(true),
 });
 
+const lqlTextSchema = z.string().trim().min(1).max(4000);
+const namedQuerySchema = z.object({ name: shortNameSchema, query: lqlTextSchema });
+
+/**
+ * One backlog sort rule. Rules apply in order, before rank: a `match` rule lifts the issues its
+ * LQL condition matches above the rest ("support requests on top"), a `field` rule orders by
+ * a field, custom fields (`cf.<key>`) included. Within what the rules leave tied, rank decides.
+ */
+export const backlogSortRuleSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('match'), name: shortNameSchema, query: lqlTextSchema }),
+  z.object({
+    kind: z.literal('field'),
+    /** A field as LQL names it: `priority`, `cf.severity` or `"Severity"`. */
+    field: z.string().trim().min(1).max(200),
+    direction: z.enum(['asc', 'desc']).default('asc'),
+  }),
+]);
+
+/** The backlog's own settings, saved with the board: its sort rules and named filters. */
+export const backlogConfigSchema = z.object({
+  sortRules: z.array(backlogSortRuleSchema).max(20).default([]),
+  filters: z.array(namedQuerySchema).max(20).default([]),
+});
+
+/** The LQL a field sort rule compiles from, and is validated as. */
+export function sortRuleQuery(rule: { field: string; direction?: 'asc' | 'desc' }): string {
+  return `ORDER BY ${rule.field} ${(rule.direction ?? 'asc').toUpperCase()}`;
+}
+
 export const WORKING_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 export const boardConfigSchema = z.object({
@@ -80,6 +109,7 @@ export const boardConfigSchema = z.object({
     .max(20)
     .default([]),
   colors: z.record(z.string(), hexColorSchema).default({}),
+  backlog: backlogConfigSchema.prefault({}),
 });
 
 export const boardSchema = z.object({
@@ -131,6 +161,11 @@ export const boardCardSchema = z.object({
   parentId: z.uuid().nullable(),
   /** Short names of linked docs ("RFC", "Spec"); the card shows the first. */
   docs: z.array(z.string()).default([]),
+  /**
+   * The card's place in the order the query's ORDER BY asks for, or null when the query has
+   * none and the board keeps rank order. Cells sort by it when present.
+   */
+  sortIndex: z.number().int().nonnegative().nullable().default(null),
   /** Days since the status last changed. */
   ageDays: z.number().int().nonnegative(),
   reporterId: z.uuid().nullable().default(null),
@@ -205,6 +240,8 @@ export const boardViewQuerySchema = z.object({
 
 export const boardsResponseSchema = listSchema(boardSchema);
 
+export type BacklogSortRule = z.infer<typeof backlogSortRuleSchema>;
+export type BacklogConfig = z.infer<typeof backlogConfigSchema>;
 export type BoardColumn = z.input<typeof boardColumnSchema>;
 export type CardField = z.infer<typeof cardFieldSchema>;
 export type CardColorRuleEntry = BoardConfig['colorRules'][number];

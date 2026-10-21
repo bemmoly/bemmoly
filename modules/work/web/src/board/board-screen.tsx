@@ -166,6 +166,7 @@ function BoardBody({
             grouping={screen.grouping}
             onGrouping={screen.setGrouping}
             lqlSources={screen.lqlSources}
+            lqlCatalog={screen.lqlCatalog}
             lqlError={screen.filterError ? screen.filterError.message : null}
             savedFilters={savedFilters}
             display={
