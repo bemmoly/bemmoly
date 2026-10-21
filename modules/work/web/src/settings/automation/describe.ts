@@ -91,6 +91,12 @@ export function triggerSentence(rule: Rule): string {
     }
     case AUTOMATION_TRIGGERS.scheduled:
       return `On the schedule ${String(args['cron'] ?? '')} (UTC)`;
+    case AUTOMATION_TRIGGERS.timeInStatus: {
+      const amount = Number(args['amount'] ?? 0);
+      const unit = args['unit'] === 'hours' ? 'hour' : 'day';
+      const span = `${amount} ${unit}${amount === 1 ? '' : 's'}`;
+      return `When an issue has been in ${quoted(args['status'] ?? '')} for more than ${span}`;
+    }
     default:
       return rule.trigger.name;
   }

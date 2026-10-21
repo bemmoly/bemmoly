@@ -41,6 +41,12 @@ describe('the automation mock', () => {
     expect(api.dispatch('POST', `${A}/rules`, { ...rule, actions: [] })?.status).toBe(400);
     const scheduled = { ...rule, trigger: { name: 'scheduled', args: { cron: '0 9 * * 1' } } };
     expect(api.dispatch('POST', `${A}/rules`, scheduled)?.status).toBe(400);
+    const stay = (status: string) => ({
+      ...rule,
+      trigger: { name: 'time_in_status', args: { status, amount: 5, unit: 'days' } },
+    });
+    expect(api.dispatch('POST', `${A}/rules`, stay(''))?.status).toBe(400);
+    expect(api.dispatch('POST', `${A}/rules`, stay('Verification'))?.status).toBe(201);
     const saved = api.dispatch('POST', `${A}/rules`, rule);
     expect(saved?.status).toBe(201);
     expect(saved?.body).toMatchObject({ ownerName: 'Rohan S.', enabled: false });
