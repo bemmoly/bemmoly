@@ -123,10 +123,16 @@ describe('work module', () => {
       'work.issue.edit',
       'work.issue.delete',
       'work.issue.transition',
+      'work.epic.manage',
+      'work.sprint.create',
+      'work.sprint.start',
+      'work.sprint.complete',
       'work.sprint.manage',
       'work.board.configure',
       'work.board.method',
       'work.board.wip',
+      'work.workflow.configure',
+      'work.automation.edit',
       'work.initiative.manage',
     ]);
     expect(capabilities.every((capability) => capability.group === 'Projects')).toBe(true);

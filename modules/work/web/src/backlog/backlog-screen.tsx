@@ -43,8 +43,7 @@ type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
 
 /**
  * The Backlog at /work/backlog/PLT: the filter row, the epics panel and the sprint containers
- * above the backlog, as the Backlog mock lays them out. The frame's header holds the project,
- * the Board and Backlog tabs and Create sprint.
+ * above the backlog, as the Backlog mock lays them out; the frame's header holds Create sprint.
  */
 export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) {
   const screen = useBacklogScreen(pathKey);
@@ -175,9 +174,11 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
     <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
       <WorkPresence projectId={screen.project?.id} view="backlog" />
       <HeaderActions>
-        <Button loading={actions.create.isPending} onClick={createSprint}>
-          Create sprint
-        </Button>
+        {actions.allowed.can('work.sprint.create') && (
+          <Button loading={actions.create.isPending} onClick={createSprint}>
+            Create sprint
+          </Button>
+        )}
       </HeaderActions>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* The trail names the screen; the heading gives it to a screen reader's outline. */}
@@ -195,7 +196,9 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             <BacklogEpics
               epics={epics}
               loading={screen.isPending}
-              onCreate={createIssue(null, epicTypeId)}
+              {...(actions.allowed.can('work.epic.manage')
+                ? { onCreate: createIssue(null, epicTypeId) }
+                : {})}
               className="max-md:hidden"
             />
           )}
@@ -230,6 +233,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
                       handlers={screen.handlers}
                       entryId={screen.entryId}
                       scrollRef={screen.scrollRef}
+                      allowed={actions.allowed}
                       onAction={() =>
                         container.sprint
                           ? setDialog({

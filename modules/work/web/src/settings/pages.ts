@@ -27,8 +27,14 @@ export const projectScope = (projectKey: string | undefined): SettingsScope => (
   projectKey,
 });
 
-/** The org default pages under Settings › Work, in the order of a project's settings tabs. */
-export const ORG_SETTINGS_PAGES = ['issue-types', 'fields', 'workflow', 'board'] as const;
+/** The pages under Settings › Work: the org defaults in a project's tab order, then permissions. */
+export const ORG_SETTINGS_PAGES = [
+  'issue-types',
+  'fields',
+  'workflow',
+  'board',
+  'permissions',
+] as const;
 export type OrgSettingsPage = (typeof ORG_SETTINGS_PAGES)[number];
 
 export const isOrgSettingsPage = (value: string | undefined): value is OrgSettingsPage =>

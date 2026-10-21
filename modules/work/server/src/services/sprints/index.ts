@@ -57,7 +57,7 @@ export function createSprintsService(deps: PlanningDeps) {
       const body = createSprintBodySchema.parse(input);
       const sql = requireDatabase(deps);
       const project = await resolveProject(sql, projectRef);
-      await manage(ctx, project.id);
+      await ctx.authz.authorize(ctx.actor, 'work.sprint.create', projectResource(project.id));
       const row = await sql.begin(async (tx) => {
         const [created] = await tx<SprintRow[]>`
           insert into sprints (project_id, name, goal, starts_at, ends_at, capacity_points)

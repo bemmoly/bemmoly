@@ -5,6 +5,7 @@ import type { Issue, UpdateIssueBody } from '../../../../shared/issues.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueUpdate } from './events.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange, watcherIds } from './notify.ts';
@@ -189,8 +190,10 @@ export async function updateIssue(
   body: UpdateIssueBody,
 ): Promise<Issue> {
   const sql = requireDatabase(deps);
-  const resource = projectResource((await loadIssueByKey(sql, key)).project_id);
+  const issue = await loadIssueByKey(sql, key);
+  const resource = projectResource(issue.project_id);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', resource);
+  await authorizeEpics(ctx, sql, resource, [issue.type_id, body.typeId]);
   if (body.statusId !== undefined) {
     await ctx.authz.authorize(ctx.actor, 'work.issue.transition', resource);
   }

@@ -18,6 +18,7 @@ export const ORG_TABS: readonly PageTab[] = [
   { id: 'fields', label: 'Fields', icon: 'list', path: orgSettingsPath('fields') },
   { id: 'workflow', label: 'Workflow', icon: 'workflow', path: orgSettingsPath('workflow') },
   { id: 'board', label: 'Board', icon: 'board', path: orgSettingsPath('board') },
+  { id: 'permissions', label: 'Permissions', icon: 'lock', path: orgSettingsPath('permissions') },
 ];
 
 const OrgDefaultsScreen = lazy(() => import('./settings/org-defaults-screen.tsx'));

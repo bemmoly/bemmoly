@@ -2,6 +2,7 @@ import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { ValidationError } from '@bemmoly/shared';
 import type { IssueAssignee, SetAssigneesBody } from '../../../../shared/issues.ts';
 import { projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { notify, publishIssueChange } from './notify.ts';
 import { loadIssueByKey, toIssue } from './rows.ts';
 import { updateIssue } from './update.ts';
@@ -54,6 +55,7 @@ export async function setAssignees(
   const sql = requireDatabase(deps);
   const row = await loadIssueByKey(sql, key);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(row.project_id));
+  await authorizeEpics(ctx, sql, projectResource(row.project_id), [row.type_id]);
   const ids = body.assigneeIds;
   await assertUsersExist(sql, ids);
   const primary = ids[0] ?? null;

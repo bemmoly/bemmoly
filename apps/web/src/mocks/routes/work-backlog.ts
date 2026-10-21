@@ -21,6 +21,14 @@ import { workIssuesRoutes } from './work-issues.ts';
 
 const EDIT = 'work.issue.edit';
 const denied = () => fail(403, 'forbidden', 'You need "Create and edit issues" to do that.');
+/** Each sprint action is its own row of the roles matrix, as on the server. */
+const SPRINT_ACTION = {
+  create: 'work.sprint.create',
+  start: 'work.sprint.start',
+  complete: 'work.sprint.complete',
+  manage: 'work.sprint.manage',
+} as const;
+const deniedSprint = () => fail(403, 'forbidden', 'Your role cannot do that to a sprint.');
 const conflict = (message: string) => fail(409, 'conflict', message);
 
 interface MoveBody {
@@ -85,12 +93,13 @@ function sprintRoute(
   method: MockRoute['method'],
   suffix: string,
   act: (sprint: BacklogSprintRow, db: MockDb, body: Record<string, unknown>) => unknown,
+  capability: string = SPRINT_ACTION.manage,
 ): MockRoute {
   return {
     method,
     pattern: `/api/v1/work/sprints/:id${suffix}`,
     handle: (request, db) => {
-      if (method !== 'GET' && !can(db, EDIT)) return denied();
+      if (method !== 'GET' && !can(db, capability)) return deniedSprint();
       const sprint = backlogState(db).sprints.find((row) => row.id === request.params['id']);
       if (!sprint) return notFound('Sprint');
       const result = act(sprint, db, bodyOf<Record<string, unknown>>(request));
@@ -175,7 +184,7 @@ export const workBacklogRoutes: MockRoute[] = [
     method: 'POST',
     pattern: '/api/v1/work/projects/:key/sprints',
     handle: (request, db) => {
-      if (!can(db, EDIT)) return denied();
+      if (!can(db, SPRINT_ACTION.create)) return deniedSprint();
       if (!projectMatches(request.params['key'])) return notFound('Project');
       const body = bodyOf<BacklogSprintRow>(request);
       if (!body.name?.trim()) return invalid('name', 'A name is required');
@@ -215,6 +224,6 @@ export const workBacklogRoutes: MockRoute[] = [
     removeFrom(state.sprints, sprint);
     return undefined;
   }),
-  sprintRoute('POST', '/start', start),
-  sprintRoute('POST', '/complete', complete),
+  sprintRoute('POST', '/start', start, SPRINT_ACTION.start),
+  sprintRoute('POST', '/complete', complete, SPRINT_ACTION.complete),
 ];

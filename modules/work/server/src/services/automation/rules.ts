@@ -26,15 +26,11 @@ import {
 import { allTriggers } from './triggers/index.ts';
 import { assertValidRule } from './validate.ts';
 
-const CONFIGURE = 'work.project.configure';
+const EDIT = 'work.automation.edit';
 
-/** A project's rules are its admins'; global rules run everywhere, so they are org admins'. */
+/** A project's rules need "Edit automation" there; global rules run everywhere, so on the module. */
 export const authorizeRules = (ctx: RequestContext, projectId: string | null) =>
-  ctx.authz.authorize(
-    ctx.actor,
-    CONFIGURE,
-    projectId ? projectResource(projectId) : MODULE_RESOURCE,
-  );
+  ctx.authz.authorize(ctx.actor, EDIT, projectId ? projectResource(projectId) : MODULE_RESOURCE);
 
 const entry = (definition: {
   name: string;

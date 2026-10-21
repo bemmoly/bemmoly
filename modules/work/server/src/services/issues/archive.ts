@@ -2,6 +2,7 @@ import type { RequestContext } from '@bemmoly/core';
 import type { Issue } from '../../../../shared/issues.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { authorizeEpics } from './epics.ts';
 import { publishIssueChange } from './notify.ts';
 import { loadIssueById, loadIssueByKey, toIssue } from './rows.ts';
 
@@ -20,6 +21,7 @@ export async function setArchived(
   const sql = requireDatabase(deps);
   const found = await loadIssueByKey(sql, key);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(found.project_id));
+  await authorizeEpics(ctx, sql, projectResource(found.project_id), [found.type_id]);
   const changed = await sql.begin(async (tx) => {
     const row = await loadIssueByKey(tx, key, { lock: true });
     if ((row.archived_at !== null && row.archived_at !== undefined) === archived) {

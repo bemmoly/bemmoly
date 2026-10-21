@@ -7,6 +7,7 @@ import type {
 } from '@bemmoly/module-work/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { planning } from './backlog-client.ts';
+import { useProjectActions } from './project-actions.ts';
 
 export interface StartSprintInput {
   sprint: Sprint;
@@ -19,7 +20,8 @@ export interface StartSprintInput {
 /**
  * The Backlog's sprint and create actions. Each refreshes every Work query
  * when it settles, since a sprint change moves the Board as well; the live
- * event that follows asks for the same refresh and costs nothing extra.
+ * event that follows asks for the same refresh and costs nothing extra. `allowed` says which
+ * of them the person's project role lets them take, so the screen offers only those.
  */
 export function useSprintActions(projectKey: string) {
   const queryClient = useQueryClient();
@@ -63,5 +65,7 @@ export function useSprintActions(projectKey: string) {
     onSettled: refresh,
   });
 
-  return { create, update, remove, start, complete, createIssue };
+  const allowed = useProjectActions(projectKey || undefined);
+
+  return { create, update, remove, start, complete, createIssue, allowed };
 }
