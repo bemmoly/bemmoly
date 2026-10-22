@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Time</title>
+<meta name="description" content="Product proposal for Bemmoly Time: the timesheet that fills itself from your calendar and your work, confirmed by you, approved in a tap. No screenshots, no keystrokes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Time-only screen parts. Everything is prefixed tm- so nothing leaks.
+   Project colours are data colours taken from the kit's module palette (tokens.md), one per project. */
+:root{--tm-nw:#d46a2e;--tm-bill:#2f9e6e;--tm-rel:#0e9bb0;--tm-sup:#b7791f;--tm-hal:#9b4f96;--tm-off:#c2536a;--tm-int:var(--todo)}
+.tm-pj{width:9px;height:9px;border-radius:3px;flex:none;display:inline-block}
+.tm-pj.nw{background:var(--tm-nw)}.tm-pj.bill{background:var(--tm-bill)}.tm-pj.rel{background:var(--tm-rel)}.tm-pj.sup{background:var(--tm-sup)}.tm-pj.hal{background:var(--tm-hal)}.tm-pj.off{background:var(--tm-off)}.tm-pj.int{background:var(--tm-int)}
+
+/* the week grid */
+.tm-wk{display:grid;grid-template-columns:262px repeat(5,minmax(0,1fr)) 46px 46px 78px}
+.tm-wk>div{min-width:0}
+.tm-wh{height:50px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:0 12px;font-size:12px;color:var(--tx-3);border-bottom:1px solid var(--line);border-left:1px solid var(--line-2)}
+.tm-wh b{font-size:12.5px;color:var(--tx);font-weight:500}
+.tm-wh.l{align-items:flex-start;border-left:0}
+.tm-wh.we{background:var(--sunken)}
+.tm-wh.today b{color:var(--acc)}
+.tm-lbl{height:60px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line-2)}
+.tm-lbl .col b{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-lbl .col span{font-size:11.5px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-c{height:60px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;padding:0 12px;border-bottom:1px solid var(--line-2);border-left:1px solid var(--line-2);position:relative}
+.tm-c .v{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1}
+.tm-c .s{display:flex;gap:3px;color:var(--tx-3)}
+.tm-c .s svg.lucide{width:11px;height:11px}
+.tm-c.ai{background:var(--ai-50)}
+.tm-c.ai .s{color:var(--ai-600)}
+.tm-c.e .v{color:var(--tx-3);font-weight:400}
+.tm-c.we{background:var(--sunken)}
+.tm-c.lock{background:color-mix(in srgb,var(--tm-off) 7%,var(--card))}
+.tm-c.sel{box-shadow:inset 0 0 0 2px var(--ai)}
+.tm-c.tot{font-weight:600}
+.tm-c.tot .v{font-weight:600}
+.tm-tr>div{border-bottom:0;background:var(--sunken)}
+.tm-short{font-size:11px;color:var(--amber-tx);font-weight:500;line-height:1}
+.tm-ok{font-size:11px;color:var(--green-tx);font-weight:500;line-height:1}
+.tm-leg{display:flex;align-items:center;gap:14px;font-size:11.5px;color:var(--tx-3)}
+.tm-leg span{display:inline-flex;align-items:center;gap:6px}
+.tm-leg .sq{width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px var(--line)}
+.tm-leg .sq.ai{background:var(--ai-50);box-shadow:inset 0 0 0 1px var(--ai-100)}
+
+/* signals and evidence */
+.tm-sig{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.tm-sig:last-child{border-bottom:0}
+.tm-src{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;flex:none;background:var(--sunken);color:var(--tx-2)}
+.tm-src svg.lucide{width:13px;height:13px}
+.tm-src.cal{color:var(--m-time);background:color-mix(in srgb,var(--m-time) 12%,transparent)}
+.tm-src.wrk{color:var(--m-work);background:color-mix(in srgb,var(--m-work) 12%,transparent)}
+.tm-src.dc{color:var(--m-docs);background:color-mix(in srgb,var(--m-docs) 14%,transparent)}
+.tm-src.git{color:var(--tx-2);background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line)}
+.tm-src.ppl{color:var(--m-people);background:color-mix(in srgb,var(--m-people) 12%,transparent)}
+.tm-src.hd{color:var(--m-helpdesk);background:color-mix(in srgb,var(--m-helpdesk) 12%,transparent)}
+.tm-t{font:500 11.5px/1.3 var(--mono);color:var(--tx-3);width:42px;flex:none;padding-top:4px}
+
+/* day timeline */
+.tm-day{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr) minmax(0,1fr);height:100%}
+.tm-hr{position:absolute;left:0;right:0;height:1px;background:var(--line-2)}
+.tm-hr span{position:absolute;left:8px;top:-8px;font:500 11px/1 var(--mono);color:var(--tx-3);background:var(--canvas);padding:2px 4px}
+.tm-lane{position:relative;border-left:1px solid var(--line-2)}
+.tm-lane-h{position:absolute;top:-30px;left:12px;font-size:12px;font-weight:600;color:var(--tx-2);display:flex;align-items:center;gap:6px}
+.tm-blk{position:absolute;left:10px;right:10px;border-radius:7px;padding:6px 10px;font-size:12px;line-height:1.35;overflow:hidden;display:flex;flex-direction:column;gap:2px}
+.tm-blk b{font-weight:500;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-blk span{color:var(--tx-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+.tm-blk.sig{background:var(--card);box-shadow:var(--e1);flex-direction:row;align-items:center;gap:8px;padding:5px 8px}
+.tm-blk.sig .col{min-width:0}
+.tm-blk.ent{box-shadow:inset 3px 0 0 var(--c),inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent);background:color-mix(in srgb,var(--c) 9%,var(--card));padding-left:13px}
+.tm-blk.lunch{background:repeating-linear-gradient(135deg,var(--sunken) 0 6px,transparent 6px 12px);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--tx-3);align-items:center;justify-content:center}
+.tm-drop{position:absolute;left:10px;right:10px;border-radius:7px;border:1.5px dashed var(--acc-500);background:var(--acc-50);display:flex;align-items:flex-start;justify-content:flex-start;padding:10px 12px;gap:8px;color:var(--acc);font-weight:500;font-size:12.5px}
+.bx .tm-ghost{position:absolute;border-radius:7px;background:var(--card);box-shadow:var(--e3);padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px;transform:rotate(-1.5deg);z-index:3;width:230px}
+.tm-ghost .hand{position:absolute;right:-10px;bottom:-14px;color:var(--tx)}
+.tm-ghost .hand svg.lucide{width:20px;height:20px;fill:var(--card)}
+.tm-never{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--tx-2);height:28px}
+.tm-never svg.lucide{color:var(--tx-3);width:15px;height:15px}
+
+/* running timer */
+.tm-run{height:32px;display:inline-flex;align-items:center;gap:8px;padding:0 6px 0 10px;border-radius:16px;background:var(--card);box-shadow:var(--e1);font-weight:500}
+.tm-run .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-50);flex:none}
+.tm-run .stop{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--sunken);color:var(--tx-2)}
+.tm-run .stop svg.lucide{width:11px;height:11px;fill:currentColor}
+.tm-parse{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 7px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.tm-parse svg.lucide{width:12px;height:12px}
+.tm-parse.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* approvals and charts */
+.tm-mini{display:flex;align-items:flex-end;gap:3px;height:24px}
+.tm-mini i{display:block;width:6px;border-radius:2px;background:var(--acc-500);opacity:.75}
+.tm-mini i.hi{background:var(--amber);opacity:1}
+.tm-mini i.off{background:var(--tm-off);opacity:.6}
+.tm-bars{display:flex;align-items:flex-end;gap:10px;height:120px;padding:0 4px}
+.tm-bars>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;font-size:11px;color:var(--tx-3)}
+.tm-bars>div>i{display:block;width:100%;border-radius:4px 4px 2px 2px;background:var(--acc-500)}
+.tm-bars>div>i.hi{background:var(--amber)}
+.tm-wkbars>div>i{max-width:40px;opacity:.85}
+.tm-bars>div b{font-size:11.5px;color:var(--tx);font-weight:500}
+.tm-track{display:flex;align-items:center;margin-top:6px}
+.tm-track .s{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative;font-size:11.5px;color:var(--tx-3);text-align:center}
+.tm-track .s>i{width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;z-index:1}
+.tm-track .s.done>i{background:var(--done);box-shadow:none;color:#fff}
+.tm-track .s.done>i svg.lucide{width:11px;height:11px;stroke-width:3}
+.tm-track .s.now>i{box-shadow:inset 0 0 0 1.5px var(--prog),0 0 0 4px var(--acc-50)}
+.tm-track .s.now{color:var(--tx);font-weight:500}
+.tm-track .s+.s::before{content:"";position:absolute;top:9px;right:50%;width:100%;height:1.5px;background:var(--line)}
+.tm-track .s.done+.s::before{background:var(--done)}
+.tm-rule{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--sunken)}
+.tm-rule svg.lucide{margin-top:2px;flex:none}
+.tm-rule.ok svg.lucide{color:var(--green)}
+.tm-rule.warn{background:var(--amber-50)}
+.tm-rule.warn svg.lucide{color:var(--amber)}
+.tm-rule b{font-weight:600;font-size:12.5px;display:block}
+.tm-rule span{font-size:12px;color:var(--tx-2)}
+.tm-chart text{font:500 11.5px var(--sans);fill:var(--tx-3)}
+.tm-inv{background:var(--card);border-radius:8px;box-shadow:var(--e2);padding:18px 20px;font-size:12px}
+.tm-inv .ln{display:grid;grid-template-columns:minmax(0,1fr) 54px 92px;gap:8px;padding:7px 0;border-bottom:1px solid var(--line-2);align-items:baseline}
+.tm-inv .ln span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+
+/* settings: rules as sentences, routes */
+.tm-pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.tm-pol .sent{font-size:13.5px;line-height:1.95;color:var(--tx)}
+.tm-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.tm-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.tm-ric{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--sunken);color:var(--tx-2);flex:none}
+.tm-ric svg.lucide{width:14px;height:14px}
+.tm-flow{display:flex;align-items:center;gap:8px}
+.tm-node{padding:10px 12px;border-radius:8px;background:var(--card);box-shadow:var(--e1);min-width:0;flex:1}
+.tm-node .cap{margin-bottom:3px}
+.tm-node b{font-size:12.5px;display:block}
+.tm-arrow{color:var(--tx-3);flex:none}
+
+/* attendance on a phone */
+.tm-cap{position:absolute;inset:0;background:radial-gradient(1100px 600px at 0% -10%,color-mix(in srgb,var(--m-time) 12%,transparent),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--acc-50),transparent 60%),var(--side);display:grid;grid-template-columns:300px 300px minmax(0,1fr);gap:36px;padding:28px 52px;align-items:center;font:13px/1.45 var(--sans);color:var(--tx)}
+.tm-capcol{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.tm-capcol h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.tm-capcol p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:290px}
+.tm-phone{width:276px;height:548px;border-radius:42px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.tm-phone .scr{width:100%;height:100%;border-radius:33px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.tm-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:12px;background:#0c0f13;z-index:3}
+.tm-sbar{height:42px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 22px 0;font-size:12px;font-weight:600}
+.tm-sbar .row svg.lucide{width:13px;height:13px}
+.tm-pbody{flex:1;padding:8px 16px 16px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.tm-big{width:150px;height:150px;border-radius:50%;margin:4px auto 0;display:grid;place-items:center;background:var(--acc-fill);color:var(--on-acc);box-shadow:0 0 0 10px var(--acc-50),0 10px 24px rgba(16,24,40,.18);text-align:center}
+.tm-big b{font-size:17px;font-weight:600;display:block}
+.tm-big span{font-size:11.5px;opacity:.85}
+.tm-big svg.lucide{width:26px;height:26px;margin:0 auto 6px;display:block;color:var(--on-acc)}
+.tm-clock{font-size:34px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.tm-seg{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line-2)}
+.tm-seg i{display:block;height:100%}
+.tm-board .lrow{height:44px;padding:0 14px}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="time"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Time</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span>Bemmoly Time · product proposal</div>
+  <h1>The timesheet that fills itself, and stays yours</h1>
+  <p class="lede">Your calendar, the issues you moved, the docs you edited and the code you reviewed already say where the week went. Time drafts the week from that, you confirm it in a minute, and your manager approves the clean ones in one go. It never takes a screenshot or counts a keystroke. It is its own product: use it alone, or with the others.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Everyone who logs time, their managers, finance</span>
+    <span class="chip"><i data-lucide="app-window"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="eye-off"></i>No screenshots, no keystrokes, ever</span>
+    <span class="chip"><i data-lucide="smartphone"></i>Project time, attendance, or both</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Timesheets ask people to rebuild their week from memory on Friday afternoon. The record already exists in calendars and work tools, but nobody uses it, so time leaks out of invoices, budgets are guessed, and some companies answer the distrust with surveillance.</p>
+<div class="stats">
+  <div><b>~15%</b><span>of chargeable consulting work is never billed to the client</span><small>London Business School and TIQ, 2016</small></div>
+  <div><b>57%</b><span>of time in Microsoft 365 goes to meetings, chat and email, the work timesheets miss most</span><small>Microsoft Work Trend Index, 2023</small></div>
+  <div><b>44%</b><span>of business owners say timesheet errors are their biggest time tracking struggle</span><small>QuickBooks Time survey of 731 owners, 2018</small></div>
+  <div><b>60%</b><span>of large employers use tools to track their workers, double the pre-pandemic level</span><small>Gartner, 2022</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>The week is rebuilt from memory</b><p>Most people fill timesheets once or twice a week, or less. By Friday, Tuesday is a blur, so entries get rounded, guessed or copied from last week.</p><span class="src">40% record once or twice a week, 22% once or twice a month (LBS and TIQ, 2016)</span></div>
+  <div class="pain"><b>Meetings, email and reviews vanish</b><p>The small things are the first to go. In one study 58% of advisors logged less than a fifth of their email time and half logged under a fifth of client calls.</p><span class="src">LBS and TIQ, 2016</span></div>
+  <div class="pain"><b>Forgetting is the most common error</b><p>Missed clock-ins and unlogged hours lead the list of timesheet errors, and most companies don't review sheets before payroll, so mistakes surface as pay disputes.</p><span class="src">34% name forgetting as the top cause; 59% require no review (QuickBooks Time, 2018)</span></div>
+  <div class="pain"><b>Distrust turns into surveillance</b><p>The market's answer to bad data has been screenshots every few minutes, activity percentages and app tracking. People feel watched, and the hours still don't say what the work was.</p><span class="src">Gartner: 40% of employees were told nothing about what data is collected (2022)</span></div>
+  <div class="pain"><b>Desk and shift teams use different tools</b><p>Engineers log project time in one product, support and lab staff clock in on another, and HR reconciles both against time off by hand. Labour law keeps raising the bar: the EU's top court ruled in 2019 that working time must be recorded objectively.</p><span class="src">CJEU, CCOO v Deutsche Bank, C-55/18, 14 May 2019</span></div>
+  <div class="pain"><b>Budgets are read after they burn</b><p>Project leads find out a fixed-fee phase is over budget when finance runs the invoice. Billable and non-billable time sit in different reports, and rework never gets a name.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet every timesheet. Each one wants the work to be counted without anyone counting it by hand.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l k">TG</span><div><b>Tomás, backend engineer</b><span>Austin · splits his week across 4 projects</span></div></div>
+    <q>"Just show me what you think I did. I'll fix the two things you got wrong and get back to work."</q>
+    <ul><li>A drafted week from his calendar, issues, docs and reviews</li><li>Every number explains itself on click</li><li>Gaps pointed out, never filled silently</li><li>Nothing about his screen or keyboard, ever</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, engineering manager</b><span>Approves 8 timesheets every Monday</span></div></div>
+    <q>"I don't want to police anyone. Tell me which sheets break a rule, and let me sign off the rest at once."</q>
+    <ul><li>Rule-based flags with the reason in words</li><li>Approve every clean sheet in one action</li><li>Overtime and time off already reconciled</li><li>The project's budget burn next to the hours</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l k">MI</span><div><b>Meera, finance controller</b><span>Bills three clients, closes the month</span></div></div>
+    <q>"I want approved hours to turn into invoices and payroll lines without a spreadsheet in between."</q>
+    <ul><li>Billable hours, rates and expenses on one invoice</li><li>Periods that lock, with late changes as adjustments</li><li>Budget forecasts before the money runs out</li><li>Clean exports to the ledger and to payroll</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category splits four ways: simple trackers with timers, automatic trackers that watch your desktop, tools native to a work tracker, and attendance apps for shift teams. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Harvest</b><span>Simple tracking · agencies</span></header><p>A timer, day and week timesheets, approvals, budgets that update as people log, and invoices made from tracked time and expenses.</p>
+    <div class="plus"><i data-lucide="plus"></i>Time to invoice in one product, with budgets that move live.</div><div class="minus"><i data-lucide="minus"></i>Everything still starts with a person pressing start or typing hours.</div></div>
+  <div class="leader"><header><b>Toggl Track and Clockify</b><span>Timers for everyone</span></header><p>Fast timers everywhere (browser, desktop, phone), calendar events beside entries, idle detection, approvals, billable rates and reports. Clockify adds a PIN kiosk and GPS for field staff.</p>
+    <div class="plus"><i data-lucide="plus"></i>Toggl's private Timeline: you see your own app history and choose what becomes an entry.</div><div class="minus"><i data-lucide="minus"></i>Optional activity and location monitoring sit one setting away from the respectful defaults.</div></div>
+  <div class="leader"><header><b>Timely</b><span>AI auto-tracking</span></header><p>A desktop "Memory" app records time across apps and sites privately, and AI drafts timesheet entries, assigns projects and lets people approve them in one click.</p>
+    <div class="plus"><i data-lucide="plus"></i>The closest to the dream, and explicit about privacy: no screenshots, no keystrokes, only approved entries are shared.</div><div class="minus"><i data-lucide="minus"></i>Needs a desktop agent watching app usage, and the AI runs in its cloud.</div></div>
+  <div class="leader"><header><b>Tempo Timesheets</b><span>Native to Jira</span></header><p>Worklogs live on issues. Calendar, IDE and Git activity becomes suggested entries, team leads approve, approved periods lock, and accounts split billable from CapEx and OpEx.</p>
+    <div class="plus"><i data-lucide="plus"></i>Time attached to the work item, which makes reporting by epic and account natural.</div><div class="minus"><i data-lucide="minus"></i>Lives inside one tracker. Time off, attendance and payroll are somebody else's problem.</div></div>
+  <div class="leader"><header><b>Hubstaff</b><span>Monitoring-led</span></header><p>Time tracking with activity levels per 10-minute block from keyboard and mouse input, optional screenshots up to three per monitor every 10 minutes, and app and URL tracking.</p>
+    <div class="plus"><i data-lucide="plus"></i>Strong payroll and field features for distributed teams paid by the hour.</div><div class="minus"><i data-lucide="minus"></i>Treats presence as productivity. Its own docs warn against scoring people on activity rates.</div></div>
+  <div class="leader"><header><b>Deputy and When I Work</b><span>Shifts and attendance</span></header><p>Shift scheduling, clock-in on a phone or a shared tablet with a location stamp or photo, break rules, overtime tracking and one-tap export to payroll.</p>
+    <div class="plus"><i data-lucide="plus"></i>Built for people who don't sit at a desk: big buttons, shift swaps, breaks done right.</div><div class="minus"><i data-lucide="minus"></i>No idea of projects or billable work, so mixed teams need a second product.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Simple trackers</th><th>AI auto-tracking</th><th>Jira-native</th><th>Monitoring-led</th><th>Shift and attendance</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Drafts the week for you</td><td class="no">No, timers</td><td class="yes">Yes, from desktop activity</td><td class="part">Suggestions</td><td class="no">No</td><td class="no">From the roster</td><td class="no">No</td><td class="yes">Yes, from work objects, with sources</td></tr>
+  <tr><td>Needs a desktop agent</td><td class="yes">No</td><td class="no">Yes</td><td class="yes">No</td><td class="no">Yes</td><td class="yes">No</td><td class="yes">No</td><td class="yes">No</td></tr>
+  <tr><td>Screenshots or keystroke counts</td><td class="part">Optional in some</td><td class="yes">None</td><td class="yes">None</td><td class="no">Core feature</td><td class="part">Photo at clock-in</td><td class="yes">None</td><td class="yes">None, and not an option</td></tr>
+  <tr><td>Project time and attendance together</td><td class="part">Kiosk add-ons</td><td class="no">Project only</td><td class="no">Project only</td><td class="part">Both, by monitoring</td><td class="no">Attendance only</td><td class="part">Kimai's punch mode</td><td class="yes">Per team: project, attendance or both</td></tr>
+  <tr><td>Time off and holidays built in</td><td class="part">Basic</td><td class="part">Basic</td><td class="part">Via plug-ins</td><td class="part">Yes</td><td class="yes">Yes</td><td class="part">ERPNext, inside HR</td><td class="yes">From People, or its own calendar</td></tr>
+  <tr><td>Budgets and client invoices</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Reports</td><td class="part">Some</td><td class="no">No</td><td class="yes">Kimai invoices</td><td class="yes">Yes, with billable expenses</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="part">Data Center</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Free tier, then per person</td><td>Per person, AI in upper tiers</td><td>Per Jira user</td><td>Per person</td><td>Per person</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Also in view.</b> Replicon's ZeroTime builds a pre-filled timesheet from connected work apps for enterprises; BigTime ties time to budgets, billing and staffing for professional services firms; Zoho Projects and Zoho People cover project timesheets and HR attendance as two products. <b>Open source today</b> means Kimai (AGPL, timesheets, invoices and a punch-clock mode), Traggo (tag-based tracking) and ERPNext timesheets inside a larger ERP. All of them are honest tools built around a timer or a form. None drafts the week, and none joins project time with attendance and time off in one premium product. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (time on the work item, the private timeline, invoices from hours, attendance done right on a phone) and add what an open, self-hosted kernel makes possible.</p>
+<div class="take">
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>The week drafts itself from the work</b><p>Calendar events, issues moved, docs edited, reviews given and tickets solved become a drafted week. Each number opens to the evidence, and the person confirms. No desktop agent, no app history.</p><span class="vs">vs Timely and Replicon: drafts from desktop and app activity, in their cloud.</span></div>
+  <div><span class="ic"><i data-lucide="eye-off"></i></span><b>Respect is a rule, not a setting</b><p>No screenshots, no keystroke or mouse counts, no app or URL tracking, no idle shaming. Not as defaults, and not as options an admin can turn on. Time records work, not people.</p><span class="vs">vs Hubstaff: screenshots up to three per monitor every 10 minutes, and activity percentages.</span></div>
+  <div><span class="ic"><i data-lucide="lock-keyhole"></i></span><b>Signals belong to the person</b><p>The raw signals behind a draft are visible only to the person whose week it is. Managers see confirmed entries and rule flags, never what someone opened or when they were idle.</p><span class="vs">New: monitoring tools show managers raw activity by default.</span></div>
+  <div><span class="ic"><i data-lucide="palmtree"></i></span><b>Time off and holidays are already there</b><p>Leave and holiday calendars come from People, so a half day off fills itself and minimum hours pro-rate. Without People, Time keeps its own simple holiday list.</p><span class="vs">vs Tempo and Harvest: time off comes from a plug-in or an import.</span></div>
+  <div><span class="ic"><i data-lucide="smartphone"></i></span><b>Project time and attendance, per team</b><p>Engineers log project time, the support desk clocks in on shifts, the lab does both. One product, one set of rules, one approval route, one payroll export.</p><span class="vs">vs Deputy and When I Work: shifts only. vs simple trackers: projects only.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>Budgets, invoices, and no seat price</b><p>Approved billable hours and billable expenses become one client invoice, budgets forecast their own end, and every person in the company can log time at no cost.</p><span class="vs">vs every leader: priced per person, with approvals or AI in paid tiers.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Seven screens, drawn in Bemmoly's frame and tokens. Click the tabs, or click the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="tm">
+<!-- 1 ======================== My week, drafted (signature) -->
+<figure class="screen" id="tm-week" data-title="My week, drafted">
+  <div class="scap"><b>Last week, drafted for you</b><span>Monday morning, Tomás opens a week that is already filled in from his work. Lilac cells are AI's draft. Click a cell to see why.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.mine" data-me="Tomás García" data-counts='{"time.mine":"!1"}' data-hide-links="time.appr"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">My timesheet</span></div>
+        <div class="htabs"><span class="htab on">Week</span><span class="htab">Day</span><span class="htab">Month</span></div>
+        <div class="hact"><span class="ib"><i data-lucide="chevron-left"></i></span><span class="md">12 to 18 Oct</span><span class="ib"><i data-lucide="chevron-right"></i></span><span class="btn"><i data-lucide="play"></i>Start timer<span class="kbd">T</span></span><span class="btn pri" data-show=".tm-wk-toast"><i data-lucide="send"></i>Confirm and send · 38.0 h</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:14px">
+        <div class="row" style="gap:16px;align-items:flex-end">
+          <div class="col"><span class="tx-3" style="font-size:12px">Week 42 · due today at 12:00 · goes to Daniel Okafor</span><div class="row" style="gap:10px;margin-top:4px"><span class="h24 num">38.0 <span class="tx-3" style="font-weight:500;font-size:18px">of 40 h</span></span><span class="bdg ai"><span class="aid" style="box-shadow:none;width:6px;height:6px"></span>31 entries drafted from 5 sources</span><span class="bdg">18.0 h billable · 47%</span><span class="bdg warn"><i data-lucide="circle-alert"></i>2.0 h of gaps</span></div></div>
+          <span class="sp"></span>
+          <div class="tm-leg"><span><i class="sq ai"></i>Drafted by AI</span><span><i class="sq"></i>Logged by you</span><span><i data-lucide="lock" style="width:12px;height:12px"></i>From People</span></div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <div class="tm-wk">
+            <div class="tm-wh l"><b>Project · time code</b></div>
+            <div class="tm-wh"><b>Mon 12</b>8 h</div><div class="tm-wh"><b>Tue 13</b>8 h</div><div class="tm-wh"><b>Wed 14</b>8 h</div><div class="tm-wh"><b>Thu 15</b>8 h</div><div class="tm-wh"><b>Fri 16</b>4 h + 4 off</div><div class="tm-wh we"><b>Sat</b></div><div class="tm-wh we"><b>Sun</b></div><div class="tm-wh"><b>Total</b></div>
+
+            <div class="tm-lbl"><span class="tm-pj nw"></span><div class="col grow"><b>Northwind onboarding</b><span>Development · billable · NW-2026</span></div></div>
+            <div class="tm-c"><span class="v">3.5</span><span class="s"><i data-lucide="timer"></i></span></div>
+            <div class="tm-c ai"><span class="v">4.0</span><span class="s"><i data-lucide="git-pull-request"></i><i data-lucide="square-kanban"></i></span></div>
+            <div class="tm-c ai sel hot" data-show=".tm-wk-peek"><span class="v">3.0</span><span class="s"><i data-lucide="git-pull-request"></i><i data-lucide="square-kanban"></i><i data-lucide="file-text"></i></span></div>
+            <div class="tm-c ai"><span class="v">2.5</span><span class="s"><i data-lucide="git-commit-horizontal"></i><i data-lucide="square-kanban"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.5</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">14.5</span></div>
+
+            <div class="tm-lbl"><span class="tm-pj nw"></span><div class="col grow"><b>Northwind onboarding</b><span>Client meetings · billable</span></div></div>
+            <div class="tm-c ai"><span class="v">1.0</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c e"><span class="v">0</span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">3.5</span></div>
+
+            <div class="tm-lbl"><span class="tm-pj bill"></span><div class="col grow"><b>Billing v2</b><span>Development · internal · CapEx</span></div></div>
+            <div class="tm-c"><span class="v">2.0</span><span class="s"><i data-lucide="timer"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.5</span><span class="s"><i data-lucide="git-commit-horizontal"></i></span></div>
+            <div class="tm-c ai"><span class="v">2.0</span><span class="s"><i data-lucide="square-kanban"></i><i data-lucide="git-commit-horizontal"></i></span></div>
+            <div class="tm-c ai"><span class="v">3.0</span><span class="s"><i data-lucide="git-commit-horizontal"></i><i data-lucide="square-kanban"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.0</span><span class="s"><i data-lucide="file-text"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">9.5</span></div>
+
+            <div class="tm-lbl"><span class="tm-pj rel"></span><div class="col grow"><b>Platform reliability</b><span>Code review · internal · OpEx</span></div></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.0</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c ai"><span class="v">1.0</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="git-pull-request"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">3.5</span></div>
+
+            <div class="tm-lbl"><span class="tm-pj int"></span><div class="col grow"><b>Team and company</b><span>Internal meetings · standups, 1:1s</span></div></div>
+            <div class="tm-c ai"><span class="v">0.75</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.75</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c ai"><span class="v">0.5</span><span class="s"><i data-lucide="calendar"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">3.0</span></div>
+
+            <div class="tm-lbl"><span class="tm-pj off"></span><div class="col grow"><b>Time off</b><span>Paid leave · half day, approved in People</span></div></div>
+            <div class="tm-c e"></div><div class="tm-c e"></div><div class="tm-c e"></div><div class="tm-c e"></div>
+            <div class="tm-c lock"><span class="v">4.0</span><span class="s"><i data-lucide="lock"></i></span></div>
+            <div class="tm-c we"></div><div class="tm-c we"></div>
+            <div class="tm-c tot"><span class="v">4.0</span></div>
+
+            <div class="tm-lbl" style="background:var(--sunken);border-bottom:0"><b class="sb" style="font-size:13px">Day total</b></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">7.75</span><span class="tm-short">0.25 short</span></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">7.5</span><span class="tm-short">0.5 short</span></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">7.75</span><span class="tm-short">0.25 short</span></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">7.0</span><span class="tm-short">1.0 short</span></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">8.0</span><span class="tm-ok">Complete</span></div>
+            <div class="tm-c we" style="border-bottom:0"></div><div class="tm-c we" style="border-bottom:0"></div>
+            <div class="tm-c tot" style="background:var(--sunken);border-bottom:0"><span class="v">38.0</span></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:12px;flex:1;min-height:0">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>How this week was drafted<span class="src">by AI · from last week's work</span></div>
+            <p style="font-size:12.5px">I matched 14 calendar events, 11 issues you moved, 9 reviews, 23 commits and 4 docs to your projects, using the codes you picked in the past 8 weeks.<span class="cite"><i data-lucide="calendar"></i>14 events</span><span class="cite"><i data-lucide="square-kanban"></i>11 issues</span><span class="cite"><i data-lucide="git-pull-request"></i>9 reviews</span></p>
+            <div class="acts"><span class="btn sm">Clear the draft</span><span class="nu">Not useful</span></div></div>
+          <div class="card pad" style="padding:12px 14px"><div class="row" style="margin-bottom:8px"><i data-lucide="circle-dashed" class="tx-3"></i><b class="grow">Gaps</b><span class="tx-3" style="font-size:12px">2.0 h</span></div>
+            <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><span class="tm-pj bill"></span><span class="grow">Thu 14:00 to 15:00 · you edited "Proration notes"</span><span style="color:var(--acc)" class="md">Log 1 h</span></div><div class="row"><i data-lucide="circle-dashed" class="tx-3" style="width:13px;height:13px"></i><span class="grow tx-2">3 short gaps, 1.0 h in all</span><span style="color:var(--acc)" class="md">Open days</span></div><div class="row tx-3" style="font-size:12px;margin-top:2px"><i data-lucide="info" style="width:13px;height:13px"></i><span class="grow">Gaps stay empty until you choose. Lunch is never counted.</span></div></div></div>
+          <div class="card pad" style="padding:12px 14px"><div class="row" style="margin-bottom:8px"><i data-lucide="list-checks" class="tx-3"></i><b class="grow">Rules</b><span class="tx-3" style="font-size:12px">Platform team</span></div>
+            <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><i data-lucide="circle-check" style="color:var(--green);width:14px;height:14px"></i><span class="grow tx-2">Notes on every billable entry</span></div><div class="row"><i data-lucide="circle-alert" style="color:var(--amber);width:14px;height:14px"></i><span class="grow tx-2">40 h minimum: send with a note, or fill gaps</span></div><div class="row"><i data-lucide="circle-check" style="color:var(--green);width:14px;height:14px"></i><span class="grow tx-2">Rounded to 15 min · locks once approved</span></div></div></div>
+        </div>
+      </div></div>
+
+      <div class="peek tm-wk-peek" hidden>
+        <div class="peek-h"><span class="tm-pj nw"></span><b class="grow">Wed 14 Oct · Northwind onboarding</b><span class="ib sm" data-hide=".tm-wk-peek"><i data-lucide="x"></i></span></div>
+        <div class="peek-b">
+          <div class="row" style="align-items:flex-end"><div class="col grow"><span class="tx-3" style="font-size:12px">Development · billable · NW-2026</span><div class="h24 num" style="margin-top:2px">3.0 h</div></div><span class="bdg ai"><span class="aid" style="box-shadow:none;width:6px;height:6px"></span>Drafted from 4 signals</span></div>
+          <div class="cap" style="margin:16px 0 2px">What happened · only you can see this</div>
+          <div>
+            <div class="tm-sig"><span class="tm-t">09:40</span><span class="tm-src git"><i data-lucide="git-pull-request"></i></span><div class="col grow"><b style="font-size:12.5px">Opened PR #482 "Retry failed webhooks"</b><span class="tx-3" style="font-size:11.5px">northwind-sync · 3 commits until 11:10</span></div><span class="cb on"><i data-lucide="check"></i></span></div>
+            <div class="tm-sig"><span class="tm-t">11:15</span><span class="tm-src wrk"><i data-lucide="square-kanban"></i></span><div class="col grow"><b style="font-size:12.5px">Moved NW-231 to In review</b><span class="tx-3" style="font-size:11.5px">Work · Northwind onboarding</span></div><span class="cb on"><i data-lucide="check"></i></span></div>
+            <div class="tm-sig"><span class="tm-t">13:30</span><span class="tm-src dc"><i data-lucide="file-text"></i></span><div class="col grow"><b style="font-size:12.5px">Edited "Northwind webhook spec"</b><span class="tx-3" style="font-size:11.5px">Docs · 14 edits until 14:30</span></div><span class="cb on"><i data-lucide="check"></i></span></div>
+            <div class="tm-sig"><span class="tm-t">16:05</span><span class="tm-src git"><i data-lucide="git-pull-request"></i></span><div class="col grow"><b style="font-size:12.5px">Reviewed PR #479 "Northwind SSO"</b><span class="tx-3" style="font-size:11.5px">Counted under Code review instead</span></div><span class="cb"></span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 6px">Note · required for billable time</div>
+          <div class="inp ai-field" style="height:auto;padding:8px 10px;line-height:1.45">Webhook retries and spec updates for the Northwind sync (NW-231)</div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Why 3.0 hours<span class="src">by AI · from 3 signals</span></div><p style="font-size:12.5px">The PR and spec work cover 09:40 to 11:15 and 13:30 to 14:30. I rounded to your team's 15 minutes and left the review on Platform reliability, where you put reviews before.<span class="cite"><i data-lucide="git-pull-request"></i>#482</span><span class="cite"><i data-lucide="square-kanban"></i>NW-231</span></p><div class="acts"><span class="nu" style="margin-left:0">Not useful</span></div></div>
+        </div>
+        <div class="peek-f"><span class="btn ghost">Remove entry</span><span class="btn">Change hours</span><span class="btn pri" data-hide=".tm-wk-peek"><i data-lucide="check"></i>Keep 3.0 h</span></div>
+      </div>
+      <div class="toast tm-wk-toast" hidden><i data-lucide="circle-check"></i>Week sent to Daniel Okafor with 38.0 h and your note about the gaps.<span class="u" data-hide=".tm-wk-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Drafted, never submitted for you</b>The week arrives filled in, and stays a draft until Tomás confirms. Lilac means AI's guess; plain means he logged it himself; the lock means it came from People.</div>
+    <div><b>Every number explains itself</b>Click a cell and its evidence opens: the PR, the issue, the doc, with times. Untick a signal and the hours change. The evidence is private to him.</div>
+    <div><b>Gaps are named, not filled</b>Missing hours are shown with a likely match from his own work. Nothing is invented to reach 40.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Day timeline -->
+<figure class="screen" id="tm-day" data-title="Day timeline">
+  <div class="scap"><b>The day, as signals and entries</b><span>On the left, what happened in his tools. On the right, his entries. Drag a signal into a gap to log it.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.mine" data-me="Tomás García" data-counts='{"time.mine":"!1"}' data-hide-links="time.appr"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">My timesheet</span></div>
+        <div class="htabs"><span class="htab">Week</span><span class="htab on">Day</span><span class="htab">Month</span></div>
+        <div class="hact"><span class="ib"><i data-lucide="chevron-left"></i></span><span class="md">Thu 15 Oct</span><span class="ib"><i data-lucide="chevron-right"></i></span><span class="btn"><i data-lucide="plus"></i>Add entry</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 316px;height:100%">
+        <div style="position:relative;padding:44px 20px 0 8px;overflow:hidden">
+          <div class="tm-day" style="height:660px">
+            <div style="position:relative">
+              <div class="tm-hr" style="top:0;right:-2000px"><span>09:00</span></div><div class="tm-hr" style="top:72px;right:-2000px"><span>10:00</span></div><div class="tm-hr" style="top:144px;right:-2000px"><span>11:00</span></div><div class="tm-hr" style="top:216px;right:-2000px"><span>12:00</span></div><div class="tm-hr" style="top:288px;right:-2000px"><span>13:00</span></div><div class="tm-hr" style="top:360px;right:-2000px"><span>14:00</span></div><div class="tm-hr" style="top:432px;right:-2000px"><span>15:00</span></div><div class="tm-hr" style="top:504px;right:-2000px"><span>16:00</span></div><div class="tm-hr" style="top:576px;right:-2000px"><span>17:00</span></div><div class="tm-hr" style="top:648px;right:-2000px"><span>18:00</span></div>
+            </div>
+            <div class="tm-lane">
+              <span class="tm-lane-h"><i data-lucide="radio-tower" style="width:14px;height:14px"></i>What happened · private to you</span>
+              <div class="tm-blk sig" style="top:4px;height:30px"><span class="tm-src cal" style="width:20px;height:20px"><i data-lucide="calendar"></i></span><div class="col"><b>Platform standup and planning</b></div></div>
+              <div class="tm-blk sig" style="top:46px;height:30px"><span class="tm-src wrk" style="width:20px;height:20px"><i data-lucide="square-kanban"></i></span><div class="col"><b>NW-236 moved to In progress</b></div></div>
+              <div class="tm-blk sig" style="top:96px;height:48px"><span class="tm-src git" style="width:20px;height:20px"><i data-lucide="git-commit-horizontal"></i></span><div class="col"><b>4 commits on northwind-sync</b><span>10:20 to 11:50</span></div></div>
+              <div class="tm-blk sig" style="top:296px;height:30px"><span class="tm-src git" style="width:20px;height:20px"><i data-lucide="git-pull-request"></i></span><div class="col"><b>Reviewed PR #490 "Rate limiter"</b></div></div>
+              <div class="tm-blk sig" style="top:334px;height:30px"><span class="tm-src git" style="width:20px;height:20px"><i data-lucide="git-pull-request"></i></span><div class="col"><b>Reviewed PR #491 "Queue metrics"</b></div></div>
+              <div class="tm-blk sig tm-ghost-src" style="top:366px;height:58px;opacity:.4;box-shadow:inset 0 0 0 1.5px var(--line);background:transparent"><span class="tm-src dc" style="width:20px;height:20px"><i data-lucide="file-text"></i></span><div class="col"><b>Edited "Billing v2 proration notes"</b><span>Docs · 14:05 to 14:50</span></div></div>
+              <div class="tm-blk sig" style="top:440px;height:48px"><span class="tm-src git" style="width:20px;height:20px"><i data-lucide="git-commit-horizontal"></i></span><div class="col"><b>6 commits on billing-v2</b><span>15:10 to 17:40</span></div></div>
+              <div class="tm-blk sig" style="top:596px;height:30px"><span class="tm-src wrk" style="width:20px;height:20px"><i data-lucide="square-kanban"></i></span><div class="col"><b>BIL-88 moved to In review</b></div></div>
+            </div>
+            <div class="tm-lane">
+              <span class="tm-lane-h"><i data-lucide="calendar-days" style="width:14px;height:14px"></i>Your entries · 7.0 of 8.0 h</span>
+              <div class="tm-blk ent" style="top:2px;height:32px;--c:var(--tm-int)"><b>Internal meetings · 0.5 h</b></div>
+              <div class="tm-blk ent" style="top:38px;height:176px;--c:var(--tm-nw)"><b>Northwind onboarding · 2.5 h</b><span>Development · NW-236 sync backfill</span><span class="tx-3">From 5 signals</span></div>
+              <div class="tm-blk lunch" style="top:218px;height:68px"><span>Lunch, not logged</span></div>
+              <div class="tm-blk ent" style="top:290px;height:68px;--c:var(--tm-rel)"><b>Platform reliability · 1.0 h</b><span>Code review · #490, #491</span></div>
+              <div class="tm-drop tm-target" style="top:362px;height:68px" data-show=".tm-dropped,.tm-day-toast" data-hide=".tm-target,.tm-ghost,.tm-ghost-src"><i data-lucide="arrow-down-to-line"></i>Drop to log 1.0 h on Billing v2</div>
+              <div class="tm-blk ent tm-dropped" hidden style="top:362px;height:68px;--c:var(--tm-bill)"><b>Billing v2 · 1.0 h</b><span>Development · proration notes</span></div>
+              <div class="tm-blk ent" style="top:434px;height:212px;--c:var(--tm-bill)"><b>Billing v2 · 3.0 h</b><span>Development · BIL-88 proration</span><span class="tx-3">From 7 signals</span></div>
+            </div>
+          </div>
+          <div class="tm-ghost hot" style="left:466px;top:446px" data-show=".tm-dropped,.tm-day-toast" data-hide=".tm-target,.tm-ghost,.tm-ghost-src"><span class="tm-src dc" style="width:20px;height:20px"><i data-lucide="file-text"></i></span><div class="col" style="min-width:0"><b class="trunc" style="font-size:12.5px">Edited "Billing v2 proration notes"</b><span class="tx-3" style="font-size:11.5px">Docs · 45 min</span></div><span class="hand"><i data-lucide="hand"></i></span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row"><b class="grow h14">Thursday 15 October</b><span class="bdg warn">1.0 h short</span></div>
+          <div class="tm-seg" style="margin:12px 0 6px"><i style="width:6.25%;background:var(--tm-int)"></i><i style="width:31.25%;background:var(--tm-nw)"></i><i style="width:12.5%;background:var(--tm-rel)"></i><i style="width:37.5%;background:var(--tm-bill)"></i></div>
+          <div class="col" style="gap:5px;font-size:12px;margin-bottom:16px"><div class="row"><span class="tm-pj nw"></span><span class="grow tx-2">Northwind onboarding</span><span class="num">2.5 h</span></div><div class="row"><span class="tm-pj bill"></span><span class="grow tx-2">Billing v2</span><span class="num">3.0 h</span></div><div class="row"><span class="tm-pj rel"></span><span class="grow tx-2">Platform reliability</span><span class="num">1.0 h</span></div><div class="row"><span class="tm-pj int"></span><span class="grow tx-2">Internal meetings</span><span class="num">0.5 h</span></div></div>
+          <div class="card" style="padding:14px 16px;box-shadow:inset 0 0 0 1px var(--line)">
+            <div class="row" style="margin-bottom:6px"><i data-lucide="shield-check" style="color:var(--green)"></i><b class="grow">What Time reads</b></div>
+            <div class="tx-2" style="font-size:12px;line-height:1.5;margin-bottom:8px">Work objects you touched, from the sources you connected: events you accepted, issues you moved, docs you edited, reviews and commits, tickets you solved.</div>
+            <div class="row" style="margin-bottom:2px"><i data-lucide="ban" class="tx-3"></i><b class="grow">What it never reads</b></div>
+            <div class="tm-never"><i data-lucide="camera-off"></i>Screenshots or your screen</div>
+            <div class="tm-never"><i data-lucide="keyboard"></i>Keystrokes or mouse movement</div>
+            <div class="tm-never"><i data-lucide="app-window"></i>Apps, websites or idle time</div>
+            <div class="tm-never"><i data-lucide="message-square"></i>The content of chats or email</div>
+            <div class="tx-3" style="font-size:11.5px;margin-top:6px;line-height:1.45">Signals are kept 30 days, visible only to you, and your manager sees only what you confirm.</div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;margin-top:14px"><i data-lucide="plug" style="width:14px;height:14px"></i><span class="grow">Calendar, Work, Docs, GitHub</span><span style="color:var(--acc)">Manage</span></div>
+        </div>
+      </div>
+      <div class="toast tm-day-toast" hidden><i data-lucide="circle-check"></i>Logged 1.0 h on Billing v2 · Thursday is complete.<span class="u" data-show=".tm-target,.tm-ghost,.tm-ghost-src" data-hide=".tm-dropped,.tm-day-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Two lanes, one truth</b>Signals sit next to entries on the same clock, so a mismatch is visible at a glance and fixed with a drag, not a form.</div>
+    <div><b>Signals are work, not activity</b>A doc edit or a merged PR says what the work was. Screen time and idle minutes never appear, because they don't.</div>
+    <div><b>The promise, on the screen</b>The panel states what Time reads and what it never reads, in the product itself, where people can check it.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Quick entry and timer -->
+<figure class="screen" id="tm-quick" data-title="Timer and quick entry">
+  <div class="scap"><b>A timer when you want one, a sentence when you don't</b><span>Mod+K anywhere in Time. Type it the way you'd say it; the entry is parsed into project, code and day before you press Enter.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.mine" data-me="Tomás García" data-hide-links="time.appr"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">Today</span></div>
+        <div class="htabs"><span class="htab">Week</span><span class="htab on">Day</span><span class="htab">Month</span></div>
+        <div class="hact"><span class="tm-run"><span class="pulse"></span><span class="tm-pj nw"></span>NW-231 Retry webhooks<span class="mono tx-2">0:42:18</span><span class="stop"><i data-lucide="square"></i></span></span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:24px">
+        <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Monday 19 October</div><span class="tx-3" style="font-size:12px">2.7 h so far · timer running since 09:12</span></div><span class="btn"><i data-lucide="calendar-plus"></i>Log today's meetings</span></div>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+          <div class="card kpi"><div class="l"><i data-lucide="sun"></i>Today</div><div class="v num">2.7 h</div><div class="d">Timer running · 2 meetings ahead</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="calendar-days"></i>Week 43</div><div class="v num">2.7 <span class="tx-3" style="font-size:15px;font-weight:500">of 40 h</span></div><div class="d">Drafting as you go · due Mon 26 Oct</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="send"></i>Week 42</div><div class="v" style="font-size:18px">With Daniel</div><div class="d">Sent 09:20 · usually approved by Tuesday</div></div>
+        </div>
+        <div class="card">
+          <div class="ghead">Logged<span class="ct">3</span></div>
+          <div class="lrow"><span class="tm-pj int"></span><span class="mono tx-3" style="width:112px;font-size:11.5px;white-space:nowrap">08:45 to 09:00</span><div class="col grow"><b>Internal meetings</b><span class="tx-3" style="font-size:12px">Platform standup</span></div><b class="num">0.25 h</b></div>
+          <div class="lrow"><span class="tm-pj nw"></span><span class="mono tx-3" style="width:112px;font-size:11.5px;white-space:nowrap">09:12 now</span><div class="col grow"><b>Northwind onboarding · Development</b><span class="tx-3" style="font-size:12px">NW-231 Retry webhooks · timer</span></div><span class="st prog"><i></i>Running</span><b class="num" style="width:56px;text-align:right">0.7 h</b></div>
+          <div class="lrow" style="border-bottom:0"><span class="tm-pj rel"></span><span class="mono tx-3" style="width:112px;font-size:11.5px;white-space:nowrap">earlier</span><div class="col grow"><b>Platform reliability · On call</b><span class="tx-3" style="font-size:12px">Paged at 06:40, INC-79 · logged from the phone</span></div><b class="num">1.75 h</b></div>
+          <div class="ghead">Coming up today<span class="ct">From your calendar</span></div>
+          <div class="lrow"><span class="tm-pj nw"></span><span class="mono tx-3" style="width:112px;font-size:11.5px;white-space:nowrap">11:00 to 11:45</span><div class="col grow"><b>Northwind weekly sync</b><span class="tx-3" style="font-size:12px">Will be suggested as Client meetings · billable</span></div></div>
+          <div class="lrow" style="border-bottom:0"><span class="tm-pj int"></span><span class="mono tx-3" style="width:112px;font-size:11.5px;white-space:nowrap">15:00 to 15:30</span><div class="col grow"><b>1:1 with Daniel</b><span class="tx-3" style="font-size:12px">Will be suggested as Internal meetings</span></div></div>
+        </div>
+      </div></div>
+      <div class="scrim tm-pal-s"></div>
+      <div class="pal tm-pal">
+        <div class="pal-in"><i data-lucide="search"></i><span>1.5h northwind webhook review fri</span><span style="width:1px;height:18px;background:var(--acc)"></span></div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tx-3" style="font-size:12px;margin-right:2px">Reads as</span><span class="tm-parse v"><i data-lucide="clock"></i>1.5 h</span><span class="tm-parse"><span class="tm-pj nw"></span>Northwind onboarding</span><span class="tm-parse"><i data-lucide="tag"></i>Code review</span><span class="tm-parse v"><i data-lucide="calendar"></i>Fri 16 Oct</span><span class="tm-parse v"><i data-lucide="text"></i>"webhook review"</span></div>
+        <div class="pal-l">
+          <div class="pal-g">Log time</div>
+          <div class="pal-r on hot" data-show=".tm-q-toast" data-hide=".tm-pal,.tm-pal-s"><i data-lucide="alarm-clock-plus"></i><span>Log 1.5 h on Northwind onboarding · Code review · Fri 16 Oct</span><span class="kbd"><i data-lucide="corner-down-left"></i></span></div>
+          <div class="pal-r"><i data-lucide="alarm-clock-plus"></i><span>Log 1.5 h on Northwind onboarding · Development · Fri 16 Oct</span></div>
+          <div class="pal-g">Timer</div>
+          <div class="pal-r"><i data-lucide="play"></i><span>Start a timer on NW-238 "Webhook review checklist"</span><span class="tx-3" style="margin-left:auto;font-size:12px">Work</span></div>
+          <div class="pal-r"><i data-lucide="rotate-ccw"></i><span>Resume Billing v2 · Development</span><span class="tx-3" style="margin-left:auto;font-size:12px">last used Fri</span></div>
+          <div class="pal-g">Go to</div>
+          <div class="pal-r"><i data-lucide="calendar-days"></i><span>Open week 42</span><span class="kbd">G</span><span class="kbd" style="margin-left:2px">W</span></div>
+        </div>
+        <div style="padding:8px 16px;border-top:1px solid var(--line-2);font-size:11.5px" class="row tx-3"><i data-lucide="info" style="width:13px;height:13px"></i><span class="grow">Parsed by rules, so it works with AI off. Friday's week is still a draft, so this goes into it.</span></div>
+      </div>
+      <div class="toast tm-q-toast" hidden><i data-lucide="circle-check"></i>Logged 1.5 h on Northwind onboarding for Fri 16 Oct.<span class="u" data-show=".tm-pal,.tm-pal-s" data-hide=".tm-q-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Say it, don't fill it</b>"1.5h northwind webhook review fri" becomes hours, project, code, day and note, each shown as a chip you can change before pressing Enter.</div>
+    <div><b>Timers that know the work</b>Start a timer on an issue from Work and it carries the project and code. It lives in the header so it's always one click from stopping.</div>
+    <div><b>Today, ahead of time</b>Upcoming meetings show how they'll be suggested, so people learn what the draft will do before it does it.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Approvals -->
+<figure class="screen" id="tm-appr" data-title="Approvals by rule">
+  <div class="scap"><b>Approvals: the rule-breakers first, the rest in one go</b><span>Daniel sees which sheets break a rule and why. Five clean timesheets are approved together, with a summary of exactly what's included.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.appr" data-me="Daniel Okafor" data-counts='{"time.appr":"!7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">Approvals</span></div>
+        <div class="htabs"><span class="htab on">To review<span class="ct">7</span></span><span class="htab">Not sent<span class="ct">1</span></span><span class="htab">Approved</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="users"></i>Platform team</span><span class="fchip"><i data-lucide="calendar"></i>Week 42 · 12 to 18 Oct</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100%">
+        <div style="overflow:hidden;padding:20px 24px">
+          <div class="ai-card" style="margin-bottom:14px"><div class="ai-h"><span class="aid"></span>Review summary<span class="src">by AI · from 7 timesheets and the team's rules</span></div>
+            <p>Five sheets (199.5 h, 41% billable) pass every rule and fit the projects' plans.<span class="cite">5 sheets</span> Two need you: Aiko is 12 h over 40, with a reason, and Marcus logged 6 h on Search revamp, which closed on 9 Oct.<span class="cite">Overtime rule</span><span class="cite"><i data-lucide="square-kanban"></i>Search revamp</span></p>
+            <div class="acts"><span class="btn sm pri hot" data-show=".tm-ap-toast" data-hide=".tm-ap-safe"><i data-lucide="check-check"></i>Approve the 5 clean sheets</span><span class="btn sm">Show them first</span><span class="nu">Not useful</span></div></div>
+          <div class="card">
+            <div class="ghead"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber)"></span>Breaks a rule<span class="ct">2</span></div>
+            <div class="lrow sel" style="height:56px"><span class="av g">AT</span><div class="col grow"><b>Aiko Tanaka · 52.0 h</b><span class="tx-2" style="font-size:12px">"Model retraining after Thursday's incident, INC-77"</span></div><div class="tm-mini"><i style="height:8px"></i><i style="height:9px"></i><i style="height:10px"></i><i class="hi" style="height:24px"></i><i class="hi" style="height:15px"></i><i style="height:4px"></i><i style="height:2px"></i></div><span class="bdg warn">Overtime 12 h</span></div>
+            <div class="lrow" style="height:56px"><span class="av o">ML</span><div class="col grow"><b>Marcus Lee · 40.0 h</b><span class="tx-2" style="font-size:12px">6 h on Search revamp after it closed on 9 Oct</span></div><div class="tm-mini"><i style="height:8px"></i><i style="height:8px"></i><i style="height:8px"></i><i style="height:8px"></i><i style="height:8px"></i><i style="height:2px"></i><i style="height:2px"></i></div><span class="bdg warn">Closed project</span></div>
+            <div class="tm-ap-safe">
+            <div class="ghead"><span style="width:8px;height:8px;border-radius:50%;background:var(--green)"></span>Clean<span class="ct">5 · 199.5 h</span><span class="sp"></span><span class="tx-3" style="font-weight:400">Approve all with</span><span class="kbd">Shift</span><span class="kbd">A</span></div>
+            <div class="lrow"><span class="av k">TG</span><div class="col grow"><b>Tomás García</b><span class="tx-3" style="font-size:12px">Note: 2 h of short gaps · half day off Fri</span></div><b class="num">38.0 h</b></div>
+            <div class="lrow"><span class="av v">NR</span><div class="col grow"><b>Nikhil Rao</b><span class="tx-3" style="font-size:12px">Billing v2 · Platform reliability</span></div><b class="num">40.0 h</b></div>
+            <div class="lrow"><span class="av p">DM</span><div class="col grow"><b>Divya Menon</b><span class="tx-3" style="font-size:12px">Northwind 62% · notes on every billable entry</span></div><b class="num">40.0 h</b></div>
+            <div class="lrow" style="border-bottom:0"><span class="tx-3" style="padding-left:34px;font-size:12px">and 2 more · Jonas Becker 41.5 h, Ana Souza 40.0 h</span></div>
+            </div>
+            <div class="ghead">Not sent yet<span class="ct">1</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="av a">HW</span><div class="col grow"><b>Hannah Weber</b><span class="tx-3" style="font-size:12px">Draft ready since Friday · reminder sent at 09:00</span></div><span class="btn sm ghost">Nudge</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);overflow:hidden;background:var(--canvas);position:relative">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--line-2)"><div class="row"><span class="av g">AT</span><div class="col grow"><b>Aiko Tanaka</b><span class="tx-3" style="font-size:12px">Data scientist · Platform team · Bengaluru</span></div><span class="tx-3" style="font-size:12px">1 of 7</span></div></div>
+          <div style="padding:14px 20px" class="col">
+            <div class="row" style="align-items:flex-end"><div class="col grow"><div class="h20 num">52.0 h</div><span class="tx-2" style="font-size:12.5px">Week 42 · 21.5 h billable</span></div><span class="bdg warn">12 h overtime</span></div>
+            <div class="tm-bars" style="margin-top:12px;height:104px"><div><b>8.0</b><i style="height:36%"></i>Mon</div><div><b>8.5</b><i style="height:38%"></i>Tue</div><div><b>9.0</b><i style="height:40%"></i>Wed</div><div><b>14.0</b><i class="hi" style="height:62%"></i>Thu</div><div><b>10.5</b><i class="hi" style="height:47%"></i>Fri</div><div><b>2.0</b><i style="height:9%"></i>Sat</div><div><b>0</b><i style="height:2%"></i>Sun</div></div>
+            <div class="tm-rule warn" style="margin-top:14px"><i data-lucide="circle-alert"></i><div><b>Over 45 h needs a reason and People ops sign-off</b><span>Reason given: "Model retraining after Thursday's incident, INC-77." The incident is in Work.</span></div></div>
+            <div class="tm-rule ok" style="margin-top:6px"><i data-lucide="circle-check"></i><div><b>Rest between days kept</b><span>At least 11 h between the end of Thursday and the start of Friday.</span></div></div>
+            <div class="cap" style="margin:14px 0 6px">Context</div>
+            <div class="col" style="gap:7px;font-size:12.5px">
+              <div class="row"><i data-lucide="history" class="tx-3"></i><span class="grow tx-2">Her last 4 weeks</span><b class="num">41 · 40 · 42 · 52 h</b></div>
+              <div class="row"><i data-lucide="square-kanban" class="tx-3"></i><span class="grow tx-2">INC-77 in Work</span><b>Resolved Fri 17:40</b></div>
+              <div class="row"><i data-lucide="palmtree" class="tx-3"></i><span class="grow tx-2">Overtime becomes</span><b>Time off in lieu, in People</b></div>
+            </div>
+            <div class="cap" style="margin:14px 0 4px">Approval path</div>
+            <div class="tm-track"><div class="s done"><i><i data-lucide="check"></i></i>Sent</div><div class="s now"><i></i>You</div><div class="s"><i></i>People ops</div><div class="s"><i></i>Locked</div></div>
+          </div>
+          <div class="peek-f" style="position:absolute;bottom:0;left:0;right:0;background:var(--canvas)"><span class="btn ghost">Ask Aiko</span><span class="btn">Send back…</span><span class="btn pri"><i data-lucide="check"></i>Approve<span class="kbd" style="background:transparent;color:inherit;border-color:rgba(255,255,255,.35)">A</span></span></div>
+        </div>
+      </div>
+      <div class="toast tm-ap-toast" hidden><i data-lucide="circle-check"></i>5 timesheets approved, 199.5 h. They're locked for payroll and billing.<span class="u" data-show=".tm-ap-safe" data-hide=".tm-ap-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Flags come from rules, not from watching</b>Overtime, a closed project, a missing note: each flag names the rule it broke. Nothing here is a judgement about how hard someone worked.</div>
+    <div><b>Clean sheets in one action</b>The summary lists what's included, and Undo is right there. AI summarises; Daniel approves.</div>
+    <div><b>Wellbeing as a rule</b>Rest between days and weekly limits are checked for the person's sake. Long weeks get a second look from People ops, not a gold star.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Project budget -->
+<figure class="screen" id="tm-budget" data-title="Budget burn">
+  <div class="scap"><b>A budget that tells you when it will run out</b><span>Hours against plan for a fixed-budget phase, billable against non-billable, and a forecast that arrives in October, not in December.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.proj" data-me="Daniel Okafor" data-counts='{"time.appr":"!7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span>Projects</span><span class="sep">/</span><span class="cur">Northwind onboarding</span></div>
+        <div class="htabs"><span class="htab on">Budget</span><span class="htab">Entries</span><span class="htab">Codes and rates</span><span class="htab">People</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="flag"></i>Phase 2 · integration</span><span class="btn"><i data-lucide="share-2"></i>Share with Arjun</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:14px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l">Hours used</div><div class="v num">812 <span class="tx-3" style="font-size:15px;font-weight:500">of 1,600</span></div><div class="d">51% used · 44% of the phase gone</div></div>
+          <div class="card kpi"><div class="l">Budget value</div><div class="v num">₹36.5L</div><div class="d">of ₹72L at ₹4,500 a blended hour</div></div>
+          <div class="card kpi"><div class="l">Billable</div><div class="v num">74%</div><div class="d">601 h billable · 211 h not</div></div>
+          <div class="card kpi"><div class="l">Burn, last 4 weeks</div><div class="v num">121 h <span class="tx-3" style="font-size:15px;font-weight:500">a week</span></div><div class="d"><span class="down">+21%</span> over the plan of 100 h</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;flex:1;min-height:0">
+          <div class="card" style="display:flex;flex-direction:column;min-height:0">
+            <div class="card-h">Hours, planned and actual<span class="tx-3 sp">31 Aug to 18 Dec</span><div class="tm-leg"><span><i style="width:14px;height:2px;background:var(--tx-3);display:inline-block"></i>Plan</span><span><i style="width:14px;height:3px;background:var(--acc-500);display:inline-block;border-radius:2px"></i>Actual</span><span><i style="width:14px;height:0;border-top:2px dashed var(--amber);display:inline-block"></i>Forecast</span></div></div>
+            <div style="padding:12px 18px 0;flex:none">
+              <svg class="tm-chart" viewBox="0 0 640 390" width="100%" style="display:block" aria-label="Burn-up chart">
+                <g transform="translate(40,4)">
+                  <line x1="0" y1="26.0" x2="600" y2="26.0" stroke="var(--line)"/><line x1="0" y1="108.5" x2="600" y2="108.5" stroke="var(--line-2)"/><line x1="0" y1="191.0" x2="600" y2="191.0" stroke="var(--line-2)"/><line x1="0" y1="273.5" x2="600" y2="273.5" stroke="var(--line-2)"/><line x1="0" y1="356.0" x2="600" y2="356.0" stroke="var(--line)"/>
+                  <text x="-8" y="30.0" text-anchor="end">1,600</text><text x="-8" y="195.0" text-anchor="end">800</text><text x="-8" y="360.0" text-anchor="end">0</text>
+                  <line x1="0" y1="356.0" x2="600" y2="26.0" stroke="var(--tx-3)" stroke-width="1.5"/>
+                  <path d="M0.0 356.0 L37.5 336.4 L75.0 314.8 L112.5 290.0 L150.0 265.2 L187.5 239.5 L225.0 213.7 L262.5 188.5 L262.5 356.0 Z" fill="var(--acc-500)" opacity=".08"/>
+                  <path d="M0.0 356.0 L37.5 336.4 L75.0 314.8 L112.5 290.0 L150.0 265.2 L187.5 239.5 L225.0 213.7 L262.5 188.5" fill="none" stroke="var(--acc-500)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+                  <line x1="262.5" y1="188.5" x2="509" y2="26.0" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 5"/>
+                  <circle cx="509" cy="26.0" r="5" fill="var(--amber)"/>
+                  <text x="509" y="16.0" text-anchor="middle" style="fill:var(--amber-tx);font-size:12px">Runs out around 4 Dec</text>
+                  <line x1="262.5" y1="26.0" x2="262.5" y2="356.0" stroke="var(--acc)" stroke-width="1" stroke-dasharray="2 3"/>
+                  <circle cx="262.5" cy="188.5" r="5" fill="var(--acc-500)" stroke="var(--card)" stroke-width="2"/>
+                  <text x="272" y="206.5" style="fill:var(--tx);font-size:12px">Today · 812 h</text>
+                  <text x="0" y="378">31 Aug</text><text x="150" y="378" text-anchor="middle">28 Sep</text><text x="262.5" y="378" text-anchor="middle">19 Oct</text><text x="412" y="378" text-anchor="middle">16 Nov</text><text x="600" y="378" text-anchor="end">18 Dec · phase ends</text>
+                </g>
+              </svg>
+            </div>
+            <div style="padding:6px 18px 14px;border-top:1px solid var(--line-2);margin-top:auto">
+              <div class="row" style="margin:8px 0 10px"><b class="grow" style="font-size:12.5px">Hours per week</b><span class="tx-3" style="font-size:12px">Plan 100 h · amber is over plan</span></div>
+              <div class="tm-bars tm-wkbars" style="height:72px;gap:14px"><div><b>95</b><i style="height:57%"></i>31 Aug</div><div><b>105</b><i class="hi" style="height:63%"></i>7 Sep</div><div><b>120</b><i class="hi" style="height:72%"></i>14 Sep</div><div><b>120</b><i class="hi" style="height:72%"></i>21 Sep</div><div><b>125</b><i class="hi" style="height:75%"></i>28 Sep</div><div><b>125</b><i class="hi" style="height:75%"></i>5 Oct</div><div><b>122</b><i class="hi" style="height:73%"></i>12 Oct</div><div style="opacity:.55"><b>100</b><i style="height:60%;background:var(--line)"></i>Plan</div></div>
+            </div>
+          </div>
+          <div class="col" style="gap:12px;min-height:0">
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>Forecast<span class="src">by AI · from 812 h and the phase plan</span></div><p style="font-size:12.5px">At the last 4 weeks' pace the budget runs out around Fri 4 Dec, two weeks before the phase ends. 64 h of rework followed the webhook spec change on 21 Sep.<span class="cite"><i data-lucide="file-text"></i>Spec v3</span><span class="cite">Rework code</span></p><div class="acts"><span class="btn sm"><i data-lucide="file-text"></i>Draft a change request</span><span class="nu">Not useful</span></div></div>
+            <div class="card pad" style="padding:12px 14px"><div class="cap" style="margin-bottom:8px">Not billable · 211 h</div>
+              <div class="col" style="gap:7px;font-size:12.5px"><div class="row"><span class="grow tx-2">Internal meetings</span><div class="bar" style="width:90px"><i style="width:100%;background:var(--tm-int)"></i></div><span class="num" style="width:40px;text-align:right">88 h</span></div><div class="row"><span class="grow tx-2">Rework after spec change</span><div class="bar" style="width:90px"><i style="width:73%;background:var(--amber)"></i></div><span class="num" style="width:40px;text-align:right">64 h</span></div><div class="row"><span class="grow tx-2">Onboarding new people</span><div class="bar" style="width:90px"><i style="width:67%;background:var(--tm-int)"></i></div><span class="num" style="width:40px;text-align:right">59 h</span></div></div></div>
+            <div class="card pad" style="padding:12px 14px"><div class="cap" style="margin-bottom:8px">By person</div>
+              <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><span class="av s k">TG</span><span class="grow">Tomás García</span><span class="num">186 h</span></div><div class="row"><span class="av s p">SL</span><span class="grow">Sofia Lindqvist</span><span class="num">142 h</span></div><div class="row"><span class="av s g">AT</span><span class="grow">Aiko Tanaka</span><span class="num">128 h</span></div><div class="row"><span class="av s o">AM</span><span class="grow">Arjun Mehta</span><span class="num">64 h</span></div><div class="row tx-3"><span style="width:20px"></span><span class="grow">6 others</span><span class="num">292 h</span></div></div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The end date, not just the percentage</b>"51% used" hides the pace. The forecast line says when the hours run out at the current rate, while there's time to talk to the client.</div>
+    <div><b>Non-billable has names</b>Rework gets its own code, so "why are we over" has an answer from the data, not a retro.</div>
+    <div><b>From forecast to action</b>"Draft a change request" opens a Docs draft with the numbers filled in. With Docs not installed, it downloads a summary instead.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Invoicing -->
+<figure class="screen" id="tm-inv" data-title="Client invoicing">
+  <div class="scap"><b>Approved hours become invoices</b><span>Finance sees what each client owes from approved billable time and billable expenses, previews the invoice, and exports it to the ledger.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.rep" data-me="Meera Iyer"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span>Reports</span><span class="sep">/</span><span class="cur">October invoicing</span></div>
+        <div class="htabs"><span class="htab on">Ready to bill<span class="ct">3</span></span><span class="htab">Exported</span><span class="htab">Rate cards</span></div>
+        <div class="hact"><span class="seg"><span class="on">Zoho Books</span><span>Tally</span><span>Xero</span><span>CSV</span></span><span class="btn pri hot" data-show=".tm-inv-toast"><i data-lucide="download"></i>Export 3 invoices</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100%">
+        <div style="padding:20px 24px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Draft invoices, 30 September to 18 October</div><span class="tx-3" style="font-size:12px">Approved hours only · the final run is on Mon 2 Nov, after October locks</span></div><span class="bdg warn"><i data-lucide="hourglass"></i>14.5 h still awaiting approval</span></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl"><thead><tr><th>Client</th><th class="r">Hours</th><th class="r">Time</th><th class="r">Expenses</th><th class="r">Total</th></tr></thead><tbody>
+              <tr class="sel" style="height:52px"><td style="height:52px"><div class="row"><span class="tm-pj nw"></span><div class="col"><div class="row" style="gap:6px"><b>Northwind Health</b><span class="bdg ok">Ready</span></div><span class="tx-3" style="font-size:11.5px">Time and materials · NW-2026</span></div></div></td><td class="r num">312.5</td><td class="r num">₹14,06,250</td><td class="r num">₹27,880</td><td class="r num"><b>₹14,34,130</b></td></tr>
+              <tr><td><div class="row"><span class="tm-pj hal"></span><div class="col"><div class="row" style="gap:6px"><b>Halden Logistics</b><span class="bdg ok">Ready</span></div><span class="tx-3" style="font-size:11.5px">€95 an hour · billed in EUR</span></div></div></td><td class="r num">96.0</td><td class="r num">€9,120</td><td class="r num">€0</td><td class="r num"><b>€9,120</b></td></tr>
+              <tr><td><div class="row"><span class="tm-pj sup"></span><div class="col"><div class="row" style="gap:6px"><b>Bluepeak Foods</b><span class="bdg warn">6 h over</span></div><span class="tx-3" style="font-size:11.5px">Fixed fee · milestone 2 of 3</span></div></div></td><td class="r num">48.0</td><td class="r num">₹6,00,000</td><td class="r num">₹0</td><td class="r num"><b>₹6,00,000</b></td></tr>
+            </tbody></table>
+          </div>
+          <div class="card pad" style="margin-top:14px;padding:14px 16px"><div class="row" style="margin-bottom:10px"><b class="grow">Northwind Health · hours by code</b><span class="tx-3" style="font-size:12px">Rate card "Northwind 2026"</span></div>
+            <div class="col" style="gap:8px;font-size:12.5px">
+              <div class="row"><span style="width:150px" class="tx-2">Development</span><div class="bar grow" style="height:8px"><i style="width:72%;background:var(--tm-nw)"></i></div><span class="num" style="width:56px;text-align:right">224.5 h</span><span class="num tx-3" style="width:90px;text-align:right">₹4,500</span></div>
+              <div class="row"><span style="width:150px" class="tx-2">Client meetings</span><div class="bar grow" style="height:8px"><i style="width:15%;background:var(--tm-nw)"></i></div><span class="num" style="width:56px;text-align:right">46.0 h</span><span class="num tx-3" style="width:90px;text-align:right">₹4,500</span></div>
+              <div class="row"><span style="width:150px" class="tx-2">Design</span><div class="bar grow" style="height:8px"><i style="width:13%;background:var(--tm-nw)"></i></div><span class="num" style="width:56px;text-align:right">42.0 h</span><span class="num tx-3" style="width:90px;text-align:right">₹4,500</span></div>
+              <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding-top:8px"><i data-lucide="receipt" style="width:14px;height:14px"></i><span class="grow">Billable expenses from Expenses: Mumbai, Northwind kickoff trip</span><span class="num">₹27,880</span></div>
+            </div></div>
+          <div class="card pad" style="margin-top:14px;padding:12px 16px"><div class="row" style="margin-bottom:8px"><i data-lucide="list-checks" class="tx-3"></i><b class="grow">Before you export</b></div>
+            <div class="col" style="gap:6px;font-size:12.5px">
+              <div class="row"><i data-lucide="circle-alert" style="color:var(--amber);width:14px;height:14px"></i><span class="grow tx-2">14.5 h on Northwind wait for Daniel (Aiko, Marcus). They'll join the final run.</span></div>
+              <div class="row"><i data-lucide="circle-check" style="color:var(--green);width:14px;height:14px"></i><span class="grow tx-2">Halden hours rounded up to 6 min, as the contract says</span></div>
+              <div class="row"><i data-lucide="circle-check" style="color:var(--green);width:14px;height:14px"></i><span class="grow tx-2">Bluepeak's 6 extra hours stay unbilled and show on the project as overrun</span></div>
+            </div></div>
+          <div class="row tx-3" style="font-size:12px;margin-top:auto;padding-top:12px"><i data-lucide="lock" style="width:14px;height:14px"></i>Exported hours lock. A late change becomes an adjustment line on the next invoice, never a silent edit.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--sunken);padding:20px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:10px"><b class="grow">Preview</b><span class="tx-3" style="font-size:12px">Draft INV-2026-0418</span></div>
+          <div class="tm-inv">
+            <div class="row" style="margin-bottom:12px;align-items:flex-start"><div class="col grow"><b style="font-size:13px">Acme Labs Pvt Ltd</b><span class="tx-3">Bengaluru · GSTIN 29AAACA1234Q1Z2</span></div><div class="col" style="text-align:right"><b style="font-size:13px">Northwind Health</b><span class="tx-3">30 Sep to 30 Oct 2026</span></div></div>
+            <div class="ln tx-3" style="font-size:11px"><span>Description</span><span>Hours</span><span>Amount</span></div>
+            <div class="ln"><span>Webhook sync, retries and backfill (NW-231, NW-236)</span><span>138.0</span><span>₹6,21,000</span></div>
+            <div class="ln"><span>SSO and tenant set-up</span><span>86.5</span><span>₹3,89,250</span></div>
+            <div class="ln"><span>Weekly syncs and the kickoff in Mumbai</span><span>46.0</span><span>₹2,07,000</span></div>
+            <div class="ln"><span>Onboarding flow design</span><span>42.0</span><span>₹1,89,000</span></div>
+            <div class="ln"><span>Travel, Mumbai kickoff, at cost</span><span></span><span>₹27,880</span></div>
+            <div class="ln" style="border-bottom:0;font-weight:600"><span>Total before tax</span><span>312.5</span><span>₹14,34,130</span></div>
+          </div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Line descriptions<span class="src">by AI · from 214 entry notes</span></div><p style="font-size:12.5px">I grouped the notes into four lines a client would recognise, and kept the issue keys they already know.<span class="cite">214 notes</span></p><div class="acts"><span class="btn sm">Use one line per code</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+      <div class="toast tm-inv-toast" hidden><i data-lucide="circle-check"></i>3 draft invoices sent to Zoho Books. 456.5 h are now locked.<span class="u" data-hide=".tm-inv-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Hours and expenses, one invoice</b>Billable spend from Expenses joins billable time on the same client invoice. Without Expenses, the line can be added by hand.</div>
+    <div><b>Rate cards, three ways</b>Time and materials, an hourly rate in another currency, or a fixed fee where the hours are tracked against the milestone, not billed.</div>
+    <div><b>Locks that respect the ledger</b>Exported time locks, and changes become adjustments, so finance and the client never see numbers move.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Attendance on a phone -->
+<figure class="screen" id="tm-clock" data-title="Clock in on a phone">
+  <div class="scap"><b>Attendance for teams that don't sit at a desk</b><span>Lena's support desk in Berlin works shifts. They clock in on a phone or the shared tablet, take the breaks the law asks for, and swap shifts on the same approval engine.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="tm-cap">
+      <div class="tm-capcol">
+        <div class="tm-phone"><div class="scr"><div class="notch"></div>
+          <div class="tm-sbar"><span>06:56</span><span class="row" style="gap:4px"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+          <div class="tm-pbody">
+            <div class="row"><span class="tile" style="background:var(--m-time);width:26px;height:26px;border-radius:7px"><i data-lucide="timer" style="width:14px;height:14px"></i></span><b class="grow">Time</b><span class="av s a">LF</span></div>
+            <div><div class="h16">Good morning, Lena</div><div class="tx-2" style="font-size:12px;margin-top:2px">Early shift · 07:00 to 15:30 · Support, Berlin</div></div>
+            <div class="tm-big hot" data-show=".tm-clk-on" data-hide=".tm-clk-off"><div class="tm-clk-off"><i data-lucide="log-in"></i><b>Clock in</b><span>at 06:56</span></div><div class="tm-clk-on" hidden><i data-lucide="circle-check"></i><b>Clocked in</b><span>06:56 · have a good shift</span></div></div>
+            <div class="well" style="padding:10px 12px;font-size:12px;margin-top:6px" class="col"><div class="row"><i data-lucide="map-pin" style="color:var(--green);width:14px;height:14px"></i><span class="grow">At the Berlin office</span></div><div class="tx-3" style="font-size:11px;margin-top:3px;padding-left:22px">Checked once, now. Not tracked during your shift.</div></div>
+            <div class="row" style="font-size:12px"><i data-lucide="users" class="tx-3" style="width:14px;height:14px"></i><span class="grow tx-2">On today: Jonas, Mira, Felix</span></div>
+          </div>
+        </div></div>
+        <h4>Clock in with one tap</h4><p>The shift comes from the roster. Location is checked once, at the moment of clock-in, only where the team turned it on.</p>
+      </div>
+      <div class="tm-capcol">
+        <div class="tm-phone"><div class="scr"><div class="notch"></div>
+          <div class="tm-sbar"><span>12:41</span><span class="row" style="gap:4px"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-medium"></i></span></div>
+          <div class="tm-pbody">
+            <div class="row"><span class="tile" style="background:var(--m-time);width:26px;height:26px;border-radius:7px"><i data-lucide="timer" style="width:14px;height:14px"></i></span><b class="grow">Time</b><span class="av s a">LF</span></div>
+            <div class="col" style="align-items:center;gap:4px;margin-top:6px"><span class="tx-3" style="font-size:12px">On shift since 06:56</span><span class="tm-clock">5:45</span><span class="tx-3" style="font-size:12px">of 8:00 · ends 15:30</span></div>
+            <div class="tm-seg" style="margin:4px 0"><i style="width:72%;background:var(--acc-500)"></i></div>
+            <div class="tm-rule warn" style="font-size:12px"><i data-lucide="coffee"></i><div><b>Take a 30 min break before 12:56</b><span>German law asks for one after 6 hours. Your team's rule sends this reminder.</span></div></div>
+            <div class="row" style="gap:6px"><span class="btn lg pri" style="flex:1;justify-content:center;padding:0 8px"><i data-lucide="coffee"></i>Start break</span><span class="btn lg" style="flex:1;justify-content:center;padding:0 8px"><i data-lucide="log-out"></i>Clock out</span></div>
+            <div class="row" style="font-size:12px;margin-top:auto"><i data-lucide="tag" class="tx-3" style="width:14px;height:14px"></i><span class="grow tx-2">Logging to: Support queue, Berlin</span><span style="color:var(--acc)">Change</span></div>
+          </div>
+        </div></div>
+        <h4>Breaks, done right</h4><p>Break and rest rules come from the team's location. The phone reminds before a rule is broken, not after.</p>
+      </div>
+      <div class="tm-capcol" style="justify-content:center;align-items:stretch">
+        <div class="card tm-board" style="overflow:hidden">
+          <div class="card-h"><i data-lucide="users" class="tx-3"></i>Support, Berlin · today<span class="tx-3 sp" style="text-align:right">Mon 19 Oct</span></div>
+          <div class="lrow"><span class="av a">LF</span><div class="col grow"><b>Lena Fischer</b><span class="tx-3" style="font-size:11.5px">07:00 to 15:30</span></div><span class="st done"><i></i>In · 06:56</span></div>
+          <div class="lrow"><span class="av k">JB</span><div class="col grow"><b>Jonas Becker</b><span class="tx-3" style="font-size:11.5px">07:00 to 15:30</span></div><span class="st done"><i></i>On break</span></div>
+          <div class="lrow"><span class="av v">MW</span><div class="col grow"><b>Mira Wolff</b><span class="tx-3" style="font-size:11.5px">08:00 to 16:30 · tablet</span></div><span class="st done"><i></i>In · 07:58</span></div>
+          <div class="lrow" style="border-bottom:0"><span class="av g">FK</span><div class="col grow"><b>Felix Krüger</b><span class="tx-3" style="font-size:11.5px">14:00 to 22:30</span></div><span class="st todo"><i></i>Later</span></div>
+        </div>
+        <div class="card pad" style="padding:12px 14px">
+          <div class="row" style="margin-bottom:6px"><i data-lucide="repeat" class="tx-3"></i><b class="grow">Shift swap</b><span class="bdg acc">Needs Lena</span></div>
+          <div class="tx-2" style="font-size:12.5px">Felix asks to swap Thu 22 Oct late shift with Mira's early shift. Both stay under 48 h that week.</div>
+          <div class="row" style="margin-top:10px"><span class="btn sm pri"><i data-lucide="check"></i>Approve swap</span><span class="btn sm ghost">Decline</span></div>
+        </div>
+        <div class="card pad" style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start"><i data-lucide="shield-check" style="color:var(--green);margin-top:2px"></i><div class="col"><b style="font-size:12.5px">An objective record, nothing more</b><span class="tx-2" style="font-size:12px">Start, breaks and end, as EU law asks. No photos, no tracking between clock-in and clock-out.</span></div></div>
+        <h4 style="margin-top:4px">The lead's view</h4><p style="max-width:none">Who is in, who is on a break, and the swaps waiting, on the same page Lena uses for her own shift.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Same product, other mode</b>The support desk runs in attendance mode: shifts, breaks and clock events. Engineers on the same Time run in project mode. One set of rules and one payroll export.</div>
+    <div><b>Respect, also for shift work</b>Location is a single check at clock-in, and only where the team chose it. A shared tablet with a PIN works where phones aren't welcome.</div>
+    <div><b>Swaps on the shared engine</b>Shift swaps check the weekly limit, then go to the lead through the same approval engine as timesheets, expenses and access requests.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Bemmoly is open source and used by companies of every shape, so nothing about time is hard-coded. A company sets six things in Time › Settings, without writing code. Each can be exported as a file and reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Projects and time codes</h3><p>Projects (from Work, or Time's own), clients, and a list of time codes such as Development, Code review, Client meetings, On call, Rework. Each code carries billable, CapEx or OpEx, and a ledger account.</p></div>
+  <div><h3>Rules</h3><p>Sentences built from blocks: rounding per client, minimum hours pro-rated for time off, overtime by location, rest between days, required notes, future-time limits, and lock periods.</p></div>
+  <div><h3>Modes per team</h3><p>Project time, attendance, or both. Weekly or daily sheets. Drafting on or off. Engineers, support shifts and a lab can each run the way they work, under one product.</p></div>
+  <div><h3>Approval routes</h3><p>Built on Bemmoly's shared workflow engine: manager, then project owner for billable time, then People ops for overtime. Delegates during time off come from People.</p></div>
+  <div><h3>Holidays and time off</h3><p>Holiday calendars per office (Karnataka, Berlin, Texas) and approved leave come from People and fill themselves in. Without People, Time keeps its own holiday list.</p></div>
+  <div><h3>Signal sources</h3><p>Connectors for calendars, Git hosts, Work, Docs and Helpdesk, each a plug-in with a public interface. A company picks which ones may feed drafts; each person can turn any off for themselves.</p></div>
+</div>
+
+<div class="screens" id="tmcfg">
+<figure class="screen" id="tm-cfg-rules" data-title="Rules and modes">
+  <div class="scap"><b>Rules as sentences, modes per team</b><span>Meera and Priya write the rules in words. Each team picks its mode, its rule set and its holiday calendar.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab">Projects and codes</span><span class="htab on">Rules</span><span class="htab">Teams and modes</span><span class="htab">Approvals</span><span class="htab">Holidays</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">Draft</span><span class="btn pri">Publish rules…</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 384px;height:100%">
+        <div style="overflow:hidden;padding:20px 26px" class="col">
+          <div class="row" style="margin-bottom:12px"><div class="col grow"><div class="h20">Engineering rules</div><span class="tx-3" style="font-size:12px">Used by Platform team, Data, Design · v4 live since 1 Jul · edited by Priya Raman</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="col" style="gap:9px">
+            <div class="tm-pol"><div class="row"><span class="tm-ric"><i data-lucide="ruler"></i></span><b>Rounding</b><span class="sp"></span><span class="bdg acc">Changed</span></div>
+              <div class="sent">Round each entry <span class="tm-tok">to the nearest</span> <span class="tm-tok v">15 min</span>. For <span class="tm-tok">Halden Logistics</span>, round <span class="tm-tok">up</span> to <span class="tm-tok v">6 min</span>, as the contract says.</div></div>
+            <div class="tm-pol"><div class="row"><span class="tm-ric"><i data-lucide="gauge"></i></span><b>Minimum hours</b></div>
+              <div class="sent">Expect <span class="tm-tok v">40 h</span> a week, <span class="tm-tok">less time off and holidays</span>. Below that, <span class="tm-tok">allow sending with a note</span>.</div></div>
+            <div class="tm-pol"><div class="row"><span class="tm-ric"><i data-lucide="trending-up"></i></span><b>Overtime and rest</b></div>
+              <div class="sent">Over <span class="tm-tok v">45 h</span>, <span class="tm-tok">ask for a reason</span> and <span class="tm-tok">add People ops to the route</span>. Warn when rest between days is under <span class="tm-tok v">11 h</span>.</div></div>
+            <div class="tm-pol"><div class="row"><span class="tm-ric"><i data-lucide="sticky-note"></i></span><b>Notes</b></div>
+              <div class="sent">Require a note on <span class="tm-tok">every billable entry</span> and on <span class="tm-tok">Rework</span>.</div></div>
+            <div class="tm-pol"><div class="row"><span class="tm-ric"><i data-lucide="lock"></i></span><b>Lock periods</b></div>
+              <div class="sent">Lock a week <span class="tm-tok">when approved</span>. Lock the month on the <span class="tm-tok v">2nd working day</span> after it ends; later changes become <span class="tm-tok">adjustments</span>.</div></div>
+            <div class="tm-pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);flex-direction:row;align-items:center"><i data-lucide="plus"></i>Add a rule <span class="tx-3">or start from a template: future time, night work, on-call pay, minimum shift</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:10px"><i data-lucide="users" class="tx-3"></i><b class="grow">Teams and modes</b><span style="color:var(--acc);font-size:12px">Edit</span></div>
+          <div class="card" style="box-shadow:inset 0 0 0 1px var(--line)">
+            <div class="lrow" style="height:52px"><div class="col grow"><b style="font-size:12.5px">Platform team</b><span class="tx-3" style="font-size:11.5px">Engineering rules · Bengaluru, Austin</span></div><span class="bdg">Project time</span><span class="bdg ai">Drafts</span></div>
+            <div class="lrow" style="height:52px"><div class="col grow"><b style="font-size:12.5px">Support, Berlin</b><span class="tx-3" style="font-size:11.5px">Shift rules · ArbZG breaks</span></div><span class="bdg">Both</span></div>
+            <div class="lrow" style="height:52px"><div class="col grow"><b style="font-size:12.5px">Sales West</b><span class="tx-3" style="font-size:11.5px">Light rules · weekly totals per client</span></div><span class="bdg">Project time</span></div>
+            <div class="lrow" style="height:52px;border-bottom:0"><div class="col grow"><b style="font-size:12.5px">Device lab, Bengaluru</b><span class="tx-3" style="font-size:11.5px">Shift rules · tablet kiosk</span></div><span class="bdg">Attendance</span></div>
+          </div>
+          <div class="row" style="margin:18px 0 10px"><i data-lucide="calendar-heart" class="tx-3"></i><b class="grow">Holiday calendars</b><span class="tx-3" style="font-size:12px">From People</span></div>
+          <div class="col" style="gap:8px;font-size:12.5px">
+            <div class="row"><span class="tm-pj off"></span><span class="grow">India, Karnataka</span><span class="tx-3">Next: Diwali, Sun 8 Nov</span></div>
+            <div class="row"><span class="tm-pj off"></span><span class="grow">Germany, Berlin</span><span class="tx-3">Next: 24 Dec</span></div>
+            <div class="row"><span class="tm-pj off"></span><span class="grow">United States, Texas</span><span class="tx-3">Next: Thanksgiving, 26 Nov</span></div>
+          </div>
+          <div class="well" style="padding:10px 12px;font-size:12px;margin-top:16px" class="row"><div class="row" style="align-items:flex-start"><i data-lucide="flask-conical" class="tx-3" style="margin-top:1px"></i><span class="tx-2">Dry run on the last 4 weeks: the rounding change moves Halden's total by +3.4 h, and changes no approvals.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Rules anyone can read</b>An engineer, a lead and an auditor can all read what's expected, because each rule is a sentence. The blocks keep it exact.</div>
+    <div><b>Modes per team</b>Project time, attendance, or both, plus whether drafting is on. Each team gets the product that fits its day.</div>
+    <div><b>Holidays without typing them</b>Calendars per office come from People, so minimum hours and payroll are right in every country.</div>
+  </div>
+</figure>
+<figure class="screen" id="tm-cfg-codes" data-title="Codes, routes, sources">
+  <div class="scap"><b>Time codes, approval routes and signal sources</b><span>One table defines how each code bills and books. Routes come from the shared engine. Sources decide what may feed a draft.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="time" data-link="time.set" data-me="Meera Iyer"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span>Time</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab on">Projects and codes</span><span class="htab">Rules</span><span class="htab">Teams and modes</span><span class="htab">Approvals</span><span class="htab">Holidays</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import codes</span><span class="btn pri"><i data-lucide="plus"></i>New time code</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:14px">
+        <div class="card" style="overflow:hidden">
+          <table class="tbl"><thead><tr><th>Time code</th><th>Billable</th><th>Books as</th><th>Ledger account</th><th>Note</th><th>Drafted from</th><th class="r">Last 90 days</th></tr></thead><tbody>
+            <tr><td><b>Development</b></td><td>When the project bills</td><td>CapEx on products</td><td class="mono" style="font-size:12px">1520 · Capitalised dev</td><td>If billable</td><td><span class="tag">Commits</span> <span class="tag">Issues</span></td><td class="r num">6,240 h</td></tr>
+            <tr class="sel"><td><b>Code review</b></td><td>When the project bills</td><td>OpEx</td><td class="mono" style="font-size:12px">6310 · Engineering</td><td>If billable</td><td><span class="tag">Reviews</span></td><td class="r num">1,180 h</td></tr>
+            <tr><td><b>Client meetings</b></td><td>Always</td><td>OpEx</td><td class="mono" style="font-size:12px">4010 · Services revenue</td><td>Required</td><td><span class="tag">Calendar, client invite</span></td><td class="r num">920 h</td></tr>
+            <tr><td><b>On call</b></td><td>Never</td><td>OpEx · on-call allowance</td><td class="mono" style="font-size:12px">6320 · On call</td><td>Incident key</td><td><span class="tag">Pages</span> <span class="tag">Helpdesk</span></td><td class="r num">410 h</td></tr>
+            <tr><td><b>Rework</b></td><td>Never</td><td>OpEx</td><td class="mono" style="font-size:12px">6310 · Engineering</td><td>Required</td><td><span class="tag">You choose</span></td><td class="r num">188 h</td></tr>
+            <tr><td><b>Design</b></td><td>When the project bills</td><td>CapEx on products</td><td class="mono" style="font-size:12px">1520 · Capitalised dev</td><td>If billable</td><td><span class="tag">Docs</span> <span class="tag">Issues</span></td><td class="r num">640 h</td></tr>
+            <tr><td><b>Internal meetings</b></td><td>Never</td><td>OpEx</td><td class="mono" style="font-size:12px">6390 · General</td><td>Optional</td><td><span class="tag">Calendar, team invite</span></td><td class="r num">1,420 h</td></tr>
+            <tr><td><b>Support queue</b></td><td>Never</td><td>OpEx</td><td class="mono" style="font-size:12px">6510 · Customer support</td><td>Optional</td><td><span class="tag">Clock events</span> <span class="tag">Helpdesk</span></td><td class="r num">2,860 h</td></tr>
+            <tr><td><div class="row"><b>Time off</b><i data-lucide="lock" class="tx-3" style="width:13px;height:13px"></i></div></td><td>Never</td><td>From People</td><td class="mono" style="font-size:12px">Payroll</td><td>None</td><td><span class="tag">People, approved leave</span></td><td class="r num">1,904 h</td></tr>
+          </tbody></table>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;flex:1;min-height:0">
+          <div class="card" style="padding:16px 18px">
+            <div class="row" style="margin-bottom:14px"><b class="grow">Approval route: project time</b><span class="tx-3" style="font-size:12px">Shared workflow engine · also used by Expenses, Assets, Access</span></div>
+            <div class="tm-flow">
+              <div class="tm-node"><div class="cap">Start</div><b>Week sent</b></div><i data-lucide="arrow-right" class="tm-arrow"></i>
+              <div class="tm-node"><div class="cap">Step 1</div><b>Their manager</b><div class="tx-3" style="font-size:11px">Delegate on leave</div></div><i data-lucide="arrow-right" class="tm-arrow"></i>
+              <div class="tm-node" style="box-shadow:0 0 0 1px var(--acc-100),0 0 0 4px var(--acc-50)"><div class="cap">If billable</div><b>Project owner</b><div class="tx-3" style="font-size:11px">Their projects only</div></div><i data-lucide="arrow-right" class="tm-arrow"></i>
+              <div class="tm-node"><div class="cap">If over 45 h</div><b>People ops</b></div><i data-lucide="arrow-right" class="tm-arrow"></i>
+              <div class="tm-node"><div class="cap">End</div><b>Locked</b></div>
+            </div>
+            <div class="row tx-3" style="font-size:12px;margin-top:14px"><i data-lucide="clock" style="width:14px;height:14px"></i>Reminders on Monday 09:00, escalate to the manager's manager after 3 working days.</div>
+          </div>
+          <div class="card" style="padding:14px 16px">
+            <div class="row" style="margin-bottom:8px"><b class="grow">Signal sources for drafts</b></div>
+            <div class="col" style="gap:0;font-size:12.5px">
+              <div class="row" style="height:32px"><span class="tm-src cal" style="width:22px;height:22px"><i data-lucide="calendar"></i></span><span class="grow">Google and Microsoft 365 calendars</span><span class="sw on"></span></div>
+              <div class="row" style="height:32px"><span class="tm-src wrk" style="width:22px;height:22px"><i data-lucide="square-kanban"></i></span><span class="grow">Work issues</span><span class="sw on"></span></div>
+              <div class="row" style="height:32px"><span class="tm-src dc" style="width:22px;height:22px"><i data-lucide="file-text"></i></span><span class="grow">Docs edits</span><span class="sw on"></span></div>
+              <div class="row" style="height:32px"><span class="tm-src git" style="width:22px;height:22px"><i data-lucide="git-pull-request"></i></span><span class="grow">GitHub and GitLab</span><span class="sw on"></span></div>
+              <div class="row" style="height:32px"><span class="tm-src hd" style="width:22px;height:22px"><i data-lucide="life-buoy"></i></span><span class="grow">Helpdesk tickets</span><span class="sw"></span></div>
+            </div>
+            <div class="tx-3" style="font-size:11.5px;margin-top:6px">Each person can switch off any source for themselves.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A code knows how it books</b>Billable, CapEx or OpEx, and the ledger account live with the code, so finance reports and invoices need no clean-up.</div>
+    <div><b>One workflow engine</b>The same route builder powers expenses, asset requests and access requests, so admins learn it once.</div>
+    <div><b>Sources are opt-in, twice</b>The company chooses which connectors may feed drafts, and each person can switch any of them off.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing appears while AI is off. The model is the company's choice, including a local one.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Drafting the week</td><td>Matches calendar events, issues, docs, reviews and commits to projects and codes, writes the note, and finds gaps</td><td>Every entry is a draft until the person confirms. "Clear the draft" is one click</td><td>Rules map calendar events and issue projects to codes; nothing else is drafted</td></tr>
+  <tr><td>Explaining an entry</td><td>Says why a number is what it is, citing the signals it used</td><td>The person unticks signals, changes hours, or removes the entry</td><td>The signal list without the explanation</td></tr>
+  <tr><td>Quick entry</td><td>Understands looser sentences ("most of the afternoon on the Halden import")</td><td>Every parsed part is a chip the person can change</td><td>A grammar for hours, project, code and day</td></tr>
+  <tr><td>Approvals</td><td>Writes the review summary and groups clean and flagged sheets</td><td>The manager approves. Flags themselves come from rules, never from AI</td><td>The same rule flags, sorted by flag count</td></tr>
+  <tr><td>Budgets</td><td>Forecasts when a budget runs out and names the biggest drivers</td><td>The project lead decides what to do, and whether to raise a change request</td><td>A straight-line forecast from the last 4 weeks</td></tr>
+  <tr><td>Invoices</td><td>Groups entry notes into client-readable invoice lines</td><td>Finance edits lines before export</td><td>One line per time code</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Signals are work objects, never activity: no screenshots, keystrokes, mouse movement, app or website history, and no chat or email content. Signals are visible only to the person, kept 30 days, and deleted on request. Managers never see signals, only confirmed entries. AI never decides an approval or a flag, and Time's data is not offered to Performance. A workspace can run drafting on a local model, or turn AI off entirely.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Time is its own product with its own app, and a company can run it alone. When other Bemmoly products are installed, they share one sign-in, one person directory and one approval engine through the kernel, so each one gets better with the others. Every cross-product action asks the person first and has a fallback.</p>
+<div class="cols">
+  <div><h3>With other Bemmoly products</h3><ul><li><b>People</b>: managers, teams, offices, contracted hours, holiday calendars and approved time off. Without People, Time keeps its own simple team list and holidays.</li><li><b>Work</b>: projects, issues and their moves become signals, and a timer can start on an issue. Without Work, Time keeps its own projects.</li><li><b>Docs</b>: doc edits become signals; "Draft a change request" opens a Docs draft, or downloads a summary without Docs.</li><li><b>Expenses</b>: billable expenses join billable hours on one client invoice.</li><li><b>Helpdesk</b>: tickets solved and on-call pages become signals for support and on-call codes.</li><li><b>Performance</b>: deliberately not connected. Hours are not a measure of performance.</li></ul></div>
+  <div><h3>Core objects</h3><ul><li><code>time_entry</code>: person, day, start and end or hours, project, time code, note, source (timer, draft, quick entry, clock), state</li><li><code>timesheet</code>: a person's period, its rules result and approval state</li><li><code>signal</code>: a private, short-lived pointer to a work object, owned by the person</li><li><code>time_code</code> and <code>rule_set</code>: billing, booking and rules as data, versioned</li><li><code>shift</code> and <code>clock_event</code>: attendance mode</li><li><code>project_budget</code> and <code>invoice_run</code>: budgets, forecasts and exports</li></ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>Honest timesheets</b><ul><li>Week and day views, timer, quick entry</li><li>Projects, time codes and rules</li><li>Time off and holidays from People</li><li>Approvals on the shared engine, locks</li><li>CSV export for payroll and the ledger</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>The week drafts itself</b><ul><li>Signal connectors: calendar, Work, Docs, Git</li><li>Drafted weeks with evidence and gaps</li><li>Day timeline with drag to log</li><li>Rule-based approvals with AI summaries</li><li>Budgets and burn forecasts</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Shifts and billing</b><ul><li>Attendance mode: phone and tablet clock-in</li><li>Breaks, rest and overtime by country</li><li>Shift swaps and a simple roster</li><li>Rate cards and client invoicing</li><li>Ledger and payroll connectors</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>How long do signals live, and who can see them?</b><span>Recommendation: only the person, for 30 days, then deleted. Admins can shorten it but never lengthen it or read them.</span></li>
+  <li><b>Should managers see how well a sheet matched its signals?</b><span>Recommendation: no. A match score turns signals into surveillance by the back door. Managers see rule flags only.</span></li>
+  <li><b>Does attendance mode need to come earlier for EU customers?</b><span>Recommendation: ship a basic clock-in and break record with the first release in the EU, since recording working time is expected there; the full shift mode stays later.</span></li>
+  <li><b>Do we build rostering, or only attendance?</b><span>Recommendation: attendance and simple shift swaps in Time; full rostering and demand planning as a community connector.</span></li>
+  <li><b>Does Time calculate pay?</b><span>Recommendation: no. It exports approved hours with overtime, night and on-call buckets; payroll systems calculate pay.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.consultancy.uk/news/3447/15-percent-of-chargeable-consulting-work-is-not-billed-to-clients">Consultancy.uk: 15% of chargeable consulting work is not billed (LBS and TIQ, 2016)</a></li>
+  <li><a href="https://www.theregister.com/2023/05/10/microsoft_work_trend_index/">The Register: Microsoft Work Trend Index 2023</a></li>
+  <li><a href="https://quickbooks.intuit.com/time-tracking/resources/avoiding-timesheet-errors/">QuickBooks Time: The true cause of timesheet errors (2018 survey)</a></li>
+  <li><a href="https://www.gartner.com/en/articles/the-right-way-to-monitor-your-employee-productivity">Gartner: The right way to monitor your employee productivity</a></li>
+  <li><a href="https://fra.europa.eu/sv/caselaw-reference/cjeu-case-c-5518-judgment">EU FRA: CJEU case C-55/18 judgment</a></li>
+  <li><a href="https://leglobal.law/2019/06/25/eu-court-of-justice-obliges-a-working-time-registration-system/">L&amp;E Global: EU court obliges a working time registration system</a></li>
+  <li><a href="https://www.getharvest.com/features">Harvest: Features</a></li>
+  <li><a href="https://toggl.com/track/features/">Toggl Track: Features</a></li>
+  <li><a href="https://clockify.me/features/">Clockify: Features</a></li>
+  <li><a href="https://www.timely.com/">Timely: Automatic time tracking</a></li>
+  <li><a href="https://www.tempo.io/products/timesheets">Tempo: Timesheets</a></li>
+  <li><a href="https://support.hubstaff.com/how-are-activity-levels-calculated/">Hubstaff: How activity levels are calculated</a></li>
+  <li><a href="https://support.hubstaff.com/accessing-thumbnail-gallery-activity-page/">Hubstaff: Viewing screenshots</a></li>
+  <li><a href="https://www.deputy.com/features/time-and-attendance">Deputy: Time and attendance</a></li>
+  <li><a href="https://www.replicon.com/">Replicon: ZeroTime</a></li>
+  <li><a href="https://www.bigtime.net/">BigTime: Professional services automation</a></li>
+  <li><a href="https://www.kimai.org/">Kimai: Open source time tracking</a></li>
+  <li>Vendor pages for When I Work, Zoho Projects, Zoho People, Traggo and ERPNext (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

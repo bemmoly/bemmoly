@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly People</title>
+<meta name="description" content="Product proposal for Bemmoly People: the person record every product reads, time off with team coverage, onboarding that sets up the first day across products, lifecycle workflows, letters and people analytics.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* People-only screen parts. Everything is prefixed pp- so nothing leaks into the kit. */
+.pp-mt{width:18px;height:18px;border-radius:5px}
+.pp-mt svg.lucide{width:11px;height:11px}
+.pp-dt th,.pp-dt td{padding:0 8px}
+.pp-kv{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:10px;min-height:34px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.pp-kv>span:first-child{color:var(--tx-2)}
+.pp-kv:last-child{border-bottom:0}
+.pp-used{display:flex;align-items:center;gap:9px;min-height:32px;font-size:12.5px;border-bottom:1px solid var(--line-2)}
+.pp-used:last-child{border-bottom:0}
+.pp-used b{font-weight:500;width:84px;flex:none}
+.pp-used span.tx-2{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* org chart */
+.pp-org{position:relative;height:100%;background:radial-gradient(circle at 1px 1px,var(--line) 1px,transparent 0) 0 0/18px 18px,var(--sunken);overflow:hidden}
+.pp-org svg.pp-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pp-org svg.pp-lines path{fill:none;stroke:var(--line);stroke-width:1.5}
+.pp-node{position:absolute;width:196px;background:var(--card);border-radius:10px;box-shadow:var(--e1);padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.pp-node b{display:block;font-weight:600;font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-node .t{display:block;font-size:11.5px;color:var(--tx-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-node .m{display:flex;gap:6px;align-items:center;margin-top:5px;font-size:11px;color:var(--tx-3);white-space:nowrap}
+.pp-node.sel{box-shadow:0 0 0 1.5px var(--acc),0 0 0 5px var(--acc-50)}
+.pp-node.ghost{background:transparent;box-shadow:none;border:1.5px dashed var(--line)}
+.pp-node .cnt{position:absolute;right:10px;top:10px;font-size:11px;color:var(--tx-3)}
+.pp-more{position:absolute;height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:15px;background:var(--card);box-shadow:var(--e1);font-size:12px;color:var(--tx-2)}
+
+/* time off calendar */
+.pp-cal{display:grid;grid-template-columns:132px repeat(21,minmax(0,1fr));font-size:11px}
+.pp-cal>div{height:40px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;position:relative;min-width:0}
+.pp-cal>.nm{justify-content:flex-start;gap:7px;padding:0 10px;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden}
+.pp-cal>.hd{height:40px;flex-direction:column;gap:1px;color:var(--tx-3);line-height:1.15}
+.pp-cal>.hd b{font-weight:500;color:var(--tx-2);font-size:11.5px}
+.pp-cal .we{background:var(--sunken)}
+.pp-cal .ho{background:repeating-linear-gradient(135deg,var(--sunken) 0 4px,transparent 4px 8px)}
+.pp-cal .bar{position:absolute;left:0;right:0;top:10px;bottom:10px;height:auto;border-radius:0;background:var(--acc-100);display:block}
+.pp-cal .bar.s{border-top-left-radius:5px;border-bottom-left-radius:5px;left:3px}
+.pp-cal .bar.e{border-top-right-radius:5px;border-bottom-right-radius:5px;right:3px}
+.pp-cal .bar.req{background:var(--acc-500)}
+.pp-cal .bar.oth{background:var(--line)}
+.pp-cal .bar.half{right:50%}
+.pp-cal .cov{font-weight:600;color:var(--tx-2);font-size:11.5px}
+.pp-cal .cov.low{color:var(--amber-tx);background:var(--amber-50)}
+.pp-cal .ms{width:10px;height:10px;transform:rotate(45deg);background:var(--m-work);border-radius:2px}
+
+/* onboarding journey: lanes by product, columns by time */
+.pp-jr{display:grid;grid-template-columns:168px repeat(4,minmax(0,1fr));grid-template-rows:38px repeat(6,minmax(0,1fr));height:100%;min-height:0}
+.pp-jr>div{border-bottom:1px solid var(--line-2);border-left:1px solid var(--line-2);padding:8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.pp-jr>div:nth-child(5n+1){border-left:0}
+.pp-jr>.lane{flex-direction:row;align-items:center;gap:9px;padding:8px 12px}
+.pp-jr>.lane b{display:block;font-size:12.5px;font-weight:600;line-height:1.25}
+.pp-jr>.lane span.o{display:block;font-size:11px;color:var(--tx-3)}
+.pp-jr>.ch{height:38px;flex-direction:row;align-items:center;padding:0 12px;font-size:12px;font-weight:600;color:var(--tx-2)}
+.pp-jr>.ch .tx-3{font-weight:400}
+.pp-jr>.now{background:color-mix(in srgb,var(--acc-50) 70%,transparent)}
+.pp-tk{height:25px;display:flex;align-items:center;gap:6px;padding:0 8px;border-radius:6px;background:var(--card);box-shadow:var(--e1);font-size:11.5px;white-space:nowrap;min-width:0}
+.pp-tk>span:not(.st){overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pp-tk .st i{width:11px;height:11px}
+.pp-tk.warn{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--amber) 55%,transparent);background:var(--amber-50)}
+.pp-tk.off{background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);color:var(--tx-3)}
+.pp-empty{font-size:11.5px;color:var(--tx-3);padding:4px 2px}
+.pp-ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(var(--green) 0 81%,var(--line-2) 0);display:grid;place-items:center;flex:none}
+.pp-ring>span{width:42px;height:42px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:12px;font-weight:600}
+
+/* the new hire's own view: phone, email, first morning */
+.pp-capw{position:absolute;inset:0;background:radial-gradient(1200px 600px at 10% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,color-mix(in srgb,var(--m-people) 12%,transparent),transparent 60%),var(--side);display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:44px 48px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.pp-capc{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.pp-capc h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.pp-capc p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:300px}
+.pp-phone{width:280px;height:560px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.pp-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.pp-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:84px;height:22px;border-radius:12px;background:#000;z-index:3}
+.pp-phone .sbar{height:40px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 4px;font-size:11px;font-weight:600}
+.pp-phone .pbody{flex:1;padding:8px 16px 14px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pp-phone .li{display:flex;align-items:center;gap:9px;height:32px;border-bottom:1px solid var(--line-2);font-size:12px}
+.pp-phone .li:last-child{border-bottom:0}
+.pp-mail{width:100%;max-width:330px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.pp-mail .mh{padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:52px 1fr;gap:4px 8px}
+.pp-mail .mh span{color:var(--tx-3)}
+.pp-mail .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2)}
+.pp-trk{display:flex;align-items:center;margin:12px 0 4px}
+.pp-trk span{flex:1;height:4px;background:var(--line-2)}
+.pp-trk span.d{background:var(--green)}
+.pp-trk i{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none}
+.pp-trk i.d{background:var(--green)}
+
+/* lifecycle: change preview and the letter */
+.pp-diff td{height:46px}
+.pp-diff th,.pp-diff td{padding:0 8px}
+.pp-diff .was{color:var(--tx-3);text-decoration:line-through}
+.pp-paper{background:var(--card);box-shadow:var(--e2);border-radius:4px;padding:30px 34px;font-size:12.5px;line-height:1.65;color:var(--tx)}
+.pp-paper p{margin:0 0 9px;max-width:none}
+.pp-paper mark{background:var(--ai-50);color:inherit;border-radius:3px;padding:0 2px;box-shadow:inset 0 -1.5px 0 var(--ai)}
+
+/* analytics */
+.pp-ask{height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 1px var(--acc),var(--ring);font-size:15px}
+.pp-chart{display:flex;align-items:flex-end;gap:14px;height:170px;padding:0 4px;border-bottom:1px solid var(--line)}
+.pp-chart>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.pp-chart .stk{width:100%;max-width:34px;display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden}
+.pp-chart .stk i{display:block;height:32px}
+.pp-chart .stk i.r{background:var(--todo);opacity:.45}
+.pp-chart .stk i.s{background:var(--acc-500)}
+.pp-xl{display:flex;gap:14px;padding:6px 4px 0}
+.pp-xl span{flex:1;text-align:center;font-size:11px;color:var(--tx-3)}
+
+/* settings: sentences and the visibility grid */
+.pp-pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.pp-pol .sent{font-size:13.5px;line-height:1.95;color:var(--tx)}
+.pp-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100);white-space:nowrap}
+.pp-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.pp-lt{height:34px;display:flex;align-items:center;gap:9px;padding:0 10px;border-radius:6px;font-size:12.5px;color:var(--tx-2)}
+.pp-lt.on{background:var(--card);box-shadow:var(--e1);color:var(--tx)}
+.pp-lt .ct{margin-left:auto;font-size:11.5px;color:var(--tx-3)}
+.pp-vis th,.pp-vis td{text-align:center}
+.pp-vis th:first-child,.pp-vis td:first-child{text-align:left}
+.pp-vis td{height:36px}
+.pp-vis th,.pp-vis td{padding:0 6px}
+.pp-vis .c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--tx-2)}
+.pp-vis .c svg.lucide{width:14px;height:14px}
+.pp-vis .c.e{color:var(--acc)}
+.pp-vis .c.n{color:var(--tx-3)}
+.pp-vis tr.sel td{background:var(--acc-50)}
+.pp-acc{display:flex;align-items:flex-end;gap:5px;height:56px}
+.pp-acc i{flex:1;background:var(--acc-500);border-radius:2px 2px 0 0;display:block}
+.pp-acc i.c{background:var(--amber)}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="people"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>People</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span>Bemmoly People · product proposal</div>
+  <h1>Day one, already set up</h1>
+  <p class="lede">People keeps the one record of everyone at your company: who they are, where they work, who they report to and what they're allowed to see. Every other Bemmoly product reads it. So when someone joins, moves or is promoted, the change is made once and the laptop, the accounts, the goals and the letter follow on their own. It's its own product. Use it alone, or with the others.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Everyone, their managers, the People team</span>
+    <span class="chip"><i data-lucide="box"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="globe"></i>Fields, leave and holidays per country</span>
+    <span class="chip"><i data-lucide="plug"></i>Payroll through a connector</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">A person's record is copied into payroll, the IT directory, the laptop spreadsheet and three approval chains. When it changes, someone retypes it, or nobody does. New hires feel it first: the job they said yes to arrives without a laptop, an account or a plan.</p>
+<div class="stats">
+  <div><b>12%</b><span>of employees strongly agree their organisation does a great job of onboarding</span><small>Gallup, 2017</small></div>
+  <div><b>44 days</b><span>on average for a new hire to decide whether a job is right for them</span><small>BambooHR survey, 2023</small></div>
+  <div><b>33%</b><span>of workers started a job without their computer, phone or security access set up</span><small>OfficeTeam (Robert Half), 2015</small></div>
+  <div><b>24%</b><span>of HR leaders believe they get the most value out of their HR technology</span><small>Gartner, via SHRM, 2024</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>One person, many copies</b><p>HR, payroll, IT and finance each keep their own list. A change of manager or address reaches some of them, late, by hand. Nobody is sure which copy is right.</p><span class="src">Sapient Insights put the average organisation at about 16 HR applications in 2021.</span></div>
+  <div class="pain"><b>Onboarding is a relay of emails</b><p>People asks IT for a laptop, IT asks the manager which apps, the manager forgets the plan. The hire learns what was missed when they sit down on day one.</p><span class="src">OfficeTeam, 2015: a third had their tech not set up when they arrived.</span></div>
+  <div class="pain"><b>Time off is approved blind</b><p>A manager sees one request at a time, with no view of who else is away or what's due that week. The clash shows up when a deadline slips.</p></div>
+  <div class="pain"><b>Changes are tickets, not events</b><p>A promotion means a letter, a payroll change, new access and a new expense grade, each done by a different person. Leavers keep access because nobody owns the last step.</p></div>
+  <div class="pain"><b>Global teams don't fit one form</b><p>India needs a PAN and a UAN, Germany a tax ID and a health insurer, the US an SSN. Leave rules and holidays differ per country. Rigid tools fork into one system per region.</p></div>
+  <div class="pain"><b>Simple questions need an analyst</b><p>"Why did attrition rise in Sales?" becomes an export, a pivot table and a week. Salaries leak into spreadsheets on the way, because the tool can't answer safely.</p><span class="src">Gartner, 2024: nearly half of HR leaders say HR tech has hurt HR's reputation.</span></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people live in People every week. Each wants it to do the remembering for them.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l p">PR</span><div><b>Priya, Head of People</b><span>Looks after 214 people in 3 countries</span></div></div>
+    <q>"I want to change a record once and know everything downstream happened. And when the CEO asks a question, I want the answer before the meeting ends."</q>
+    <ul><li>One record that every product reads</li><li>Joiners, movers and leavers as workflows she can see</li><li>Rules per country without a separate system</li><li>Answers in plain words, with the numbers behind them</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, engineering manager</b><span>Runs the Platform team, 8 people</span></div></div>
+    <q>"Tell me when approving leave will leave the team short, and make sure my new hire can ship something in week one."</q>
+    <ul><li>Team coverage next to every request</li><li>A new hire plan that sets itself up</li><li>His team's org and changes in one place</li><li>Approvals in the product, or from email or chat</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l k">KN</span><div><b>Kavya, new frontend engineer</b><span>Joins Mon 2 Nov, Bengaluru</span></div></div>
+    <q>"I just want to open my laptop on day one and have it work. And know who to ask, and what I'm meant to do first."</q>
+    <ul><li>Paperwork done from her phone, before she starts</li><li>Her laptop chosen by her and tracked to her door</li><li>Accounts on at 08:00 on day one</li><li>A first-week plan and a buddy, not a PDF</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">HR software splits into enterprise suites, unified platforms that join HR and IT, modern mid-market HRIS, global employment platforms and India's payroll-first HRMS. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Workday HCM</b><span>Enterprise · global</span></header><p>The system of record for large companies: deep business processes, security groups and reporting, and since 2025 a set of AI agents, including a self-service agent for employees and managers.</p>
+    <div class="plus"><i data-lucide="plus"></i>Configurable business processes for every lifecycle event, with strong audit.</div><div class="minus"><i data-lucide="minus"></i>Long, partner-led rollouts. Changing a process usually needs a specialist.</div></div>
+  <div class="leader"><header><b>Rippling</b><span>Unified HR and IT</span></header><p>An employee graph holds role, devices and apps. Groups built from attributes provision apps automatically, so a new hire gets the right apps and a device from one onboarding flow.</p>
+    <div class="plus"><i data-lucide="plus"></i>The closest to "change it once, everything follows" for HR, IT and apps.</div><div class="minus"><i data-lucide="minus"></i>The magic works inside its own modules, each priced separately. Reviewers find setup complex for small teams.</div></div>
+  <div class="leader"><header><b>HiBob and Personio</b><span>Modern mid-market</span></header><p>Friendly HRIS for growing companies. HiBob is known for its culture features and flexible org charts with dotted lines. Personio for absence management with substitutes and rule-based workflows.</p>
+    <div class="plus"><i data-lucide="plus"></i>A self-service experience employees actually like, and quick setup.</div><div class="minus"><i data-lucide="minus"></i>Workflows stay inside HR. Setting up IT and other teams still means integrations.</div></div>
+  <div class="leader"><header><b>BambooHR</b><span>Small business · US</span></header><p>A clean employee record, time off, onboarding checklists and e-signatures, with payroll in the US and a large integration marketplace.</p>
+    <div class="plus"><i data-lucide="plus"></i>Simple to learn. Strong onboarding research and templates.</div><div class="minus"><i data-lucide="minus"></i>Onboarding is mostly a checklist. Other teams act on emails and tasks.</div></div>
+  <div class="leader"><header><b>Deel and Remote</b><span>Global employment</span></header><p>Employer of record and contractor platforms that added a global HRIS, offered free or at low cost, covering employees, contractors and EOR staff in many countries.</p>
+    <div class="plus"><i data-lucide="plus"></i>Country compliance knowledge: contracts, leave and local benefits.</div><div class="minus"><i data-lucide="minus"></i>The HRIS is a door to paid employment services. Customisation is limited.</div></div>
+  <div class="leader"><header><b>Darwinbox, Keka, Zoho People, greytHR</b><span>India and value</span></header><p>Payroll and statutory compliance first (PF, ESI, PT, TDS), with leave, attendance and self-service. Darwinbox serves enterprises; Keka, Zoho People and greytHR serve growing companies.</p>
+    <div class="plus"><i data-lucide="plus"></i>Local payroll done properly, at low prices per person.</div><div class="minus"><i data-lucide="minus"></i>Closed source. Customisation beyond forms often needs the vendor.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Enterprise</th><th>Unified HR and IT</th><th>Mid-market</th><th>Global employment</th><th>India, value</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>One record other systems follow</td><td class="yes">Yes, through integrations</td><td class="yes">Yes, inside its suite</td><td class="part">Integrations</td><td class="part">Inside its suite</td><td class="part">Integrations</td><td class="part">Inside the ERP</td><td class="yes">Yes, the kernel's person record</td></tr>
+  <tr><td>Onboarding that sets up devices and apps</td><td class="part">With add-ons</td><td class="yes">Strong</td><td class="part">Checklists</td><td class="part">Equipment add-ons</td><td class="part">Checklists</td><td class="part">Task templates</td><td class="yes">One journey across products</td></tr>
+  <tr><td>Leave with team coverage</td><td class="part">Calendars</td><td class="part">Calendars</td><td class="yes">Calendars, substitutes</td><td class="part">Basic</td><td class="part">Calendars</td><td class="part">Calendars</td><td class="yes">Coverage rules plus the work that's due</td></tr>
+  <tr><td>Fields and rules per country</td><td class="yes">Deep, specialist-led</td><td class="yes">Good</td><td class="part">Good</td><td class="yes">Strong</td><td class="part">India first</td><td class="part">Code</td><td class="yes">Sections per entity, no code</td></tr>
+  <tr><td>Field-level visibility</td><td class="yes">Security groups</td><td class="yes">Permission profiles</td><td class="part">Roles</td><td class="part">Roles</td><td class="part">Roles</td><td class="part">Roles</td><td class="yes">Per field, with a "who can see" check</td></tr>
+  <tr><td>People analytics in plain words</td><td class="part">Agents, emerging</td><td class="part">Reports</td><td class="part">Dashboards</td><td class="no">Reports</td><td class="part">Dashboards</td><td class="no">Reports</td><td class="yes">Cited answers that respect visibility</td></tr>
+  <tr><td>Payroll</td><td class="yes">Built in</td><td class="yes">Built in</td><td class="part">Some countries</td><td class="yes">Built in</td><td class="yes">India, built in</td><td class="part">Basic</td><td class="part">A connector, by design</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Enterprise contracts</td><td>Per person, per product</td><td>Per person</td><td>Free HRIS, paid services</td><td>Low per person</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means OrangeHRM, Frappe HR and Odoo's Employees and Time Off apps. They cover records, leave and simple workflows; Frappe HR's onboarding templates even create a project with a task per activity. None of them reaches beyond HR to set up the laptop, the accounts and the goals, and none feels premium. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (the employee graph, substitutes on leave, country knowledge) and add what only an open platform with many products on one kernel can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="contact-round"></i></span><b>One record, read by every product</b><p>People is the source of truth for the kernel's person directory. Assets, Access, Expenses and the rest read it directly, so a change of manager or office is made once. Without People installed, the kernel keeps a simple people list.</p><span class="vs">Leaders: one unified suite does this for its own modules; the rest sync through integrations.</span></div>
+  <div><span class="ic"><i data-lucide="party-popper"></i></span><b>Onboarding is one journey, across products</b><p>Hiring hands over the signed offer. People fans the journey out: Assets ships the laptop, Access queues the apps, Performance drafts 30/60/90 goals, Helpdesk opens the setup tasks. Each step shows its owner and its status in one view.</p><span class="vs">Leaders: unified suites provision apps and devices; most others hand IT a checklist.</span></div>
+  <div><span class="ic"><i data-lucide="calendar-range"></i></span><b>Time off that knows the work</b><p>A request shows who else is away, the team's coverage rule and what's due in Work that week. AI points out the clash and offers fixes; the person still decides.</p><span class="vs">New: leaders show calendars and substitutes, not the deadlines in the team's work.</span></div>
+  <div><span class="ic"><i data-lucide="git-branch"></i></span><b>Lifecycle events with a preview</b><p>A promotion, transfer or exit shows exactly what will change, in which product and for whom, before anyone approves it. The letter is drafted from the same change.</p><span class="vs">Leaders: enterprise suites have business processes, configured by specialists, with no preview across products.</span></div>
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>Answers that respect who's asking</b><p>Ask a question in plain words and get numbers with their query and sources. The model only sees what the asker may see, and groups under five people are never broken down.</p><span class="vs">New: most HR analytics assistants run in the vendor's cloud on their model.</span></div>
+  <div><span class="ic"><i data-lucide="plug"></i></span><b>Payroll as a connector, and no seat price</b><p>Payroll is statutory work that changes every year in every country. We send pay changes to the payroll provider you already trust, and bring payslips back. Everyone, including contractors, is in People at no cost.</p><span class="vs">Leaders: payroll is bundled, which is what makes leaving hard, and every person is a seat.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly's frame and tokens. People has its own shell; other products are reached through the product switcher. Click the tabs, or the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="pp">
+<!-- 1 ======================== Your page -->
+<figure class="screen" id="pp-me" data-title="Your page">
+  <div class="scap"><b>Your page in People</b><span>Each person's own place: time off, pay through the payroll connector, documents, and an answer to "can I…?" without opening a ticket.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="" data-me="Arjun Mehta" data-hide-links="people.onb"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span class="cur">Arjun Mehta (you)</span></div>
+        <div class="htabs"><span class="htab on">Overview</span><span class="htab">Time off</span><span class="htab">Pay</span><span class="htab">Documents<span class="ct">8</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="palmtree"></i>Request time off</span><span class="btn pri hot" data-show=".pp-adr"><i data-lucide="pencil"></i>Update my details</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding:22px 32px">
+        <div class="row" style="margin-bottom:16px;gap:14px"><span class="av xl o">AM</span><div class="col grow"><div class="h20">Good afternoon, Arjun</div><span class="tx-2">Account executive · Sales West · Bengaluru · reports to Neha Kulkarni</span></div><span class="bdg acc"><i data-lucide="trending-up"></i>Promotion in review</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px">
+          <div class="card kpi"><div class="l"><i data-lucide="palmtree"></i>Annual leave left</div><div class="v num">14.5 days</div><div class="bar" style="margin:10px 0 6px"><i style="width:31%"></i></div><div class="d">6.5 used of 21 · up to 8 carry over into 2027</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="banknote"></i>Pay</div><div class="v num" style="font-size:17px;margin-top:9px">October payslip on 30 Oct</div><div class="d" style="margin-top:8px"><i data-lucide="lock" style="width:12px;height:12px;vertical-align:-2px"></i> Only you can see your pay · from the payroll connector</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="calendar-days"></i>Coming up</div><div class="col" style="gap:5px;margin-top:8px;font-size:12.5px"><div class="row"><span class="grow">Kannada Rajyotsava</span><span class="tx-3">31 Oct · holiday</span></div><div class="row"><span class="grow">Tax declarations due</span><span class="tx-3">14 Nov</span></div><div class="row"><span class="grow">Neha away</span><span class="tx-3">5 to 6 Nov</span></div></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:12px">
+          <div class="card">
+            <div class="card-h">Needs you<span class="tx-3">3</span></div>
+            <div class="lrow" style="height:50px"><span class="cat" style="width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--sunken)"><i data-lucide="file-check-2" style="width:14px;height:14px"></i></span><div class="col grow"><b>Read the leave policy update</b><span class="tx-3" style="font-size:12px">India leave policy v3 · carry-over goes from 5 to 8 days</span></div><span class="btn sm">Read and acknowledge</span></div>
+            <div class="lrow" style="height:50px"><span class="cat" style="width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--sunken)"><i data-lucide="landmark" style="width:14px;height:14px"></i></span><div class="col grow"><b>Declare your tax-saving investments</b><span class="tx-3" style="font-size:12px">FY 2026–27 · goes to payroll · due 14 Nov</span></div><span class="btn sm">Start</span></div>
+            <div class="lrow" style="height:50px;border-bottom:0"><span class="cat" style="width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--sunken)"><i data-lucide="heart-handshake" style="width:14px;height:14px"></i></span><div class="col grow"><b>Add a second emergency contact</b><span class="tx-3" style="font-size:12px">Required for travel over 3 days</span></div><span class="btn sm">Add</span></div>
+            <div class="ghead" style="border-top:1px solid var(--line-2)">Your documents</div>
+            <div class="lrow"><i data-lucide="file-text" class="tx-3"></i><span class="grow">Appointment letter</span><span class="tx-3" style="font-size:12px">Signed 4 Mar 2024</span></div>
+            <div class="lrow"><i data-lucide="file-text" class="tx-3"></i><span class="grow">Form 16, FY 2025–26</span><span class="tx-3" style="font-size:12px">From payroll · 12 Jun</span></div>
+            <div class="lrow" style="border-bottom:0"><i data-lucide="file-plus-2" class="tx-3"></i><span class="grow" style="color:var(--acc)">Request a letter: address proof, employment, visa</span></div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column">
+            <div class="card-h"><span class="aid"></span>Ask about policies, pay or time off</div>
+            <div class="chat" style="padding:14px;flex:1">
+              <div class="msg me">Can I carry my leave over into next year?</div>
+              <div class="msg bot">Yes. Under the India leave policy, up to 8 days carry over into 2027 and must be used by 31 Mar.<span class="cite"><i data-lucide="file-text"></i>Leave policy v3 · §4</span> You have 14.5 left, so 6.5 would lapse on 30 Dec unless you book them.<span class="cite"><i data-lucide="palmtree"></i>Your balance</span>
+                <div class="row" style="margin-top:8px;gap:6px"><span class="btn sm">Plan 6.5 days</span><span class="tx-2" style="font-size:11.5px;margin-left:auto">by AI · Not useful</span></div></div>
+            </div>
+            <div style="padding:10px 14px;border-top:1px solid var(--line-2)"><div class="inp ph">Ask a question</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px;padding:12px 16px;display:flex;align-items:center;gap:14px">
+          <i data-lucide="users" class="tx-3"></i><b>Sales West this week</b>
+          <div class="row" style="gap:6px"><span class="av s p">NK</span><span class="tx-2" style="font-size:12.5px">Neha in Mumbai Tue to Wed</span></div>
+          <div class="row" style="gap:6px"><span class="av s g">RJ</span><span class="tx-2" style="font-size:12.5px">Ravi off Thu and Fri</span></div>
+          <div class="row" style="gap:6px"><span class="av s a">DR</span><span class="tx-2" style="font-size:12.5px">Deepa from home all week</span></div>
+          <span class="sp"></span><span style="color:var(--acc);font-size:12.5px">Team calendar</span>
+        </div>
+      </div></div>
+      <div class="pp-adr" hidden><div class="scrim" data-hide=".pp-adr"></div>
+        <div class="peek">
+          <div class="peek-h"><b class="grow">Update your address</b><span class="ib sm" data-hide=".pp-adr"><i data-lucide="x"></i></span></div>
+          <div class="peek-b col" style="gap:14px">
+            <div class="fld"><label>New home address</label><div class="inp focus">42, 7th Cross, HSR Layout Sector 2, Bengaluru 560102</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="fld"><label>From</label><div class="inp">Sat 31 Oct 2026<i data-lucide="calendar" class="car"></i></div></div><div class="fld"><label>Proof</label><div class="inp"><i data-lucide="paperclip"></i>rental-agreement.pdf</div></div></div>
+            <div><div class="cap" style="margin-bottom:6px">Who gets this change</div>
+              <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-people)"><i data-lucide="plug"></i></span><b>Payroll</b><span class="tx-2">Address for tax, same state, no tax change</span></div>
+              <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><b>Assets</b><span class="tx-2">Delivery address for your laptop refresh</span></div>
+              <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><b>Expenses</b><span class="tx-2">Start point for mileage claims</span></div>
+            </div>
+            <div class="rule" style="display:flex;gap:10px;padding:10px 12px;border-radius:8px;background:var(--sunken);font-size:12px"><i data-lucide="shield-check" class="tx-3"></i><span class="tx-2">Visible to you and the People team only. Priya's team checks the proof; nothing else needs approval.</span></div>
+          </div>
+          <div class="peek-f"><span class="btn ghost" data-hide=".pp-adr">Cancel</span><span class="btn pri" data-hide=".pp-adr" data-show=".pp-adr-t"><i data-lucide="check"></i>Save address</span></div>
+        </div></div>
+      <div class="toast pp-adr-t" hidden><i data-lucide="circle-check"></i>Address saved from 31 Oct. Payroll, Assets and Expenses have it.<span class="u" data-hide=".pp-adr-t">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>One place for your own things</b>Balance, pay, documents and what needs you, in plain words. No portal per system, and no ticket for "how many days do I have".</div>
+    <div><b>Change it once</b>"Update my details" shows which products receive the change before you save it. Pay stays private to you, by rule.</div>
+    <div><b>Answers cite the policy</b>The policy and the person's own balance are the sources, shown as chips. With AI off, the box searches the policy instead.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Directory and the record -->
+<figure class="screen" id="pp-dir" data-title="Directory and record">
+  <div class="scap"><b>The directory, and the one record behind it</b><span>Everyone at Acme Labs, with their local time and what's happening to them. The record shows what every other product holds about the person.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.dir" data-me="Priya Raman" data-counts='{"people.dir":"214","people.leave":"!3","people.onb":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span class="cur">Directory</span></div>
+        <div class="htabs"><span class="htab on">People<span class="ct">214</span></span><span class="htab">Teams<span class="ct">19</span></span><span class="htab">Changes<span class="ct">6</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import from BambooHR</span><span class="btn pri"><i data-lucide="user-round-plus"></i>Add person</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 372px;height:100%">
+        <div class="col" style="padding:14px 20px;min-height:0;gap:12px">
+          <div class="fbar"><span class="fchip"><i data-lucide="building-2"></i>Entity <b>All 3</b></span><span class="fchip"><i data-lucide="map-pin"></i>Office <b>Any</b></span><span class="fchip"><i data-lucide="users"></i>Team <b>Any</b></span><span class="fchip on"><i data-lucide="activity"></i>Something happening</span><span class="fchip dash"><i data-lucide="plus"></i>Filter</span><span class="sp"></span><span class="tx-3" style="font-size:12px">13 of 214</span></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl pp-dt"><thead><tr><th>Name</th><th>Team</th><th>Location</th><th>Manager</th><th>What's happening</th></tr></thead><tbody>
+              <tr class="hot" data-go="pp-first" title="Open Kavya's onboarding"><td><div class="row"><span class="av s k">KN</span><div class="col"><b>Kavya Nair</b><span class="tx-3" style="font-size:11.5px">Frontend engineer</span></div></div></td><td>Platform</td><td>Bengaluru</td><td>Daniel Okafor</td><td><span class="bdg acc"><i data-lucide="party-popper"></i>Joins Mon 2 Nov</span></td></tr>
+              <tr class="sel"><td><div class="row"><span class="av s p">SL</span><div class="col"><b>Sofia Lindqvist</b><span class="tx-3" style="font-size:11.5px">Product designer</span></div></div></td><td>Design</td><td>Berlin <span class="tx-3">12:42</span></td><td>Marta Nowak</td><td><span class="bdg"><i data-lucide="palmtree"></i>Leave requested, Dec</span></td></tr>
+              <tr><td><div class="row"><span class="av s k">TG</span><div class="col"><b>Tomás García</b><span class="tx-3" style="font-size:11.5px">Backend engineer</span></div></div></td><td>Platform</td><td>Austin <span class="tx-3">05:42</span></td><td>Daniel Okafor</td><td><span class="bdg"><i data-lucide="plane-takeoff"></i>To Berlin, 31 Dec</span></td></tr>
+              <tr><td><div class="row"><span class="av s o">AM</span><div class="col"><b>Arjun Mehta</b><span class="tx-3" style="font-size:11.5px">Account executive</span></div></div></td><td>Sales West</td><td>Bengaluru</td><td>Neha Kulkarni</td><td><span class="bdg"><i data-lucide="trending-up"></i>Promotion in review</span></td></tr>
+              <tr><td><div class="row"><span class="av s g">AT</span><div class="col"><b>Aiko Tanaka</b><span class="tx-3" style="font-size:11.5px">Data scientist</span></div></div></td><td>Platform</td><td>Bengaluru</td><td>Daniel Okafor</td><td><span class="bdg warn"><i data-lucide="palmtree"></i>Off today</span></td></tr>
+              <tr><td><div class="row"><span class="av s a">RK</span><div class="col"><b>Rohan Kapoor</b><span class="tx-3" style="font-size:11.5px">IT admin</span></div></div></td><td>IT</td><td>Bengaluru</td><td>Anand Rao</td><td><span class="bdg"><i data-lucide="palmtree"></i>Off 30 Oct to 3 Nov</span></td></tr>
+              <tr><td><div class="row"><span class="av s v">DO</span><div class="col"><b>Daniel Okafor</b><span class="tx-3" style="font-size:11.5px">Engineering manager</span></div></div></td><td>Platform</td><td>Bengaluru</td><td>Anand Rao</td><td><span class="tx-3">Nothing new</span></td></tr>
+              <tr><td><div class="row"><span class="av s g">LF</span><div class="col"><b>Lena Fischer</b><span class="tx-3" style="font-size:11.5px">Support lead</span></div></div></td><td>Support</td><td>Berlin <span class="tx-3">12:42</span></td><td>Priya Raman</td><td><span class="bdg"><i data-lucide="cake"></i>5 years on Fri</span></td></tr>
+              <tr><td><div class="row"><span class="av s k">MI</span><div class="col"><b>Meera Iyer</b><span class="tx-3" style="font-size:11.5px">Finance controller</span></div></div></td><td>Finance</td><td>Bengaluru</td><td>Vikram Sethi</td><td><span class="tx-3">Nothing new</span></td></tr>
+              <tr><td><div class="row"><span class="av s p">NK</span><div class="col"><b>Neha Kulkarni</b><span class="tx-3" style="font-size:11.5px">Sales lead, West</span></div></div></td><td>Sales West</td><td>Mumbai</td><td>Vikram Sethi</td><td><span class="bdg"><i data-lucide="palmtree"></i>Off 5 to 6 Nov</span></td></tr>
+              <tr><td><div class="row"><span class="av s v">MN</span><div class="col"><b>Marta Nowak</b><span class="tx-3" style="font-size:11.5px">Design lead</span></div></div></td><td>Design</td><td>Berlin <span class="tx-3">12:42</span></td><td>Anand Rao</td><td><span class="bdg"><i data-lucide="file-clock"></i>Permit renews Feb</span></td></tr>
+              <tr><td><div class="row"><span class="av s v">AR</span><div class="col"><b>Anand Rao</b><span class="tx-3" style="font-size:11.5px">Chief technology officer</span></div></div></td><td>Engineering</td><td>Bengaluru</td><td>Vikram Sethi</td><td><span class="tx-3">Nothing new</span></td></tr>
+              <tr><td style="border-bottom:0"><div class="row"><span class="av s me">PR</span><div class="col"><b>Priya Raman</b><span class="tx-3" style="font-size:11.5px">Head of People</span></div></div></td><td style="border-bottom:0">People</td><td style="border-bottom:0">Bengaluru</td><td style="border-bottom:0">Vikram Sethi</td><td style="border-bottom:0"><span class="tx-3">Nothing new</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:16px 20px 12px;border-bottom:1px solid var(--line-2)">
+            <div class="row" style="gap:12px"><span class="av xl p">SL</span><div class="col grow"><div class="h16">Sofia Lindqvist</div><span class="tx-2" style="font-size:12.5px">Product designer · Design</span><span class="tx-3" style="font-size:12px">Berlin · 12:42 local time</span></div><span class="ib sm"><i data-lucide="ellipsis"></i></span></div>
+            <div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap"><span class="bdg plain">Acme Labs GmbH</span><span class="bdg plain">Full time · 40h</span><span class="bdg plain">Since 6 Mar 2023</span></div>
+          </div>
+          <div style="padding:6px 20px 0">
+            <div class="pp-kv"><span>Manager</span><div class="row"><span class="av s v">MN</span>Marta Nowak</div></div>
+            <div class="pp-kv"><span>Work email</span><span>sofia.lindqvist@acmelabs.dev</span></div>
+            <div class="pp-kv"><span>Languages</span><span>Swedish, English, German</span></div>
+            <div class="pp-kv"><span>Salary</span><span class="tx-3 row" style="gap:6px"><i data-lucide="lock" style="width:13px;height:13px"></i>Visible to you · People team</span></div>
+          </div>
+          <div class="cap" style="padding:14px 20px 4px">Also held about Sofia in other products</div>
+          <div style="padding:0 20px">
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><b>Assets</b><span class="tx-2">MacBook Pro 14 · Studio Display</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><b>Access</b><span class="tx-2">14 apps · groups Design, Berlin</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><b>Licences</b><span class="tx-2">Figma, organisation seat</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-performance)"><i data-lucide="target"></i></span><b>Performance</b><span class="tx-2">Q4 goals · 2 of 3 on track</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><b>Expenses</b><span class="tx-2">Cost centre DE-DSN · 1 claim open</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-time)"><i data-lucide="timer"></i></span><b>Time</b><span class="tx-2">40h week · Berlin holidays</span></div>
+          </div>
+          <div class="cap" style="padding:16px 20px 6px">History</div>
+          <div style="padding:0 20px;font-size:12.5px" class="col">
+            <div class="row" style="height:28px"><span class="dot" style="background:var(--acc)"></span><span class="grow">Leave requested, 21 Dec to 1 Jan</span><span class="tx-3">today</span></div>
+            <div class="row" style="height:28px"><span class="dot" style="background:var(--line)"></span><span class="grow">Moved to Acme Labs GmbH</span><span class="tx-3">1 Jan 2025</span></div>
+            <div class="row" style="height:28px"><span class="dot" style="background:var(--line)"></span><span class="grow">Joined as product designer</span><span class="tx-3">6 Mar 2023</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>What's happening, not just who</b>Joiners, movers, leave and anniversaries show in the list, so the directory doubles as the People team's daily view.</div>
+    <div><b>The record other products read</b>Every product that is installed shows what it holds about the person, so nobody keeps a second list. Uninstalled products simply don't appear.</div>
+    <div><b>Moving in is one click</b>Import maps fields from a spreadsheet or another HRIS, keeps history, and flags people who exist twice.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Org chart -->
+<figure class="screen" id="pp-org" data-title="Live org chart">
+  <div class="scap"><b>A live org chart</b><span>Built from the record, so it is never out of date. Joiners, open roles and who's away show on the chart itself.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.org" data-me="Daniel Okafor" data-hide-links="people.onb"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span class="cur">Org chart</span></div>
+        <div class="htabs"><span class="htab on">Reporting lines</span><span class="htab">Teams</span><span class="htab">Locations</span></div>
+        <div class="hact"><span class="fchip on"><i data-lucide="user-round-plus"></i>Joiners and open roles</span><span class="fchip on"><i data-lucide="palmtree"></i>Who's away</span><span class="btn"><i data-lucide="git-branch"></i>Plan a change</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 316px;height:100%">
+        <div class="pp-org">
+          <svg class="pp-lines" viewBox="0 0 724 748" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M362 98 V126 H124 V156"/><path d="M362 126 V156"/><path d="M362 126 H600 V156"/>
+            <path d="M362 230 V252 H300 V296 H318"/><path d="M300 296 V376 H318"/><path d="M300 376 V456 H318"/><path d="M300 456 V536 H318"/><path d="M300 536 V604 H318"/>
+            <path d="M124 230 V252 H62 V296 H80"/><path d="M62 296 V364 H80"/>
+            <path d="M600 230 V252 H538 V280 H556"/>
+          </svg>
+          <div class="pp-node" style="left:264px;top:24px"><span class="av v">AR</span><div class="grow" style="min-width:0"><b>Anand Rao</b><span class="t">Chief technology officer</span><span class="m"><i data-lucide="map-pin" style="width:11px;height:11px"></i>Bengaluru</span></div><span class="cnt">3</span></div>
+          <div class="pp-node" style="left:26px;top:156px"><span class="av v">MN</span><div class="grow" style="min-width:0"><b>Marta Nowak</b><span class="t">Design lead</span><span class="m">Berlin · 12:42</span></div><span class="cnt">4</span></div>
+          <div class="pp-node sel" style="left:264px;top:156px"><span class="av me">DO</span><div class="grow" style="min-width:0"><b>Daniel Okafor (you)</b><span class="t">Engineering manager</span><span class="m">Bengaluru · 6 now, 8 by Dec</span></div></div>
+          <div class="pp-node" style="left:502px;top:156px"><span class="av a">RK</span><div class="grow" style="min-width:0"><b>Rohan Kapoor</b><span class="t">IT admin</span><span class="m"><span class="bdg" style="height:18px">Off 30 Oct to 3 Nov</span></span></div><span class="cnt">2</span></div>
+          <div class="pp-node" style="left:318px;top:266px"><span class="av k">TG</span><div class="grow" style="min-width:0"><b>Tomás García</b><span class="t">Backend engineer</span><span class="m">Austin · Berlin from 31 Dec</span></div></div>
+          <div class="pp-node" style="left:318px;top:346px"><span class="av g">AT</span><div class="grow" style="min-width:0"><b>Aiko Tanaka</b><span class="t">Data scientist</span><span class="m"><span class="bdg warn" style="height:18px">Off today</span></span></div></div>
+          <div class="pp-node ghost" style="left:318px;top:426px"><span class="av k">KN</span><div class="grow" style="min-width:0"><b>Kavya Nair</b><span class="t">Frontend engineer</span><span class="m"><span class="bdg acc" style="height:18px">Joins Mon 2 Nov</span></span></div></div>
+          <div class="pp-node ghost" style="left:318px;top:506px"><span class="av" style="background:var(--sunken);color:var(--tx-3)"><i data-lucide="user-round-plus" style="width:13px;height:13px"></i></span><div class="grow" style="min-width:0"><b>Senior SRE</b><span class="t">Open role · in Hiring</span><span class="m">4 in interview · offer by Nov</span></div></div>
+          <span class="pp-more" style="left:318px;top:589px"><span class="faces"><span class="av s o">RJ</span><span class="av s g">PS</span><span class="av s p">MK</span></span>and 3 more</span>
+          <div class="pp-node" style="left:80px;top:266px"><span class="av p">SL</span><div class="grow" style="min-width:0"><b>Sofia Lindqvist</b><span class="t">Product designer</span><span class="m">Berlin · 12:42</span></div></div>
+          <span class="pp-more" style="left:80px;top:349px"><span class="faces"><span class="av s k">JW</span><span class="av s a">ID</span></span>and 1 more</span>
+          <span class="pp-more" style="left:556px;top:265px"><span class="faces"><span class="av s g">SK</span><span class="av s o">VB</span></span>2 reports</span>
+          <div class="row" style="position:absolute;left:20px;bottom:18px;gap:6px"><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="zoom-in"></i></span><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="zoom-out"></i></span><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="locate-fixed"></i></span><span class="tx-3" style="font-size:12px;margin-left:6px">Engineering · 41 people · showing 3 levels</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 18px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div><div class="h16">Platform team</div><span class="tx-3" style="font-size:12px">Led by you · cost centre IN-PLT</span></div>
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">People</div><div class="v num" style="font-size:20px">6</div><div class="d">+1 joiner, +1 open role</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Away today</div><div class="v num" style="font-size:20px">1</div><div class="d">Aiko, back Tue</div></div>
+          </div>
+          <div class="col" style="gap:7px;font-size:12.5px">
+            <div class="cap">Where they are</div>
+            <div class="row"><span class="grow tx-2">Bengaluru</span><b>4</b></div>
+            <div class="row"><span class="grow tx-2">Austin</span><b>1</b><span class="tx-3">to Berlin on 31 Dec</span></div>
+            <div class="row"><span class="grow tx-2">Remote, India</span><b>1</b></div>
+          </div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Worth knowing<span class="src">by AI · from the org and Hiring</span></div>
+            <p>With Kavya and the SRE role, you'll have 8 direct reports, the limit in Acme's span guideline.<span class="cite"><i data-lucide="file-text"></i>Span guideline</span> From 31 Dec, Tomás works 4.5 hours ahead of Bengaluru instead of 10.5 behind, which opens a shared working window.<span class="cite"><i data-lucide="git-branch"></i>Transfer</span></p>
+            <div class="acts"><span class="btn sm">Plan a team lead</span><span class="nu">Not useful</span></div></div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="cap" style="margin-bottom:4px">Changes coming</div>
+            <div class="row" style="height:30px;border-bottom:1px solid var(--line-2)"><span class="av s k">KN</span><span class="grow">Kavya joins</span><span class="tx-3">2 Nov</span></div>
+            <div class="row" style="height:30px;border-bottom:1px solid var(--line-2)"><span class="av s k">TG</span><span class="grow">Tomás moves to Berlin</span><span class="tx-3">31 Dec</span></div>
+            <div class="row" style="height:30px"><span class="av s" style="background:var(--sunken);color:var(--tx-3)"><i data-lucide="user-round-plus" style="width:11px;height:11px"></i></span><span class="grow">Senior SRE offer</span><span class="tx-3">Nov</span></div>
+          </div>
+          <div class="sp"></div>
+          <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding-top:10px"><i data-lucide="eye"></i>You see your team's details. Others see names, roles and locations.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Never out of date</b>The chart is the record, drawn. Dotted lines, teams and locations are other views of the same data.</div>
+    <div><b>The future, shown honestly</b>Dashed cards are people who haven't started and roles still open in Hiring, so a manager sees the team they'll have.</div>
+    <div><b>Plan a change safely</b>"Plan a change" drafts a reorg in a sandbox. Nothing moves until it is approved as a lifecycle event.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Time off with coverage -->
+<figure class="screen" id="pp-leave" data-title="Time off, with coverage">
+  <div class="scap"><b>Time off that knows who else is away, and what's due</b><span>Sofia asks for the holidays. Before she sends it, she sees the team's coverage, the work due that week and her balance.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.leave" data-me="Sofia Lindqvist" data-hide-links="people.onb"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span>Time off</span><span class="sep">/</span><span class="cur">New request</span></div>
+        <div class="htabs"><span class="htab on">Request</span><span class="htab">Team calendar</span><span class="htab">My balance</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Draft saved</span><span class="btn pri hot" data-show=".pp-lv-t"><i data-lucide="send"></i>Send to Marta · 6 days</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:372px minmax(0,1fr);height:100%">
+        <div style="border-right:1px solid var(--line);padding:18px 22px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div class="fld"><label>Type</label><div class="seg"><span class="on">Annual leave</span><span>Sick</span><span>Parental</span><span>Unpaid</span></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="fld"><label>From</label><div class="inp focus">Mon 21 Dec<i data-lucide="calendar" class="car"></i></div></div><div class="fld"><label>To</label><div class="inp">Fri 1 Jan<i data-lucide="calendar" class="car"></i></div></div></div>
+          <div class="well" style="padding:12px 14px;font-size:12.5px" class="col">
+            <div class="row"><b class="grow">6 days of leave</b><span class="tx-3">12 days away</span></div>
+            <div class="tx-2" style="margin-top:4px">25, 25 Dec and 31 Dec are Berlin holidays. 24 and 30 Dec count as half days at Acme Labs GmbH.</div>
+          </div>
+          <div class="fld"><label>Note for Marta <span class="tx-3" style="font-weight:400">· optional</span></label><div class="inp">Home to Gothenburg for the holidays</div></div>
+          <div class="card pad" style="padding:12px 14px">
+            <div class="row" style="margin-bottom:8px"><i data-lucide="palmtree" class="tx-3"></i><b class="grow">Annual leave, 2026</b><span class="tx-3" style="font-size:12px">28 days</span></div>
+            <div class="bar" style="height:8px"><i style="width:61%"></i><i style="width:11%;background:var(--acc-100)"></i><i style="width:21%;background:color-mix(in srgb,var(--acc) 30%,transparent)"></i></div>
+            <div class="row" style="margin-top:8px;font-size:12px;gap:14px"><span class="tx-2">17 used</span><span class="tx-2">3 booked</span><span class="tx-2">6 this request</span><span class="sp"></span><b>2 left</b></div>
+            <div class="tx-3" style="font-size:11.5px;margin-top:6px">The 2 left carry over and expire on 31 Mar 2027.</div>
+          </div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="row" style="height:30px;border-bottom:1px solid var(--line-2)"><span class="grow tx-2">Sick leave</span><span>No fixed limit</span></div>
+            <div class="row" style="height:30px;border-bottom:1px solid var(--line-2)"><span class="grow tx-2">Volunteering</span><span>1 of 2 days left</span></div>
+            <div class="row" style="height:30px"><span class="grow tx-2">Next Berlin holiday</span><span>Christmas, 24 Dec</span></div>
+          </div>
+          <div class="sp"></div>
+          <div class="row tx-3" style="font-size:12px"><i data-lucide="route"></i>Goes to Marta Nowak. If she is away, to Anand Rao.</div>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div class="row"><b class="grow h14">Design team · 14 Dec to 3 Jan</b><span class="tag"><span class="dot" style="background:var(--acc)"></span>Your request</span><span class="tag"><span class="dot" style="background:var(--line)"></span>Booked</span><span class="tag"><span class="dot" style="background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line)"></span>Weekend or holiday</span></div>
+          <div class="card" style="overflow:hidden"><div class="pp-cal" id="pp-cal"></div></div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Coverage drops on 21 to 23 Dec<span class="src">by AI · from the team calendar, the coverage rule and Work</span></div>
+            <p>With Jonas and Ines also away, only Marta is on duty from 21 to 23 Dec. Design asks for at least 2.<span class="cite"><i data-lucide="file-text"></i>Coverage rule</span> The checkout redesign handoff is due on 22 Dec, and you own two of its open issues.<span class="cite"><i data-lucide="square-kanban"></i>CHK-v2 milestone</span></p>
+            <p style="margin-top:6px">Two ways to keep it: hand off the designs on 18 Dec, or start your leave on 28 Dec (3 days instead of 6).</p>
+            <div class="acts"><span class="btn sm">Ask Marta to move the handoff to 18 Dec</span><span class="btn sm ghost">Start on 28 Dec</span><span class="nu">Not useful</span></div></div>
+          <div class="card" style="padding:12px 16px">
+            <div class="row" style="margin-bottom:8px"><i data-lucide="eye" class="tx-3"></i><b class="grow">What Marta will see</b><span class="tx-3" style="font-size:12px">in her approvals, by email or in chat</span></div>
+            <div class="row" style="gap:10px"><span class="av p">SL</span><div class="col grow"><b>Sofia · annual leave · 21 Dec to 1 Jan</b><span class="tx-2" style="font-size:12px">6 days · 2 left after · "Home to Gothenburg for the holidays"</span></div><span class="bdg warn"><i data-lucide="users"></i>1 of 4 on 21 to 23 Dec</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toast pp-lv-t" hidden><i data-lucide="circle-check"></i>Sent to Marta, with the coverage note. She usually answers within a day.<span class="u" data-hide=".pp-lv-t">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The maths, done</b>Holidays per location and company half days are applied, so "6 days" is right the first time and the balance shows what's left.</div>
+    <div><b>Coverage before approval</b>Teams set a rule ("at least 2 on duty"). The request shows it, and the manager sees the same note when approving.</div>
+    <div><b>The work, not just the calendar</b>Milestones in Work show on the calendar. AI suggests fixes; Sofia can still send the request as it is.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Signature: first day -->
+<figure class="screen" id="pp-first" data-title="First day, set up">
+  <div class="scap"><b>A new hire's first day, already set up across every product</b><span>One journey from the signed offer to day 90. Every step is owned by a product or a person, and Priya sees all of it, live.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.onb" data-me="Priya Raman" data-counts='{"people.dir":"214","people.leave":"!3","people.onb":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span>Onboarding</span><span class="sep">/</span><span class="cur">Kavya Nair</span></div>
+        <div class="htabs"><span class="htab on">Journey</span><span class="htab">Tasks<span class="ct">26</span></span><span class="htab">Documents<span class="ct">5</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="message-square"></i>Message Kavya</span><span class="btn pri hot" data-go="pp-pre"><i data-lucide="smartphone"></i>See it as Kavya</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:16px 22px;gap:12px">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 452px;gap:12px">
+          <div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center">
+            <span class="av xl k">KN</span>
+            <div class="col grow" style="gap:3px"><div class="h16">Kavya Nair · starts Mon 2 Nov, in 14 days</div><span class="tx-2" style="font-size:12.5px">Frontend engineer · Platform · Bengaluru · Daniel Okafor's team</span>
+              <div class="row" style="gap:6px;margin-top:4px"><span class="bdg plain"><span class="av s k" style="width:14px;height:14px;font-size:7px">TG</span>Buddy Tomás García</span><span class="bdg plain"><i data-lucide="user-round-plus"></i>From Hiring · JOB-118</span></div></div>
+            <div class="pp-ring"><span>21/26</span></div>
+          </div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Two steps could slip<span class="src">by AI · from 26 steps and Time off</span></div>
+            <p>Rohan is off 30 Oct to 3 Nov, but he runs Kavya's laptop setup on 2 Nov at 11:00 and approves her production access.<span class="cite"><i data-lucide="palmtree"></i>Rohan's leave</span><span class="cite"><i data-lucide="life-buoy"></i>HD-2207</span></p>
+            <div class="acts"><span class="btn sm" data-show=".pp-first-t">Hand both to the IT admins group</span><span class="btn sm ghost">Pick someone</span><span class="nu">Not useful</span></div></div>
+        </div>
+        <div class="card" style="flex:1;min-height:0;overflow:hidden">
+          <div class="pp-jr">
+            <div class="ch">Product · owner</div>
+            <div class="ch now"><i data-lucide="circle-dot" style="width:13px;height:13px;color:var(--acc);margin-right:6px"></i>Before day one<span class="tx-3" style="margin-left:6px">· now</span></div>
+            <div class="ch">Day one<span class="tx-3" style="margin-left:6px">· Mon 2 Nov</span></div>
+            <div class="ch">First week</div>
+            <div class="ch">30, 60 and 90 days</div>
+
+            <div class="lane"><span class="tile pp-mt" style="background:var(--m-people);width:24px;height:24px"><i data-lucide="contact-round"></i></span><div><b>People</b><span class="o">Priya</span></div></div>
+            <div class="now"><div class="pp-tk"><span class="st done"><i></i></span><span>Offer signed, 7 Oct</span></div><div class="pp-tk"><span class="st done"><i></i></span><span>PAN, Aadhaar, bank verified</span></div><div class="pp-tk"><span class="st done"><i></i></span><span>Sent to payroll connector</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>Welcome with Priya, 10:00</span></div><div class="pp-tk"><span class="st"><i></i></span><span>3 policies to acknowledge</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>Buddy coffee with Tomás</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>Probation review, 3 Feb</span></div></div>
+
+            <div class="lane"><span class="tile pp-mt" style="background:var(--m-assets);width:24px;height:24px"><i data-lucide="laptop"></i></span><div><b>Assets</b><span class="o">Rohan</span></div></div>
+            <div class="now"><div class="pp-tk"><span class="st done"><i></i></span><span>MacBook Pro 14, her pick</span></div><div class="pp-tk"><span class="st prog"><i></i></span><span>Shipped, arrives Thu 29 Oct</span></div></div>
+            <div><div class="pp-tk"><span class="st done"><i></i></span><span>Desk 4.12 and badge ready</span></div></div>
+            <div><div class="pp-empty">Nothing planned</div></div>
+            <div><div class="pp-empty">Nothing planned</div></div>
+
+            <div class="lane"><span class="tile pp-mt" style="background:var(--m-access);width:24px;height:24px"><i data-lucide="shield-check"></i></span><div><b>Access</b><span class="o">Rohan</span></div></div>
+            <div class="now"><div class="pp-tk"><span class="st done"><i></i></span><span>Account made, dormant</span></div><div class="pp-tk"><span class="st done"><i></i></span><span>9 birthright apps queued</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>Accounts switch on at 08:00</span></div></div>
+            <div><div class="pp-tk warn"><span class="st warn"><i></i></span><span>Prod access, needs Rohan</span></div></div>
+            <div><div class="pp-empty">Reviewed in the quarterly access review</div></div>
+
+            <div class="lane"><span class="tile pp-mt" style="background:var(--m-helpdesk);width:24px;height:24px"><i data-lucide="life-buoy"></i></span><div><b>Helpdesk</b><span class="o">IT queue</span></div></div>
+            <div class="now"><div class="pp-tk"><span class="st prog"><i></i></span><span>3 of 4 setup tasks done</span></div></div>
+            <div><div class="pp-tk warn"><span class="st warn"><i></i></span><span>Laptop setup, Rohan, 11:00</span></div></div>
+            <div><div class="pp-empty">Nothing planned</div></div>
+            <div><div class="pp-empty">Nothing planned</div></div>
+
+            <div class="lane"><span class="tile pp-mt" style="background:var(--m-performance);width:24px;height:24px"><i data-lucide="target"></i></span><div><b>Performance</b><span class="o">Daniel</span></div></div>
+            <div class="now"><div class="pp-tk"><span class="st prog"><i></i></span><span>30/60/90 goals, drafting</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>First 1:1 with Daniel, 15:00</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>Goals agreed together</span></div></div>
+            <div><div class="pp-tk"><span class="st"><i></i></span><span>30 · first PR merged</span></div><div class="pp-tk"><span class="st"><i></i></span><span>60 · owns a screen</span></div></div>
+
+            <div class="lane" style="border-bottom:0"><span class="tile pp-mt" style="background:var(--m-work);width:24px;height:24px"><i data-lucide="square-kanban"></i></span><div><b>Work and Docs</b><span class="o">Daniel</span></div></div>
+            <div class="now" style="border-bottom:0"><div class="pp-tk"><span class="st done"><i></i></span><span>Starter issue PLAT-412</span></div><div class="pp-tk"><span class="st done"><i></i></span><span>Platform guide shared</span></div></div>
+            <div style="border-bottom:0"><div class="pp-tk"><span class="st"><i></i></span><span>Team lunch, 13:00</span></div></div>
+            <div style="border-bottom:0"><div class="pp-tk"><span class="st"><i></i></span><span>Pair on PLAT-412 with Tomás</span></div></div>
+            <div style="border-bottom:0"><div class="pp-empty"><i data-lucide="key-round" style="width:12px;height:12px;vertical-align:-2px"></i> Licences isn't installed, so seats are a task for Rohan</div></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="toast pp-first-t" hidden><i data-lucide="circle-check"></i>Laptop setup and production access moved to IT admins. Rohan is told.<span class="u" data-hide=".pp-first-t">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>One journey, many owners</b>Lanes are products, columns are time. People starts the journey from the signed offer; each product does its own part and reports back here.</div>
+    <div><b>It sees what a checklist can't</b>AI reads Time off and the calendar to catch the IT admin who'll be away on day one, and offers a fix that a person applies.</div>
+    <div><b>Works with what's installed</b>If a product isn't installed, its steps become plain tasks for an owner, like the licences step here. The journey still holds together.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Kavya's view -->
+<figure class="screen" id="pp-pre" data-title="Kavya, before day one">
+  <div class="scap"><b>What Kavya sees, before and on day one</b><span>Paperwork on her phone, a laptop tracked to her door, and a first morning where everything already works.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="pp-capw">
+      <div class="pp-capc">
+        <div class="pp-phone"><div class="scr"><div class="notch"></div>
+          <div class="sbar"><span>16:12</span><span class="row" style="gap:4px"><i data-lucide="signal" style="width:12px;height:12px"></i><i data-lucide="battery-full" style="width:14px;height:14px"></i></span></div>
+          <div class="pbody">
+            <div class="row" style="gap:8px"><span class="tile" style="background:var(--m-people);width:22px;height:22px;border-radius:6px"><i data-lucide="contact-round" style="width:12px;height:12px"></i></span><b style="font-size:12.5px">Acme Labs</b><span class="sp"></span><span class="av s k">KN</span></div>
+            <div><div class="h20" style="font-size:19px">Hi Kavya, 14 days to go</div><div class="tx-2" style="font-size:12px;margin-top:2px">You start Mon 2 Nov in Bengaluru. 5 of 6 things done.</div></div>
+            <div class="bar" style="height:5px"><i style="width:83%;background:var(--green)"></i></div>
+            <div>
+              <div class="li"><span class="st done"><i></i></span><span class="grow">Sign your offer</span><span class="tx-3" style="font-size:11px">7 Oct</span></div>
+              <div class="li"><span class="st done"><i></i></span><span class="grow">PAN and Aadhaar</span><span class="tx-3" style="font-size:11px">verified</span></div>
+              <div class="li"><span class="st done"><i></i></span><span class="grow">Bank details for pay</span><span class="tx-3" style="font-size:11px">done</span></div>
+              <div class="li"><span class="st done"><i></i></span><span class="grow">Choose your laptop</span><span class="tx-3" style="font-size:11px">MacBook</span></div>
+              <div class="li"><span class="st done"><i></i></span><span class="grow">Your photo</span><span class="tx-3" style="font-size:11px">done</span></div>
+              <div class="li"><span class="st"><i></i></span><span class="grow md">Emergency contact</span><span class="btn sm pri" style="height:22px">Add</span></div>
+            </div>
+            <div class="well" style="padding:10px 12px;font-size:11.5px">
+              <b style="font-size:12px">Your first day</b>
+              <div class="row" style="margin-top:5px"><span class="mono tx-3" style="width:36px">09:30</span>Indiranagar office, 4th floor</div>
+              <div class="row"><span class="mono tx-3" style="width:36px">10:00</span>Welcome with Priya</div>
+              <div class="row"><span class="mono tx-3" style="width:36px">13:00</span>Lunch with the Platform team</div>
+            </div>
+            <div class="row" style="font-size:11.5px"><span class="faces"><span class="av s v">DO</span><span class="av s k">TG</span><span class="av s g">AT</span></span><span class="tx-2">Meet your team</span></div>
+          </div>
+        </div></div>
+        <h4>Ready before she starts</h4><p>A simple page on her phone. ID, bank details and her laptop choice go straight to People, payroll and Assets.</p>
+      </div>
+      <div class="pp-capc" style="justify-content:center">
+        <div class="pp-mail">
+          <div class="mh"><span>From</span><b>Acme Labs People</b><span>To</span><span style="color:var(--tx)">kavya.nair@example.com</span><span>Subject</span><span style="color:var(--tx)">Your laptop is on its way</span></div>
+          <div class="mb">Hi Kavya, your MacBook Pro 14 left our Bengaluru stockroom today. It's set up for you and locks to your account on day one.
+            <div class="pp-trk"><i class="d"></i><span class="d"></span><i class="d"></i><span></span><i></i><span></span><i></i></div>
+            <div class="row" style="font-size:11px;justify-content:space-between;color:var(--tx-3)"><span>Packed</span><span>Shipped</span><span>Out for delivery</span><span>Thu 29 Oct</span></div>
+            <div class="row" style="margin-top:12px;gap:6px"><span class="btn sm">Track it</span><span class="btn sm ghost">Change address</span></div>
+          </div>
+        </div>
+        <div class="card" style="width:100%;max-width:330px;padding:12px 14px">
+          <div class="row" style="font-size:12px"><span class="av s k">TG</span><b>Tomás García</b><span class="tx-3">your buddy</span></div>
+          <div class="tx-2" style="font-size:12.5px;margin:6px 0 0 28px">Hey Kavya, I'm in Austin, so mornings are mine and evenings are yours. Want a call on Tue at 19:30 your time?</div>
+        </div>
+        <h4>Told, not left wondering</h4><p>Updates come from the products doing the work, in the company's name. Her buddy is introduced before day one.</p>
+      </div>
+      <div class="pp-capc" style="justify-content:center">
+        <div class="card" style="width:100%;max-width:330px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--line-2)"><div class="cap">Mon 2 Nov · 08:04</div><div class="h16" style="margin-top:4px">Good morning, Kavya. You're all set.</div></div>
+          <div style="padding:6px 16px 10px">
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><b>Accounts</b><span class="tx-2">9 apps on, single sign-on</span><span class="st done"><i></i></span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><b>Laptop</b><span class="tx-2">Enrolled, encrypted</span><span class="st done"><i></i></span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-work)"><i data-lucide="square-kanban"></i></span><b>First task</b><span class="tx-2">PLAT-412, with Tomás</span><span class="st"><i></i></span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-performance)"><i data-lucide="target"></i></span><b>Goals</b><span class="tx-2">30/60/90, for your 1:1</span><span class="st"><i></i></span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-people)"><i data-lucide="palmtree"></i></span><b>Time off</b><span class="tx-2">3.5 days this year</span><span class="st done"><i></i></span></div>
+          </div>
+        </div>
+        <div class="card" style="width:100%;max-width:330px;padding:12px 14px">
+          <div class="row" style="font-size:12px"><span class="av s v">DO</span><b>Daniel Okafor</b><span class="tx-3">in #platform</span></div>
+          <div class="tx-2" style="font-size:12.5px;margin:6px 0 0 28px">Welcome, Kavya. Lunch is at 13:00, and PLAT-412 is waiting for you.</div>
+        </div>
+        <h4>A first morning that works</h4><p>Accounts switched on at 08:00, the laptop enrolled, a first task and a plan. Nobody had to chase anybody.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>No login before she's an employee</b>The pre-boarding page is a private link with a one-time code. Her company account stays dormant until 08:00 on day one.</div>
+    <div><b>Her choices, used</b>She picks the laptop and the system tells Assets. She adds bank details once and payroll gets them through the connector.</div>
+    <div><b>The dream, delivered</b>The first-morning card is the proof: every product finished its part before she arrived.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Lifecycle: promotion with letter -->
+<figure class="screen" id="pp-life" data-title="Promotion and letter">
+  <div class="scap"><b>A promotion, as one event</b><span>Priya sees exactly what changes, where and for whom, then approves it. The letter is drafted from the same change.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.dir" data-me="Priya Raman" data-counts='{"people.dir":"214","people.leave":"!3","people.onb":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span>Arjun Mehta</span><span class="sep">/</span><span class="cur">Promotion</span></div>
+        <div class="htabs"><span class="htab on">Change</span><span class="htab">Letter</span><span class="htab">History</span></div>
+        <div class="hact"><span class="btn">Send back to Neha</span><span class="btn pri hot" data-show=".pp-life-t"><i data-lucide="pen-line"></i>Approve and send for signature</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 440px;height:100%">
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+          <div class="row"><span class="av l o">AM</span><div class="col grow"><div class="h16">Arjun Mehta to senior account executive</div><span class="tx-3" style="font-size:12px">Raised by Neha Kulkarni on 13 Oct · effective Sat 31 Oct · workflow "Promotion, India" v2</span></div></div>
+          <div class="track" style="display:flex;align-items:center;margin:2px 0 4px">
+            <div class="row" style="flex:1;gap:6px;font-size:12px"><span class="st done"><i></i></span>Neha raised it</div>
+            <div class="row" style="flex:1;gap:6px;font-size:12px"><span class="st done"><i></i></span>Meera, budget</div>
+            <div class="row" style="flex:1;gap:6px;font-size:12px;font-weight:500"><span class="st prog"><i></i></span>You</div>
+            <div class="row" style="flex:1;gap:6px;font-size:12px"><span class="st"><i></i></span>Arjun signs</div>
+            <div class="row" style="flex:1;gap:6px;font-size:12px"><span class="st"><i></i></span>Live on 31 Oct</div>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl pp-diff"><thead><tr><th>Field</th><th>Now</th><th>From 31 Oct</th><th>Who can see it</th></tr></thead><tbody>
+              <tr><td class="md">Title</td><td class="was">Account executive</td><td><b>Senior account executive</b></td><td class="tx-2">Everyone</td></tr>
+              <tr><td class="md">Grade</td><td class="was">S3</td><td><b>S4</b></td><td class="tx-2">Managers, People</td></tr>
+              <tr><td class="md">Base salary</td><td class="was num">₹18,40,000</td><td><b class="num">₹21,60,000</b> <span class="bdg ok">+17.4%</span></td><td class="tx-2"><i data-lucide="lock" style="width:13px;height:13px;vertical-align:-2px"></i> Restricted, 7 people</td></tr>
+              <tr><td class="md">Variable target</td><td class="was num">₹6,00,000</td><td><b class="num">₹7,50,000</b></td><td class="tx-2"><i data-lucide="lock" style="width:13px;height:13px;vertical-align:-2px"></i> Restricted, 7 people</td></tr>
+              <tr><td class="md" style="border-bottom:0">Territory</td><td class="was" style="border-bottom:0">Sales West</td><td style="border-bottom:0"><b>West and Gujarat</b></td><td class="tx-2" style="border-bottom:0">Everyone</td></tr>
+            </tbody></table>
+          </div>
+          <div class="card" style="padding:4px 16px">
+            <div class="cap" style="padding:10px 0 4px">What follows on 31 Oct, in other products</div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-people)"><i data-lucide="plug"></i></span><b>Payroll</b><span class="tx-2">New salary sent through the connector for the November run</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><b>Expenses</b><span class="tx-2">Hotel cap moves to the S4 rate</span></div>
+            <div class="pp-used"><span class="tile pp-mt" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><b>Access</b><span class="tx-2">Joins "Sales seniors": forecast editing in the CRM</span></div>
+            <div class="pp-used" style="border-bottom:0"><span class="tile pp-mt" style="background:var(--m-performance)"><i data-lucide="target"></i></span><b>Performance</b><span class="tx-2">H2 goals move to the senior AE template</span></div>
+          </div>
+          <div class="card" style="padding:12px 16px">
+            <div class="row" style="margin-bottom:10px"><b class="grow">New salary in the S4 band</b><span class="tx-3" style="font-size:12px">Bengaluru · Sales · ₹19.0L to ₹26.0L</span></div>
+            <div style="position:relative;height:8px;border-radius:4px;background:var(--line-2)"><i style="position:absolute;left:0;width:38%;top:0;bottom:0;border-radius:4px;background:var(--acc-100)"></i><i style="position:absolute;left:38%;top:-4px;width:3px;height:16px;border-radius:2px;background:var(--acc)"></i><i style="position:absolute;left:52%;top:-2px;width:2px;height:12px;border-radius:1px;background:var(--tx-3)"></i></div>
+            <div class="row" style="margin-top:8px;font-size:12px;gap:16px"><span><b>38%</b> <span class="tx-2">into the band</span></span><span class="tx-2">Band median ₹22.6L</span><span class="sp"></span><span class="tx-3">Visible to you, by rule</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--sunken);padding:18px 22px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+          <div class="row"><i data-lucide="file-signature" class="tx-3"></i><b class="grow">Promotion letter</b><span class="bdg ai"><span class="aid" style="box-shadow:none;width:6px;height:6px"></span>Drafted by AI</span></div>
+          <div class="pp-paper">
+            <div class="row" style="margin-bottom:14px"><b>Acme Labs Private Limited</b><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Bengaluru, 19 Oct 2026</span></div>
+            <p>Dear <mark>Arjun</mark>,</p>
+            <p>We are pleased to confirm your promotion to <mark>Senior account executive</mark>, grade <mark>S4</mark>, from <mark>31 October 2026</mark>. You will continue to report to <mark>Neha Kulkarni</mark>, and your territory grows to include <mark>Gujarat</mark>.</p>
+            <p>Your annual base salary will be <mark>₹21,60,000</mark>, with a variable target of <mark>₹7,50,000</mark> under the Sales commission plan.</p>
+            <p>Neha asked us to thank you for leading the <mark>Northwind</mark> deal this year. All other terms of your appointment stay the same.</p>
+            <p style="margin:0">Priya Raman, Head of People</p>
+          </div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>How this was drafted<span class="src">by AI · from the template and Neha's note</span></div>
+            <p>Highlighted words come from the record. The thank-you line is from Neha's note on the request.<span class="cite"><i data-lucide="file-text"></i>Promotion, India v2</span><span class="cite"><i data-lucide="message-square"></i>Neha's note</span></p>
+            <div class="acts"><span class="btn sm">Make it shorter</span><span class="btn sm ghost">Edit by hand</span><span class="nu">Not useful</span></div></div>
+          <div class="row tx-3" style="font-size:12px;gap:8px"><i data-lucide="pen-line"></i>Arjun signs in People. A reminder goes after 2 days; the signed copy files itself in his documents.</div>
+        </div>
+      </div>
+      <div class="toast pp-life-t" hidden><i data-lucide="circle-check"></i>Approved. Arjun has the letter to sign; 4 products update on 31 Oct.<span class="u" data-hide=".pp-life-t">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>See the whole change first</b>Every field that changes, its old and new value, and who can see it, before anyone approves. Salary stays behind its visibility rule.</div>
+    <div><b>Downstream, named</b>Payroll, Expenses, Access and Performance are listed with what they'll do. Products that aren't installed are skipped, or become tasks.</div>
+    <div><b>A letter without retyping</b>The template fills from the record; AI only writes the personal line, from the manager's own note, and shows where each part came from.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Ask People -->
+<figure class="screen" id="pp-ask" data-title="Ask People">
+  <div class="scap"><b>People analytics, asked in plain words</b><span>Priya asks a question before a leadership meeting and gets numbers, a chart, the reasons and the query behind it.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="" data-me="Priya Raman" data-counts='{"people.dir":"214","people.leave":"!3","people.onb":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span class="cur">Insights</span></div>
+        <div class="htabs"><span class="htab on">Ask</span><span class="htab">Dashboards<span class="ct">4</span></span><span class="htab">Saved<span class="ct">11</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="code-xml"></i>Show the query</span><span class="btn"><i data-lucide="layout-dashboard"></i>Save as a dashboard</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 300px;height:100%">
+        <div style="padding:18px 24px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div class="pp-ask"><span class="aid"></span><span class="grow">How has attrition in Sales changed this year, and why?</span><span class="kbd">Enter</span></div>
+          <div class="ai-card" style="padding:16px 18px">
+            <div class="ai-h"><span class="aid"></span>Answer<span class="src">by AI · from 214 records, 19 exits and 5 exit interviews</span><span class="x">Answered in 3.1s</span></div>
+            <p style="font-size:14px">5 people have left Sales this year, 4 of them since July. That's 19% a year, against 11% for Acme Labs overall.<span class="cite"><i data-lucide="code-xml"></i>Query</span></p>
+            <div class="card" style="padding:14px 16px 10px;margin:12px 0">
+              <div class="row" style="margin-bottom:10px;font-size:12px"><b class="grow">Leavers by month, 2026</b><span class="tag"><span class="dot" style="background:var(--acc-500)"></span>Sales</span><span class="tag"><span class="dot" style="background:var(--todo)"></span>Everyone else</span></div>
+              <div class="pp-chart">
+                <div><div class="stk"><i class="r"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="r"></i></div></div>
+                <div><div class="stk"><i class="r"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="s"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="r"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="r"></i></div></div>
+                <div><div class="stk"><i class="s"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="s"></i><i class="s"></i><i class="r"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="s"></i><i class="r"></i></div></div>
+                <div><div class="stk"><i class="r"></i></div></div>
+              </div>
+              <div class="pp-xl"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span></div>
+            </div>
+            <p>3 of the 5 exit interviews mention the commission plan that changed on 1 Apr.<span class="cite"><i data-lucide="file-text"></i>Commission plan v4</span><span class="cite"><i data-lucide="messages-square"></i>Exit interviews, 5</span> All 4 who left since July were in their second year, and none had a promotion or pay review in the last 12 months.<span class="cite"><i data-lucide="git-branch"></i>Lifecycle events</span></p>
+            <div class="acts"><span class="btn sm">Draft a note for the leadership review</span><span class="btn sm ghost">Open the 5 records</span><span class="nu">Not useful</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+            <div class="well" style="padding:10px 12px;font-size:12px"><div class="row" style="gap:6px"><i data-lucide="code-xml" class="tx-3" style="width:14px;height:14px"></i><b>Query</b></div><span class="tx-2">14 lines over employment and lifecycle events</span></div>
+            <div class="well" style="padding:10px 12px;font-size:12px"><div class="row" style="gap:6px"><i data-lucide="messages-square" class="tx-3" style="width:14px;height:14px"></i><b>Exit interviews</b></div><span class="tx-2">Themes only, never quotes or names</span></div>
+            <div class="well" style="padding:10px 12px;font-size:12px"><div class="row" style="gap:6px"><i data-lucide="file-text" class="tx-3" style="width:14px;height:14px"></i><b>Commission plan v4</b></div><span class="tx-2">From Docs, changed 1 Apr</span></div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;gap:8px"><i data-lucide="info"></i>The numbers come from a query over People data that you can open and rerun. AI wrote the words around them.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Headcount</div><div class="v num" style="font-size:20px">214</div><div class="d"><span class="up">+18</span> this year</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Attrition</div><div class="v num" style="font-size:20px">11%</div><div class="d">A year, voluntary</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Joiners</div><div class="v num" style="font-size:20px">37</div><div class="d">This year</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Absence</div><div class="v num" style="font-size:20px">2.1%</div><div class="d">Sick days, 90 days</div></div>
+          </div>
+          <div class="col" style="gap:4px">
+            <div class="cap" style="margin-bottom:4px">Try asking</div>
+            <div class="lrow" style="padding:0 6px;height:34px;font-size:12.5px;border:0;border-radius:6px"><i data-lucide="message-circle" class="tx-3"></i>Who has leave expiring in March?</div>
+            <div class="lrow" style="padding:0 6px;height:34px;font-size:12.5px;border:0;border-radius:6px"><i data-lucide="message-circle" class="tx-3"></i>How long do joiners take to ship?</div>
+            <div class="lrow" style="padding:0 6px;height:34px;font-size:12.5px;border:0;border-radius:6px"><i data-lucide="message-circle" class="tx-3"></i>Gender balance by grade in Berlin</div>
+            <div class="lrow" style="padding:0 6px;height:34px;font-size:12.5px;border:0;border-radius:6px"><i data-lucide="message-circle" class="tx-3"></i>Who has had no pay review in 18 months?</div>
+          </div>
+          <div class="sp"></div>
+          <div class="well" style="padding:12px 14px;font-size:12px" class="col">
+            <div class="row" style="margin-bottom:6px"><i data-lucide="shield-check" class="tx-3"></i><b>What this answer could see</b></div>
+            <div class="tx-2">Everything you can see: all 214 people, salaries included. Someone without salary access asking the same question gets no pay facts.</div>
+            <div class="tx-2" style="margin-top:6px">Groups under 5 people are never broken down.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>An answer, not a report builder</b>Plain words in, a number, a chart and the reasons out. Save it as a dashboard when it's worth watching.</div>
+    <div><b>Numbers you can check</b>Figures come from a query, not from the model's memory. "Show the query" opens it, so People's analyst can rerun it.</div>
+    <div><b>Privacy by the same rules</b>The model sees only what the asker may see, and small groups are hidden, so an answer can't single someone out.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Every company has its own shape: entities in different countries, its own leave rules, its own idea of who may see a salary. People bends to it from People / Settings, without writing code, and each part can be exported as a file to review like code.</p>
+<div class="cols c3">
+  <div><h3>Entities and countries</h3><p>Each legal entity has a country, currency, work week, holiday calendars per location and its own sections of fields. India, Germany and US templates ship; the community adds more.</p></div>
+  <div><h3>Fields and sections</h3><p>Typed custom fields on the person, grouped in sections that appear per entity, team or worker type (employee, contractor, intern). Fields are usable in rules, workflows and analytics.</p></div>
+  <div><h3>Visibility per field</h3><p>For each field: who can see it and who can edit it (the person, everyone, manager, manager's manager, People, Finance or a custom group). A "who can see" check answers it for any field and person.</p></div>
+  <div><h3>Leave policies</h3><p>Written as sentences: accrual, pro-rating, carry-over and expiry, half days, sick-note rules, approvals and team coverage. Every edit is versioned and previewed against real people.</p></div>
+  <div><h3>Lifecycle workflows</h3><p>Joiner, mover, promotion, leave of absence and exit, built on the kernel's shared workflow engine: steps, approvals, and actions in other products, each with a fallback when that product isn't installed.</p></div>
+  <div><h3>Templates and connectors</h3><p>Letter templates with fields from the record, onboarding journeys per role or country, and connectors for payroll, e-signature, background checks and imports. Each connector is a plug-in with a public interface.</p></div>
+</div>
+
+<div class="screens" id="ppc">
+<figure class="screen" id="pp-cfg-leave" data-title="Leave policy builder">
+  <div class="scap"><b>Leave policies as sentences, previewed on a real person</b><span>Priya edits the Germany policy and sees what it does to Sofia's 2027 before it goes live.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Time off</span></div>
+        <div class="htabs"><span class="htab">Entities</span><span class="htab">Fields</span><span class="htab">Visibility</span><span class="htab on">Time off</span><span class="htab">Lifecycle</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">Draft v3</span><span class="btn">Discard</span><span class="btn pri">Publish v3…</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:236px minmax(0,1fr) 316px;height:100%">
+        <div style="border-right:1px solid var(--line);background:var(--canvas);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow:hidden">
+          <div class="cap" style="padding:4px 10px 6px">Policies</div>
+          <div class="pp-lt"><span class="dot" style="background:var(--green)"></span>India leave v3<span class="ct">118</span></div>
+          <div class="pp-lt on"><span class="dot" style="background:var(--acc)"></span>Germany leave v2<span class="ct">52</span></div>
+          <div class="pp-lt"><span class="dot" style="background:var(--green)"></span>US PTO v4<span class="ct">44</span></div>
+          <div class="pp-lt tx-3"><i data-lucide="plus" style="width:14px;height:14px"></i>New policy</div>
+          <div class="cap" style="padding:16px 10px 6px">Holiday calendars</div>
+          <div class="pp-lt"><i data-lucide="calendar-days" class="tx-3" style="width:14px;height:14px"></i>Bengaluru 2027<span class="ct">12</span></div>
+          <div class="pp-lt"><i data-lucide="calendar-days" class="tx-3" style="width:14px;height:14px"></i>Berlin 2027<span class="ct">10</span></div>
+          <div class="pp-lt"><i data-lucide="calendar-days" class="tx-3" style="width:14px;height:14px"></i>Austin 2027<span class="ct">9</span></div>
+          <div class="cap" style="padding:16px 10px 6px">Leave types</div>
+          <div class="tx-2" style="padding:0 10px;font-size:12px;line-height:1.7">Annual, sick, parental, bereavement, comp off, unpaid, volunteering</div>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+          <div class="row" style="margin-bottom:4px"><div class="col grow"><div class="h20">Germany leave</div><span class="tx-3" style="font-size:12px">Acme Labs GmbH · 52 people · v2 live since 31 Dec 2025</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="pp-pol"><div class="row"><b class="grow">Annual leave</b><span class="bdg acc">Changed</span></div>
+            <div class="sent">Everyone in <span class="pp-tok">Acme Labs GmbH</span> gets <span class="pp-tok v">28 days</span> <span class="pp-tok v" style="text-decoration:line-through;color:var(--tx-3)">26 days</span> a year, accrued <span class="pp-tok">monthly</span> from their start date, <span class="pp-tok">pro-rated</span> in the first year and rounded to <span class="pp-tok">half days</span>.</div></div>
+          <div class="pp-pol"><b>Carry-over</b>
+            <div class="sent">Up to <span class="pp-tok v">5 days</span> carry over and expire on <span class="pp-tok v">31 Mar</span>. Remind people <span class="pp-tok v">60 days</span> before they expire.</div></div>
+          <div class="pp-pol"><b>Holidays and half days</b>
+            <div class="sent">Use the holidays of <span class="pp-tok">each person's office</span>, and count <span class="pp-tok v">23 Dec</span> and <span class="pp-tok v">30 Dec</span> as <span class="pp-tok">half days</span>.</div></div>
+          <div class="pp-pol"><b>Sick leave</b>
+            <div class="sent">No fixed limit. Ask for a <span class="pp-tok">doctor's note</span> from the <span class="pp-tok v">4th day</span>, and never show the reason to <span class="pp-tok">the manager</span>.</div></div>
+          <div class="pp-pol"><b>Coverage</b>
+            <div class="sent">Warn the person and the approver when fewer than <span class="pp-tok v">2 people</span> in a <span class="pp-tok">team</span> are on duty.</div></div>
+          <div class="pp-pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);flex-direction:row;align-items:center"><i data-lucide="plus"></i><span>Add a rule, or start from a template</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+          <div class="row"><i data-lucide="flask-conical" class="tx-3"></i><b class="grow">Preview on a person</b></div>
+          <div class="inp"><span class="av s p">SL</span>Sofia Lindqvist<i data-lucide="chevrons-up-down" class="car"></i></div>
+          <div class="well" style="padding:12px 14px">
+            <div class="row" style="font-size:12px"><span class="grow tx-2">2027 under v3</span><b class="num">30 days</b></div>
+            <div class="tx-3" style="font-size:11.5px;margin:2px 0 10px">28 new and 2 carried from 2026</div>
+            <div class="pp-acc"><i class="c" style="height:30%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i><i style="height:42%"></i></div>
+            <div class="row" style="justify-content:space-between;font-size:10.5px;color:var(--tx-3);margin-top:4px"><span>Jan</span><span>Jun</span><span>Dec</span></div>
+            <div class="row" style="font-size:11.5px;margin-top:8px;gap:6px"><span class="dot" style="background:var(--amber)"></span><span class="tx-2">2 carried days expire 31 Mar</span></div>
+          </div>
+          <div class="cap">Edge cases</div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="grow">Joins on 15 Jul</span><b>13 days</b></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="grow">Part time, 3 days a week</span><b>17 days</b></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="grow">Leaves on 30 Jun</span><b>14 days</b></div>
+            <div class="row" style="height:34px"><span class="grow">On parental leave all year</span><b>28 days</b></div>
+          </div>
+          <div class="sp"></div>
+          <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding-top:10px"><i data-lucide="users"></i>Publishing tells 52 people what changed, in their own words.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Readable by anyone</b>Rules read as sentences, so Sofia, her manager and an auditor see the same policy. Blocks keep it exact.</div>
+    <div><b>One policy per entity, not one system</b>India, Germany and the US each have their own policy and holiday calendars, in the same product.</div>
+    <div><b>Know before it's live</b>Preview on a real person and on edge cases: joiners, part time, leavers and long absences.</div>
+  </div>
+</figure>
+
+<figure class="screen" id="pp-cfg-vis" data-title="Fields and visibility">
+  <div class="scap"><b>Fields per country, and who can see each one</b><span>Sections appear for the entity a person belongs to. Visibility is set per field, and anyone in People's team can check who sees what.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="people" data-link="people.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span>People</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Visibility</span></div>
+        <div class="htabs"><span class="htab">Entities</span><span class="htab">Fields</span><span class="htab on">Visibility</span><span class="htab">Time off</span><span class="htab">Lifecycle</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="plus"></i>New section</span><span class="btn pri">Save changes</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:212px minmax(0,1fr) 268px;height:100%">
+        <div style="border-right:1px solid var(--line);background:var(--canvas);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow:hidden">
+          <div class="cap" style="padding:4px 10px 6px">Everyone</div>
+          <div class="pp-lt on"><i data-lucide="user-round" style="width:14px;height:14px"></i>Profile and job<span class="ct">14</span></div>
+          <div class="pp-lt"><i data-lucide="banknote" style="width:14px;height:14px" class="tx-3"></i>Pay<span class="ct">6</span></div>
+          <div class="pp-lt"><i data-lucide="heart-handshake" style="width:14px;height:14px" class="tx-3"></i>Emergency<span class="ct">4</span></div>
+          <div class="cap" style="padding:14px 10px 6px">India · Pvt Ltd</div>
+          <div class="pp-lt"><i data-lucide="landmark" style="width:14px;height:14px" class="tx-3"></i>PAN, Aadhaar, UAN<span class="ct">5</span></div>
+          <div class="cap" style="padding:14px 10px 6px">Germany · GmbH</div>
+          <div class="pp-lt"><i data-lucide="landmark" style="width:14px;height:14px" class="tx-3"></i>Tax, social insurance<span class="ct">6</span></div>
+          <div class="cap" style="padding:14px 10px 6px">US · Inc</div>
+          <div class="pp-lt"><i data-lucide="landmark" style="width:14px;height:14px" class="tx-3"></i>SSN, I-9, W-4<span class="ct">4</span></div>
+          <div class="cap" style="padding:14px 10px 6px">Teams</div>
+          <div class="pp-lt"><i data-lucide="briefcase-business" style="width:14px;height:14px" class="tx-3"></i>Sales: territory, quota<span class="ct">3</span></div>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+          <div class="row"><div class="col grow"><div class="h16">Who can see and edit</div><span class="tx-3" style="font-size:12px">Applies in People, other products, exports and AI</span></div>
+            <div class="row" style="gap:10px;font-size:11.5px" class="tx-2"><span class="row" style="gap:4px;color:var(--tx-2)"><i data-lucide="eye" style="width:13px;height:13px"></i>See</span><span class="row" style="gap:4px;color:var(--acc)"><i data-lucide="pencil" style="width:13px;height:13px"></i>Edit</span><span class="row" style="gap:4px;color:var(--tx-3)"><i data-lucide="eye-off" style="width:13px;height:13px"></i>Hidden</span></div></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl pp-vis"><thead><tr><th>Field</th><th>Person</th><th>All</th><th>Manager</th><th>Skip level</th><th>People</th><th>Finance</th></tr></thead><tbody>
+              <tr><td class="md">Work email, phone</td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td></tr>
+              <tr><td class="md">Birthday</td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c">Day, month</span></td><td><span class="c">Day, month</span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td></tr>
+              <tr><td class="md">Home address</td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td></tr>
+              <tr class="sel"><td class="md">Base salary</td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td></tr>
+              <tr><td class="md">Bank account</td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c">Last 4</span></td><td><span class="c"><i data-lucide="eye"></i></span></td></tr>
+              <tr><td class="md">Aadhaar, SSN, tax ID</td><td><span class="c">Masked</span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c">Masked</span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td></tr>
+              <tr><td class="md">Performance rating</td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td><td><span class="c e"><i data-lucide="pencil"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c"><i data-lucide="eye"></i></span></td><td><span class="c n"><i data-lucide="eye-off"></i></span></td></tr>
+              <tr><td class="md" style="border-bottom:0">Emergency contact</td><td style="border-bottom:0"><span class="c e"><i data-lucide="pencil"></i></span></td><td style="border-bottom:0"><span class="c n"><i data-lucide="eye-off"></i></span></td><td style="border-bottom:0"><span class="c"><i data-lucide="eye"></i></span></td><td style="border-bottom:0"><span class="c n"><i data-lucide="eye-off"></i></span></td><td style="border-bottom:0"><span class="c"><i data-lucide="eye"></i></span></td><td style="border-bottom:0"><span class="c n"><i data-lucide="eye-off"></i></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="card" style="padding:12px 16px">
+            <div class="row" style="margin-bottom:8px"><b class="grow">Germany: tax and social insurance</b><span class="tx-3" style="font-size:12px">shown only for Acme Labs GmbH</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:12px">
+              <div class="well" style="padding:8px 10px"><b>Tax ID</b><div class="tx-3">11 digits · encrypted</div></div>
+              <div class="well" style="padding:8px 10px"><b>Social insurance no.</b><div class="tx-3">Text · encrypted</div></div>
+              <div class="well" style="padding:8px 10px"><b>Health insurer</b><div class="tx-3">Pick from a list</div></div>
+              <div class="well" style="padding:8px 10px"><b>Tax class</b><div class="tx-3">1 to 6</div></div>
+              <div class="well" style="padding:8px 10px"><b>Church tax</b><div class="tx-3">Yes or no</div></div>
+              <div class="well" style="padding:8px 10px;color:var(--tx-3)" class="row"><i data-lucide="plus" style="width:13px;height:13px;vertical-align:-2px"></i> Add a field</div>
+            </div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;gap:8px"><i data-lucide="lock"></i>Identity numbers are encrypted per field. Every view of salary or bank details is written to the audit log.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+          <div class="row"><i data-lucide="scan-eye" class="tx-3"></i><b class="grow">Who can see this?</b></div>
+          <div class="inp">Base salary<span class="tx-3">of</span><span class="av s p">SL</span>Sofia<i data-lucide="chevrons-up-down" class="car"></i></div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="row" style="height:36px;border-bottom:1px solid var(--line-2)"><span class="av s p">SL</span><span class="grow">Sofia Lindqvist</span><span class="tx-3">herself</span></div>
+            <div class="row" style="height:36px;border-bottom:1px solid var(--line-2)"><span class="av s v">MN</span><span class="grow">Marta Nowak</span><span class="tx-3">manager</span></div>
+            <div class="row" style="height:36px;border-bottom:1px solid var(--line-2)"><span class="av s v">AR</span><span class="grow">Anand Rao</span><span class="tx-3">their manager</span></div>
+            <div class="row" style="height:36px;border-bottom:1px solid var(--line-2)"><span class="av s me">PR</span><span class="grow">Priya and 2 others</span><span class="tx-3">People, can edit</span></div>
+            <div class="row" style="height:36px"><span class="av s k">MI</span><span class="grow">Meera Iyer</span><span class="tx-3">Finance</span></div>
+          </div>
+          <div class="well" style="padding:10px 12px;font-size:12px"><b>7 people in all.</b> <span class="tx-2">Ask People answers about pay only for these 7. Last viewed by Meera on 1 Oct, for the payroll run.</span></div>
+          <div class="sp"></div>
+          <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding-top:10px"><i data-lucide="history"></i>Every change to these rules is versioned, with who and why.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Sections follow the entity</b>A Berlin hire gets tax and social insurance fields; a Bengaluru hire gets PAN, Aadhaar and UAN. No forked forms.</div>
+    <div><b>Visibility per field</b>Partial views ("day and month", "last 4 digits", "masked") are first-class, not workarounds.</div>
+    <div><b>Answer "who can see it" in a second</b>The check lists real people for a real field, and the same rules bind exports, other products and AI.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing appears while AI is off. The model is the company's choice, from the models.dev catalog or a local model.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Time off</td><td>Explains a coverage clash using the team calendar and the work due in Work, and suggests other dates or a handoff</td><td>The person sends the request as it is or changes it; the manager approves</td><td>The coverage rule still warns, with the numbers, but no suggestions</td></tr>
+  <tr><td>Onboarding</td><td>Checks a journey for steps that could slip (an owner on leave, a late delivery) and drafts 30/60/90 goals from the role</td><td>People or the manager reassigns steps; the manager agrees goals with the hire</td><td>Overdue and unassigned steps are flagged by rule. Goal templates per role</td></tr>
+  <tr><td>Letters</td><td>Writes the personal lines of a letter from the manager's note; the template fills the rest from the record</td><td>People reviews and sends; the person signs</td><td>Templates with fields only</td></tr>
+  <tr><td>Ask People</td><td>Turns a question into a query over People data, runs it, and explains the result with sources</td><td>The asker reads the query and the numbers before using them</td><td>Saved reports and dashboards</td></tr>
+  <tr><td>Questions from employees</td><td>Answers "can I…?" from the policies and the person's own balance, citing the clause</td><td>The policy is the source; unclear cases go to People</td><td>Policy search</td></tr>
+  <tr><td>Setup</td><td>Turns an uploaded handbook into draft leave rules and field sections on first setup</td><td>People reviews each rule and the preview, then publishes</td><td>Country templates</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> HR data is the most sensitive data a company holds. The model only receives what the person asking may see, under the same field rules; identity numbers, bank details and health reasons never leave the database; groups under five people are never broken down. A workspace can run a local model for People and a hosted one elsewhere, or turn AI off for People alone.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">People is its own product, on Bemmoly's kernel: one sign-in, the shared person directory (People becomes its source of truth when installed), the shared workflow and approval engine, typed fields, AI, audit and backups. Cross-product steps open or call the other product, with a person's confirmation, and each has a fallback when that product isn't installed.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul>
+    <li><b>Hiring</b>: a signed offer creates the person and starts the journey. Without Hiring, People adds the person by hand or import.</li>
+    <li><b>Assets</b>: ships and collects laptops and badges for joiners and leavers. Without it, a task for IT.</li>
+    <li><b>Access</b>: birthright apps by role and location, and revocation on exit at the exact hour. Without it, a checklist per app.</li>
+    <li><b>Performance</b>: 30/60/90 goals, probation reviews, promotion history. Without it, goals stay a note on the journey.</li>
+    <li><b>Helpdesk</b>: setup tasks, and HR questions that AI can't answer. Without it, tasks in People.</li>
+    <li><b>Time, Expenses, Licences</b>: read holidays, managers, grades, cost centres and seats from the record.</li>
+    <li><b>Work and Docs</b>: starter issues, milestones for coverage, the onboarding guide.</li>
+  </ul></div>
+  <div><h3>Core objects</h3><ul>
+    <li><code>person</code>: the kernel's directory entry, owned by People when installed</li>
+    <li><code>employment</code>: entity, job, grade, manager, location, dates, worker type, with full history</li>
+    <li><code>org_unit</code> and <code>position</code>: teams and roles, including open ones</li>
+    <li><code>leave_policy</code>, <code>holiday_calendar</code>, <code>leave_request</code>, <code>balance_entry</code>: a ledger, so every balance can be explained</li>
+    <li><code>lifecycle_event</code>: a run of the shared workflow engine, with its change set</li>
+    <li><code>document</code> and <code>letter_template</code>: files, signatures, expiry dates</li>
+  </ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>The record and time off</b><ul><li>Directory, person record, history and import</li><li>Entities, custom fields and sections, field visibility</li><li>Live org chart</li><li>Time off: policies, holiday calendars, balances, coverage rules</li><li>Each person's own page and documents</li><li>Payroll export (CSV) and the connector interface</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Journeys across products</b><ul><li>Onboarding journeys with pre-boarding</li><li>Lifecycle workflows: mover, promotion, exit</li><li>Steps in Assets, Access, Helpdesk and Performance, with fallbacks</li><li>Letter templates and built-in e-signature</li><li>First payroll connectors</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Answers and planning</b><ul><li>Ask People, with queries and citations</li><li>Org planning in a sandbox</li><li>Employer-of-record and background check connectors</li><li>More country templates from the community</li><li>Surveys and exit interviews</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Do we build payroll?</b><span>Recommendation: no. Payroll is statutory work that changes every year in every country (PF, ESI and TDS in India, Lohnsteuer and social insurance in Germany, state taxes in the US). Getting it wrong hurts people's pay. We send changes to payroll providers through connectors and bring payslips and tax forms back.</span></li>
+  <li><b>Who owns attendance and shifts: People or Time?</b><span>Recommendation: Time owns hours, shifts and attendance. People owns leave and holidays, and Time reads them.</span></li>
+  <li><b>When does a candidate become a person?</b><span>Recommendation: when the offer is signed in Hiring. People creates a pre-hire record with no account; Access turns accounts on at the start time.</span></li>
+  <li><b>Is People or Access the source of truth for identity?</b><span>Recommendation: People says who exists and what their attributes are. Access derives accounts and groups from those attributes, and never edits them.</span></li>
+  <li><b>Built-in e-signature or a connector?</b><span>Recommendation: a built-in simple signature with an audit trail for letters and policies, and connectors for qualified signatures where a country requires them.</span></li>
+  <li><b>How do we store identity numbers?</b><span>Recommendation: field-level encryption with keys per workspace, masked by default, never sent to a model, and every reveal logged.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.gallup.com/workplace/235121/why-onboarding-experience-key-retention.aspx">Gallup: Why the onboarding experience is key for retention</a></li>
+  <li><a href="https://www.bamboohr.com/about-bamboohr/press-release/44-of-new-hires-regret-their-decision-within-a-week-bamboohr-study-finds">BambooHR: 44% of new hires regret their decision within a week (2023)</a></li>
+  <li><a href="https://www.bamboohr.com/resources/data-at-work/data-stories/2023-onboarding-statistics">BambooHR: 44 days to make or break a new hire</a></li>
+  <li><a href="https://press.roberthalf.com/2015-08-26-FIRST-DAY-FOLLIES-More-Than-Half-of-Workers-Have-Experienced-Mishaps-When-Starting-a-New-Job">Robert Half (OfficeTeam): First day follies (2015)</a></li>
+  <li><a href="https://www.shrm.org/topics-tools/news/technology/gartner-hr-technology-top-priority-strategic-impact-lags">SHRM: Gartner, HR technology a top priority but strategic impact lags (2024)</a></li>
+  <li><a href="https://www.rippling.com/resources/sapient-hr-systems-survey">Sapient Insights HR Systems Survey (via Rippling)</a></li>
+  <li><a href="https://www.hrexecutive.com/what-are-the-top-findings-from-sapients-hr-systems-survey/">HR Executive: Top findings from Sapient's HR Systems Survey</a></li>
+  <li><a href="https://en-gb.newsroom.workday.com/2025-05-19-Workday-Unveils-Next-Generation-of-Illuminate-Agents-to-Transform-HR-and-Finance-Operations">Workday: Next generation of Illuminate agents (2025)</a></li>
+  <li><a href="https://www.rippling.com/blog/how-rippling-runs-it-new-hire-onboarding">Rippling: How Rippling runs IT new hire onboarding</a></li>
+  <li><a href="https://www.techradar.com/pro/hibob-hr-software-review">TechRadar: HiBob HR software review</a></li>
+  <li><a href="https://personio.com/hr/absence-management-uk">Personio: Absence management</a></li>
+  <li><a href="https://www.deel.com/blog/meet-the-new-deel">Deel: Meet the new Deel</a></li>
+  <li><a href="https://techrepublic.com/article/remote-payroll-review">TechRepublic: Remote review</a></li>
+  <li><a href="https://www.greythr.com/blog/greythr-vs-keka/">greytHR: greytHR vs Keka</a></li>
+  <li><a href="https://www.keka.com/alternative/darwinbox">Keka: Darwinbox alternative</a></li>
+  <li><a href="https://docs.frappe.io/hr/employee-onboarding">Frappe HR docs: Employee onboarding</a></li>
+  <li><a href="https://research.aimultiple.com/open-source-hris">AIMultiple: Open source HRIS</a></li>
+  <li>Vendor product pages for Workday, BambooHR, Zoho People, OrangeHRM and Odoo (October 2026)</li>
+</ul>
+</main>
+</div>
+<script>
+/* Builds the Design team's holiday calendar (14 Dec to 3 Jan) before kit.js draws icons. */
+(function () {
+  var host = document.getElementById('pp-cal'); if (!host) return;
+  var days = [];
+  var d0 = 14, wd = ['M','T','W','T','F','S','S'];
+  for (var i = 0; i < 21; i++) { var n = d0 + i; days.push({ n: n > 31 ? n - 31 : n, w: wd[i % 7], we: (i % 7) > 4, ho: [11, 12, 18].indexOf(i) >= 0 }); }
+  /* Dec 25 = index 11, Dec 26 = 12, Jan 1 = 18 (the page's calendar starts on a Monday) */
+  function cls(i) { return days[i].we ? ' we' : (days[i].ho ? ' ho' : ''); }
+  var h = '<div class="hd nm" style="height:40px"><span class="tx-3">Person</span></div>';
+  days.forEach(function (d, i) { h += '<div class="hd' + cls(i) + '"><span>' + d.w + '</span><b>' + d.n + '</b></div>'; });
+  var people = [
+    { n: 'Sofia (you)', av: 'p', ini: 'SL', from: 7, to: 18, req: true, half: [9, 16] },
+    { n: 'Marta Nowak', av: 'v', ini: 'MN', from: -1 },
+    { n: 'Jonas Weber', av: 'k', ini: 'JW', from: 7, to: 9, half: [9] },
+    { n: 'Ines Duarte', av: 'a', ini: 'ID', from: 7, to: 18, half: [9, 16] }
+  ];
+  people.forEach(function (p) {
+    h += '<div class="nm"><span class="av s ' + p.av + '">' + p.ini + '</span>' + p.n + '</div>';
+    for (var i = 0; i < 21; i++) {
+      var on = p.from >= 0 && i >= p.from && i <= p.to && !days[i].we && !days[i].ho;
+      var bar = '';
+      if (on) {
+        var prevOn = i > p.from && !days[i - 1].we && !days[i - 1].ho;
+        var nextOn = i < p.to && !days[i + 1].we && !days[i + 1].ho;
+        bar = '<span class="bar ' + (p.req ? 'req' : 'oth') + (prevOn ? '' : ' s') + (nextOn ? '' : ' e') + ((p.half || []).indexOf(i) >= 0 ? ' half e' : '') + '"></span>';
+      }
+      h += '<div class="' + cls(i).trim() + '">' + bar + '</div>';
+    }
+  });
+  h += '<div class="nm"><span class="tile pp-mt" style="background:var(--m-work)"><i data-lucide="square-kanban"></i></span>Work due</div>';
+  for (var i = 0; i < 21; i++) h += '<div class="' + cls(i).trim() + '">' + (i === 8 ? '<span class="ms" title="Checkout redesign handoff"></span>' : '') + '</div>';
+  h += '<div class="nm tx-2" style="border-bottom:0">On duty, of 4</div>';
+  for (var j = 0; j < 21; j++) {
+    var c = '';
+    if (!days[j].we && !days[j].ho) {
+      var off = people.filter(function (p) { return p.from >= 0 && j >= p.from && j <= p.to; }).length;
+      var duty = 4 - off; c = '<span class="cov' + (duty < 2 ? ' low' : '') + '" style="width:100%;height:100%;display:grid;place-items:center">' + duty + '</span>';
+    }
+    h += '<div class="' + cls(j).trim() + '" style="border-bottom:0">' + c + '</div>';
+  }
+  host.innerHTML = h;
+})();
+</script>
+</body>
+</html>

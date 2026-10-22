@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Hiring</title>
+<meta name="description" content="Product proposal for Bemmoly Hiring: the problem today, market leaders, the dream experience, drawn screens, customisation, fairness and AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Hiring-only screen parts, all prefixed hi- */
+.bx .hi-kan{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;flex:1;min-height:0}
+.bx .hi-col{background:var(--sunken);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+.bx .hi-colh{display:flex;align-items:center;gap:6px;padding:2px 4px 2px;font-size:12.5px;font-weight:600;color:var(--tx)}
+.bx .hi-colh .ct{color:var(--tx-3);font-weight:400}
+.bx .hi-colh svg.lucide{width:14px;height:14px;color:var(--tx-3)}
+.bx .hi-colm{font-size:11px;color:var(--tx-3);padding:0 4px;margin-top:-6px}
+.bx .hi-kc{background:var(--card);border-radius:8px;box-shadow:var(--e1);padding:9px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.bx .hi-kc b{font-weight:500;font-size:12.5px}
+.bx .hi-km{font-size:11.5px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bx .hi-kc .bdg{align-self:flex-start}
+.bx .hi-kc.blind .av{background:var(--line);color:var(--tx-3)}
+.bx .hi-cf{margin-top:auto;border-top:1px solid var(--line);padding:8px 4px 2px;display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--tx-3)}
+.bx .hi-more{font-size:11.5px;color:var(--tx-3);padding:2px 6px}
+.bx .hi-nudge{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:8px;background:var(--amber-50)}
+.bx .hi-nudge>svg.lucide{color:var(--amber)}
+/* job post editor */
+.bx .hi-doc{font-size:13.5px;line-height:1.65;color:var(--tx)}
+.bx .hi-doc h5{margin:16px 0 4px;font-size:13px;font-weight:600}
+.bx .hi-doc ul{margin:4px 0;padding-left:18px}
+.bx .hi-doc li{margin:2px 0}
+.bx .hi-flag{background:color-mix(in srgb,var(--ai) 22%,transparent);box-shadow:inset 0 -1.5px 0 var(--ai);border-radius:2px;padding:0 2px}
+.bx .hi-fixed{background:var(--green-50);border-radius:2px;padding:0 2px}
+.bx .hi-sug{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--ai-100);font-size:12.5px}
+.bx .hi-sug s{color:var(--tx-3)}
+.bx .hi-sug .why{grid-column:1/-1;font-size:11.5px;color:var(--tx-2)}
+.bx .hi-must{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.bx .hi-must:last-child{border-bottom:0}
+.bx .hi-must svg.lucide{width:14px;height:14px;margin-top:2px;color:var(--tx-3)}
+/* vertical approval track */
+.bx .hi-vt{display:flex;flex-direction:column}
+.bx .hi-vs{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:start;position:relative;padding-bottom:14px}
+.bx .hi-vs:last-child{padding-bottom:0}
+.bx .hi-vs>i{width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;z-index:1;margin-top:1px}
+.bx .hi-vs.done>i{background:var(--done);box-shadow:none;color:#fff}
+.bx .hi-vs.done>i svg.lucide{width:11px;height:11px;stroke-width:3}
+.bx .hi-vs.now>i{box-shadow:inset 0 0 0 1.5px var(--prog),0 0 0 4px var(--acc-50)}
+.bx .hi-vs:not(:last-child)::before{content:"";position:absolute;left:8.5px;top:20px;bottom:0;width:1.5px;background:var(--line)}
+.bx .hi-vs.done:not(:last-child)::before{background:var(--done)}
+.bx .hi-vs b{display:block;font-weight:500;font-size:12.5px}
+.bx .hi-vs span{font-size:11.5px;color:var(--tx-3)}
+/* blind CV */
+.bx .hi-cv{width:470px;background:var(--card);border-radius:6px;box-shadow:var(--e2);padding:26px 30px;font-size:12px;line-height:1.6;color:var(--tx)}
+.bx .hi-cv h6{margin:14px 0 4px;font-size:11.5px;font-weight:600;color:var(--tx-2)}
+.bx .hi-cv ul{margin:2px 0;padding-left:16px}
+.bx .hi-cv li{margin:1px 0}
+.bx .hi-red{display:inline-block;height:11px;border-radius:2px;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--tx) 22%,transparent) 0 4px,color-mix(in srgb,var(--tx) 12%,transparent) 4px 8px);vertical-align:-1px}
+.bx .hi-photo{width:52px;height:52px;border-radius:8px;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--tx) 14%,transparent) 0 5px,color-mix(in srgb,var(--tx) 7%,transparent) 5px 10px);display:grid;place-items:center;color:var(--tx-3);flex:none}
+.bx .hi-ev{background:color-mix(in srgb,var(--ai) 18%,transparent);border-radius:2px;padding:0 2px}
+.bx .hi-ck{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:8px 0;border-top:1px solid var(--ai-100);font-size:12.5px;align-items:center}
+.bx .hi-ck .e{grid-column:1/-1;font-size:11.5px;color:var(--tx-2)}
+/* candidate side */
+.hi-cw{position:absolute;inset:0;background:radial-gradient(1100px 600px at 0% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 520px at 110% 110%,color-mix(in srgb,var(--m-hiring) 12%,transparent),transparent 60%),var(--side);display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:36px;padding:36px 44px;font:13px/1.45 var(--sans);color:var(--tx)}
+.hi-brw{background:var(--canvas);border-radius:12px;box-shadow:var(--e3);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.hi-brw .bar-top{height:38px;flex:none;display:flex;align-items:center;gap:8px;padding:0 14px;background:var(--sunken);border-bottom:1px solid var(--line-2)}
+.hi-brw .bar-top .d{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.hi-brw .url{margin-left:14px;flex:1;max-width:420px;height:24px;border-radius:6px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line-2);display:flex;align-items:center;gap:6px;padding:0 10px;font-size:11.5px;color:var(--tx-3)}
+.hi-brw .url svg.lucide{width:12px;height:12px}
+.hi-site-h{height:54px;flex:none;display:flex;align-items:center;gap:10px;padding:0 24px;border-bottom:1px solid var(--line-2)}
+.hi-acme{width:26px;height:26px;border-radius:7px;background:var(--m-hiring);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.hi-trk{display:flex;margin:14px 0 4px}
+.hi-trk .s{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:11.5px;color:var(--tx-3);text-align:center}
+.hi-trk .s i{width:20px;height:20px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;z-index:1}
+.hi-trk .s.done i{background:var(--done);box-shadow:none;color:#fff}
+.hi-trk .s.done i svg.lucide{width:12px;height:12px;stroke-width:3}
+.hi-trk .s.now i{box-shadow:inset 0 0 0 1.5px var(--prog),0 0 0 5px var(--acc-50)}
+.hi-trk .s.now{color:var(--tx);font-weight:500}
+.hi-trk .s+.s::before{content:"";position:absolute;top:10px;right:50%;width:100%;height:1.5px;background:var(--line)}
+.hi-trk .s.done+.s::before{background:var(--done)}
+.hi-prom{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--acc-50);box-shadow:inset 0 0 0 1px var(--acc-100)}
+.hi-prom .ic{width:34px;height:34px;border-radius:9px;background:var(--card);display:grid;place-items:center;color:var(--acc);flex:none;box-shadow:var(--e1)}
+.hi-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hi-day{display:flex;flex-direction:column;gap:6px}
+.hi-day>b{font-size:12px;font-weight:600}
+.hi-day>span{font-size:11px;color:var(--tx-3);margin-top:-4px}
+.hi-slot{height:30px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:500;color:var(--tx);background:var(--card);cursor:pointer}
+.hi-slot.on{background:var(--acc-fill);color:var(--on-acc);box-shadow:none}
+.hi-slot.off{color:var(--tx-3);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);text-decoration:line-through}
+.hi-meet{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.hi-meet:last-child{border-bottom:0}
+.hi-meet b{display:block;font-size:12.5px;font-weight:500}
+.hi-meet div span{display:block;font-size:11.5px;color:var(--tx-3)}
+.hi-phone{width:270px;height:560px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;align-self:center}
+.hi-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.hi-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:11px;background:#000;z-index:3}
+.hi-phone .sbar{height:44px;flex:none}
+.hi-mail{padding:6px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:12px;overflow:hidden}
+.hi-mail .from{display:flex;gap:8px;align-items:center}
+.hi-ics{border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);padding:10px 12px;display:flex;gap:10px;align-items:center}
+.hi-ics .cal{width:38px;flex:none;border-radius:7px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line);text-align:center}
+.hi-ics .cal span{display:block;background:var(--m-hiring);color:#fff;font-size:9.5px;font-weight:600;padding:1px 0}
+.hi-ics .cal b{display:block;font-size:16px;font-weight:600;padding:2px 0}
+/* interview kit */
+.bx .hi-q{padding:14px 16px;border-bottom:1px solid var(--line-2)}
+.bx .hi-q:last-child{border-bottom:0}
+.bx .hi-q .qt{font-size:13.5px;font-weight:500;line-height:1.5;margin:6px 0}
+.bx .hi-q .fu{font-size:12px;color:var(--tx-2);display:flex;gap:6px;margin:2px 0}
+.bx .hi-q .fu svg.lucide{width:13px;height:13px;margin-top:2px;color:var(--tx-3)}
+.bx .hi-rate{display:flex;gap:4px;margin-top:10px}
+.bx .hi-rate span{height:26px;padding:0 9px;display:inline-flex;align-items:center;gap:5px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--line);font-size:12px;color:var(--tx-2);background:var(--card);cursor:pointer}
+.bx .hi-rate span.on{background:var(--acc-fill);color:var(--on-acc);box-shadow:none}
+.bx .hi-rate span .n{font-family:var(--mono);font-size:11px;opacity:.8}
+.bx .hi-good{margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--sunken);font-size:11.5px;color:var(--tx-2);line-height:1.5}
+.bx .hi-notes{font:12.5px/1.7 var(--mono);color:var(--tx);padding:12px 14px;background:var(--card);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line)}
+.bx .hi-notes .ln{display:flex;gap:10px}
+.bx .hi-notes .ln span:first-child{color:var(--tx-3);width:14px;text-align:right;flex:none}
+/* debrief grid */
+.bx .hi-dg{width:100%;border-collapse:collapse;font-size:12.5px}
+.bx .hi-dg th{height:58px;font-weight:500;text-align:left;padding:0 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.bx .hi-dg td{height:44px;padding:0 10px;border-bottom:1px solid var(--line-2)}
+.bx .hi-dg tr:last-child td{border-bottom:0}
+.bx .hi-dg td:first-child{color:var(--tx-2);width:190px}
+.bx .hi-sc{display:inline-flex;gap:3px;align-items:center}
+.bx .hi-sc i{width:12px;height:12px;border-radius:3px;background:var(--line-2)}
+.bx .hi-sc i.f{background:var(--acc-500)}
+.bx .hi-sc em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--tx-3);margin-left:5px}
+.bx .hi-sc.split i.f{background:var(--amber)}
+/* offer */
+.bx .hi-band{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--acc-50),var(--acc-100));margin:24px 0 6px}
+.bx .hi-band .peer{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--acc-500) 35%,transparent);border-radius:5px}
+.bx .hi-band .pin{position:absolute;top:-6px;width:3px;height:22px;border-radius:2px;background:var(--acc-fill)}
+.bx .hi-band .pin b{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11.5px;font-weight:600;white-space:nowrap}
+.bx .hi-letter{background:var(--card);border-radius:6px;box-shadow:var(--e1);padding:18px 22px;font-size:12.5px;line-height:1.65}
+.bx .hi-tok{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.bx .hi-ho{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.bx .hi-ho:last-child{border-bottom:0}
+.bx .hi-ho .tile{width:22px;height:22px;border-radius:6px}
+.bx .hi-ho .tile svg.lucide{width:12px;height:12px}
+/* reports */
+.bx .hi-fn{display:grid;grid-template-columns:110px minmax(0,1fr) 58px 56px;gap:10px;align-items:center;font-size:12.5px;height:30px}
+.bx .hi-fn .b{height:16px;border-radius:4px;background:var(--acc-500)}
+.bx .hi-fn .pt{font-size:11.5px;color:var(--tx-3);text-align:right}
+.bx .hi-dv{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;height:190px;padding-top:12px}
+.bx .hi-dv div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--tx-3);justify-content:flex-end;height:100%}
+.bx .hi-dv div i{width:100%;border-radius:4px 4px 0 0;background:var(--acc-100);display:block}
+.bx .hi-dv div.dip i{background:var(--amber)}
+.bx .hi-dv div b{font-size:11.5px;color:var(--tx);font-weight:500}
+/* settings */
+.bx .htab{white-space:nowrap}
+.bx .hi-stg{display:grid;grid-template-columns:14px 24px minmax(0,1fr) 112px 84px 120px;gap:10px;align-items:center;height:46px;padding:0 14px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.bx .hi-stg.h{height:34px;font-size:12px;color:var(--tx-3);font-weight:500}
+.bx .hi-stg .col span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bx .hi-stg .n{width:24px;height:24px;border-radius:6px;background:var(--sunken);display:grid;place-items:center;font:500 11px var(--mono);color:var(--tx-2)}
+.bx .hi-comp{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.bx .hi-comp:last-child{border-bottom:0}
+.bx .hi-sw{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.bx .hi-sw:last-child{border-bottom:0}
+.bx .hi-sw .sw{margin-top:2px}
+.bx .hi-sw span.tx-3{display:block;font-size:11.5px}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="hiring"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Hiring</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span>Bemmoly Hiring · product proposal</div>
+  <h1>Every candidate hears back. Every decision rests on evidence.</h1>
+  <p class="lede">Open a role with a fair job post, review applicants on what they did rather than who they are, interview with a shared kit, and decide in a debrief where everyone's feedback was written before they heard the others. Each candidate gets their own page with a reply-by date the team has promised to keep. When the offer is accepted, the new person is already set up for day one. Its own product. Use it alone, or with the others.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Recruiters, hiring managers, interviewers, candidates</span>
+    <span class="chip"><i data-lucide="app-window"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, never ranks or rejects people</span>
+    <span class="chip"><i data-lucide="shield-check"></i>Retention and consent rules per country</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Hiring is where a company makes its first promise to a person, and most companies break it. Candidates wait in silence. Recruiters drown in applications, many written by AI. Interviews drift into conversations about whether someone "feels right", and the decision is made by whoever speaks first in the debrief.</p>
+<div class="stats">
+  <div><b>61%</b><span>of job seekers say an employer has ghosted them during the process</span><small>Greenhouse, State of Job Hunting, 2024</small></div>
+  <div><b>588</b><span>applications per recruiter in Q3 2024, up 26% on a year earlier</span><small>Greenhouse data, 2024</small></div>
+  <div><b>26%</b><span>of applicants trust AI to evaluate them fairly</span><small>Gartner candidate survey, 2025</small></div>
+  <div><b>.42</b><span>validity of structured interviews, the highest of the selection methods reviewed</span><small>Sackett et al., Journal of Applied Psychology, 2022</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Candidates are left in silence</b><p>Most people who apply never hear a clear no. Even after an interview, a reply depends on one busy recruiter remembering to send it. The company's reputation is built in that silence.</p><span class="src">Greenhouse, 2024</span></div>
+  <div class="pain"><b>Volume has outrun people</b><p>Mass applying with AI tools means hundreds of applications per role. Reviewers skim in seconds, and the easiest filters (a school, a company name, a gap) are the least fair ones.</p><span class="src">Greenhouse, 2024 · Gartner, 2025</span></div>
+  <div class="pain"><b>Interviews without structure</b><p>Each interviewer asks what they like and writes "great energy" in the feedback. Structured interviews predict job performance far better, yet most teams still run them by feel.</p><span class="src">Sackett et al., 2022</span></div>
+  <div class="pain"><b>The debrief is decided by the loudest voice</b><p>Feedback is often written after the debrief, or after reading a colleague's strong opinion. Independent judgement disappears, and "culture fit" stands in for evidence.</p></div>
+  <div class="pain"><b>AI that judges people nobody can question</b><p>Black-box match scores rank candidates with no explanation. Candidates don't trust it, regulators now treat hiring AI as high risk (the EU AI Act, New York City's bias-audit law), and the company carries the liability.</p><span class="src">Gartner, 2025 · EU AI Act · NYC DCWP</span></div>
+  <div class="pain"><b>The hire falls between tools</b><p>The offer is a document, approvals are emails, and onboarding starts again in the HR system from a copy-paste. A good hire can arrive on day one to no laptop and no accounts. Each hire already costs thousands (SHRM put the average near $4,700 in 2022).</p><span class="src">SHRM, 2022</span></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Four people meet every hire: the candidate, the recruiter, the hiring manager and the panel. Here are three of them; the candidate's dream runs through every screen.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l p">PR</span><div><b>Priya, head of people</b><span>Runs hiring for 40 roles a year across three offices</span></div></div>
+    <q>"I want a process I can defend in front of any candidate or any regulator, and I never want someone to hear about us as the company that never replied."</q>
+    <ul><li>Every candidate gets a reply-by date, and the team is nudged before it slips</li><li>Fairness on by default: blind first review, independent feedback</li><li>Retention and consent handled per country, automatically</li><li>The hire lands in People with onboarding already started</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, hiring manager</b><span>Hiring two backend engineers for Platform</span></div></div>
+    <q>"Show me the evidence against what the role needs, not a stack of CVs. And let the debrief be about facts, not who argues best."</q>
+    <ul><li>A pipeline that shows only what's waiting on him</li><li>CV evidence checked against his must-haves, with the lines cited</li><li>A debrief grid where disagreement is visible at a glance</li><li>An offer that routes itself through approvals</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l k">TG</span><div><b>Tomás, interviewer</b><span>Runs system design interviews twice a week</span></div></div>
+    <q>"Give me the questions and what good looks like. Let me listen during the interview, and turn my scrappy notes into feedback afterwards."</q>
+    <ul><li>An interview kit with questions per competency</li><li>His own notes, tidied into evidence for each competency</li><li>Feedback in five minutes, from the calendar invite</li><li>No other feedback shown until he's written his own</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">Applicant tracking has split into structured-hiring suites, all-in-one analytics platforms, brand-led tools for smaller teams, enterprise suites inside HR systems, and sourcing tools that feed them. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Greenhouse</b><span>Structured hiring</span></header><p>Popularised structured hiring: scorecards with a few attributes per category, interview kits per stage, and a careful candidate experience. Added identity checks against fake applicants in 2025.</p>
+    <div class="plus"><i data-lucide="plus"></i>The method: interview plans, kits and scorecards as the backbone of every job.</div><div class="minus"><i data-lucide="minus"></i>Priced for mid-size and larger companies. Candidate communication still depends on people remembering.</div></div>
+  <div class="leader"><header><b>Ashby</b><span>All-in-one, analytics</span></header><p>ATS, CRM, scheduling and deep analytics in one. Its AI-assisted application review checks CVs against criteria with citations, redacts personal details first, and never ranks.</p>
+    <div class="plus"><i data-lucide="plus"></i>The most careful AI design in the market: criteria, citations, opt-out, third-party audit.</div><div class="minus"><i data-lucide="minus"></i>Dense for occasional users. Cloud only, so CVs leave the company.</div></div>
+  <div class="leader"><header><b>Lever and Gem</b><span>CRM and sourcing</span></header><p>Lever (now part of Employ, with Jobvite and JazzHR) joined ATS and candidate CRM. Gem started as sourcing and outreach, and now sells an all-in-one platform with a large profile database.</p>
+    <div class="plus"><i data-lucide="plus"></i>Treating candidates as relationships over years, not single applications.</div><div class="minus"><i data-lucide="minus"></i>Outreach automation can feel like spam to the people it reaches.</div></div>
+  <div class="leader"><header><b>Teamtailor</b><span>Employer brand</span></header><p>A no-code careers site builder with employee stories, talent pools and an opt-in AI co-pilot whose modules can be switched on per team.</p>
+    <div class="plus"><i data-lucide="plus"></i>Careers pages that look like the company, made by recruiters without IT.</div><div class="minus"><i data-lucide="minus"></i>Lighter on structured evaluation and on integrations.</div></div>
+  <div class="leader"><header><b>Workable and Zoho Recruit</b><span>Small and mid-size</span></header><p>Fast setup, job board posting, interview self-scheduling from calendars, and AI sourcing that suggests passive candidates from large databases.</p>
+    <div class="plus"><i data-lucide="plus"></i>Self-scheduling and one-click posting: time to first interview drops.</div><div class="minus"><i data-lucide="minus"></i>Per-job or per-seat pricing. AI match scores rank people by similarity to a job description.</div></div>
+  <div class="leader"><header><b>SmartRecruiters and iCIMS</b><span>Enterprise</span></header><p>High-volume hiring, conversational AI, CRM and compliance at scale. SmartRecruiters became part of SAP in September 2025, alongside SuccessFactors.</p>
+    <div class="plus"><i data-lucide="plus"></i>Covers every country, every approval and every audit trail.</div><div class="minus"><i data-lucide="minus"></i>Long rollouts, heavy screens, and a growing pull into one vendor's HR suite.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Structured hiring</th><th>All-in-one</th><th>Brand-led and SMB</th><th>Enterprise</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Scorecards and interview kits</td><td class="yes">Strong</td><td class="yes">Strong</td><td class="part">Basic</td><td class="yes">Strong</td><td class="part">Feedback forms</td><td class="yes">Kits per competency, shared with Performance</td></tr>
+  <tr><td>Blind first review</td><td class="part">Add-on or partial</td><td class="part">Redacts for AI only</td><td class="part">Some</td><td class="part">Some</td><td class="no">No</td><td class="yes">Names, photos, schools hidden by default</td></tr>
+  <tr><td>Independent feedback before debrief</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Partial</td><td class="part">Configurable</td><td class="no">No</td><td class="yes">Yes, locked until submitted</td></tr>
+  <tr><td>AI on CVs</td><td class="part">Partner tools</td><td class="yes">Criteria with citations</td><td class="part">Match scores</td><td class="part">Match scores</td><td class="no">None</td><td class="yes">Evidence per must-have, never a score, your model</td></tr>
+  <tr><td>A reply promise to candidates</td><td class="part">Templates</td><td class="part">Alerts</td><td class="part">Templates</td><td class="part">Templates</td><td class="no">No</td><td class="yes">Reply-by date on every stage, status page</td></tr>
+  <tr><td>Hand-off to onboarding</td><td class="part">Integration</td><td class="part">Integration</td><td class="part">Integration</td><td class="yes">Own suite</td><td class="part">Same ERP</td><td class="yes">Native to People, Assets and Access</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Per employee, contracts</td><td>Per employee</td><td>Per job or per seat</td><td>Enterprise contracts</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means OpenCATS (a long-running PHP applicant tracker), the recruitment part of Frappe HR (job openings, applicants, interviews, offers) and Odoo Recruitment (a kanban of stages with email templates per stage, inside the Odoo ERP). They are capable records, but none offers structured fairness, a candidate status page or careful AI. <b>LinkedIn Recruiter</b> stays a sourcing channel: Bemmoly receives candidates from it and from job boards through connectors, and doesn't try to be a profile database.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (structured kits, criteria-based AI with citations, careers pages recruiters can build) and add what only an open, self-hosted platform with one person record can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="calendar-clock"></i></span><b>A reply-by promise, kept by the system</b><p>Each stage has a reply-by time (say, five working days). The candidate sees the date on their own page. The team gets nudged before it slips, and if nobody acts, a kind holding note goes out on time.</p><span class="vs">New: leaders offer templates and alerts, nobody makes the promise visible to the candidate.</span></div>
+  <div><span class="ic"><i data-lucide="scale"></i></span><b>Fair by construction, not by training</b><p>Names, photos, addresses and school names are hidden at first review. Interviewers write feedback before they see anyone else's. Job posts and feedback get a language check. All on by default.</p><span class="vs">Leaders: blind review is partial or an add-on; open source has none.</span></div>
+  <div><span class="ic"><i data-lucide="clipboard-check"></i></span><b>Evidence, not vibes</b><p>Must-haves are set when the role opens and reused everywhere: the CV check, the interview kit, the scorecard and the debrief grid. Competencies come from the same library Performance uses after the hire.</p><span class="vs">New: hiring and performance on one competency model.</span></div>
+  <div><span class="ic"><i data-lucide="user-round-check"></i></span><b>The hire is already a person</b><p>When the offer is accepted, the kernel's person record is created and, where installed, People starts onboarding, Assets orders the laptop and Access prepares accounts for the start date.</p><span class="vs">Leaders: an integration to another vendor, and a re-typed record.</span></div>
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>AI that shows evidence and never judges</b><p>AI finds evidence for each must-have in a CV and cites the line. It never scores, ranks or rejects anyone. Personal details are removed first, the model is the company's choice (local included), and applicants can opt out.</p><span class="vs">Leaders: most sell match scores; the careful ones still send CVs to their cloud.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>Every interviewer, no seat price</b><p>Hiring managers, interviewers and approvers all take part with no licence. Retention, consent and deletion rules per country are part of the product, not a compliance add-on.</p><span class="vs">Leaders: priced per employee or per job, with compliance in higher tiers.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly Hiring's own shell and tokens. Click the tabs, or the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="hi">
+<!-- 1 ======================== Open a role -->
+<figure class="screen" id="hi-open" data-title="Open a role">
+  <div class="scap"><b>Open a role, with a fair post and clear must-haves</b><span>The hiring manager writes the post, sets the must-haves the whole process will use, and the request routes for approval.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.jobs" data-me="Lena Fischer" data-counts='{"hi.jobs":"1","hi.int":"2"}' data-hide-links="hi.site"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Jobs</span><span class="sep">/</span><span class="cur">Support specialist, Berlin</span></div>
+        <div class="htabs"><span class="htab">Role</span><span class="htab on">Job post</span><span class="htab">Process</span><span class="htab">Team</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Draft · saved</span><span class="btn"><i data-lucide="eye"></i>Preview careers page</span><span class="btn pri">Publish when approved</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:22px 28px">
+          <div class="h20">Support specialist</div>
+          <div class="row tx-2" style="font-size:12.5px;margin:4px 0 14px;gap:12px"><span class="row" style="gap:5px"><i data-lucide="building-2" style="width:14px;height:14px"></i>Support · reports to Lena Fischer</span><span class="row" style="gap:5px"><i data-lucide="map-pin" style="width:14px;height:14px"></i>Berlin, hybrid 3 days</span><span class="row" style="gap:5px"><i data-lucide="banknote" style="width:14px;height:14px"></i>€52,000 to €60,000 on the post</span></div>
+          <div class="card" style="padding:18px 22px">
+            <div class="hi-doc">
+              <h5 style="margin-top:0">About the role</h5>
+              <p style="margin:0">We're looking for a <span class="hi-flag hi-old">support rockstar</span><span class="hi-fixed hi-new" hidden>support specialist</span> to join <span class="hi-flag hi-old">our young, energetic team</span><span class="hi-fixed hi-new" hidden>a team of eight</span> in Berlin. You'll be the first person our customers talk to when something goes wrong, and you'll help them get back to work the same day.</p>
+              <h5>What you'll do</h5>
+              <ul><li>Answer customer questions by chat and email, in English and German</li><li>Reproduce bugs and write them up so engineers can fix them fast</li><li>Keep our help articles accurate, and write new ones when a question repeats</li><li>Join a weekday rota, with no night or weekend shifts</li></ul>
+              <h5>You'll need</h5>
+              <ul><li><span class="hi-flag hi-old">Native German speaker</span><span class="hi-fixed hi-new" hidden>Fluent German, spoken and written (C1 or above)</span>, and good written English</li><li>Two years in customer support for a software product</li><li>Calm, clear writing when a customer is frustrated</li></ul>
+              <h5>Nice to have</h5>
+              <ul><li>Experience with SQL or reading logs</li></ul>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px;padding:12px 16px;display:flex;align-items:center;gap:12px"><i data-lucide="list-checks" class="tx-3"></i><div class="col grow"><b>Application form · 4 questions, about 6 minutes</b><span class="tx-3" style="font-size:12px">CV or profile link · a short written reply to a customer · right to work in Germany · how you'd like to be contacted</span></div><span class="btn sm">Edit form</span></div>
+          <div class="row tx-3" style="font-size:12px;margin-top:10px;gap:6px"><i data-lucide="info" style="width:14px;height:14px"></i>No photo, birth date or cover letter asked for. Germany: no voluntary diversity questions.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:14px 20px;overflow:hidden" class="col">
+          <div class="ai-card hi-t0"><div class="ai-h"><span class="aid"></span>Language check<span class="src">by AI · from this post</span></div>
+            <p style="font-size:12.5px">Three phrases may put people off applying or exclude them. Suggested changes keep your meaning.<span class="cite"><i data-lucide="book-open"></i>Inclusive writing guide</span></p>
+            <div class="hi-sug" style="margin-top:8px"><span><s>support rockstar</s> · support specialist</span><span class="bdg plain">Jargon</span><span class="why">Hype words make the role less clear and can deter people from applying.</span></div>
+            <div class="hi-sug"><span><s>young, energetic team</s> · a team of eight</span><span class="bdg warn">Age</span><span class="why">Signals an age preference, which German equal treatment law (AGG) forbids.</span></div>
+            <div class="hi-sug"><span><s>Native German speaker</s> · Fluent German (C1)</span><span class="bdg warn">Origin</span><span class="why">Ask for the level the job needs, not where someone grew up.</span></div>
+            <div class="acts"><span class="btn sm pri hot" data-hide=".hi-old,.hi-t0" data-show=".hi-new,.hi-t1"><i data-lucide="check"></i>Apply 3 changes</span><span class="btn sm">One by one</span><span class="nu">Not useful</span></div></div>
+          <div class="card pad hi-t1" hidden style="display:flex;gap:10px;align-items:center"><i data-lucide="circle-check" style="color:var(--green)"></i><div class="col grow"><b>3 changes applied</b><span class="tx-3" style="font-size:12px">Highlighted in green in the post</span></div><span class="btn sm ghost" data-show=".hi-old,.hi-t0" data-hide=".hi-new,.hi-t1">Undo</span></div>
+          <div class="cap" style="margin:16px 0 4px">Must-haves the review will use</div>
+          <div class="col">
+            <div class="hi-must"><i data-lucide="languages"></i><span class="grow">German C1 and written English</span></div>
+            <div class="hi-must"><i data-lucide="headset"></i><span class="grow">2 years supporting a software product</span></div>
+            <div class="hi-must"><i data-lucide="pen-line"></i><span class="grow">Clear writing under pressure (work sample)</span></div>
+            <div class="hi-must"><i data-lucide="circle-alert" style="color:var(--amber)"></i><span class="grow">Good culture fit</span><span class="bdg warn">Too vague to check</span></div>
+          </div>
+                    <div class="cap" style="margin:18px 0 10px">Approval · shared workflow</div>
+          <div class="hi-vt">
+            <div class="hi-vs done"><i><i data-lucide="check"></i></i><div><b>Requested by Lena Fischer</b><span>Backfill for a move to Product</span></div><span class="tx-3" style="font-size:11.5px">Fri</span></div>
+            <div class="hi-vs done"><i><i data-lucide="check"></i></i><div><b>Headcount · Priya Raman</b><span>Within the 2026 plan for Support</span></div><span class="tx-3" style="font-size:11.5px">Today</span></div>
+            <div class="hi-vs now"><i></i><div><b>Budget · Meera Iyer</b><span>Usually replies within a day</span></div><span class="bdg acc">Waiting</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Fair from the first sentence</b>The language check names why a phrase is a problem and offers a fix. Applying is one click and one Undo. Nothing changes until a person accepts it.</div>
+    <div><b>Must-haves, set once</b>The hiring manager's must-haves drive the CV evidence, the interview kit and the debrief grid. A vague one ("culture fit") is flagged by a plain rule, before it can bias anyone.</div>
+    <div><b>Approvals on the shared engine</b>Headcount and budget steps run on the same workflow engine as expenses and access requests, and the pay range is shown on the post, as EU pay transparency rules expect.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Pipeline -->
+<figure class="screen" id="hi-jobs" data-title="Job pipeline">
+  <div class="scap"><b>The pipeline, with promises attached</b><span>Each stage is a column. Each card carries its reply-by date, and the team is nudged before a promise slips.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.jobs" data-me="Daniel Okafor" data-counts='{"hi.jobs":"2","hi.cand":"63","hi.int":"!3"}' data-hide-links="hi.site"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Jobs</span><span class="sep">/</span><span class="cur">Senior backend engineer</span></div>
+        <div class="htabs"><span class="htab on">Pipeline<span class="ct">63</span></span><span class="htab">Interviews</span><span class="htab">Job post</span><span class="htab">Report</span></div>
+        <div class="hact"><span class="faces"><span class="av s v">DO</span><span class="av s p">PR</span><span class="av s k">TG</span><span class="av s g">AT</span></span><span class="btn"><i data-lucide="share-2"></i>Share</span><span class="btn pri"><i data-lucide="plus"></i>Add candidate</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:12px">
+        <div class="row" style="gap:10px"><div class="col grow"><div class="row" style="gap:8px"><b class="h16">Senior backend engineer · Platform</b><span class="bdg ok">Open</span></div><span class="tx-3" style="font-size:12px;margin-top:2px">Bengaluru or Berlin · opened Mon 7 Sep · 2 hires · 48 applied, 14 waiting for first review</span></div>
+          <div class="seg"><span class="on">All</span><span>Waiting on me<span class="ct"> 4</span></span><span>Past reply-by<span class="ct"> 0</span></span></div></div>
+        <div class="hi-nudge hi-ng"><i data-lucide="alarm-clock"></i><div class="col grow"><b>3 candidates reach their reply-by date in the next two days</b><span class="tx-2" style="font-size:12px">Feedback is missing from Tomás García and Aiko Tanaka. If nothing happens by Thu 22 Oct, a holding note goes to the candidates on time.</span></div><span class="btn sm hot" data-show=".hi-jt" data-hide=".hi-ng"><i data-lucide="bell-ring"></i>Nudge Tomás and Aiko</span></div>
+        <div class="hi-kan">
+          <div class="hi-col"><div class="hi-colh">First review<span class="ct">14</span><span class="sp"></span><i data-lucide="eye-off"></i></div><div class="hi-colm">Names hidden</div>
+            <div class="hi-kc blind"><div class="row"><span class="av s"><i data-lucide="user-round" style="width:11px;height:11px"></i></span><b class="trunc grow">A-1042</b></div><div class="hi-km">Careers page · applied Sat</div><span class="bdg">Reply by Fri 23 Oct</span></div>
+            <div class="hi-kc blind"><div class="row"><span class="av s"><i data-lucide="user-round" style="width:11px;height:11px"></i></span><b class="trunc grow">A-1043</b></div><div class="hi-km">Referral · applied Sat</div><span class="bdg">Reply by Fri 23 Oct</span></div>
+            <div class="hi-kc blind"><div class="row"><span class="av s"><i data-lucide="user-round" style="width:11px;height:11px"></i></span><b class="trunc grow">A-1047</b></div><div class="hi-km">Job board · applied today</div><span class="bdg">Reply by Mon 26 Oct</span></div>
+            <div class="hi-kc blind"><div class="row"><span class="av s"><i data-lucide="user-round" style="width:11px;height:11px"></i></span><b class="trunc grow">A-1048</b></div><div class="hi-km">Careers page · today</div><span class="bdg">Reply by Mon 26 Oct</span></div>
+            <div class="hi-more">and 10 more</div>
+            <div class="hi-cf"><span>Median here 2.1 days</span><span>0 past reply-by</span></div>
+          </div>
+          <div class="hi-col"><div class="hi-colh">Phone screen<span class="ct">5</span></div><div class="hi-colm">Priya · 30 min</div>
+            <div class="hi-kc"><div class="row"><span class="av s k">WC</span><b class="trunc grow">Wei Chen</b></div><div class="hi-km">Careers page · 1d in stage</div><span class="bdg acc"><i data-lucide="calendar-check"></i>Thu 10:30</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s a">MR</span><b class="trunc grow">Marco Rossi</b></div><div class="hi-km">Referral · 3d in stage</div><span class="bdg">Picking a time</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s g">FZ</span><b class="trunc grow">Fatima Zahra</b></div><div class="hi-km">Event · 2d in stage</div><span class="bdg acc"><i data-lucide="calendar-check"></i>Wed 16:00</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s p">PN</span><b class="trunc grow">Priyanka Nair</b></div><div class="hi-km">Careers page · today</div><span class="bdg">Picking a time</span></div>
+            <div class="hi-more">and 1 more</div>
+            <div class="hi-cf"><span>Median here 3.4 days</span><span>0 past reply-by</span></div>
+          </div>
+          <div class="hi-col"><div class="hi-colh">Technical<span class="ct">4</span></div><div class="hi-colm">Pair coding · 90 min</div>
+            <div class="hi-kc"><div class="row"><span class="av s o">IB</span><b class="trunc grow">Ifeoma Bello</b></div><div class="hi-km">Interviewed Fri · Aiko</div><span class="bdg warn"><i data-lucide="clock"></i>Feedback due today</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s v">JW</span><b class="trunc grow">Jonas Weber</b></div><div class="hi-km">Interviewed Fri · Tomás</div><span class="bdg warn"><i data-lucide="clock"></i>Reply by Wed</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s p">LC</span><b class="trunc grow">Leah Cohen</b></div><div class="hi-km">Agency · 2d in stage</div><span class="bdg acc"><i data-lucide="calendar-check"></i>Tue 09:00</span></div>
+            <div class="hi-more">and 1 more</div>
+            <div class="hi-cf"><span>Median here 8.9 days</span><span>2 due this week</span></div>
+          </div>
+          <div class="hi-col"><div class="hi-colh">Team interview<span class="ct">3</span></div><div class="hi-colm">3 conversations · 2h 15m</div>
+            <div class="hi-kc"><div class="row"><span class="av s a">RV</span><b class="trunc grow">Rahul Verma</b></div><div class="hi-km">Careers page · 4d in stage</div><span class="bdg acc"><i data-lucide="calendar-check"></i>Wed 11:00</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s k">SL</span><b class="trunc grow">Sara Lindgren</b></div><div class="hi-km">Referral · 1d in stage</div><span class="bdg">Picking a time</span></div>
+            <div class="hi-kc"><div class="row"><span class="av s g">KO</span><b class="trunc grow">Kwame Osei</b></div><div class="hi-km">Interviewed Thu · 4 of 4 in</div><span class="bdg warn"><i data-lucide="clock"></i>Reply by Tue</span></div>
+            <div class="hi-cf"><span>Median here 4.0 days</span><span>1 due Tue</span></div>
+          </div>
+          <div class="hi-col"><div class="hi-colh">Debrief<span class="ct">1</span></div><div class="hi-colm">Hiring manager decides</div>
+            <div class="hi-kc" data-go="hi-debrief" style="box-shadow:inset 0 0 0 1px var(--acc-100),var(--e1)"><div class="row"><span class="av s p">AS</span><b class="trunc grow">Ananya Sharma</b></div><div class="hi-km">4 of 4 feedback in</div><span class="bdg acc"><i data-lucide="users"></i>Today 14:00</span></div>
+            <div class="hi-cf"><span>Median here 1.0 day</span><span>Decide by Wed</span></div>
+          </div>
+          <div class="hi-col"><div class="hi-colh">Offer<span class="ct">1</span></div><div class="hi-colm">Approval, then letter</div>
+            <div class="hi-kc"><div class="row"><span class="av s v">NK</span><b class="trunc grow">Noah Kim</b></div><div class="hi-km">Offer sent Mon 12 Oct</div><span class="bdg ok"><i data-lucide="file-signature"></i>Opened twice</span></div>
+            <div class="hi-cf"><span>Median here 2.2 days</span><span>Offers accepted: 18 of 22</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toast hi-jt" hidden><i data-lucide="circle-check"></i>Nudged Tomás and Aiko by email and chat. Their feedback forms open in one click.<span class="u" data-hide=".hi-jt" data-show=".hi-ng">Undo</span></div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Promises on every card</b>"Reply by Fri 23 Oct" comes from the stage's reply-by setting. Past-due is a filter of its own, and it should stay at zero.</div>
+    <div><b>Nudges before, not after</b>The strip names who is holding things up and what happens if nobody acts. One click nudges them with a direct link to the form. It's a plain rule, not AI.</div>
+    <div><b>Blind until it matters</b>The first review column shows applicant numbers, not names or photos. Names appear once a person has decided on the evidence.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== First review, blind -->
+<figure class="screen" id="hi-review" data-title="Blind first review">
+  <div class="scap"><b>First review: the evidence, without the name</b><span>The reviewer sees what the applicant did, checked against the must-haves, with the CV lines cited. Name, photo, address and schools stay hidden until they decide.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.cand" data-me="Daniel Okafor" data-counts='{"hi.jobs":"2","hi.cand":"63","hi.int":"!3"}' data-hide-links="hi.site"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Senior backend engineer</span><span class="sep">/</span><span class="cur">First review</span></div>
+        <div class="htabs"><span class="htab on">To review<span class="ct">14</span></span><span class="htab">Reviewed by me</span></div>
+        <div class="hact"><span class="bdg acc"><i data-lucide="eye-off"></i>Names, photos and schools hidden</span><span class="tx-3" style="font-size:12px">1 of 14</span><span class="ib"><i data-lucide="chevron-up"></i></span><span class="ib"><i data-lucide="chevron-down"></i></span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 410px;height:100%">
+        <div style="background:var(--sunken);position:relative;overflow:hidden;border-right:1px solid var(--line);display:flex;justify-content:center;align-items:flex-start;padding-top:26px">
+          <div class="hi-cv">
+            <div class="row" style="gap:14px;align-items:flex-start"><div class="hi-photo"><i data-lucide="eye-off"></i></div><div class="col grow"><span class="hi-red" style="width:180px;height:16px"></span><span class="tx-2" style="margin-top:6px">Applicant A-1042 · Bengaluru area · <span class="hi-red" style="width:120px"></span></span><span class="tx-3"><span class="hi-red" style="width:150px"></span> · <span class="hi-red" style="width:90px"></span></span></div></div>
+            <h6>Experience</h6>
+            <div class="row"><b class="grow" style="font-weight:600">Senior software engineer · a payments company</b><span class="tx-3">2022 to now</span></div>
+            <ul><li><span class="hi-ev">Led the move of the ledger service from a monolith to Go services</span> handling 4,000 requests a second</li><li><span class="hi-ev">On-call lead for a team of six</span>; cut paging alerts by 60% in a year</li><li>Ran the Postgres 12 to 15 upgrade with <span class="hi-ev">zero downtime across 3 regions</span></li></ul>
+            <div class="row" style="margin-top:6px"><b class="grow" style="font-weight:600">Software engineer · a logistics start-up</b><span class="tx-3">2019 to 2022</span></div>
+            <ul><li>Built the Kafka event pipeline for shipment tracking, <span class="hi-ev">in Go and Kotlin</span></li><li>Owned the delivery-slot service end to end, from design doc to on-call</li></ul>
+            <div class="row" style="margin-top:6px"><b class="grow" style="font-weight:600">Career break</b><span class="tx-3">2018 to 2019</span></div>
+            <ul><li>Family care</li></ul>
+            <h6>Education</h6>
+            <div><span class="hi-red" style="width:170px"></span> · B.Tech, computer science · <span class="hi-red" style="width:40px"></span></div>
+            <h6>Also</h6>
+            <div class="tx-2">Maintainer of an open source Postgres migration tool · talks at two meetups</div>
+            <h6>Skills</h6>
+            <div class="row" style="gap:4px;flex-wrap:wrap"><span class="tag">Go</span><span class="tag">Kotlin</span><span class="tag">Postgres</span><span class="tag">Kafka</span><span class="tag">Kubernetes</span><span class="tag">Terraform</span><span class="tag">gRPC</span></div>
+            <h6>Languages</h6>
+            <div class="tx-2">English, Hindi, Kannada</div>
+            <h6>Links</h6>
+            <div class="tx-2 row" style="gap:6px"><i data-lucide="link" style="width:13px;height:13px"></i>Code profile · personal site <span class="tx-3">(opened in a safe view, names hidden)</span></div>
+          </div>
+          <div class="ai-line" style="position:absolute;bottom:14px;left:16px;background:var(--card);box-shadow:var(--e1);padding:6px 10px;border-radius:6px;color:var(--tx-2)"><i data-lucide="eye-off" style="width:13px;height:13px"></i>Hidden: name, photo, address, date of birth, school names, graduation year</div>
+        </div>
+        <div style="overflow:hidden;padding:16px 18px;background:var(--canvas)" class="col">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Must-haves, checked<span class="src">by AI · from the redacted CV</span></div>
+            <p style="font-size:12.5px">Evidence for 4 of 5 must-haves. AI doesn't score, rank or reject. You decide.</p>
+            <div class="hi-ck" style="margin-top:8px"><span>5+ years building backend services</span><span class="bdg ok">Evidence</span><span class="e">7 years across two roles<span class="cite">Exp. 1</span><span class="cite">Exp. 2</span></span></div>
+            <div class="hi-ck"><span>Go or another typed language at scale</span><span class="bdg ok">Evidence</span><span class="e">Go services at 4,000 requests a second<span class="cite">Exp. 1, line 1</span></span></div>
+            <div class="hi-ck"><span>Runs Postgres in production</span><span class="bdg ok">Evidence</span><span class="e">Zero-downtime upgrade in 3 regions<span class="cite">Exp. 1, line 3</span></span></div>
+            <div class="hi-ck"><span>On-call for services they own</span><span class="bdg ok">Evidence</span><span class="e">On-call lead for six<span class="cite">Exp. 1, line 2</span></span></div>
+            <div class="hi-ck"><span>Designed APIs used by other teams</span><span class="bdg">Not found</span><span class="e">Not mentioned. Worth asking at the phone screen, not a reason on its own.</span></div>
+            <div class="acts"><span class="btn sm">Add to my notes</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:14px 0 6px">Also from the form</div>
+          <div class="col" style="gap:6px;font-size:12.5px">
+            <div class="row"><i data-lucide="badge-check" class="tx-3"></i><span class="grow tx-2">Right to work in India</span><b>Yes</b></div>
+            <div class="row"><i data-lucide="calendar-clock" class="tx-3"></i><span class="grow tx-2">Notice period</span><b>60 days</b></div>
+          </div>
+          <div class="sp"></div>
+          <div class="card pad" style="margin-top:12px">
+            <div class="row" style="margin-bottom:10px"><b class="grow">Your decision</b><span class="tx-3" style="font-size:11.5px">Reply by Fri 23 Oct</span></div>
+            <div class="inp ph" style="margin-bottom:10px">Note for the team (optional)</div>
+            <div class="row" style="gap:6px"><span class="btn pri hot" data-show=".hi-rt"><i data-lucide="arrow-right"></i>Advance to phone screen</span><span class="btn">Hold</span><span class="btn ghost">Not this role</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toast hi-rt" hidden><i data-lucide="circle-check"></i>Advanced. A-1042 is Wei Chen. A phone screen link went out, reply by Thu 22 Oct.<span class="u" data-hide=".hi-rt">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The bias comes out before the reading starts</b>Name, photo, address, birth date, school names and graduation year are hidden. The career break stays, plainly labelled, and nothing counts it against anyone.</div>
+    <div><b>Evidence with citations, no score</b>Each must-have shows the CV line it came from, highlighted on the page. "Not found" is a question to ask, never a rejection. Personal details are removed before any model sees the CV.</div>
+    <div><b>The person decides, then sees the name</b>Advancing sends the phone screen link with its reply-by date, and only then reveals who the applicant is. Undo is right there.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Candidate side (signature) -->
+<figure class="screen" id="hi-cand" data-title="The candidate's page">
+  <div class="scap"><b>The candidate's own page: where they are, what's next, and when they'll hear</b><span>Every applicant gets a private status page with a reply-by date, the people they'll meet, how to prepare, and self-scheduling from the panel's real calendars.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="hi-cw">
+      <div class="hi-brw">
+        <div class="bar-top"><span class="d"></span><span class="d"></span><span class="d"></span><div class="url"><i data-lucide="lock"></i>careers.acmelabs.dev/you/ananya</div></div>
+        <div class="hi-site-h"><span class="hi-acme">A</span><b style="font-size:14px">Acme Labs careers</b><span class="sp"></span><span class="tx-3" style="font-size:12px">Signed in with a link sent to your email</span><span class="av s p">AS</span></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:24px;padding:20px 24px;min-height:0;overflow:hidden">
+          <div class="col" style="gap:14px">
+            <div><div class="h20">Hi Ananya, you're at the team interview</div><span class="tx-2" style="font-size:12.5px">Senior backend engineer · Platform team · Bengaluru or Berlin</span>
+              <div class="hi-trk"><div class="s done"><i><i data-lucide="check"></i></i>Applied<br>2 Oct</div><div class="s done"><i><i data-lucide="check"></i></i>Phone screen<br>6 Oct</div><div class="s done"><i><i data-lucide="check"></i></i>Technical<br>13 Oct</div><div class="s now"><i></i>Team interview<br>this week</div><div class="s"><i></i>Decision</div></div></div>
+            <div class="hi-prom"><span class="ic"><i data-lucide="calendar-clock"></i></span><div class="col grow"><b>You'll hear from us by Fri 23 Oct</b><span class="tx-2" style="font-size:12px">We reply within 3 working days of each step. So far: 3 of 3 on time.</span></div></div>
+            <div class="card" style="padding:14px 16px">
+              <div class="row" style="margin-bottom:12px"><div class="col grow"><b>Pick a time for your team interview</b><span class="tx-3" style="font-size:12px">3 conversations, 2h 15m in a row, on video · times in India (IST)</span></div><span class="fchip"><i data-lucide="globe"></i>IST</span></div>
+              <div class="hi-slots">
+                <div class="hi-day"><b>Tue 20 Oct</b><span>3 slots</span><div class="hi-slot" data-on>11:00</div><div class="hi-slot off">14:00</div><div class="hi-slot" data-on>16:30</div></div>
+                <div class="hi-day"><b>Wed 21 Oct</b><span>2 slots</span><div class="hi-slot" data-on>10:00</div><div class="hi-slot on" data-on>14:00</div><div class="hi-slot off">17:00</div></div>
+                <div class="hi-day"><b>Thu 22 Oct</b><span>2 slots</span><div class="hi-slot" data-on>09:30</div><div class="hi-slot" data-on>13:00</div><div class="hi-slot off">15:30</div></div>
+              </div>
+              <div class="row" style="margin-top:14px"><span class="btn pri hot" data-show=".hi-ok" data-hide=".hi-wait"><i data-lucide="calendar-check"></i>Confirm Wed 21 Oct, 14:00</span><span class="btn ghost">None of these work</span><span class="sp"></span><span class="tx-3" style="font-size:12px;display:flex;gap:5px;align-items:center"><i data-lucide="accessibility" style="width:14px;height:14px"></i>Need adjustments? Tell us privately</span></div>
+            </div>
+            <div class="row" style="gap:10px;padding:10px 12px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-2)"><span class="av p">PR</span><div class="col grow"><b style="font-size:12.5px;font-weight:500">Questions? Priya Raman is your contact</b><span class="tx-3" style="font-size:11.5px">Head of people · replies within a working day</span></div><span class="btn sm"><i data-lucide="message-square"></i>Write to Priya</span></div>
+            <div class="row tx-3" style="font-size:12px;gap:6px"><i data-lucide="shield-check" style="width:14px;height:14px"></i>Your data: kept until 24 Apr 2027 unless you join our talent pool.<span style="color:var(--acc)">Download</span>·<span style="color:var(--acc)">Delete my data</span></div>
+          </div>
+          <div class="col" style="gap:14px;min-width:0">
+            <div><div class="cap" style="margin-bottom:4px">Who you'll meet</div>
+              <div class="hi-meet"><span class="av v">DO</span><div><b>Daniel Okafor</b><span>Engineering manager · 45 min</span><span>Ownership, working with others</span></div></div>
+              <div class="hi-meet"><span class="av k">TG</span><div><b>Tomás García</b><span>Backend engineer, Austin · 60 min</span><span>System design</span></div></div>
+              <div class="hi-meet"><span class="av g">AT</span><div><b>Aiko Tanaka</b><span>Data scientist · 30 min</span><span>Working across teams</span></div></div></div>
+            <div class="well" style="padding:12px 14px;font-size:12px;color:var(--tx-2);line-height:1.55"><b style="display:block;color:var(--tx);margin-bottom:4px">How to prepare</b>No trick questions or brain teasers. Each conversation covers the topics listed, and every interviewer uses the same questions for every candidate. Bring a system you know well to talk through.</div>
+            <div class="tx-3" style="font-size:11.5px;display:flex;gap:6px"><i data-lucide="info" style="width:13px;height:13px;flex:none;margin-top:2px"></i>AI helped summarise your CV for the hiring team. It doesn't make decisions. You can opt out at any time.</div>
+          </div>
+        </div>
+      </div>
+      <div class="hi-phone"><div class="scr"><div class="notch"></div><div class="sbar"></div>
+        <div class="hi-mail">
+          <div class="from"><span class="hi-acme" style="width:30px;height:30px">A</span><div class="col grow"><b style="font-size:12.5px">Acme Labs hiring</b><span class="tx-3" style="font-size:11px">to Ananya · now</span></div></div>
+          <div class="hi-wait"><b style="font-size:14px;display:block;line-height:1.35">Pick a time for your team interview</b><p class="tx-2" style="margin:6px 0 0;font-size:12px;line-height:1.5">Hi Ananya, thanks for the technical round last week. The team would like to meet you. Pick any slot that suits you; we'll take care of the rest.</p><div class="btn pri sm" style="margin-top:10px;justify-content:center;width:100%">Choose a time</div></div>
+          <div class="hi-ok" hidden><b style="font-size:14px;display:block;line-height:1.35">You're booked: Wed 21 Oct, 14:00 IST</b><p class="tx-2" style="margin:6px 0 10px;font-size:12px;line-height:1.5">Three short conversations with Daniel, Tomás and Aiko, one after another. The video link is in the invite.</p>
+            <div class="hi-ics"><div class="cal"><span>Oct</span><b>22</b></div><div class="col grow"><b style="font-size:12px">Team interview, Acme Labs</b><span class="tx-3" style="font-size:11px">14:00 to 16:15 · video</span></div></div>
+            <div class="row" style="margin-top:10px;gap:6px"><span class="btn sm" style="flex:1;justify-content:center">Add to calendar</span><span class="btn sm ghost" style="flex:1;justify-content:center">Change time</span></div></div>
+          <div style="border-top:1px solid var(--line-2);padding-top:10px;font-size:11.5px" class="tx-3">You'll hear from us by <b class="tx-2" style="font-weight:500">Fri 23 Oct</b>, whatever the outcome. Your status page is always up to date.</div>
+          <div class="cap" style="margin-top:4px">Earlier</div>
+          <div class="row" style="gap:8px;font-size:11.5px"><i data-lucide="mail-check" class="tx-3" style="width:14px;height:14px"></i><span class="grow tx-2">You're through the technical round</span><span class="tx-3">15 Oct</span></div>
+          <div class="row" style="gap:8px;font-size:11.5px"><i data-lucide="mail-check" class="tx-3" style="width:14px;height:14px"></i><span class="grow tx-2">Thanks for the phone call</span><span class="tx-3">7 Oct</span></div>
+          <div class="row" style="gap:8px;font-size:11.5px"><i data-lucide="mail-check" class="tx-3" style="width:14px;height:14px"></i><span class="grow tx-2">We've got your application</span><span class="tx-3">2 Oct</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A promise the candidate can see</b>"You'll hear from us by Fri 23 Oct, whatever the outcome." The date is the same one on the team's pipeline card, so the system holds everyone to it.</div>
+    <div><b>Self-scheduling from real calendars</b>Slots come from the panel's free time across Bengaluru, Berlin and Austin, shown in the candidate's own time zone. Booking creates every invite and the video link.</div>
+    <div><b>Care, written down</b>Who they'll meet and why, how to prepare, a private way to ask for adjustments, what happens to their data, and a plain note on where AI was used.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Interview kit -->
+<figure class="screen" id="hi-kit" data-title="Interview kit">
+  <div class="scap"><b>The interview kit, and feedback from your own notes</b><span>Questions per competency with what good looks like. The interviewer rates each competency; AI only turns their own notes into evidence.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.int" data-me="Tomás García" data-counts='{"hi.int":"!1"}' data-hide-links="hi.jobs,hi.off,hi.site"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Interviews</span><span class="sep">/</span><span class="cur">Ananya Sharma · System design</span></div>
+        <div class="htabs"><span class="htab on">Kit</span><span class="htab">CV</span><span class="htab">Earlier stages</span></div>
+        <div class="hact"><span class="bdg warn"><i data-lucide="clock"></i>Feedback due today 18:00</span><span class="btn pri hot" data-show=".hi-kt"><i data-lucide="send"></i>Submit feedback</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 430px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px">
+          <div class="row" style="margin-bottom:12px"><div class="col grow"><b class="h16">System design · 60 min</b><span class="tx-3" style="font-size:12px">Thu 15 Oct, 10:00 Austin · same questions for every candidate in this stage</span></div><span class="btn sm ghost"><i data-lucide="file-text"></i>CV side by side</span></div>
+          <div class="card">
+            <div class="hi-q"><div class="row"><span class="bdg acc">Designing for failure</span><span class="tx-3" style="font-size:11.5px">25 min</span></div>
+              <div class="qt">Design a receiver for payment webhooks that can be retried by the sender. How do you make sure each payment is applied exactly once?</div>
+              <div class="fu"><i data-lucide="corner-down-right"></i>What happens if your database is down for ten minutes?</div>
+              <div class="fu"><i data-lucide="corner-down-right"></i>How would you know it's broken before a customer does?</div>
+              <div class="hi-good"><b style="color:var(--tx);font-weight:500">What good looks like:</b> idempotency keys with a clear lifetime, a retry policy with backoff and a dead-letter path, and checks on ordering. Raises monitoring without being asked.</div>
+              <div class="hi-rate"><span><em class="n" style="font-style:normal">1</em>Not shown</span><span><em class="n" style="font-style:normal">2</em>Some</span><span class="on" data-on><em class="n" style="font-style:normal">3</em>Clear</span><span data-on><em class="n" style="font-style:normal">4</em>Exceptional</span></div></div>
+            <div class="hi-q"><div class="row"><span class="bdg acc">Trade-offs and clarity</span><span class="tx-3" style="font-size:11.5px">20 min</span></div>
+              <div class="qt">Traffic grows ten times in a year. What would you change first, and what would you deliberately leave alone?</div>
+              <div class="fu"><i data-lucide="corner-down-right"></i>What would you need to measure to decide?</div>
+              <div class="hi-rate"><span data-on><em class="n" style="font-style:normal">1</em>Not shown</span><span data-on><em class="n" style="font-style:normal">2</em>Some</span><span data-on><em class="n" style="font-style:normal">3</em>Clear</span><span class="on" data-on><em class="n" style="font-style:normal">4</em>Exceptional</span></div></div>
+            <div class="hi-q"><div class="row"><span class="bdg acc">Operating in production</span><span class="tx-3" style="font-size:11.5px">15 min</span></div>
+              <div class="qt">Tell me about the last incident you were on call for. What did you change afterwards?</div>
+              <div class="hi-rate"><span data-on><em class="n" style="font-style:normal">1</em>Not shown</span><span data-on><em class="n" style="font-style:normal">2</em>Some</span><span class="on" data-on><em class="n" style="font-style:normal">3</em>Clear</span><span data-on><em class="n" style="font-style:normal">4</em>Exceptional</span></div></div>
+          </div>
+          <div class="card" style="margin-top:12px;padding:14px 16px">
+            <div class="row"><b class="grow">Overall recommendation</b><span class="tx-3" style="font-size:11.5px">No middle option</span></div>
+            <div class="hi-rate"><span data-on>Strong no</span><span data-on>No</span><span class="on" data-on>Yes</span><span data-on>Strong yes</span></div>
+            <div class="inp" style="margin-top:10px;font-size:12.5px">Would hire. Raise working across teams with Daniel, I only saw it in passing.</div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:8px"><i data-lucide="notebook-pen" class="tx-3"></i><b class="grow">Your notes</b><span class="tx-3" style="font-size:11.5px">Typed during the call</span></div>
+          <div class="hi-notes">
+            <div class="ln"><span>1</span><span>idem key in header, store 24h, then expire</span></div>
+            <div class="ln"><span>2</span><span>retries: exp backoff + DLQ, alerts on DLQ depth</span></div>
+            <div class="ln"><span>3</span><span>ordering only after I asked, then good answer</span></div>
+            <div class="ln"><span>4</span><span>10x: shard by merchant, keep monolith for admin</span></div>
+            <div class="ln"><span>5</span><span>clear diagram, checked assumptions twice</span></div>
+            <div class="ln"><span>6</span><span>incident: bad migration, added a dry-run step</span></div>
+          </div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Evidence for your scorecard<span class="src">by AI · from your notes only</span></div>
+            <p style="font-size:12.5px"><b style="font-weight:500">Designing for failure:</b> idempotency keys with a 24-hour lifetime, backoff with a dead-letter queue and alerting on its depth.<span class="cite">Line 1</span><span class="cite">Line 2</span> Covered ordering once prompted.<span class="cite">Line 3</span></p>
+            <p style="font-size:12.5px;margin-top:6px"><b style="font-weight:500">Trade-offs:</b> sharding by merchant while keeping admin in the monolith, a deliberate choice of what not to change.<span class="cite">Line 4</span></p>
+            <p style="font-size:12.5px;margin-top:6px"><b style="font-weight:500">Production:</b> added a dry-run step after a bad migration.<span class="cite">Line 6</span></p>
+            <div class="acts"><span class="btn sm">Add to scorecard</span><span class="btn sm ghost">Edit first</span><span class="nu">Not useful</span></div></div>
+          <div class="row" style="gap:10px;padding:10px 12px;border-radius:8px;background:var(--sunken);font-size:12px;margin-top:12px"><i data-lucide="lock" class="tx-3"></i><span class="tx-2 grow">The panel's feedback opens for you after you submit yours.</span></div>
+          <div class="cap" style="margin:16px 0 8px">This interview</div>
+          <div class="col" style="gap:7px;font-size:12.5px">
+            <div class="row"><i data-lucide="video" class="tx-3"></i><span class="grow tx-2">Video call, 58 min</span><span class="tx-3">From the calendar</span></div>
+            <div class="row"><i data-lucide="list-checks" class="tx-3"></i><span class="grow tx-2">All 3 competencies rated</span><span class="tx-3">Ready to submit</span></div>
+            <div class="row"><i data-lucide="eye-off" class="tx-3"></i><span class="grow tx-2">Candidate never sees your notes</span><span class="tx-3">Kept 12 months</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toast hi-kt" hidden><i data-lucide="circle-check"></i>Feedback sent. 3 of 4 in. You can now read the others.<span class="u" data-hide=".hi-kt">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Same questions, same bar</b>Each competency has a main question, follow-ups and what good looks like, written once in the template so every candidate gets the same interview.</div>
+    <div><b>Notes in, evidence out</b>AI reads only the interviewer's own notes and organises them by competency, citing the note line. It never adds an opinion, and the interviewer sets every rating.</div>
+    <div><b>Independent by default</b>Other feedback stays locked until yours is in, so the first strong opinion can't anchor the rest. The interviewer sees only the kit, CV and earlier stages they need.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Debrief -->
+<figure class="screen" id="hi-debrief" data-title="Debrief and decision">
+  <div class="scap"><b>The debrief: disagreement visible, decision recorded</b><span>Every competency from every interviewer on one grid. AI points out where the panel agrees and where feedback lacks evidence. The hiring manager decides and writes why.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.cand" data-me="Daniel Okafor" data-counts='{"hi.jobs":"2","hi.cand":"63","hi.int":"!3"}' data-hide-links="hi.site"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Senior backend engineer</span><span class="sep">/</span><span>Ananya Sharma</span><span class="sep">/</span><span class="cur">Debrief</span></div>
+        <div class="htabs"><span class="htab on">Debrief</span><span class="htab">Feedback<span class="ct">4</span></span><span class="htab">Timeline</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Today 14:00 · 4 of 4 in</span><span class="btn"><i data-lucide="video"></i>Join</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px" class="col">
+          <div class="row" style="margin-bottom:14px;gap:12px"><span class="av l p">AS</span><div class="col grow"><b class="h16">Ananya Sharma</b><span class="tx-3" style="font-size:12px">Senior backend engineer · Careers page · in process 17 days · reply by Fri 23 Oct</span></div><span class="seg"><span class="on">By competency</span><span>By interviewer</span></span></div>
+          <div class="card" style="overflow:hidden">
+            <table class="hi-dg"><thead><tr><th style="color:var(--tx-3);font-size:12px">Competency</th>
+              <th><div class="row"><span class="av s k">TG</span><div class="col"><b style="font-weight:500">Tomás</b><span class="tx-3" style="font-size:11px">System design</span></div></div></th>
+              <th><div class="row"><span class="av s g">AT</span><div class="col"><b style="font-weight:500">Aiko</b><span class="tx-3" style="font-size:11px">Across teams</span></div></div></th>
+              <th><div class="row"><span class="av s v">DO</span><div class="col"><b style="font-weight:500">Daniel</b><span class="tx-3" style="font-size:11px">Ownership</span></div></div></th>
+              <th><div class="row"><span class="av s a">SR</span><div class="col"><b style="font-weight:500">Sanjay</b><span class="tx-3" style="font-size:11px">Technical</span></div></div></th></tr></thead><tbody>
+              <tr><td>Designing for failure</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td><td class="tx-3">Not asked</td><td class="tx-3">Not asked</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><em>4</em></span></td></tr>
+              <tr><td>Trade-offs and clarity</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><em>4</em></span></td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td><td class="tx-3">Not asked</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td></tr>
+              <tr><td>Operating in production</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td><td class="tx-3">Not asked</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td></tr>
+              <tr><td>Working across teams</td><td class="tx-3">Not asked</td><td><span class="hi-sc split"><i class="f"></i><i class="f"></i><i></i><i></i><em>2</em></span></td><td><span class="hi-sc split"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><em>4</em></span></td><td class="tx-3">Not asked</td></tr>
+              <tr><td>Ownership</td><td class="tx-3">Not asked</td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><em>3</em></span></td><td><span class="hi-sc"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><em>4</em></span></td><td class="tx-3">Not asked</td></tr>
+              <tr style="background:var(--sunken)"><td style="color:var(--tx);font-weight:500">Overall</td><td><span class="bdg ok">Yes</span></td><td><span class="bdg">Mixed</span></td><td><span class="bdg ok">Strong yes</span></td><td><span class="bdg ok">Yes</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="row tx-3" style="font-size:11.5px;margin-top:8px;gap:6px"><i data-lucide="info" style="width:13px;height:13px"></i>Amber marks a competency where interviewers differ by two points or more. All feedback was written before anyone saw the others.</div>
+          <div class="card pad" style="margin-top:14px">
+            <div class="row" style="margin-bottom:10px"><b class="grow">Decision</b><span class="tx-3" style="font-size:11.5px">Recorded by the hiring manager · visible to the panel</span></div>
+            <div class="row" style="gap:10px"><span class="seg"><span class="on">Hire</span><span>Don't hire</span><span>Hold</span></span><div class="inp grow" style="font-size:12.5px">Strong on failure and trade-offs, consistent across 3 interviewers. Cross-team gap is specific and coachable.</div></div>
+            <div class="row" style="margin-top:12px"><span class="tx-3" style="font-size:12px">Next: offer for L4, approval by Priya and Meera</span><span class="sp"></span><span class="btn pri hot" data-go="hi-offer"><i data-lucide="file-signature"></i>Hire and draft the offer</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="card pad" style="display:flex;gap:10px;align-items:center"><i data-lucide="calendar-clock" class="tx-3"></i><div class="col grow"><b style="font-size:12.5px">Ananya's page says Fri 23 Oct</b><span class="tx-3" style="font-size:11.5px">4 days left · offer approvals take about 1 day</span></div></div>
+            <div class="card pad" style="display:flex;gap:10px;align-items:center"><i data-lucide="users" class="tx-3"></i><div class="col grow"><b style="font-size:12.5px">2 hires for this role</b><span class="tx-3" style="font-size:11.5px">Kwame Osei is next, debrief on Tue</span></div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col" >
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Where the panel stands<span class="src">by AI · from 4 scorecards</span></div>
+            <p style="font-size:12.5px">All four agree on technical depth: idempotency and failure handling came up unprompted in two interviews.<span class="cite">Tomás</span><span class="cite">Sanjay</span> The one split is working across teams: Aiko saw little evidence of influencing other teams, Daniel heard a detailed example from her last role.<span class="cite">Aiko</span><span class="cite">Daniel</span></p>
+            <div class="acts"><span class="btn sm">Open both notes</span><span class="nu">Not useful</span></div></div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Feedback check<span class="src">by AI · from the written feedback</span></div>
+            <p style="font-size:12.5px">One comment doesn't point to a competency: "not sure she'd gel with the Berlin crowd".<span class="cite">Aiko, line 4</span> Ask for the evidence behind it, or leave it out of the decision.</p>
+            <div class="acts"><span class="btn sm">Ask Aiko for evidence</span><span class="btn sm ghost">Leave it out</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Before the decision</div>
+          <div class="col" style="gap:7px;font-size:12.5px">
+            <div class="row"><i data-lucide="circle-check" style="color:var(--green)"></i><span class="grow tx-2">Every must-have assessed by at least one person</span></div>
+            <div class="row"><i data-lucide="circle-check" style="color:var(--green)"></i><span class="grow tx-2">All feedback written independently</span></div>
+            <div class="row"><i data-lucide="circle-check" style="color:var(--green)"></i><span class="grow tx-2">Same kit as the other 2 finalists</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Disagreement you can see</b>The grid shows every rating against every competency, and marks the splits in amber. The debrief talks about the split, not about who's most senior.</div>
+    <div><b>A check on the words</b>Feedback that points to no competency ("wouldn't gel") is called out with the line cited. The manager chooses: ask for evidence, or leave it out.</div>
+    <div><b>The reason is written down</b>The decision and its reason stay on the record for the panel, for the candidate's feedback if asked, and for any audit.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Offer -->
+<figure class="screen" id="hi-offer" data-title="Offer and hand-off">
+  <div class="scap"><b>The offer: in band, approved, and ready for day one</b><span>Terms are checked against the pay band and team peers, the approval chain runs itself, and acceptance starts onboarding in the other Bemmoly products.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.off" data-me="Priya Raman" data-counts='{"hi.jobs":"9","hi.off":"!1","hi.int":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Offers</span><span class="sep">/</span><span class="cur">Ananya Sharma</span></div>
+        <div class="htabs"><span class="htab on">Terms</span><span class="htab">Letter</span><span class="htab">History</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="eye"></i>Preview as Ananya</span><span class="btn pri hot" data-show=".hi-ot"><i data-lucide="check"></i>Approve, send to Meera</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px" class="col">
+          <div class="row" style="margin-bottom:14px;gap:12px"><span class="av l p">AS</span><div class="col grow"><b class="h16">Senior backend engineer, L4</b><span class="tx-3" style="font-size:12px">Platform team · Bengaluru, hybrid · reports to Daniel Okafor · start Mon 30 Nov 2026</span></div><span class="bdg acc">Draft v2</span></div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+            <div class="card pad">
+              <div class="cap">Base salary, yearly</div><div class="big num" style="margin-top:4px">₹46,00,000</div>
+              <div class="hi-band"><div class="peer" style="left:21%;width:58%"></div><div class="pin" style="left:57%"><b>57% of band</b></div></div>
+              <div class="row tx-3" style="font-size:11.5px"><span>₹38L</span><span class="sp"></span><span>L4 band, India</span><span class="sp"></span><span>₹52L</span></div>
+              <div class="tx-2" style="font-size:12px;margin-top:8px">Within ±5% of the 4 L4 engineers on Platform. Calculated from People, no names shown.</div>
+            </div>
+            <div class="card pad col" style="gap:8px;font-size:12.5px">
+              <div class="row"><span class="grow tx-2">Annual bonus target</span><b class="num">₹4,00,000</b></div>
+              <div class="row"><span class="grow tx-2">Joining bonus</span><b class="num">₹2,00,000</b></div>
+              <div class="row"><span class="grow tx-2">Stock options</span><b class="num">1,200 over 4 years</b></div>
+              <div class="row"><span class="grow tx-2">Notice buy-out</span><b>Not needed</b></div>
+              <div class="row"><span class="grow tx-2">Offer valid until</span><b>Fri 30 Oct</b></div>
+              <div class="row" style="border-top:1px solid var(--line-2);padding-top:8px"><span class="grow">First-year total</span><b class="num">₹52,00,000</b></div>
+            </div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Letter · from the template "Offer, India, full time"</div>
+          <div class="hi-letter">
+            <p style="margin:0 0 8px">Dear <span class="hi-tok">Ananya</span>,</p>
+            <p style="margin:0 0 8px">We'd love you to join Acme Labs as <span class="hi-tok">Senior backend engineer</span> on the <span class="hi-tok">Platform</span> team, starting <span class="hi-tok">Mon 30 Nov 2026</span>. Daniel and the panel were impressed by how you design for failure, and we think you'll do some of your best work here.</p>
+            <p style="margin:0" class="tx-2">Your base salary will be <span class="hi-tok">₹46,00,000</span> a year, with a bonus target of <span class="hi-tok">₹4,00,000</span>…</p>
+          </div>
+          <div class="row tx-3" style="font-size:11.5px;margin-top:8px;gap:6px"><i data-lucide="pen-line" style="width:13px;height:13px"></i>Signed through the e-signature connector · accepts in her status page</div>
+          <div class="card pad" style="margin-top:12px">
+            <div class="row" style="margin-bottom:8px"><b class="grow">Checks before it's sent</b><span class="tx-3" style="font-size:11.5px">Rules, not AI</span></div>
+            <div class="col" style="gap:7px;font-size:12.5px">
+              <div class="row"><i data-lucide="circle-check" style="color:var(--green)"></i><span class="grow tx-2">Inside the L4 band for India, and within ±5% of team peers</span></div>
+              <div class="row"><i data-lucide="circle-check" style="color:var(--green)"></i><span class="grow tx-2">Same level and formula as the other L4 offer this quarter</span></div>
+              <div class="row"><i data-lucide="circle-alert" style="color:var(--amber)"></i><span class="grow tx-2">Joining bonus needs a reason: covers a bonus she gives up by leaving in November</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="cap" style="margin-bottom:10px">Approvals · shared workflow</div>
+          <div class="hi-vt">
+            <div class="hi-vs done"><i><i data-lucide="check"></i></i><div><b>Daniel Okafor, hiring manager</b><span>Decided to hire · today 14:40</span></div></div>
+            <div class="hi-vs now"><i></i><div><b>You, head of people</b><span>Above band midpoint, needs People</span></div><span class="bdg acc">Now</span></div>
+            <div class="hi-vs"><i></i><div><b>Meera Iyer, finance</b><span>First-year total over ₹50L</span></div></div>
+            <div class="hi-vs"><i></i><div><b>Letter to Ananya</b><span>Before her reply-by, Fri 23 Oct</span></div></div>
+          </div>
+          <div class="cap" style="margin:18px 0 4px">When Ananya accepts</div>
+          <div class="col">
+            <div class="hi-ho"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><span class="grow">Person record and onboarding plan in People</span><span class="tx-3" style="font-size:11.5px">Auto</span></div>
+            <div class="hi-ho"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span class="grow">Laptop request in Assets, by 23 Nov</span><span class="tx-3" style="font-size:11.5px">Ask Rohan</span></div>
+            <div class="hi-ho"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span class="grow">Engineer access bundle, live on 30 Nov</span><span class="tx-3" style="font-size:11.5px">Ask Rohan</span></div>
+            <div class="hi-ho"><span class="tile" style="background:var(--m-work)"><i data-lucide="square-kanban"></i></span><span class="grow">Buddy: Tomás García, first-week plan in Work</span><span class="tx-3" style="font-size:11.5px">Daniel</span></div>
+          </div>
+          <div class="card pad" style="margin-top:16px"><div class="row"><span class="av s o">KN</span><div class="col grow"><b style="font-size:12.5px">Kavya Nair accepted on 5 Oct</b><span class="tx-3" style="font-size:11.5px">Frontend engineer · joins Mon 2 Nov · onboarding 9 of 14 done</span></div><span style="color:var(--acc);font-size:12px">Open in People</span></div></div>
+        </div>
+      </div>
+      <div class="toast hi-ot" hidden><i data-lucide="circle-check"></i>Approved. Meera has it, usually within a day. Ananya's page still says Fri 23 Oct.<span class="u" data-hide=".hi-ot">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Fair pay, checked before it's sent</b>The offer sits on the pay band, next to the range team peers are paid, so equity problems show before they're signed. Peers stay anonymous, and it's arithmetic, not AI.</div>
+    <div><b>Approvals by rule</b>The chain is built from the offer itself: above the band midpoint adds People, over ₹50L adds Finance. Same workflow engine as every other Bemmoly product.</div>
+    <div><b>Accept, and day one is ready</b>The person record, the onboarding plan, the laptop and the access bundle are prepared from the offer. Products that aren't installed fall back to a task for the named owner.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Reports -->
+<figure class="screen" id="hi-ins" data-title="Hiring reports">
+  <div class="scap"><b>Reports: speed, quality, promises kept and fairness of the funnel</b><span>Time to hire and pass-through by stage, the sources that lead to people who stay, and where the funnel narrows for any group, shown only where lawful.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.jobs" data-me="Priya Raman" data-counts='{"hi.jobs":"9","hi.off":"!1","hi.int":"4"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Jobs</span><span class="sep">/</span><span class="cur">Reports</span></div>
+        <div class="htabs"><span class="htab">Open jobs<span class="ct">9</span></span><span class="htab on">Reports</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="briefcase"></i>All jobs</span><span class="fchip"><i data-lucide="calendar"></i>Jul to Sep 2026</span><span class="btn"><i data-lucide="download"></i>Export</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:12px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l"><i data-lucide="timer"></i>Median time to hire</div><div class="v num">31 days</div><div class="d"><span class="up">−6 days</span> vs Apr to Jun</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="calendar-clock"></i>Reply-by kept</div><div class="v num">97.8%</div><div class="d">1,256 of 1,284 candidates on time</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="file-signature"></i>Offers accepted</div><div class="v num">18 of 22</div><div class="d">2 took counter-offers, 2 relocated</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="heart-handshake"></i>Candidates' rating</div><div class="v num">4.6 of 5</div><div class="d">212 replies, hired or not</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:12px;flex:1;min-height:0">
+          <div class="col" style="gap:12px;min-height:0">
+            <div class="card" style="padding:14px 18px">
+              <div class="row" style="margin-bottom:8px"><b class="grow">Pass-through by stage</b><span class="tx-3" style="font-size:11.5px;width:58px;text-align:right">People</span><span class="tx-3" style="font-size:11.5px;width:56px;text-align:right">Median</span></div>
+              <div class="hi-fn"><span>Applied</span><div><div class="b" style="width:100%"></div></div><b class="num" style="text-align:right">1,284</b><span class="pt">—</span></div>
+              <div class="hi-fn"><span>First review</span><div><div class="b" style="width:24%"></div></div><b class="num" style="text-align:right">312</b><span class="pt">2.1 d</span></div>
+              <div class="hi-fn"><span>Phone screen</span><div><div class="b" style="width:14.6%"></div></div><b class="num" style="text-align:right">188</b><span class="pt">3.4 d</span></div>
+              <div class="hi-fn"><span>Technical</span><div><div class="b" style="width:7.5%;background:var(--amber)"></div></div><b class="num" style="text-align:right">96</b><span class="pt" style="color:var(--amber-tx)">8.9 d</span></div>
+              <div class="hi-fn"><span>Team interview</span><div><div class="b" style="width:4.2%"></div></div><b class="num" style="text-align:right">54</b><span class="pt">4.0 d</span></div>
+              <div class="hi-fn"><span>Offer</span><div><div class="b" style="width:1.7%"></div></div><b class="num" style="text-align:right">22</b><span class="pt">2.2 d</span></div>
+              <div class="hi-fn"><span>Hired</span><div><div class="b" style="width:1.4%;background:var(--green)"></div></div><b class="num" style="text-align:right">18</b><span class="pt">5.5 d</span></div>
+            </div>
+            <div class="card" style="padding:14px 18px;flex:1;min-height:0">
+              <div class="row"><b class="grow">Women's share by stage</b><span class="bdg plain"><i data-lucide="shield-check"></i>Self-reported · India and Germany · groups under 10 hidden</span></div>
+              <div class="hi-dv">
+                <div><b>31%</b><i style="height:124px"></i>Applied</div><div><b>31%</b><i style="height:124px"></i>Review</div><div><b>29%</b><i style="height:116px"></i>Phone</div><div class="dip"><b>22%</b><i style="height:88px"></i>Technical</div><div><b>26%</b><i style="height:104px"></i>Team</div><div><b>28%</b><i style="height:112px"></i>Hired</div>
+              </div>
+            </div>
+          </div>
+          <div class="col" style="gap:12px;min-height:0">
+            <div class="card" style="overflow:hidden">
+              <div class="card-h">Source quality<span class="tx-3 sp">hires still here after 90 days</span></div>
+              <table class="tbl"><thead><tr><th>Source</th><th class="r">Applied</th><th class="r">Team stage</th><th class="r">Hired</th><th class="r">90 days</th></tr></thead><tbody>
+                <tr><td>Referrals</td><td class="r num">146</td><td class="r num">19%</td><td class="r num">7</td><td class="r num">7 of 7</td></tr>
+                <tr><td>Careers page</td><td class="r num">512</td><td class="r num">4%</td><td class="r num">6</td><td class="r num">6 of 6</td></tr>
+                <tr><td>Professional network</td><td class="r num">388</td><td class="r num">2%</td><td class="r num">3</td><td class="r num">2 of 3</td></tr>
+                <tr><td>Job boards</td><td class="r num">204</td><td class="r num">1%</td><td class="r num">1</td><td class="r num">1 of 1</td></tr>
+                <tr><td style="border-bottom:0">Agencies</td><td class="r num" style="border-bottom:0">34</td><td class="r num" style="border-bottom:0">9%</td><td class="r num" style="border-bottom:0">1</td><td class="r num" style="border-bottom:0">0 of 1</td></tr>
+              </tbody></table>
+            </div>
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>Worth a look<span class="src">by AI · from stage reports and kit versions</span></div>
+              <p style="font-size:12.5px">The technical stage is the slowest (8.9 days) and the only place women's share drops, from 29% to 22%. The drop sits in the take-home task, which also causes most of the wait. The live pair-coding round, used for Berlin roles, shows neither.<span class="cite">Technical stage</span><span class="cite">Take-home v3</span></p>
+              <div class="acts"><span class="btn sm">Open the stage report</span><span class="nu">Not useful</span></div></div>
+            <div class="card" style="padding:12px 16px;flex:1;min-height:0">
+              <div class="row" style="margin-bottom:8px"><b class="grow">What candidates said</b><span class="tx-3" style="font-size:11.5px">212 replies, tagged by the people team</span></div>
+              <div class="col" style="gap:7px;font-size:12.5px">
+                <div class="row"><i data-lucide="thumbs-up" class="tx-3"></i><span class="grow tx-2">Picking my own interview time</span><b class="num">64</b></div>
+                <div class="row"><i data-lucide="thumbs-up" class="tx-3"></i><span class="grow tx-2">Knowing when I'd hear back</span><b class="num">41</b></div>
+                <div class="row"><i data-lucide="thumbs-down" class="tx-3"></i><span class="grow tx-2">The take-home took too long</span><b class="num">23</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The promise is a metric</b>"Reply-by kept" sits next to time to hire. It is the number that tells a head of people whether candidates are being treated well.</div>
+    <div><b>Quality, not just volume</b>Sources are judged by who reaches the team stage and who's still here after 90 days, so a big board with few hires stops looking good.</div>
+    <div><b>Fairness of the funnel, where lawful</b>Self-reported, aggregate only, small groups hidden, and switched on per country. AI points to a likely cause; people decide what to change.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Every company hires differently: a bakery hiring seasonal staff, a bank hiring under regulators, a start-up hiring its first engineers. Nothing is hard-coded. Six things change from Hiring › Settings, without code, and each can be exported as a file so it can be reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Stages and promises</h3><p>Process templates per kind of role ("Engineering, experienced", "Hourly, stores"). Each stage has a type, an owner, a reply-by time, whether names are hidden, and the email it sends. Jobs start from a template and can adjust it.</p></div>
+  <div><h3>Scorecards and competencies</h3><p>One competency library shared with Performance. Scorecard templates pick competencies per role and level, with questions, follow-ups and "what good looks like" for each, and a rating scale the company names.</p></div>
+  <div><h3>Approval chains</h3><p>Requisitions and offers run on the shared workflow engine. Steps by rule: above the band midpoint, over a total, a new headcount, a role in a regulated team. Delegates on leave come from the person directory.</p></div>
+  <div><h3>Careers page and brand</h3><p>A page builder with the company's logo, colours, fonts, team stories and benefits, served from the company's own domain. Job posts, the application form and the candidate status page all wear the brand.</p></div>
+  <div><h3>Email templates</h3><p>Every candidate email is a template with fields, per language and per stage: invite, holding note, decline, offer. A tone check flags cold or legalistic wording. Candidate-facing words are reviewed once, not written each time.</p></div>
+  <div><h3>Privacy and retention</h3><p>Per country: legal basis, how long applications are kept, talent pool consent, which voluntary questions may be asked, whether AI may read CVs, and how deletion requests run. Typed custom fields on jobs and applications.</p></div>
+</div>
+
+<div class="screens" id="hicfg">
+<figure class="screen" id="hi-cfg-proc" data-title="Stages and scorecards">
+  <div class="scap"><b>A process template: stages, promises and the scorecard</b><span>People ops sets the shape once. Each stage carries its reply-by time and fairness switches; the scorecard pulls from the shared competency library.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Process templates</span></div>
+        <div class="htabs"><span class="htab on">Processes</span><span class="htab">Scorecards</span><span class="htab">Approvals</span><span class="htab">Emails</span><span class="htab">Careers page</span><span class="htab">Privacy</span></div>
+        <div class="hact"><span class="ib"><i data-lucide="file-code-2"></i></span><span class="btn pri">Save</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:20px 24px">
+          <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Engineering, experienced</div><span class="tx-3" style="font-size:12px">Used by 6 open jobs · last edited by Priya Raman on Mon 12 Oct</span></div><span class="seg"><span class="on">Engineering</span><span>Support</span><span>Hourly</span></span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="hi-stg h"><span></span><span></span><span>Stage</span><span>Reply-by</span><span>Names</span><span>Email</span></div>
+            <div class="hi-stg"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">1</span><div class="col"><b style="font-weight:500">First review</b><span class="tx-3" style="font-size:11.5px">Review · CV evidence</span></div><span>5 working days</span><span class="row" style="gap:6px"><span class="sw on"></span>Hidden</span><span class="tag">Thanks for applying</span></div>
+            <div class="hi-stg"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">2</span><div class="col"><b style="font-weight:500">Phone screen</b><span class="tx-3" style="font-size:11.5px">Screen · 30 min</span></div><span>3 working days</span><span class="row" style="gap:6px"><span class="sw"></span>Shown</span><span class="tag">Pick a time</span></div>
+            <div class="hi-stg"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">3</span><div class="col"><b style="font-weight:500">Technical</b><span class="tx-3" style="font-size:11.5px">Pair coding · 90 min</span></div><span>3 working days</span><span class="row" style="gap:6px"><span class="sw"></span>Shown</span><span class="tag">Pick a time</span></div>
+            <div class="hi-stg"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">4</span><div class="col"><b style="font-weight:500">Team interview</b><span class="tx-3" style="font-size:11.5px">3 conversations</span></div><span>3 working days</span><span class="row" style="gap:6px"><span class="sw"></span>Shown</span><span class="tag">Pick a time</span></div>
+            <div class="hi-stg"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">5</span><div class="col"><b style="font-weight:500">Debrief</b><span class="tx-3" style="font-size:11.5px">Feedback locked</span></div><span>2 working days</span><span class="tx-3">n/a</span><span class="tx-3">None</span></div>
+            <div class="hi-stg" style="border-bottom:0"><i data-lucide="grip-vertical" class="tx-3"></i><span class="n">6</span><div class="col"><b style="font-weight:500">Offer</b><span class="tx-3" style="font-size:11.5px">Chain "Offers, India"</span></div><span>Offer validity</span><span class="tx-3">n/a</span><span class="tag">Your offer</span></div>
+          </div>
+          <div class="card pad" style="margin-top:14px;display:flex;gap:12px;align-items:flex-start"><i data-lucide="calendar-clock" class="tx-3" style="margin-top:2px"></i><div class="col grow"><b>When a reply-by date is near</b><span class="tx-2" style="font-size:12.5px;margin-top:2px">One working day before: nudge the stage owner and anyone with missing feedback. On the day: send the holding note "We need a little longer, you'll hear by…" with a new date, once. A second slip goes to the head of people.</span></div><span class="btn sm">Edit</span></div>
+          <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px;margin-top:12px">
+            <div class="card pad"><div class="cap" style="margin-bottom:6px">Holding note · English</div><div style="font-size:12.5px;line-height:1.55" class="tx-2">Hi <span class="hi-tok">first name</span>, we haven't finished the <span class="hi-tok">stage</span> for every candidate yet and didn't want you to wait in silence. You'll hear from us by <span class="hi-tok">new date</span>.</div></div>
+            <div class="card pad"><div class="cap" style="margin-bottom:6px">Jobs using this template</div><div class="col" style="gap:5px;font-size:12.5px"><span>Senior backend engineer</span><span>Frontend engineer</span><span>Data engineer</span><span class="tx-3">and 3 more</span></div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:hidden" class="col">
+          <div class="row"><b class="grow">Scorecard: Backend engineer, L4</b><span class="bdg"><i data-lucide="target"></i>Shared with Performance</span></div>
+          <span class="tx-3" style="font-size:12px;margin:4px 0 10px">Competencies from the company library. The same names appear in reviews after the hire.</span>
+          <div class="col">
+            <div class="hi-comp"><i data-lucide="shield-alert" class="tx-3"></i><span class="grow">Designing for failure</span><span class="tx-3" style="font-size:11.5px">Technical, System design</span></div>
+            <div class="hi-comp"><i data-lucide="scale" class="tx-3"></i><span class="grow">Trade-offs and clarity</span><span class="tx-3" style="font-size:11.5px">System design</span></div>
+            <div class="hi-comp"><i data-lucide="activity" class="tx-3"></i><span class="grow">Operating in production</span><span class="tx-3" style="font-size:11.5px">3 stages</span></div>
+            <div class="hi-comp"><i data-lucide="users-round" class="tx-3"></i><span class="grow">Working across teams</span><span class="tx-3" style="font-size:11.5px">Team interview</span></div>
+            <div class="hi-comp"><i data-lucide="flag" class="tx-3"></i><span class="grow">Ownership</span><span class="tx-3" style="font-size:11.5px">Team interview</span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Rating scale</div>
+          <div class="row" style="gap:4px;flex-wrap:wrap"><span class="tag">1 Not shown</span><span class="tag">2 Some</span><span class="tag">3 Clear</span><span class="tag">4 Exceptional</span></div>
+          <div class="cap" style="margin:16px 0 8px">Overall recommendation</div>
+          <div class="row" style="gap:4px;flex-wrap:wrap"><span class="tag">Strong no</span><span class="tag">No</span><span class="tag">Yes</span><span class="tag">Strong yes</span></div>
+          <div class="tx-3" style="font-size:11.5px;margin-top:6px">No middle option, so every interviewer commits to a view.</div>
+          <div class="cap" style="margin:16px 0 8px">Question bank</div>
+          <div class="row" style="font-size:12.5px;gap:8px"><i data-lucide="library" class="tx-3"></i><span class="grow tx-2">46 questions across 5 competencies</span><span class="tx-3" style="font-size:11.5px">Reviewed 1 Oct</span></div>
+          <div class="well" style="padding:12px 14px;font-size:12px;color:var(--tx-2);margin-top:16px">Scores are never added up into a single number for a candidate. The debrief shows each rating, and a person decides.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The promise is a setting</b>Each stage's reply-by time drives the candidate's page, the pipeline badges, the nudges and the holding note. The company picks the numbers; the product keeps them.</div>
+    <div><b>Fairness per stage</b>Hiding names, locking feedback and CV evidence are switches on the stage, on by default where they matter most.</div>
+    <div><b>One competency model</b>Hiring and Performance share the library, so what a person was hired for is what they're later reviewed on.</div>
+  </div>
+</figure>
+<figure class="screen" id="hi-cfg-priv" data-title="Privacy by country">
+  <div class="scap"><b>Privacy and retention, per country</b><span>Legal basis, retention, talent pool consent, voluntary questions and AI use, set per country, with the deletion run shown before it happens.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="hiring" data-link="hi.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="user-round-plus"></i></span><span>Hiring</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Privacy</span></div>
+        <div class="htabs"><span class="htab">Processes</span><span class="htab">Scorecards</span><span class="htab">Approvals</span><span class="htab">Emails</span><span class="htab">Careers page</span><span class="htab on">Privacy</span></div>
+        <div class="hact"><span class="ib"><i data-lucide="plus"></i></span><span class="btn pri">Save</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:20px 24px" class="col">
+          <div class="h20">Rules by country</div><span class="tx-3" style="font-size:12px;margin:4px 0 14px">Applied by where the job is based. Candidates see the rule that applies to them on their status page. Starting points, check them with your counsel.</span>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl"><thead><tr><th>Country</th><th>Keep after decision</th><th>Talent pool</th><th>Voluntary questions</th><th>AI on CVs</th></tr></thead><tbody>
+              <tr class="sel"><td><div class="col"><b style="font-weight:500">Germany</b><span class="tx-3" style="font-size:11.5px">GDPR, AGG</span></div></td><td>6 months</td><td>Opt-in, 24 mo</td><td>None</td><td><span class="bdg ok">On, opt-out</span></td></tr>
+              <tr><td><div class="col"><b style="font-weight:500">India</b><span class="tx-3" style="font-size:11.5px">DPDP Act 2023</span></div></td><td>12 months</td><td>Opt-in, 24 mo</td><td>Gender, disability</td><td><span class="bdg ok">On, opt-out</span></td></tr>
+              <tr><td><div class="col"><b style="font-weight:500">United States</b><span class="tx-3" style="font-size:11.5px">EEO record keeping</span></div></td><td>1 year at least</td><td>Opt-in, 24 mo</td><td>EEO self-ID</td><td><span class="bdg warn">Audit for NYC</span></td></tr>
+              <tr><td style="border-bottom:0"><div class="col"><b style="font-weight:500">Everywhere else</b><span class="tx-3" style="font-size:11.5px">The strictest default</span></div></td><td style="border-bottom:0">6 months</td><td style="border-bottom:0">Opt-in, 12 mo</td><td style="border-bottom:0">None</td><td style="border-bottom:0"><span class="bdg">Off</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="card pad" style="margin-top:14px">
+            <div class="row" style="margin-bottom:10px"><i data-lucide="trash-2" class="tx-3"></i><b class="grow">Next deletion run · Sat 31 Oct</b><span class="btn sm">See the list</span></div>
+            <div class="kpis" style="grid-template-columns:repeat(3,1fr);gap:8px">
+              <div class="well kpi" style="padding:10px 12px"><div class="l">Applications reaching the end</div><div class="v num" style="font-size:20px">214</div><div class="d">CVs, notes and scorecards removed</div></div>
+              <div class="well kpi" style="padding:10px 12px"><div class="l">Kept as statistics</div><div class="v num" style="font-size:20px">214</div><div class="d">Stage, dates and source, no identity</div></div>
+              <div class="well kpi" style="padding:10px 12px"><div class="l">On legal hold</div><div class="v num" style="font-size:20px">1</div><div class="d">Held by Priya, reason recorded</div></div>
+            </div>
+          </div>
+          <div class="card pad" style="margin-top:14px">
+            <div class="row" style="margin-bottom:8px"><i data-lucide="eye" class="tx-3"></i><b class="grow">What a candidate in Germany sees</b><span class="tx-3" style="font-size:11.5px">On the form and their status page</span></div>
+            <div class="tx-2" style="font-size:12.5px;line-height:1.6">We keep your application for 6 months after our decision, then delete it. If you'd like us to keep it for future roles, tick the box and we'll keep it for 24 months. A tool helps summarise CVs against the role's must-haves; it never decides. You can ask a person to review yours without it.</div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:hidden" class="col">
+          <b>Fairness defaults</b><span class="tx-3" style="font-size:12px;margin:4px 0 6px">For every job, unless a process template changes it</span>
+          <div class="hi-sw"><span class="sw on"></span><div class="grow">Hide names and photos at first review<span class="tx-3">Also address, birth date, graduation year</span></div></div>
+          <div class="hi-sw"><span class="sw on"></span><div class="grow">Hide school names at first review<span class="tx-3">The degree and subject stay</span></div></div>
+          <div class="hi-sw"><span class="sw on"></span><div class="grow">Lock feedback until submitted<span class="tx-3">Interviewers can't read others' feedback first</span></div></div>
+          <div class="hi-sw"><span class="sw on"></span><div class="grow">Language check on posts and feedback<span class="tx-3">Uses AI when on, word lists when off</span></div></div>
+          <div class="hi-sw"><span class="sw on"></span><div class="grow">Candidates can opt out of AI<span class="tx-3">A person reviews their CV without it</span></div></div>
+          <div class="hi-sw"><span class="sw"></span><div class="grow">Share a short reason with declined candidates<span class="tx-3">From the scorecard, reviewed before sending</span></div></div>
+          <div class="sp"></div>
+          <div class="well" style="padding:12px 14px;font-size:12px;color:var(--tx-2);margin-top:10px"><b style="color:var(--tx);font-weight:500">Requests from candidates</b><br>Download and delete requests from status pages arrive as tasks for the people team, with the deadline for each country shown.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The law, as settings</b>Retention, consent, voluntary questions and AI use differ by country, so they're configured by country, with the strictest default for everywhere else.</div>
+    <div><b>Deletion you can see coming</b>The next run lists what will go, what stays as statistics with no identity, and anything on legal hold with the reason.</div>
+    <div><b>Fair defaults, visible</b>Every fairness switch lives in one place, so a head of people can see, and defend, how the company hires.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Hiring is where AI can do the most harm, so the line is drawn hard. AI reads, organises and points out; it never scores, ranks, rejects or advances anyone, and it never infers protected traits. It does not analyse faces, voices or video. Lilac marks every AI surface, each one cites its sources, a person applies the result, and nothing appears while AI is off. The model is the company's choice, including a local one.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Job post</td><td>Flags phrases that may exclude people (age, origin, gendered words, hype), with a reason and a suggested rewrite</td><td>Applies each change, or ignores it</td><td>A word-list check with the same reasons</td></tr>
+  <tr><td>First review</td><td>Finds evidence for each must-have in the redacted CV and cites the line. Marks "not found" rather than guessing</td><td>Advances, holds or declines. AI's output is never a filter, sort or score</td><td>The CV with must-haves listed beside it, names still hidden</td></tr>
+  <tr><td>Interview notes</td><td>Organises the interviewer's own notes into evidence per competency, citing the note lines</td><td>Edits the evidence and sets every rating</td><td>A blank scorecard next to the notes</td></tr>
+  <tr><td>Debrief</td><td>Summarises where the panel agrees and differs, and flags feedback that points to no competency</td><td>The hiring manager decides and writes the reason</td><td>The grid, with splits marked by a plain rule</td></tr>
+  <tr><td>Candidate emails</td><td>Drafts a personal line in an invite or a decline from the template and the stage</td><td>The recruiter reads and sends it</td><td>Templates with fields</td></tr>
+  <tr><td>Reports</td><td>Points to where the funnel slows or narrows, and the likely cause</td><td>People decide whether to change a stage</td><td>The same charts, without the note</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy and law.</b> Names, contact details, photos and other identifying details are removed before a CV reaches any model, and applicants can opt out on the form. Every AI output is logged with its inputs, so a company can explain any outcome. Hiring AI is high risk under the EU AI Act (Annex III, employment), and New York City requires a yearly bias audit for automated employment decision tools. Because Bemmoly's AI never makes or ranks the decision, and a person always reviews the evidence, it is designed to stay on the side of those rules. A company can still switch AI off per country.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Hiring is its own product. Use it alone, or with the others. Under the hood it shares Bemmoly's kernel: one sign-in, one person directory, the approval and workflow engine, typed custom fields, the AI layer, audit and backups. A cross-product action asks the person first, and still works when the other product isn't installed.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul>
+    <li><b>People</b>: headcount plans open requisitions; an accepted offer creates the person record and starts onboarding. Without People, the kernel's people list gets the record and the hiring manager gets an onboarding checklist</li>
+    <li><b>Assets</b>: a laptop request for the start date. Without it, a task for the IT owner</li>
+    <li><b>Access</b>: the role's access bundle, live on day one. Without it, a task listing the accounts to create</li>
+    <li><b>Performance</b>: one competency library for scorecards and reviews; the hiring scorecard becomes the first check-in's context, if the new person agrees</li>
+    <li><b>Work and Docs</b>: a first-week plan as a Work project; job descriptions and kits can be drafted in Docs</li>
+    <li><b>Time</b>: optional tracking of interview hours by team, for the cost of hiring</li>
+  </ul></div>
+  <div><h3>Core objects</h3><ul>
+    <li><code>job</code>: role, team, location, pay range, must-haves, process template, approval state</li>
+    <li><code>candidate</code> and <code>application</code>: one candidate, many applications over time, each with source, stage and reply-by date</li>
+    <li><code>interview</code> and <code>scorecard</code>: kit, panel, ratings per competency, notes, submitted time</li>
+    <li><code>decision</code>: outcome, reason, who decided</li>
+    <li><code>offer</code>: terms, band check, approvals, letter, signature</li>
+    <li><code>consent</code>: country rule, talent pool opt-in, AI opt-out, deletion date</li>
+  </ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>A fair process, end to end</b><ul><li>Jobs, process templates, stages with reply-by times</li><li>Careers page, application form, candidate status page</li><li>Blind first review, scorecards, interview kits, locked feedback</li><li>Self-scheduling from calendars</li><li>Offers on the shared approval engine, letter templates</li><li>Hand-off to the person record; retention per country</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>AI and insight</b><ul><li>CV evidence against must-haves, with redaction and opt-out</li><li>Notes into evidence, debrief summary, feedback check</li><li>Language check on posts and emails</li><li>Reports: funnel, sources, promises, fairness where lawful</li><li>Job board and professional network connectors</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Relationships and scale</b><ul><li>Talent pools with consent, and rediscovery of past finalists</li><li>Referrals from every employee</li><li>Agency portal with its own access</li><li>Assessment, background check and identity check connectors</li><li>High-volume hiring for hourly roles</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Should declined candidates get a reason?</b><span>Recommendation: offer a short reason drawn from the scorecard competencies, reviewed by a person before sending, off by default and switched on per country after legal review.</span></li>
+  <li><b>Do we build sourcing and a profile database?</b><span>Recommendation: no. Receive candidates from professional networks and job boards through connectors. A scraped profile database conflicts with consent rules and with our privacy stance.</span></li>
+  <li><b>How do we handle fake or AI-generated applicants?</b><span>Recommendation: identity checks as an optional connector at a late stage, never an automatic rejection, and never stored images in Bemmoly.</span></li>
+  <li><b>Should we collect diversity data at all?</b><span>Recommendation: only where lawful, voluntary, in a separate store that reviewers can't see, aggregate only with small groups hidden. Off by default.</span></li>
+  <li><b>What if a company wants AI to rank applicants?</b><span>Recommendation: we don't build it. It's the part regulators treat as highest risk and candidates trust least. Evidence per must-have gives most of the speed without the harm.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.unleash.ai/artificial-intelligence/greenhouse-61-of-job-seekers-have-been-ghosted-during-the-recruitment-process">UNLEASH: Greenhouse, 61% of job seekers ghosted (State of Job Hunting, 2024)</a></li>
+  <li><a href="https://www.gartner.com/en/newsroom/press-releases/2025-07-31-gartner-survey-shows-just-26-percent-of-job-applicants-trust-ai-will-fairly-evaluate-them">Gartner: just 26% of job applicants trust AI will fairly evaluate them (2025)</a></li>
+  <li><a href="https://www.siop.org/tip-article/is-cognitive-ability-the-best-predictor-of-job-performance">SIOP: Sackett et al. (2022) revised validity estimates, structured interviews .42</a></li>
+  <li><a href="https://www.shrm.org/topics-tools/news/talent-acquisition/real-costs-recruitment">SHRM: The real costs of recruitment (2022)</a></li>
+  <li><a href="https://www.ashbyhq.com/blog/product/ai-assisted-application-review">Ashby: AI-assisted application review</a></li>
+  <li><a href="https://support.greenhouse.io/hc/en-us/articles/360039539772-Structured-hiring-guide">Greenhouse: Structured hiring guide</a></li>
+  <li><a href="https://greenhouse.com/newsroom/greenhouse-and-clear-announce-partnership-to-enable-candidate-verification">Greenhouse and CLEAR: candidate verification (2025)</a></li>
+  <li><a href="https://www.businesswire.com/news/home/20220805005292/en/Lever-Joins-Employ-to-Accelerate-Growth">Business Wire: Lever joins Employ (2022)</a></li>
+  <li><a href="https://news.sap.com/2025/09/sap-completes-smartrecruiters-acquisition/">SAP: SAP completes SmartRecruiters acquisition (2025)</a></li>
+  <li><a href="https://pipeline.zoominfo.com/sales/teamtailor-features">ZoomInfo: Teamtailor features</a></li>
+  <li><a href="https://resources.workable.com/backstage/halve-your-time-to-interview-with-interview-self-scheduling">Workable: interview self-scheduling</a></li>
+  <li><a href="https://www.gem.com/GA/recruiting-software">Gem: recruiting platform</a></li>
+  <li><a href="https://www.opencats.org/">OpenCATS</a></li>
+  <li><a href="https://docs.frappe.io/hr/job-opening">Frappe HR: Job opening</a></li>
+  <li><a href="https://www.odoo.com/documentation/18.0/applications/hr/recruitment.html">Odoo 18: Recruitment</a></li>
+  <li><a href="https://www.nyc.gov/assets/dca/downloads/pdf/about/DCWP-AEDT-FAQ.pdf">NYC DCWP: Automated employment decision tools FAQ</a></li>
+  <li><a href="https://www.mccannfitzgerald.com/knowledge/data-privacy-and-cyber-risk/employment-spotlight-eu-ai-act-draft-guidelines-on-high-risk-ai-classification">McCann FitzGerald: EU AI Act, high-risk classification in employment</a></li>
+  <li>Vendor product pages for Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Teamtailor, Gem, iCIMS, Zoho Recruit and LinkedIn Recruiter (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

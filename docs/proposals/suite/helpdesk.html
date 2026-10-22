@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Helpdesk</title>
+<meta name="description" content="Product proposal for Bemmoly Helpdesk: one front door for every internal question, categories that learn, AI that answers and acts with a person's confirmation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Helpdesk-only screen parts, all prefixed hd- */
+/* team colours: data colours from the kit's module palette, one per team */
+.hd-tm{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none}
+.hd-tm svg.lucide{width:13px;height:13px}
+.hd-tm.l{width:30px;height:30px;border-radius:8px}
+.hd-tm.l svg.lucide{width:16px;height:16px}
+.t-it{background:color-mix(in srgb,#2356c9 14%,transparent);color:var(--acc)}
+.t-hr{background:color-mix(in srgb,#c2536a 14%,transparent);color:#c2536a}
+.t-fin{background:color-mix(in srgb,#2f9e6e 14%,transparent);color:#2f9e6e}
+.t-fac{background:color-mix(in srgb,#b7791f 16%,transparent);color:#b7791f}
+.t-leg{background:color-mix(in srgb,#9b4f96 14%,transparent);color:#b061ab}
+.hd-dot-it{background:#2356c9}.hd-dot-hr{background:#c2536a}.hd-dot-fin{background:#2f9e6e}.hd-dot-fac{background:#b7791f}.hd-dot-leg{background:#9b4f96}
+/* an employee has no saved views */
+.bx-side.hd-emp .bx-label,.bx-side.hd-emp .bx-label~.bx-r{display:none}
+/* SLA timer */
+.hd-sla{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 7px;border-radius:5px;font-size:11.5px;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums;background:var(--sunken);color:var(--tx-2);box-shadow:inset 0 0 0 1px var(--line-2)}
+.hd-sla svg.lucide{width:12px;height:12px}
+.hd-sla.warn{background:var(--amber-50);color:var(--amber-tx);box-shadow:none}
+.hd-sla.bad{background:var(--red-50);color:var(--red-tx);box-shadow:none}
+.hd-sla.ok{background:var(--green-50);color:var(--green-tx);box-shadow:none}
+.hd-path{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:var(--tx-2);font-size:12px;min-width:0}
+.hd-path b{color:var(--tx);font-weight:500}
+.hd-pri{display:inline-grid;place-items:center;width:24px;height:20px;border-radius:4px;font-size:11px;font-weight:600;background:var(--sunken);color:var(--tx-2);box-shadow:inset 0 0 0 1px var(--line-2)}
+.hd-pri.p1{background:var(--red-50);color:var(--red-tx);box-shadow:none}
+.hd-pri.p2{background:var(--amber-50);color:var(--amber-tx);box-shadow:none}
+.hd-ch{color:var(--tx-3)}
+.hd-ch svg.lucide{width:14px;height:14px}
+/* queue table */
+.hd-q{display:grid;grid-template-columns:96px minmax(0,1fr) 230px 34px 92px 28px;align-items:center;gap:12px;height:48px;padding:0 14px;border-bottom:1px solid var(--line-2)}
+.hd-q:hover{background:var(--hover)}
+.hd-q.sel{background:var(--acc-50)}
+.hd-q.h{height:32px;font-size:12px;color:var(--tx-3);font-weight:500;background:var(--canvas)}
+.hd-q .t{display:flex;flex-direction:column;min-width:0}
+.hd-q .t b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-q .t span{font-size:11.5px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-conf{font-size:10.5px;font-weight:500;color:var(--ai-600);background:var(--ai-50);border-radius:4px;padding:1px 5px;margin-left:2px}
+/* the front door */
+.hd-door{height:100%;display:flex;flex-direction:column;background:radial-gradient(900px 420px at 50% -120px,var(--acc-50),transparent 70%),var(--canvas)}
+.hd-door-in{flex:1;min-height:0;width:100%;max-width:980px;margin:0 auto;padding:22px 32px 0;display:flex;flex-direction:column;gap:14px}
+.hd-ask{align-self:flex-end;max-width:620px;background:var(--acc-fill);color:var(--on-acc);border-radius:12px;border-bottom-right-radius:3px;padding:11px 14px;font-size:13.5px;line-height:1.5}
+.hd-triad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.hd-act{background:var(--card);border-radius:10px;box-shadow:var(--e1);padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.hd-act .top{display:flex;align-items:center;gap:8px}
+.hd-act .top .tile{width:22px;height:22px;border-radius:6px}
+.hd-act .top .tile svg.lucide{width:12px;height:12px}
+.hd-act .top b{font-weight:600}
+.hd-act .top .n{margin-left:auto;font:500 11px/1 var(--mono);color:var(--tx-3)}
+.hd-act p{margin:0;font-size:12.5px;line-height:1.5;color:var(--tx)}
+.hd-act .will{background:var(--sunken);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--tx-2);display:flex;flex-direction:column;gap:5px}
+.hd-act .will div{display:flex;gap:7px;align-items:flex-start}
+.hd-act .will svg.lucide{width:13px;height:13px;margin-top:2px;color:var(--tx-3)}
+.hd-act .acts{display:flex;gap:6px;margin-top:auto;padding-top:2px;align-items:center}
+.hd-mini{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 8px;align-items:center;font-size:12px}
+.hd-mini>span:nth-child(odd){color:var(--tx-3)}
+.hd-mini .v{height:26px;display:flex;align-items:center;gap:6px;padding:0 8px;border-radius:5px;min-width:0;white-space:nowrap;overflow:hidden}
+.hd-bal{display:flex;align-items:baseline;gap:6px}
+.hd-bal b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.hd-compose{flex:none;width:100%;max-width:980px;margin:0 auto;padding:12px 32px 18px}
+.hd-compose .box{height:48px;display:flex;align-items:center;gap:10px;padding:0 8px 0 14px;border-radius:10px;background:var(--card);box-shadow:var(--e1h)}
+/* every door */
+.hd-wrap{position:absolute;inset:0;background:radial-gradient(1100px 600px at 0% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;padding:44px 48px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.hd-col{display:flex;flex-direction:column;gap:12px;align-items:center;min-width:0}
+.hd-col h4{margin:4px 0 0;font-size:15px;font-weight:600;text-align:center}
+.hd-col>p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:320px}
+.hd-mail{width:100%;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.hd-mail .mh{padding:11px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:52px 1fr;gap:3px 8px}
+.hd-mail .mh span:nth-child(odd){color:var(--tx-3)}
+.hd-mail .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2);line-height:1.55}
+.hd-chatwin{width:100%;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.hd-chatwin .ch{height:40px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line-2);font-weight:600;font-size:12.5px}
+.hd-chatwin .cb2{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.hd-cm{display:flex;gap:9px;align-items:flex-start;font-size:12.5px}
+.hd-cm .col b{font-size:12px}
+.hd-cm .col b span{font-weight:400;color:var(--tx-3);margin-left:4px}
+.hd-phone{width:262px;height:520px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.hd-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.hd-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:12px;background:#000;z-index:3}
+.hd-phone .ph{padding:42px 14px 10px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:8px}
+.hd-phone .pb{flex:1;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:11.5px;overflow:hidden}
+.hd-phone .msg{max-width:92%;font-size:11.5px;padding:8px 10px}
+.hd-phone .pi{margin:0 10px 14px;height:36px;border-radius:18px;background:var(--sunken);display:flex;align-items:center;padding:0 12px;color:var(--tx-3);font-size:11.5px;gap:6px}
+/* ticket */
+.hd-thread{display:flex;flex-direction:column;gap:12px}
+.hd-ev{display:flex;gap:10px;align-items:flex-start}
+.hd-ev .bub{flex:1;min-width:0;background:var(--card);box-shadow:var(--e1);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5}
+.hd-ev .bub .who{display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:3px}
+.hd-ev .bub .who span{color:var(--tx-3)}
+.hd-ev .bub.note{background:var(--amber-50);box-shadow:none}
+.hd-ev .sys{font-size:12px;color:var(--tx-3);display:flex;align-items:center;gap:6px;padding-left:34px}
+.hd-ev .sys svg.lucide{width:13px;height:13px}
+.hd-draft{border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 1px var(--ai-100),0 0 0 3px var(--ai-50)}
+.hd-draft .dh{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-2);font-size:12px}
+.hd-draft .db{padding:10px 12px;font-size:12.5px;line-height:1.55}
+.hd-draft .db p{margin:0 0 6px}
+.hd-draft .df{display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid var(--line-2)}
+.hd-kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:7px 10px;font-size:12.5px;align-items:center}
+.hd-kv>span:nth-child(odd){color:var(--tx-3)}
+.hd-sim{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:12px}
+.hd-sim:last-child{border-bottom:0}
+/* category tree */
+.hd-tree{display:grid;grid-template-columns:minmax(0,1fr) 56px 74px 80px 82px 60px 50px;align-items:center;gap:8px;height:38px;padding:0 14px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.hd-tree.h{height:32px;font-size:12px;color:var(--tx-3);font-weight:500;background:var(--canvas)}
+.hd-tree.sel{background:var(--acc-50)}
+.hd-tree .nm{display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;overflow:hidden}
+.hd-tree .nm .chev{width:14px;height:14px;color:var(--tx-3)}
+.hd-tree .nm .sp0{width:14px;flex:none}
+.hd-tree .r{text-align:right;font-variant-numeric:tabular-nums}
+.hd-tree .acts{display:flex;gap:3px;color:var(--tx-3)}
+.hd-tree .acts svg.lucide{width:13px;height:13px}
+.hd-tree .acts .on{color:var(--ai-600)}
+.hd-teams{display:flex;gap:4px;padding:3px;border-radius:9px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line-2)}
+.hd-team{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px 0 6px;border-radius:6px;color:var(--tx-2);font-weight:500;white-space:nowrap}
+.hd-team.on{background:var(--card);box-shadow:var(--e1);color:var(--tx)}
+.hd-team .ct{margin-left:2px;font-size:11.5px;color:var(--tx-3);font-weight:400}
+.hd-prop{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--ai-100)}
+.hd-prop:last-of-type{border-bottom:0}
+.hd-prop .ic{width:26px;height:26px;border-radius:7px;background:var(--card);display:grid;place-items:center;color:var(--ai-600);flex:none;box-shadow:inset 0 0 0 1px var(--ai-100)}
+.hd-prop .ic svg.lucide{width:14px;height:14px}
+.hd-prop b{font-size:12.5px;font-weight:600;display:block}
+.hd-prop span{font-size:12px;color:var(--tx-2)}
+/* form builder */
+.hd-ff{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.hd-ff:last-child{border-bottom:0}
+.hd-ff .ty{width:26px;height:26px;border-radius:6px;background:var(--sunken);display:grid;place-items:center;color:var(--tx-2);flex:none}
+.hd-ff .ty svg.lucide{width:14px;height:14px}
+.hd-tg{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.hd-tg:last-child{border-bottom:0}
+.hd-tg .col span{font-size:11.5px;color:var(--tx-3)}
+/* sentences */
+.hd-pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:12px 14px}
+.hd-pol .sent{font-size:13px;line-height:2;color:var(--tx)}
+.hd-tok{display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 7px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100);white-space:nowrap}
+.hd-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.hd-hours{display:grid;grid-template-columns:110px repeat(7,minmax(0,1fr));gap:3px;align-items:center;font-size:11.5px}
+.hd-hours .d{height:18px;border-radius:3px;background:var(--line-2);position:relative;overflow:hidden}
+.hd-hours .d i{position:absolute;top:0;bottom:0;background:var(--acc-500);border-radius:3px;opacity:.85}
+/* knowledge */
+.hd-gap{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-bottom:1px solid var(--line-2)}
+.hd-gap.sel{background:var(--acc-50)}
+.hd-gap b{font-weight:500;font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-gap span{font-size:11.5px;color:var(--tx-3)}
+.hd-art{font-size:13px;line-height:1.6;color:var(--tx)}
+.hd-art h3{font-size:18px;margin:0 0 4px;font-weight:600;letter-spacing:-.01em}
+.hd-art h5{font-size:13px;font-weight:600;margin:14px 0 4px}
+.hd-art ol{margin:0;padding-left:20px}
+.hd-art li{margin:3px 0}
+.hd-art .gen{background:var(--ai-50);border-radius:4px;box-shadow:0 0 0 2px var(--ai-50)}
+/* insights chart */
+.hd-chart{display:flex;align-items:flex-end;gap:22px;height:170px;padding:0 6px;border-bottom:1px solid var(--line)}
+.hd-chart .wk{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:2px;height:100%;justify-content:flex-end}
+.hd-chart .wk i{display:block;border-radius:3px}
+.hd-chart .ai{background:var(--ai)}
+.hd-chart .team{background:var(--acc-500)}
+.hd-chart .back{background:var(--amber)}
+.hd-xl{display:flex;gap:22px;padding:6px 6px 0;font-size:11.5px;color:var(--tx-3)}
+.hd-xl span{flex:1;text-align:center}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="helpdesk"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Helpdesk</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span>Bemmoly Helpdesk · product proposal</div>
+  <h1>Ask once, in plain words, and it gets done</h1>
+  <p class="lede">One front door for every question at work: IT, HR, Finance, Facilities and Legal. Ask from the portal, email, chat or the command palette. AI answers from your own knowledge with the sources shown, does the simple things for you once you confirm, and sends everything else to the right team with the right form already filled in. Its own product. Use it alone, or with the others.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Everyone who asks, every team that answers</span>
+    <span class="chip"><i data-lucide="layers"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="folder-tree"></i>Categories, forms and SLAs per team</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Every company already has a help desk, usually four or five of them: an IT portal, an HR inbox, a finance spreadsheet, a facilities form and a lawyer's direct messages. People don't know where to ask, so they ask the wrong place, or a colleague, or nobody. The teams on the other side retype what the system already knows.</p>
+<div class="stats">
+  <div><b>22 min</b><span>a day an office worker loses to IT problems, more than 91 hours a year</span><small>Robert Half Technology, 2016</small></div>
+  <div><b>~$22</b><span>to resolve one ticket at the service desk, and almost $70 once it reaches desktop support</span><small>HDI and MetricNet, 2020</small></div>
+  <div><b>14%</b><span>of service issues are fully resolved in self-service. Even "very simple" ones: 36%</span><small>Gartner, 2024</small></div>
+  <div><b>43%</b><span>of failed self-service attempts: people could not find content relevant to their issue</span><small>Gartner, 2024</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Five front doors, none of them obvious</b><p>"Where do I ask about my payslip?" IT has a portal, HR has an email, Finance has a form somewhere. People guess, get bounced, and learn to message the one person they know instead.</p></div>
+  <div class="pain"><b>The category picker is a guessing game</b><p>A 40-item dropdown asks the person to classify their own problem in the help desk's words. They pick wrong, the ticket lands in the wrong queue and waits, and "Other" quietly becomes the biggest category.</p></div>
+  <div class="pain"><b>Self-service answers, but rarely resolves</b><p>Portals and bots point to an article and stop. Even for simple issues most people still end up raising a ticket, often because the content they needed was not there.</p><span class="src">Gartner, 2024</span></div>
+  <div class="pain"><b>Agents retype what the company already knows</b><p>Which laptop, which office, who the manager is, which groups they're in, whether they're travelling. Every ticket starts with the same questions, asked back to a person who is already stuck.</p></div>
+  <div class="pain"><b>Categories and knowledge rot after setup</b><p>The taxonomy was designed once, by a consultant or the first admin. Work changes, new problems appear, articles go stale, and nobody notices until the queue tells them, slowly.</p></div>
+  <div class="pain"><b>AI priced by the answer, people priced by the seat</b><p>Leading suites charge per agent per month, then again for every AI resolution. The better the AI gets, the bigger the bill, and HR or Facilities rarely get seats of their own.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet every request: the one who asks, the one who answers, and the one who runs a team's desk.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l k">TG</span><div><b>Tomás, backend engineer</b><span>Austin · asks a few times a month</span></div></div>
+    <q>"I don't want to know which team owns it. I want to say what's wrong, once, and have it fixed, or at least know who has it."</q>
+    <ul><li>One place to ask anything, in his own words</li><li>An answer with its source, not a list of links</li><li>Simple things done for him, after he says yes</li><li>Clear status: who has it, and by when</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l a">RK</span><div><b>Rohan, IT admin</b><span>Bengaluru · works the IT queue</span></div></div>
+    <q>"Give me tickets that are already in the right place, with the laptop, the person and the fix that worked last time right there."</q>
+    <ul><li>A queue sorted by what breaches first</li><li>Context from devices, access and travel, without asking</li><li>A drafted reply he can trust and edit</li><li>Spot one cause behind ten tickets, and answer once</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l p">PR</span><div><b>Priya, Head of People</b><span>Runs the HR desk for 3 offices</span></div></div>
+    <q>"HR questions are private. I want my own categories, my own forms and hours, and I want to see which questions we keep failing to answer."</q>
+    <ul><li>Her own category tree, forms and SLAs, without IT's help</li><li>Sensitive cases visible only to her team</li><li>Gaps shown as articles to write, already drafted</li><li>Per-country answers, in the language people asked in</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category has three camps: customer-support suites that added AI agents, IT and enterprise service management suites that grew into HR and facilities, and AI assistants that sit in front of all of it for employees. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Zendesk</b><span>Customer support · AI agents</span></header><p>AI agents resolve requests across messaging, email, voice and web, detect intent in long threads, take actions in connected systems and hand off to the right team with context. Usage is metered by automated resolutions.</p>
+    <div class="plus"><i data-lucide="plus"></i>The most complete omnichannel desk, with mature triage and routing.</div><div class="minus"><i data-lucide="minus"></i>Built for customers first. Internal desks pay per agent, plus per resolution.</div></div>
+  <div class="leader"><header><b>Freshservice and Freshdesk</b><span>ITSM and ESM · Freddy AI</span></header><p>One instance hosts separate workspaces for IT, HR, Finance, Facilities and Legal, each with its own portal. Freddy AI answers employees in chat, creates requests from conversations and assists agents.</p>
+    <div class="plus"><i data-lucide="plus"></i>Business-team workspaces are the closest thing to "one front door" today.</div><div class="minus"><i data-lucide="minus"></i>AI copilot is a paid add-on per agent, and the catalogue is still a form-picker.</div></div>
+  <div class="leader"><header><b>ServiceNow ITSM and HRSD</b><span>Enterprise · Now Assist, Moveworks</span></header><p>The enterprise standard for IT and HR service delivery. Now Assist summarises cases and chats and drafts resolution notes. Its acquisition of Moveworks, completed in December 2025, adds an employee-facing AI front door.</p>
+    <div class="plus"><i data-lucide="plus"></i>Deep workflows: approvals, fulfilment and HR case privacy done properly.</div><div class="minus"><i data-lucide="minus"></i>Long, consultant-led rollouts. Out of reach for most companies under a few thousand people.</div></div>
+  <div class="leader"><header><b>Jira Service Management</b><span>IT and dev teams · virtual agent</span></header><p>Request types with their own forms, queues and SLAs, close to the engineering tracker. A virtual service agent answers in chat and raises requests, and Assist brings ticketing into chat tools.</p>
+    <div class="plus"><i data-lucide="plus"></i>Request types are a clean model: each one owns its form and workflow.</div><div class="minus"><i data-lucide="minus"></i>The virtual agent needs a higher plan. The person still has to pick the right request type.</div></div>
+  <div class="leader"><header><b>Intercom Fin, HubSpot, Help Scout</b><span>Customer support · AI first</span></header><p>AI agents answer from the help centre and hand off to people. Fin is priced at $0.99 per resolution, HubSpot's customer agent around $0.50. Help Scout drafts replies and summarises threads.</p>
+    <div class="plus"><i data-lucide="plus"></i>The best "answer first" experience, with clear reporting on what AI resolved.</div><div class="minus"><i data-lucide="minus"></i>Made for external customers. "Resolved" can mean the person just stopped replying.</div></div>
+  <div class="leader"><header><b>Zammad, osTicket, FreeScout, GLPI</b><span>Open source today</span></header><p>Self-hosted ticketing with email, portals, SLAs and knowledge bases. Zammad has added AI ticket summaries and a knowledge base assistant behind a provider of your choice. GLPI pairs tickets with an IT inventory.</p>
+    <div class="plus"><i data-lucide="plus"></i>Your server, your data, no seat price.</div><div class="minus"><i data-lucide="minus"></i>Ticket-first, IT-first and dated to use. None of them is a front door for the whole company.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Customer-support suites</th><th>ESM suites</th><th>Dev-team ITSM</th><th>Employee AI assistants</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>One door for IT, HR, Finance, Facilities, Legal</td><td class="part">Possible, not the design</td><td class="yes">Workspaces</td><td class="part">One project per team</td><td class="yes">Yes, on top of other tools</td><td class="no">IT first</td><td class="yes">Yes, one door, private per team</td></tr>
+  <tr><td>Answers with cited sources</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Plan-gated</td><td class="yes">Yes</td><td class="part">Agent-side only</td><td class="yes">Yes, every answer</td></tr>
+  <tr><td>Does things in other systems</td><td class="part">Through integrations</td><td class="yes">Workflows</td><td class="part">Automation rules</td><td class="yes">Its core idea</td><td class="no">No</td><td class="yes">Through Bemmoly products, after you confirm</td></tr>
+  <tr><td>Category tree with its own form, queue, SLA</td><td class="part">Forms and triggers</td><td class="yes">Catalogue items</td><td class="yes">Request types</td><td class="no">Relies on the desk</td><td class="part">Flat categories</td><td class="yes">Yes, per team</td></tr>
+  <tr><td>AI proposes new, merged or split categories</td><td class="part">Intent suggestions</td><td class="part">Some</td><td class="no">No</td><td class="part">Topic clustering</td><td class="no">No</td><td class="yes">Yes, with the tickets as evidence</td></tr>
+  <tr><td>Articles drafted from resolved tickets</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Some</td><td class="part">Some</td><td class="part">Zammad, recent</td><td class="yes">Yes, with a dry run</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="part">Some on-premises</td><td class="part">Data Center editions</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Per agent, plus per AI resolution</td><td>Per agent, AI add-ons</td><td>Per agent, tiers</td><td>Enterprise contracts</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Zammad, osTicket, FreeScout and GLPI: solid self-hosted ticketing, mostly for one IT or support team, with AI arriving recently and only on the agent's side. Nobody offers an open source front door for the whole company that answers, acts and routes. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (request types with their own form, the AI front door, answer first) and add what an open, self-hosted family of products can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="door-open"></i></span><b>One door, and the person never picks a category</b><p>People describe the problem. Helpdesk splits a message with three asks into three items, picks each category with a visible confidence, and asks only when it is unsure.</p><span class="vs">Leaders: most portals still start with "choose a request type".</span></div>
+  <div><span class="ic ai"><i data-lucide="folder-tree"></i></span><b>Categories that learn from the queue</b><p>Each team owns a tree, and each category owns its form, queue, SLA, approval and AI rules. AI watches what didn't fit and proposes new, merged or split categories, with the tickets as evidence.</p><span class="vs">New: taxonomies elsewhere change only when an admin notices.</span></div>
+  <div><span class="ic"><i data-lucide="mouse-pointer-click"></i></span><b>Answers that do the thing</b><p>Reset MFA, request a monitor, check a reimbursement or a leave balance. Helpdesk calls the right Bemmoly product, shows exactly what will happen, and acts only after the person says yes.</p><span class="vs">Leaders: employee AI assistants do this, at enterprise prices.</span></div>
+  <div><span class="ic"><i data-lucide="network"></i></span><b>The context is already there</b><p>The device, the manager, the office hours, the groups and even the trip someone is on come from the kernel and the other products. Agents stop asking "which laptop?".</p><span class="vs">New: standalone desks re-import or ask for all of this.</span></div>
+  <div><span class="ic"><i data-lucide="badge-check"></i></span><b>"Resolved" means it stayed resolved</b><p>We count an AI answer only when the person confirms it or doesn't come back about it within 3 days, and we show the ones that bounced. No fee rides on the number, so there is no reason to flatter it.</p><span class="vs">Leaders: per-resolution pricing can count silence as success.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>No seat price, for any team</b><p>HR, Facilities and Legal get their own desks with no agent licence and no paid AI tier. AI runs on the workspace's chosen model, including a local one.</p><span class="vs">Leaders: per agent per month, plus AI add-ons or resolution fees.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Seven screens, drawn in Bemmoly's tokens, in Helpdesk's own shell. Click the tabs, or the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="hd">
+<!-- 1 ======================== Front door (signature) -->
+<figure class="screen" id="hd-ask" data-title="One question, three outcomes">
+  <div class="scap"><b>One question, three outcomes</b><span>Tomás asks three things in one sentence. Helpdesk answers one, does one after he confirms, and routes one to Facilities with the form already filled in.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side hd-emp" data-cur="helpdesk" data-link="hd.mine" data-me="Tomás García" data-counts='{"hd.mine":"2"}' data-hide-links="hd.queue,hd.cat,hd.ins"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span class="cur">Ask</span></div>
+        <div class="htabs"><span class="htab on">Ask</span><span class="htab">Open<span class="ct">2</span></span><span class="htab">Done<span class="ct">14</span></span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Austin · Mon 19 Oct, 09:12</span><span class="btn"><i data-lucide="headset"></i>Talk to a person</span></div></div>
+      <div class="bx-body"><div class="hd-door">
+        <div class="hd-door-in">
+          <div class="hd-ask">Got a new phone over the weekend and my authenticator didn't come across, so I can't get into the VPN. Also, how much leave do I have left this year? And could I get a standing desk at the office, my back is not happy.</div>
+          <div class="ai-card" style="padding:12px 14px 14px">
+            <div class="ai-h"><span class="aid"></span>Three things in your message<span class="src">by AI · from Access, People, the Facilities catalogue and 3 articles</span><span class="x">Answered in 2.1s</span></div>
+            <p style="margin-bottom:12px">I'll take them one at a time. Nothing happens until you say so.</p>
+            <div class="hd-triad">
+              <div class="hd-act">
+                <div class="top"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><b>Reset your MFA</b><span class="n">1 of 3</span></div>
+                <p>I can remove the old authenticator and send a setup link to your new phone. Because this unlocks your account, Daniel confirms it's you with one tap.<span class="cite"><i data-lucide="book-open"></i>MFA recovery</span></p>
+                <div class="will"><div><i data-lucide="smartphone"></i>Removes "iPhone 12" from your sign-in methods</div><div><i data-lucide="send"></i>Texts a setup link to ••• 4471</div><div><i data-lucide="user-round-check"></i>Daniel Okafor approves · usually 6 min</div></div>
+                <div class="acts"><span class="btn sm pri hot hd-a1" data-show=".hd-t1" data-hide=".hd-a1"><i data-lucide="check"></i>Reset my MFA</span><span class="btn sm ghost hd-a1">Not now</span><span class="bdg acc hd-t1" hidden><i data-lucide="hourglass"></i>Waiting for Daniel's tap</span></div>
+              </div>
+              <div class="hd-act">
+                <div class="top"><span class="tile" style="background:var(--m-people)"><i data-lucide="contact-round"></i></span><b>Your leave balance</b><span class="n">2 of 3</span></div>
+                <div class="hd-bal"><b class="num">9.5 days</b><span class="tx-2" style="font-size:12.5px">paid time off left in 2026</span></div>
+                <p>Plus 1 floating holiday. Up to 5 unused days carry over into 2027; the rest lapse on 30 Dec.<span class="cite"><i data-lucide="contact-round"></i>People</span><span class="cite"><i data-lucide="book-open"></i>US leave policy 2026</span></p>
+                <div class="will"><div><i data-lucide="calendar-days"></i>Booked: 23 to 27 Nov (Thanksgiving week, 3 days)</div><div><i data-lucide="eye"></i>Read only. Nobody else sees you asked</div></div>
+                <div class="acts"><span class="btn sm"><i data-lucide="palmtree"></i>Book time off</span><span class="btn sm ghost"><i data-lucide="thumbs-up"></i>That answers it</span></div>
+              </div>
+              <div class="hd-act">
+                <div class="top"><span class="hd-tm t-fac"><i data-lucide="armchair"></i></span><b>Standing desk</b><span class="n">3 of 3</span></div>
+                <p>That's a Facilities request. I filled in their form from what you said. Check it and send.</p>
+                <div class="hd-mini">
+                  <span>Category</span><span class="v ai-field">Furniture › Desk change<span class="hd-conf" style="margin-left:auto">94%</span></span>
+                  <span>Where</span><span class="v ai-field">Austin · floor 3 · desk A-14</span>
+                  <span>Reason</span><span class="v ai-field">Back discomfort</span>
+                  <span>Approval</span><span class="v" style="background:var(--sunken)">None needed under 2 a year</span>
+                </div>
+                <div class="acts"><span class="btn sm"><i data-lucide="send"></i>Send to Facilities</span><span class="btn sm ghost">Edit form</span></div>
+              </div>
+            </div>
+            <div class="acts" style="margin-top:12px"><span class="tx-2" style="font-size:12px">Facilities Austin replies within 1 business day. You'll see all three in Open.</span><span class="nu">Not useful</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+            <div class="card" style="padding:10px 12px;display:flex;align-items:center;gap:10px"><span class="hd-tm t-it"><i data-lucide="package"></i></span><div class="col grow"><b class="md">Install Docker Desktop on new Mac</b><span class="tx-3" style="font-size:12px">HD-4179 · IT · with Rohan Kapoor · due today 12:10 CT</span></div><span class="st prog"><i></i>In progress</span></div>
+            <div class="card" style="padding:10px 12px;display:flex;align-items:center;gap:10px"><span class="hd-tm t-fac"><i data-lucide="car"></i></span><div class="col grow"><b class="md">Parking pass for the Austin office</b><span class="tx-3" style="font-size:12px">HD-4152 · Facilities · needs your plate number</span></div><span class="st warn"><i></i>Waiting on you</span></div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;gap:14px;padding-left:2px"><span class="row" style="gap:6px"><i data-lucide="lock" style="width:13px;height:13px"></i>HR and Legal questions are visible only to those teams</span><span class="row" style="gap:6px"><i data-lucide="sparkles" style="width:13px;height:13px"></i>Answers come from Acme Labs' own articles and records</span></div>
+        </div>
+        <div class="hd-compose"><div class="box"><i data-lucide="message-circle-question" class="tx-3"></i><span class="tx-3 grow">Ask anything about IT, HR, Finance, Facilities or Legal</span><span class="ib sm"><i data-lucide="paperclip"></i></span><span class="ib sm"><i data-lucide="mic"></i></span><span class="btn sm pri"><i data-lucide="arrow-up"></i>Ask</span></div></div>
+      </div></div>
+      <div class="toast hd-t1" hidden style="bottom:84px"><i data-lucide="circle-check"></i>Daniel has a one-tap check. The setup link goes to your phone as soon as he confirms.<span class="u" data-hide=".hd-t1" data-show=".hd-a1">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Three asks become three items</b>One message is split by intent. Each gets its own category, owner and status, so nothing gets lost inside a long ticket.</div>
+    <div><b>Shows exactly what will happen</b>Actions that change something list their effects and who approves. Reads like a leave balance need no confirmation; writes always do.</div>
+    <div><b>Routes with the form filled in</b>When a team must act, the right form arrives pre-filled from the question and the person's record. The person checks it; they never pick from a catalogue.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Every door -->
+<figure class="screen" id="hd-doors" data-title="Every door">
+  <div class="scap"><b>Ask from wherever you already are</b><span>Email, team chat and a phone all reach the same desk, with the same answers and the same actions.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="hd-wrap">
+      <div class="hd-col" style="justify-content:center">
+        <div class="hd-mail">
+          <div class="mh"><span>From</span><b>Sofia Lindqvist</b><span>To</span><span style="color:var(--acc)">help@acmelabs.dev</span><span>Subject</span><span style="color:var(--tx)">Has my Lisbon claim been paid?</span></div>
+          <div class="mb">Hi, I submitted the Lisbon design week hotel two weeks ago and haven't seen anything. Can someone check? Thanks, Sofia</div>
+        </div>
+        <div class="hd-mail" style="box-shadow:var(--e1)">
+          <div class="mh"><span>From</span><b>Acme Labs Helpdesk</b><span>Subject</span><span style="color:var(--tx)">Re: Has my Lisbon claim been paid?</span></div>
+          <div class="mb"><div class="ai-line" style="margin-bottom:6px;display:flex"><span class="aid"></span>Answered by AI · from Expenses</div>Your claim for Hotel Lumen, €612, was approved by Daniel on 13 Oct and is in Thursday's payout, 22 Oct, to your account ending 0912.<div class="row" style="margin-top:10px;gap:6px"><span class="btn sm">Track the claim</span><span class="btn sm ghost">Reply to reach Finance</span></div></div>
+        </div>
+        <h4>Email it</h4><p>A shared address per company, or per team. Replies thread back into the same item, and anything AI can't answer lands in the right queue.</p>
+      </div>
+      <div class="hd-col" style="justify-content:center">
+        <div class="hd-chatwin">
+          <div class="ch"><i data-lucide="hash" class="tx-3"></i>help-it<span class="tx-3" style="font-weight:400;margin-left:auto;font-size:11.5px">Team chat connector</span></div>
+          <div class="cb2">
+            <div class="hd-cm"><span class="av s g">AT</span><div class="col"><b>Aiko Tanaka<span>10:41</span></b><span class="tx-2">Can I get a second monitor for working from home? 27 inch if possible</span></div></div>
+            <div class="hd-cm"><span class="tile" style="background:var(--m-helpdesk);width:20px;height:20px;border-radius:5px"><i data-lucide="life-buoy" style="width:11px;height:11px"></i></span><div class="col grow"><b>Helpdesk<span>10:41 · only visible to you</span></b>
+              <div class="ai-card" style="margin-top:6px;padding:10px 12px"><div class="ai-h" style="margin-bottom:4px"><span class="aid"></span>Request from Assets<span class="src">by AI · from the catalogue</span></div>
+                <p style="font-size:12px">A 27 inch monitor for home is in stock in Bengaluru, delivered in about 4 days. It needs Daniel's approval.<span class="cite"><i data-lucide="laptop"></i>Assets</span></p>
+                <div class="acts"><span class="btn sm pri"><i data-lucide="check"></i>Request it</span><span class="btn sm ghost">Change size</span><span class="nu">Not useful</span></div></div></div></div>
+          </div>
+        </div>
+        <div class="card" style="width:100%;padding:10px 12px;display:flex;gap:10px;align-items:center"><span class="pal-in" style="height:auto;padding:0;border:0;font-size:13px;flex:1;gap:8px"><i data-lucide="search"></i><span>help: <span class="tx-2">printer on floor 2 is jammed</span></span></span><span class="kbd"><i data-lucide="command"></i>K</span></div>
+        <h4>Say it in chat, or the palette</h4><p>Mention Helpdesk in a channel or a direct message, or type "help:" in any Bemmoly product's palette. Private replies stay private.</p>
+      </div>
+      <div class="hd-col">
+        <div class="hd-phone"><div class="scr"><div class="notch"></div>
+          <div class="ph"><span class="tile" style="background:var(--m-helpdesk);width:24px;height:24px;border-radius:6px"><i data-lucide="life-buoy" style="width:13px;height:13px"></i></span><div class="col"><b style="font-size:12.5px">Acme Labs help</b><span class="tx-3" style="font-size:10.5px">Welcome, Kavya</span></div></div>
+          <div class="pb">
+            <div class="msg me" style="align-self:flex-end">What should I bring on my first day? And when do I get my laptop?</div>
+            <div class="msg bot"><div class="ai-line" style="font-size:10.5px;margin-bottom:3px"><span class="aid" style="width:6px;height:6px"></span>by AI · from your onboarding plan</div>Bring a photo ID and your bank details for payroll. Your MacBook Pro is set up and waiting at the Bengaluru front desk on Mon 2 Nov at 09:30, with Rohan.<span class="cite"><i data-lucide="list-checks"></i>Onboarding</span></div>
+            <div class="card" style="padding:8px 10px;font-size:11px"><div class="row" style="gap:6px"><span class="st prog"><i></i></span><b>Laptop for Kavya Nair</b></div><span class="tx-3">IT · ready Fri 30 Oct · HD-4176</span></div>
+          </div>
+          <div class="pi"><i data-lucide="message-circle" style="width:13px;height:13px"></i>Ask a question</div>
+        </div></div>
+        <h4>Open it on a phone</h4><p>The portal works on any phone, even before day one. A new hire can ask before they have a laptop.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Every door, one desk</b>Email, chat, the palette, the portal and the phone all create the same item, with the same categories and SLAs.</div>
+    <div><b>Answers from the source</b>"Has my claim been paid?" is answered from the claim itself, not a policy page. Finance never sees the question unless Sofia replies.</div>
+    <div><b>Works before day one</b>New hires get a portal link with their offer. Their questions use their onboarding plan, so the answers are about them.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Queue -->
+<figure class="screen" id="hd-queue" data-title="Agent queue">
+  <div class="scap"><b>The queue, sorted by what breaches first</b><span>Rohan's IT queue. Every ticket shows its live SLA, its category and how sure AI was. Six tickets turn out to share one cause.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.queue" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span class="cur">IT queue</span></div>
+        <div class="htabs"><span class="htab">Mine<span class="ct">6</span></span><span class="htab on">IT team<span class="ct">23</span></span><span class="htab">Unassigned<span class="ct">4</span></span><span class="htab">Waiting<span class="ct">5</span></span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="map-pin"></i>All offices</span><span class="fchip"><i data-lucide="arrow-down-wide-narrow"></i>SLA first</span><span class="btn pri"><i data-lucide="plus"></i>New ticket</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:16px 24px;gap:12px">
+        <div class="ai-card hd-vpn"><div class="ai-h"><span class="aid"></span>Six tickets, one likely cause<span class="src">by AI · from 6 tickets in the last 50 minutes and the VPN gateway status</span></div>
+          <p>Six people travelling in Europe can't keep the VPN up on hotel Wi-Fi since 08:10 CET. All are on VPN client 5.2.1 behind a captive portal; nobody on 5.3 is affected.<span class="cite">HD-4190</span><span class="cite">HD-4189</span><span class="cite">+4</span><span class="cite"><i data-lucide="book-open"></i>Client 5.3 release notes</span></p>
+          <div class="acts"><span class="btn sm pri hot" data-hide=".hd-vpn,.hd-vrow" data-show=".hd-qt"><i data-lucide="git-merge"></i>Link 6 to a new incident</span><span class="btn sm">Show them</span><span class="nu">Not useful</span></div></div>
+        <div class="card" style="flex:1;min-height:0;overflow:hidden">
+          <div class="hd-q h"><span>SLA</span><span>Request</span><span>Category</span><span>Pri</span><span>Assignee</span><span></span></div>
+          <div class="ghead"><i data-lucide="alarm-clock" style="width:14px;height:14px;color:var(--red)"></i>Breaching within an hour<span class="ct">3</span></div>
+          <div class="hd-q sel" data-go="hd-ticket"><span class="hd-sla warn"><i data-lucide="timer"></i>18m left</span><div class="t"><b>VPN drops every few minutes on hotel Wi-Fi</b><span>HD-4190 · Sofia Lindqvist · Lisbon, travelling · 09:02 CET</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Network › <b>VPN</b><span class="hd-conf">91%</span></span><span class="hd-pri p2">P2</span><span class="tx-3" style="font-size:12px">Unassigned</span><span class="hd-ch"><i data-lucide="message-circle"></i></span></div>
+          <div class="hd-q"><span class="hd-sla bad"><i data-lucide="timer-off"></i>Over by 6m</span><div class="t"><b>Payroll app says access denied after role change</b><span>HD-4187 · Arjun Mehta · moved to Sales West lead</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Accounts › <b>App access</b><span class="hd-conf">88%</span></span><span class="hd-pri p2">P2</span><span class="row" style="gap:6px;font-size:12px"><span class="av s a">RK</span>Rohan</span><span class="hd-ch"><i data-lucide="mail"></i></span></div>
+          <div class="hd-q"><span class="hd-sla warn"><i data-lucide="timer"></i>42m left</span><div class="t"><b>Laptop won't charge past 80%</b><span>HD-4185 · Aiko Tanaka · MacBook Pro 14, AL-0198</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Hardware › Laptop › <b>Battery</b></span><span class="hd-pri">P3</span><span class="row" style="gap:6px;font-size:12px"><span class="av s a">RK</span>Rohan</span><span class="hd-ch"><i data-lucide="globe"></i></span></div>
+          <div class="hd-vrow">
+          <div class="ghead"><i data-lucide="layers" style="width:14px;height:14px;color:var(--ai-600)"></i>Same cause as HD-4190<span class="ct">5 more</span></div>
+          <div class="hd-q"><span class="hd-sla"><i data-lucide="timer"></i>1h 50m</span><div class="t"><b>Can't connect to VPN at the hotel</b><span>HD-4189 · Lena Fischer · Amsterdam</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Network › <b>VPN</b><span class="hd-conf">96%</span></span><span class="hd-pri">P3</span><span class="tx-3" style="font-size:12px">Unassigned</span><span class="hd-ch"><i data-lucide="message-circle"></i></span></div>
+          <div class="hd-q"><span class="hd-sla"><i data-lucide="timer"></i>2h 05m</span><div class="t"><b>VPN keeps asking me to sign in again</b><span>HD-4188 · Daniel Okafor · Paris</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Accounts › <b>Sign-in</b><span class="hd-conf">58%</span></span><span class="hd-pri">P3</span><span class="tx-3" style="font-size:12px">Unassigned</span><span class="hd-ch"><i data-lucide="command"></i></span></div>
+          <div class="lrow" style="height:32px"><span class="tx-3" style="padding-left:108px;font-size:12px">and 3 more · Lena, Arjun and Meera, all on client 5.2.1</span></div>
+          </div>
+          <div class="ghead"><i data-lucide="calendar" style="width:14px;height:14px;color:var(--tx-3)"></i>Today<span class="ct">9</span></div>
+          <div class="hd-q"><span class="hd-sla"><i data-lucide="timer"></i>3h 10m</span><div class="t"><b>Install Docker Desktop on new Mac</b><span>HD-4179 · Tomás García · Austin opens at 09:00 CT</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Software › <b>Install</b></span><span class="hd-pri">P3</span><span class="row" style="gap:6px;font-size:12px"><span class="av s a">RK</span>Rohan</span><span class="hd-ch"><i data-lucide="command"></i></span></div>
+          <div class="hd-q" style="border-bottom:0"><span class="hd-sla ok"><i data-lucide="calendar-check"></i>Fri 30 Oct</span><div class="t"><b>Laptop for Kavya Nair, starts Mon 2 Nov</b><span>HD-4176 · from her onboarding plan · MacBook Pro 14 reserved</span></div><span class="hd-path"><span class="dot hd-dot-it"></span>Hardware › <b>New hire setup</b></span><span class="hd-pri">P3</span><span class="row" style="gap:6px;font-size:12px"><span class="av s a">RK</span>Rohan</span><span class="hd-ch"><i data-lucide="contact-round"></i></span></div>
+        </div>
+      </div></div>
+      <div class="toast hd-qt" hidden><i data-lucide="circle-check"></i>Incident INC-212 opened with 6 tickets. One reply will go to all six people.<span class="u" data-show=".hd-vpn,.hd-vrow" data-hide=".hd-qt">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>SLA as a live timer</b>Each timer counts in the requester's business hours and pauses while waiting on them. Austin's ticket starts its clock when Austin opens.</div>
+    <div><b>Confidence in the open</b>AI sets the category and shows how sure it was. A 58% guess is visibly a guess, and correcting it trains the next one.</div>
+    <div><b>One cause, one reply</b>Clusters of similar tickets become an incident with one click, and one reply reaches everyone. Click the selected row to open it.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Ticket -->
+<figure class="screen" id="hd-ticket" data-title="Ticket with AI draft">
+  <div class="scap"><b>A ticket that arrives with its answer half written</b><span>The conversation, a drafted reply that cites the fix, the person's laptop and trip, and tickets like it that were solved.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.queue" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span>IT queue</span><span class="sep">/</span><span class="cur">HD-4190</span></div>
+        <div class="hact"><span class="hd-sla warn"><i data-lucide="timer"></i>First reply in 16m</span><span class="btn"><i data-lucide="user-round-plus"></i>Assign to me</span><span class="btn"><i data-lucide="arrow-right-left"></i>Move</span><span class="ib"><i data-lucide="ellipsis"></i></span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px;display:flex;flex-direction:column;gap:12px;background:var(--sunken)">
+          <div><div class="h20">VPN drops every few minutes on hotel Wi-Fi</div><div class="row tx-3" style="font-size:12px;margin-top:2px"><span>Opened 09:02 CET from chat</span><span>·</span><span>Likely the same cause as 5 others</span></div></div>
+          <div class="hd-thread">
+            <div class="hd-ev"><span class="av p">SL</span><div class="bub"><div class="who"><b>Sofia Lindqvist</b><span>09:02 · chat</span></div>I'm at the hotel in Lisbon for design week. The VPN connects, then drops every 3 or 4 minutes, so Figma and the staging site keep failing. Office Wi-Fi was fine last week.</div></div>
+            <div class="hd-ev"><span class="tile" style="background:var(--m-helpdesk);width:24px;height:24px;border-radius:50%"><i data-lucide="life-buoy" style="width:12px;height:12px"></i></span><div class="bub" style="background:var(--ai-50);box-shadow:inset 0 0 0 1px var(--ai-100)"><div class="who"><b>Helpdesk AI</b><span>09:02</span></div>I suggested "VPN on hotel and guest Wi-Fi". Sofia tried it and said <i>still dropping</i>, so this came to IT with the steps she already tried.</div></div>
+            <div class="hd-ev"><span class="sys"><i data-lucide="tag"></i>AI set category Network › VPN · 91% · P2 because the person is travelling and blocked</span></div>
+            <div class="hd-ev"><span style="width:24px;flex:none"></span><div class="well" style="flex:1;padding:10px 12px;font-size:12px"><b class="md">Already tried, from the chat</b><div class="row tx-2" style="gap:14px;margin-top:6px;flex-wrap:wrap"><span class="row" style="gap:5px"><i data-lucide="circle-check" style="width:13px;height:13px;color:var(--green)"></i>Rejoined the Wi-Fi</span><span class="row" style="gap:5px"><i data-lucide="circle-check" style="width:13px;height:13px;color:var(--green)"></i>Accepted the hotel sign-in page</span><span class="row" style="gap:5px"><i data-lucide="circle-check" style="width:13px;height:13px;color:var(--green)"></i>Restarted the laptop</span></div></div></div>
+          </div>
+          <div class="hd-draft" style="margin-top:auto">
+            <div class="dh"><span class="aid"></span><b style="color:var(--ai-600)">Drafted reply</b><span class="tx-2">by AI · from the client 5.3 release notes and 2 solved tickets</span><span class="sp"></span><span class="seg"><span class="on">Reply</span><span>Internal note</span></span></div>
+            <div class="db"><p>Hi Sofia, thanks for trying the first steps. This is a known issue with VPN client 5.2.1 on hotel networks that sign you in through a web page.<span class="cite"><i data-lucide="file-text"></i>Release notes 5.3</span></p><p>Your laptop is on 5.2.1. I've pushed 5.3 to it: restart the VPN app when the update prompt appears, and it should stay connected. If it still drops, reply here and I'll call you.<span class="cite">HD-3962</span><span class="cite">HD-4011</span></p><p class="tx-2" style="margin:0">Rohan</p></div>
+            <div class="df"><span class="btn sm"><i data-lucide="wand-sparkles"></i>Shorter</span><span class="btn sm"><i data-lucide="languages"></i>In Swedish</span><span class="btn sm"><i data-lucide="file-stack"></i>Macros</span><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Also pushes 5.3 via Assets</span><span class="btn sm pri hot" data-show=".hd-tt"><i data-lucide="send"></i>Send and push update</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);overflow:hidden;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+          <div class="hd-kv">
+            <span>Category</span><span class="hd-path"><span class="dot hd-dot-it"></span>IT › Network › <b>VPN</b><span class="hd-conf">91%</span></span>
+            <span>Priority</span><span class="row" style="gap:6px"><span class="hd-pri p2">P2</span>Blocked while travelling</span>
+            <span>SLA</span><span class="tx-2">Reply by 09:32 CET · fix by 13:00 CET</span>
+            <span>Queue</span><span>IT Europe · Berlin hours</span>
+          </div>
+          <div style="border-top:1px solid var(--line-2);padding-top:12px">
+            <div class="row" style="margin-bottom:10px"><span class="av l p">SL</span><div class="col grow"><b>Sofia Lindqvist</b><span class="tx-3" style="font-size:12px">Product designer · Berlin · manager Daniel Okafor</span></div></div>
+            <div class="col" style="gap:7px;font-size:12px">
+              <div class="row"><span class="tile" style="background:var(--m-assets);width:18px;height:18px;border-radius:5px"><i data-lucide="laptop" style="width:10px;height:10px"></i></span><span class="grow tx-2">MacBook Pro 14 · AL-0231</span><span class="bdg warn">VPN 5.2.1</span></div>
+              <div class="row"><span class="tile" style="background:var(--m-access);width:18px;height:18px;border-radius:5px"><i data-lucide="shield-check" style="width:10px;height:10px"></i></span><span class="grow tx-2">Groups: design, vpn-eu</span><span class="tx-3">MFA ok</span></div>
+              <div class="row"><span class="tile" style="background:var(--m-expenses);width:18px;height:18px;border-radius:5px"><i data-lucide="plane" style="width:10px;height:10px"></i></span><span class="grow tx-2">Trip: Lisbon design week</span><span class="tx-3">18 to 23 Oct</span></div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--line-2);padding-top:12px">
+            <div class="cap" style="margin-bottom:4px">Solved tickets like this</div>
+            <div class="hd-sim"><span class="st done"><i></i></span><div class="col grow"><b style="font-weight:500">HD-3962 · VPN drops at a conference hotel</b><span class="tx-3">Fixed by updating to 5.3 · Tomás · 2 weeks ago</span></div><span class="tx-3">94%</span></div>
+            <div class="hd-sim"><span class="st done"><i></i></span><div class="col grow"><b style="font-weight:500">HD-4011 · VPN unstable on airport Wi-Fi</b><span class="tx-3">Fixed by updating to 5.3 · Lena · 9 days ago</span></div><span class="tx-3">89%</span></div>
+            <div class="hd-sim"><span class="st done"><i></i></span><div class="col grow"><b style="font-weight:500">HD-3730 · Can't reach staging from home</b><span class="tx-3">Split tunnel setting · Aiko · August</span></div><span class="tx-3">61%</span></div>
+          </div>
+          <div style="border-top:1px solid var(--line-2);padding-top:12px;font-size:12px" class="col">
+            <div class="row"><i data-lucide="history" class="tx-3"></i><span class="grow tx-2">Sofia's earlier requests</span><span>6 · last: Figma seat, Sep</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="toast hd-tt" hidden><i data-lucide="circle-check"></i>Reply sent to Sofia. Client 5.3 is installing on AL-0231.<span class="u" data-hide=".hd-tt">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A draft, not a reply</b>The reply cites the release notes and the two tickets it learnt from. Rohan edits, translates or shortens it, and sends it himself.</div>
+    <div><b>Context nobody typed</b>The laptop and its VPN version come from Assets, groups from Access, the trip from Expenses. Each line works only if that product is installed.</div>
+    <div><b>Solved before, with how</b>Similar tickets show how they were fixed, with a match score, so the second time is always faster than the first.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Categories -->
+<figure class="screen" id="hd-cats" data-title="Categories that learn">
+  <div class="scap"><b>Categories, per team, that learn from the queue</b><span>Each team owns its tree. Each category owns its form, queue, SLA, approval and what AI may do. AI proposes changes from the tickets that didn't fit.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.cat" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7","hd.cat":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span class="cur">Categories</span></div>
+        <div class="htabs"><span class="htab on">Tree</span><span class="htab">Proposals<span class="ct">3</span></span><span class="htab">Uncategorised<span class="ct">12</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import</span><span class="btn pri"><i data-lucide="plus"></i>New category</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 300px;height:100%">
+<div style="overflow:hidden;padding:16px 20px">
+          <div class="row" style="margin-bottom:12px">
+            <div class="hd-teams">
+              <div class="hd-team on"><span class="hd-tm t-it"><i data-lucide="monitor"></i></span>IT<span class="ct">46</span></div>
+              <div class="hd-team"><span class="hd-tm t-hr"><i data-lucide="heart-handshake"></i></span>People<span class="ct">31</span></div>
+              <div class="hd-team"><span class="hd-tm t-fin"><i data-lucide="landmark"></i></span>Finance<span class="ct">18</span></div>
+              <div class="hd-team"><span class="hd-tm t-fac"><i data-lucide="building-2"></i></span>Facilities<span class="ct">22</span></div>
+              <div class="hd-team"><span class="hd-tm t-leg"><i data-lucide="scale"></i></span>Legal<span class="ct">9</span></div>
+              <div class="hd-team" style="color:var(--tx-3)"><i data-lucide="plus"></i>Team</div>
+            </div>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <div class="hd-tree h"><span>Category</span><span>Form</span><span>Queue</span><span>SLA</span><span>Approval</span><span>AI may</span><span class="r">30 days</span></div>
+            <div class="hd-tree"><span class="nm"><i data-lucide="chevron-down" class="chev"></i><b>Hardware</b></span><span class="tx-3">3 fields</span><span>IT desk</span><span>P3 · 8h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i><i data-lucide="text-cursor-input" class="on"></i></span><span class="r">212</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><i data-lucide="chevron-down" class="chev"></i>Laptop</span><span class="tx-3">5 fields</span><span>IT desk</span><span>P3 · 8h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i><i data-lucide="text-cursor-input" class="on"></i></span><span class="r">96</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:34px"><span class="sp0"></span>Battery and charging</span><span class="tx-3">+1 field</span><span>IT desk</span><span>P3 · 8h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i></span><span class="r">31</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:34px"><span class="sp0"></span>Replacement</span><span class="tx-3">+2 fields</span><span>IT desk</span><span>P3 · 3d</span><span>Manager</span><span class="acts"><i data-lucide="laptop" class="on"></i></span><span class="r">18</span></div>
+            <div class="hd-tree sel"><span class="nm" style="padding-left:17px"><span class="sp0"></span>Monitor and peripherals</span><span class="tx-3">4 fields</span><span>IT desk</span><span>P4 · 5d</span><span>Over ₹15k</span><span class="acts"><i data-lucide="book-open" class="on"></i><i data-lucide="text-cursor-input" class="on"></i><i data-lucide="laptop" class="on"></i></span><span class="r">54</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><span class="sp0"></span>New hire setup</span><span class="tx-3">Auto</span><span>IT desk</span><span>By start date</span><span class="tx-3">None</span><span class="acts"><i data-lucide="laptop" class="on"></i></span><span class="r">12</span></div>
+            <div class="hd-tree"><span class="nm"><i data-lucide="chevron-down" class="chev"></i><b>Network</b></span><span class="tx-3">2 fields</span><span>IT network</span><span>P2 · 4h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i></span><span class="r">141</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><span class="sp0"></span>VPN</span><span class="tx-3">3 fields</span><span>IT network</span><span>P2 · 4h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i></span><span class="r">88</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><span class="sp0"></span>Office Wi-Fi</span><span class="tx-3">2 fields</span><span>IT network</span><span>P2 · 4h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i></span><span class="r">53</span></div>
+            <div class="hd-tree"><span class="nm"><i data-lucide="chevron-down" class="chev"></i><b>Accounts and access</b></span><span class="tx-3">2 fields</span><span>IT desk</span><span>P2 · 2h</span><span class="tx-3">None</span><span class="acts"><i data-lucide="book-open" class="on"></i></span><span class="r">163</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><span class="sp0"></span>MFA reset</span><span class="tx-3">None</span><span>IT desk</span><span>P2 · 1h</span><span>Manager tap</span><span class="acts"><i data-lucide="shield-check" class="on"></i></span><span class="r">71</span></div>
+            <div class="hd-tree"><span class="nm" style="padding-left:17px"><span class="sp0"></span>App access</span><span class="tx-3">3 fields</span><span>IT desk</span><span>P3 · 8h</span><span>App owner</span><span class="acts"><i data-lucide="shield-check" class="on"></i></span><span class="r">92</span></div>
+            <div class="hd-tree"><span class="nm"><i data-lucide="chevron-right" class="chev"></i><b>Software</b></span><span class="tx-3">3 fields</span><span>IT desk</span><span>P3 · 8h</span><span>Over ₹5k</span><span class="acts"><i data-lucide="key-round" class="on"></i></span><span class="r">118</span></div>
+            <div class="hd-tree" style="border-bottom:0"><span class="nm"><span class="sp0"></span><span class="tx-2">Other</span></span><span class="tx-3">1 field</span><span>IT desk</span><span>P3 · 8h</span><span class="tx-3">None</span><span class="acts"></span><span class="r"><span class="bdg warn" style="height:18px">61</span></span></div>
+          </div>
+          <div class="row tx-3" style="font-size:11.5px;margin-top:10px;gap:14px"><span class="row" style="gap:5px"><i data-lucide="book-open" style="width:13px;height:13px;color:var(--ai-600)"></i>Answer from articles</span><span class="row" style="gap:5px"><i data-lucide="text-cursor-input" style="width:13px;height:13px;color:var(--ai-600)"></i>Fill the form</span><span class="row" style="gap:5px"><i data-lucide="shield-check" style="width:13px;height:13px;color:var(--ai-600)"></i>Act in Access</span><span class="row" style="gap:5px"><i data-lucide="laptop" style="width:13px;height:13px;color:var(--ai-600)"></i>Act in Assets</span><span class="row" style="gap:5px"><i data-lucide="key-round" style="width:13px;height:13px;color:var(--ai-600)"></i>Act in Licences</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:16px;overflow:hidden">
+          <div class="ai-card" style="padding:12px 14px 6px">
+            <div class="ai-h"><span class="aid"></span>Proposals<span class="src">by AI · from 30 days of IT tickets</span></div>
+            <div class="hd-prop"><span class="ic"><i data-lucide="folder-plus"></i></span><div class="grow"><b>New: VPN on hotel and guest Wi-Fi</b><span>38 tickets landed in VPN or Other with the same cause and the same fix.</span><div class="row" style="margin-top:7px"><span class="btn sm pri hot" data-show=".hd-pk"><i data-lucide="eye"></i>Review</span><span class="btn sm ghost">Dismiss</span></div></div></div>
+            <div class="hd-prop"><span class="ic"><i data-lucide="git-merge"></i></span><div class="grow"><b>Merge: Printer jam into Printing</b><span>Bengaluru only. 92% of tickets moved between the two by hand.</span><div class="row" style="margin-top:7px"><span class="btn sm">Review</span><span class="btn sm ghost">Dismiss</span></div></div></div>
+            <div class="hd-prop"><span class="ic"><i data-lucide="split"></i></span><div class="grow"><b>Split: Other</b><span>61 tickets. 24 are calendar sync, 19 are screen sharing, 18 are mixed.</span><div class="row" style="margin-top:7px"><span class="btn sm">Review</span><span class="btn sm ghost">Dismiss</span></div></div></div>
+            <div class="acts" style="margin-top:4px;padding-bottom:6px"><span class="tx-3" style="font-size:11.5px">Nothing changes until you accept</span><span class="nu">Not useful</span></div>
+          </div>
+          <div class="card" style="padding:12px 14px;margin-top:12px">
+            <div class="cap">Auto-categorised, last 30 days</div>
+            <div class="row" style="margin-top:6px"><b class="num" style="font-size:22px;font-weight:600">87%</b><span class="tx-3" style="font-size:12px">of IT tickets, 94% kept by agents</span></div>
+            <div class="bar" style="margin-top:8px"><i style="width:87%;background:var(--ai)"></i></div>
+            <div class="tx-3" style="font-size:11.5px;margin-top:8px">The rest went to triage with AI's top 3 guesses. Corrections teach the next guess.</div>
+          </div>
+        </div>
+      </div>
+      <div class="scrim hd-pk" hidden data-hide=".hd-pk"></div>
+      <div class="peek hd-pk" hidden>
+        <div class="peek-h"><span class="aid"></span><b>New category proposal</b><span class="sp"></span><span class="ib sm" data-hide=".hd-pk"><i data-lucide="x"></i></span></div>
+        <div class="peek-b" style="display:flex;flex-direction:column;gap:14px">
+          <div><div class="h16">VPN on hotel and guest Wi-Fi</div><div class="hd-path" style="margin-top:4px"><span class="dot hd-dot-it"></span>IT › Network › VPN › <b>Hotel and guest Wi-Fi</b></div></div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Why<span class="src">by AI · from 38 tickets, 1 to 19 Oct</span></div><p style="font-size:12.5px">All 38 mention a hotel, airport or conference network, 33 were fixed by a client update, and 21 were first filed under Other. Today they wait in the general VPN queue at P2.<span class="cite">HD-3962</span><span class="cite">HD-4011</span><span class="cite">+36</span></p><div class="acts"><span class="btn sm">Show all 38</span><span class="nu">Not useful</span></div></div>
+          <div class="hd-kv">
+            <span>Queue</span><span>IT network</span>
+            <span>SLA</span><span>P2 · reply 30m, fix 4h, travel hours</span>
+            <span>Form</span><span class="row" style="gap:4px;flex-wrap:wrap"><span class="tag">Network name</span><span class="tag">City</span><span class="tag">Client version, auto</span></span>
+            <span>AI may</span><span class="row" style="gap:4px;flex-wrap:wrap"><span class="bdg ai">Answer from article</span><span class="bdg ai">Push client update</span></span>
+            <span>Article</span><span style="color:var(--acc)">Draft ready in Knowledge</span>
+          </div>
+          <div class="well" style="padding:10px 12px;font-size:12px"><b style="font-weight:600">If it had existed for 30 days</b><div class="tx-2" style="margin-top:3px">29 of 38 answered without a person · median fix 2h 10m faster</div></div>
+          <div><div class="cap" style="margin-bottom:4px">Sample tickets</div>
+            <div class="hd-sim"><span class="av s p">SL</span><div class="col grow"><b style="font-weight:500">VPN drops every few minutes on hotel Wi-Fi</b><span class="tx-3">Lisbon · today · open</span></div></div>
+            <div class="hd-sim"><span class="av s k">TG</span><div class="col grow"><b style="font-weight:500">VPN drops at a conference hotel</b><span class="tx-3">Las Vegas · fixed by client 5.3</span></div></div>
+            <div class="hd-sim"><span class="av s a">LF</span><div class="col grow"><b style="font-weight:500">No VPN on the train Wi-Fi to Hamburg</b><span class="tx-3">Filed under Other · fixed by client 5.3</span></div></div>
+          </div>
+        </div>
+        <div class="peek-f"><span class="btn" data-hide=".hd-pk">Edit first</span><span class="btn pri" data-hide=".hd-pk" data-show=".hd-ct"><i data-lucide="folder-plus"></i>Create category</span></div>
+      </div>
+      <div class="toast hd-ct" hidden><i data-lucide="circle-check"></i>Category created. 38 tickets moved, 12 open ones keep their SLA.<span class="u" data-hide=".hd-ct">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A tree per team</b>IT, People, Finance, Facilities and Legal each own their branch. Children inherit the form, queue and SLA, and override only what differs.</div>
+    <div><b>What AI may do, per category</b>The small lilac icons say what AI is allowed to do in each category: answer, fill the form, or act in another product. Admins choose.</div>
+    <div><b>Proposals with evidence</b>New, merge and split proposals cite the tickets, show what would have happened, and change nothing until a person accepts. Click Review.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Knowledge gaps -->
+<figure class="screen" id="hd-kb" data-title="Knowledge gaps">
+  <div class="scap"><b>Knowledge gaps, drafted for a person to publish</b><span>Questions the desk keeps answering by hand become draft articles, written from the resolved tickets and tested against them.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.kb" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span class="cur">Knowledge</span></div>
+        <div class="htabs"><span class="htab">Articles<span class="ct">214</span></span><span class="htab on">Gaps<span class="ct">7</span></span><span class="htab">Stale<span class="ct">11</span></span></div>
+        <div class="hact"><span class="btn">Send for review</span><span class="btn pri hot" data-show=".hd-kt"><i data-lucide="book-check"></i>Publish to IT</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:266px minmax(0,1fr) 286px;height:100%">
+        <div style="border-right:1px solid var(--line);background:var(--canvas);overflow:hidden">
+          <div class="hd-gap sel"><span class="hd-tm t-it"><i data-lucide="wifi"></i></span><div class="grow"><b>VPN on hotel and guest Wi-Fi</b><span>38 tickets · no article · IT</span></div><span class="bdg ai">Drafted</span></div>
+          <div class="hd-gap"><span class="hd-tm t-fin"><i data-lucide="receipt"></i></span><div class="grow"><b>Claiming home internet</b><span>22 tickets · article is from policy v6 · Finance</span></div><span class="bdg ai">Drafted</span></div>
+          <div class="hd-gap"><span class="hd-tm t-hr"><i data-lucide="baby"></i></span><div class="grow"><b>Elternzeit, parental leave in Germany</b><span>14 tickets · asked in German, article in English · People</span></div><span class="bdg ai">Drafted</span></div>
+          <div class="hd-gap"><span class="hd-tm t-it"><i data-lucide="calendar-sync"></i></span><div class="grow"><b>Calendar not syncing on phone</b><span>24 tickets · in Other · IT</span></div><span class="bdg">Needs tickets</span></div>
+          <div class="hd-gap"><span class="hd-tm t-fac"><i data-lucide="car"></i></span><div class="grow"><b>Parking pass for Austin office</b><span>9 tickets · Facilities</span></div><span class="bdg ai">Drafted</span></div>
+          <div class="hd-gap"><span class="hd-tm t-leg"><i data-lucide="file-signature"></i></span><div class="grow"><b>Who can sign an NDA</b><span>7 tickets · Legal</span></div><span class="bdg ai">Drafted</span></div>
+          <div class="hd-gap" style="border-bottom:0"><span class="hd-tm t-it"><i data-lucide="printer"></i></span><div class="grow"><b>Printing from a personal laptop</b><span>6 tickets · IT</span></div><span class="bdg">Watching</span></div>
+        </div>
+        <div style="overflow:hidden;padding:22px 30px;background:var(--card)">
+          <div class="row" style="margin-bottom:12px"><span class="bdg ai"><span class="aid" style="width:6px;height:6px;box-shadow:none"></span>Draft by AI · from 38 resolved tickets</span><span class="sp"></span><span class="tx-3" style="font-size:12px">Highlighted text is AI's</span></div>
+          <div class="hd-art">
+            <h3>VPN keeps dropping on hotel or guest Wi-Fi</h3>
+            <div class="tx-3" style="font-size:12px">IT › Network › VPN · for everyone travelling · 3 min read</div>
+            <p><span class="gen">Hotel, airport and conference networks often sign you in through a web page first. VPN client 5.2.1 loses the connection when that page refreshes, about every few minutes.</span><span class="cite">HD-3962</span><span class="cite">HD-4011</span></p>
+            <h5>Fix it in two minutes</h5>
+            <ol>
+              <li><span class="gen">Open the VPN app and check the version under About. If it says 5.2.1, choose Check for updates.</span></li>
+              <li><span class="gen">Install 5.3, quit the app and open it again.</span><span class="cite">Release notes 5.3</span></li>
+              <li><span class="gen">Open any web page once so the hotel's sign-in page appears, accept it, then connect the VPN.</span></li>
+            </ol>
+            <h5>Still dropping?</h5>
+            <p><span class="gen">Use your phone's hotspot for a few minutes and reply to your ticket. IT can switch you to the travel gateway, which 5 of the 38 people needed.</span><span class="cite">HD-4102</span></p>
+            <div class="well" style="margin-top:16px;padding:12px 14px;display:flex;align-items:center;gap:10px"><span class="grow tx-2" style="font-size:12.5px">Did this fix it?</span><span class="btn sm"><i data-lucide="thumbs-up"></i>Yes</span><span class="btn sm"><i data-lucide="headset"></i>No, get help</span></div>
+            <div class="tx-3" style="font-size:11.5px;margin-top:6px">People see this ending. "No" opens a ticket in Network › VPN with the steps above marked as tried.</div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;overflow:hidden;display:flex;flex-direction:column;gap:14px">
+          <div><div class="row"><i data-lucide="flask-conical" class="tx-3"></i><b class="grow">Tested against the 38 tickets</b></div><span class="tx-3" style="font-size:12px">Would AI have answered them with this article?</span></div>
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Would answer</div><div class="v num" style="font-size:20px">31</div><div class="d">of 38 tickets</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Agent time back</div><div class="v num" style="font-size:20px">~9h</div><div class="d">a month, at this rate</div></div>
+          </div>
+          <div class="col" style="gap:8px;font-size:12.5px">
+            <div class="row"><i data-lucide="user-round" class="tx-3"></i><span class="grow tx-2">Owner</span><span class="row" style="gap:6px"><span class="av s a">RK</span>Rohan Kapoor</span></div>
+            <div class="row"><i data-lucide="eye" class="tx-3"></i><span class="grow tx-2">Visible to</span><span>Everyone</span></div>
+            <div class="row"><i data-lucide="calendar-clock" class="tx-3"></i><span class="grow tx-2">Review again</span><span>When client 5.4 ships</span></div>
+            <div class="row"><i data-lucide="languages" class="tx-3"></i><span class="grow tx-2">Also in</span><span>German, Spanish</span></div>
+          </div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Left out<span class="src">by AI · from 2 tickets</span></div><p style="font-size:12.5px">Two tickets mention a gateway address. I didn't include it, because the article is visible to everyone.<span class="cite">HD-4102</span></p><div class="acts"><span class="btn sm">Show the tickets</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+      <div class="toast hd-kt" hidden><i data-lucide="circle-check"></i>Published. AI will use it for new VPN questions from now on.<span class="u" data-hide=".hd-kt">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Gaps found from the queue</b>A gap is a question answered by hand again and again, an article that's out of date, or one in the wrong language.</div>
+    <div><b>Every sentence traceable</b>Highlighted text is AI's and cites the ticket it came from. The owner edits it like any document and publishes it.</div>
+    <div><b>Tested before publishing</b>The draft is replayed against the tickets that caused it, so the owner knows it works before anyone reads it.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Insights -->
+<figure class="screen" id="hd-ins" data-title="Insights">
+  <div class="scap"><b>Insights: what got answered, and what stayed answered</b><span>Deflection counted honestly, satisfaction per team, and the answers people said were not useful.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.ins" data-me="Priya Raman" data-counts='{"hd.queue":"!8","hd.kb":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span class="cur">Insights</span></div>
+        <div class="htabs"><span class="htab on">Overview</span><span class="htab">Teams</span><span class="htab">Categories</span><span class="htab">AI answers</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>30 Sep to 19 Oct</span><span class="fchip"><i data-lucide="building-2"></i>All offices</span><span class="btn"><i data-lucide="download"></i>Export</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:14px">
+        <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
+          <div class="card kpi"><div class="l">Questions</div><div class="v num">1,284</div><div class="d">From 412 people · 3 offices</div></div>
+          <div class="card kpi"><div class="l"><span class="aid"></span>Answered by AI</div><div class="v num">41%</div><div class="d">526, and they stayed so</div></div>
+          <div class="card kpi"><div class="l">Median first reply</div><div class="v num">11 min</div><div class="d">by a person, in business hours</div></div>
+          <div class="card kpi"><div class="l">SLA met</div><div class="v num">94.2%</div><div class="d"><span class="up">+2.8 pts</span> vs September</div></div>
+          <div class="card kpi"><div class="l">Satisfaction</div><div class="v num">4.6</div><div class="d">out of 5 · 38% replied</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;flex:1;min-height:0">
+          <div class="col" style="gap:14px;min-height:0">
+            <div class="card" style="padding:14px 16px">
+              <div class="row" style="margin-bottom:12px"><b class="grow">How questions ended, by week</b><span class="row tx-2" style="font-size:12px;gap:12px"><span class="row" style="gap:5px"><span class="dot" style="background:var(--ai)"></span>AI, stayed answered</span><span class="row" style="gap:5px"><span class="dot" style="background:var(--amber)"></span>AI, came back</span><span class="row" style="gap:5px"><span class="dot" style="background:var(--acc-500)"></span>Team resolved</span></span></div>
+              <div class="hd-chart">
+                <div class="wk"><i class="ai" style="height:30%"></i><i class="back" style="height:5%"></i><i class="team" style="height:55%"></i></div>
+                <div class="wk"><i class="ai" style="height:34%"></i><i class="back" style="height:4%"></i><i class="team" style="height:52%"></i></div>
+                <div class="wk"><i class="ai" style="height:38%"></i><i class="back" style="height:3%"></i><i class="team" style="height:50%"></i></div>
+                <div class="wk"><i class="ai" style="height:40%"></i><i class="back" style="height:3%"></i><i class="team" style="height:52%"></i></div>
+                <div class="wk"><i class="ai" style="height:23%"></i><i class="back" style="height:2%"></i><i class="team" style="height:26%"></i></div>
+              </div>
+              <div class="hd-xl"><span>21 Sep</span><span>28 Sep</span><span>5 Oct</span><span>12 Oct</span><span>19 Oct, so far</span></div>
+            </div>
+            <div class="card" style="flex:1;min-height:0;overflow:hidden">
+              <table class="tbl"><thead><tr><th>Team</th><th class="r">Questions</th><th class="r">AI answered</th><th class="r">SLA met</th><th class="r">Satisfaction</th><th>Top category</th></tr></thead><tbody>
+                <tr><td><div class="row"><span class="dot hd-dot-it"></span>IT</div></td><td class="r num">642</td><td class="r num">46%</td><td class="r num">95%</td><td class="r num">4.5</td><td class="tx-2">Accounts › MFA reset</td></tr>
+                <tr><td><div class="row"><span class="dot hd-dot-hr"></span>People</div></td><td class="r num">298</td><td class="r num">38%</td><td class="r num">97%</td><td class="r num">4.7</td><td class="tx-2">Leave › Balance</td></tr>
+                <tr><td><div class="row"><span class="dot hd-dot-fin"></span>Finance</div></td><td class="r num">176</td><td class="r num">52%</td><td class="r num">92%</td><td class="r num">4.4</td><td class="tx-2">Reimbursement status</td></tr>
+                <tr><td><div class="row"><span class="dot hd-dot-fac"></span>Facilities</div></td><td class="r num">128</td><td class="r num">21%</td><td class="r num"><span class="bdg warn">89%</span></td><td class="r num">4.3</td><td class="tx-2">Furniture › Desk change</td></tr>
+                <tr><td style="border-bottom:0"><div class="row"><span class="dot hd-dot-leg"></span>Legal</div></td><td class="r num" style="border-bottom:0">40</td><td class="r num" style="border-bottom:0">12%</td><td class="r num" style="border-bottom:0">100%</td><td class="r num" style="border-bottom:0">4.8</td><td class="tx-2" style="border-bottom:0">Contracts › NDA</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div class="col" style="gap:14px;min-height:0">
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>What to look at<span class="src">by AI · from 1,284 questions</span></div>
+              <p style="font-size:12.5px">Facilities missed SLA on 14 desk changes in Austin, all on Fridays, when nobody is on the Austin queue.<span class="cite">Business hours</span> 38 AI answers came back within 3 days, 21 of them about VPN on hotel Wi-Fi.<span class="cite"><i data-lucide="folder-plus"></i>Proposal</span></p>
+              <div class="acts"><span class="btn sm">Adjust Austin hours</span><span class="btn sm" data-go="hd-cats">See proposal</span><span class="nu">Not useful</span></div></div>
+            <div class="card" style="flex:1;min-height:0;overflow:hidden">
+              <div class="card-h">Marked not useful<span class="tx-3">63 this month</span></div>
+              <div class="lrow" style="height:50px"><span class="hd-tm t-hr"><i data-lucide="heart-handshake"></i></span><div class="col grow"><b style="font-size:12.5px;font-weight:500">"Can I work from Spain for 3 weeks?"</b><span class="tx-3" style="font-size:11.5px">No policy for working abroad · 9 times</span></div><span class="btn sm">Write it</span></div>
+              <div class="lrow" style="height:50px"><span class="hd-tm t-fin"><i data-lucide="landmark"></i></span><div class="col grow"><b style="font-size:12.5px;font-weight:500">"Why was my claim rejected?"</b><span class="tx-3" style="font-size:11.5px">Answer quoted policy, not the reason · 7 times</span></div><span class="btn sm">Fix it</span></div>
+              <div class="lrow" style="height:50px;border-bottom:0"><span class="hd-tm t-it"><i data-lucide="monitor"></i></span><div class="col grow"><b style="font-size:12.5px;font-weight:500">"Screen sharing is blank in calls"</b><span class="tx-3" style="font-size:11.5px">Article is for the old OS version · 6 times</span></div><span class="btn sm">Update it</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Honest deflection</b>An AI answer counts only if the person confirmed it or didn't return about it within 3 days. The ones that came back are drawn in amber, not hidden.</div>
+    <div><b>Per team, side by side</b>Each team sees its own numbers. Priya, as a workspace admin, sees all five, and HR case contents stay private either way.</div>
+    <div><b>"Not useful" is a to-do list</b>Rejected answers are grouped by cause: a missing policy, a wrong answer or a stale article, each with the fix one click away.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">The owner's question: "There might be different categories. How do we manage those categories?" The answer is that a category is the unit of configuration. Every team owns a tree, and every category in it owns six things. Children inherit from their parent and override only what differs, so a 100-category desk is still easy to reason about. Everything lives in Helpdesk › Settings, without code, and each team's setup exports as a file that can be reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Teams and queues</h3><p>A team (IT, People, Finance, Facilities, Legal, or any you add) has members, queues per office or skill, its own portal section and its own privacy. People cases can be hidden from every other admin.</p></div>
+  <div><h3>Categories and forms</h3><p>A tree per team, as deep as needed. Each category has its intake form built from typed custom fields, its visibility, and the words people use for it, which help AI place new tickets. Templates for IT, HR and Facilities to start.</p></div>
+  <div><h3>Routing rules</h3><p>Sentences built from blocks: when the category is, the office is, the person is new, VIP or travelling, then send to a queue, assign round robin or by skill, set a priority. Every rule can be replayed against last month.</p></div>
+  <div><h3>SLAs and business hours</h3><p>SLA policies by priority and category, timed in the requester's or the team's business hours. Hours per office, with holidays from People when it's installed. Pause while waiting on the person.</p></div>
+  <div><h3>Channels and approvals</h3><p>Portal, email addresses per team, chat connectors, the palette and phone. Approvals use Bemmoly's shared workflow engine: a manager tap, an app owner, a cost threshold, or a chain.</p></div>
+  <div><h3>Macros and AI actions</h3><p>Saved replies with fields, shared per team. Per category, what AI may do: answer from articles, fill the form, act in another product after confirmation, or nothing. Plus the confidence it needs to auto-categorise.</p></div>
+</div>
+
+<div class="screens" id="cfg">
+<figure class="screen" id="hd-cfg-cat" data-title="Category editor">
+  <div class="scap"><b>A category, with its form, its route and its AI rules</b><span>Rohan edits "Monitor and peripherals": the form people see, who owns it, its SLA and approval, and exactly what AI may do on its own behalf.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.set" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Categories</span></div>
+        <div class="htabs"><span class="htab">Teams</span><span class="htab on">Categories</span><span class="htab">Routing</span><span class="htab">SLAs</span><span class="htab">Channels</span><span class="htab">Macros</span><span class="htab">AI</span></div>
+        <div class="hact"><span class="bdg acc">Unsaved</span><span class="btn">Discard</span><span class="btn pri">Save category</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px;display:flex;flex-direction:column;gap:14px">
+          <div class="row"><span class="hd-tm l t-it"><i data-lucide="monitor-speaker"></i></span><div class="col grow"><div class="h20">Monitor and peripherals</div><span class="hd-path">IT › Hardware › <b>Monitor and peripherals</b> · inherits queue from Hardware</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+            <div class="card" style="padding:10px 12px"><div class="cap">Queue</div><div class="md" style="margin-top:3px">IT desk</div><div class="tx-3" style="font-size:11.5px">By office · round robin</div></div>
+            <div class="card" style="padding:10px 12px"><div class="cap">SLA</div><div class="md" style="margin-top:3px">P4 · reply 8h, done 5d</div><div class="tx-3" style="font-size:11.5px">Requester's hours</div></div>
+            <div class="card" style="padding:10px 12px;box-shadow:0 0 0 1px var(--acc-100),0 0 0 3px var(--acc-50)"><div class="cap">Approval</div><div class="md" style="margin-top:3px">Manager, over ₹15k</div><div class="tx-3" style="font-size:11.5px">Or any home delivery</div></div>
+            <div class="card" style="padding:10px 12px"><div class="cap">Fulfilled by</div><div class="md" style="margin-top:3px">Assets request</div><div class="tx-3" style="font-size:11.5px">Falls back to IT task</div></div>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <div class="card-h">Intake form<span class="tx-3">4 fields · 2 filled automatically</span><span class="sp"></span><span class="btn sm ghost"><i data-lucide="plus"></i>Add field</span></div>
+            <div class="hd-ff"><i data-lucide="grip-vertical" class="tx-3"></i><span class="ty"><i data-lucide="list"></i></span><div class="col grow"><b class="md">What do you need?</b><span class="tx-3" style="font-size:11.5px">Choice · 24 inch monitor, 27 inch monitor, dock, keyboard, mouse, headset</span></div><span class="bdg">Required</span></div>
+            <div class="hd-ff"><i data-lucide="grip-vertical" class="tx-3"></i><span class="ty"><i data-lucide="map-pin"></i></span><div class="col grow"><b class="md">Where should it go?</b><span class="tx-3" style="font-size:11.5px">Choice · Home or office desk · desk filled from the person's record</span></div><span class="bdg">Required</span></div>
+            <div class="hd-ff"><i data-lucide="grip-vertical" class="tx-3"></i><span class="ty"><i data-lucide="text"></i></span><div class="col grow"><b class="md">Anything we should know?</b><span class="tx-3" style="font-size:11.5px">Text · optional</span></div><span class="bdg plain">Optional</span></div>
+            <div class="hd-ff"><i data-lucide="grip-vertical" class="tx-3"></i><span class="ty"><i data-lucide="laptop"></i></span><div class="col grow"><b class="md">Current devices</b><span class="tx-3" style="font-size:11.5px">From Assets · hidden from the person · shown to agents</span></div><span class="bdg">Automatic</span></div>
+          </div>
+          <div class="card" style="padding:12px 14px"><div class="row"><i data-lucide="message-square-quote" class="tx-3"></i><b class="grow">Words people use</b><span class="tx-3" style="font-size:11.5px">Helps place new tickets, with or without AI</span></div>
+            <div class="row" style="flex-wrap:wrap;gap:6px;margin-top:8px"><span class="tag">second screen</span><span class="tag">external display</span><span class="tag">monitor for home</span><span class="tag">USB-C hub</span><span class="tag">docking station</span><span class="tag">headphones</span><span class="tag" style="box-shadow:none;border:1px dashed var(--line);color:var(--tx-3)">Add</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+            <div class="card" style="padding:10px 12px"><div class="row"><i data-lucide="eye" class="tx-3"></i><b class="md grow">Visible to</b></div><div class="tx-2" style="font-size:12px;margin-top:4px">Everyone · shown in the portal under Equipment</div></div>
+            <div class="card" style="padding:10px 12px"><div class="row"><i data-lucide="route" class="tx-3"></i><b class="md grow">Routing rules</b></div><div class="tx-2" style="font-size:12px;margin-top:4px">Used by 2 · New joiners, Europe in Berlin hours</div></div>
+            <div class="card" style="padding:10px 12px"><div class="row"><i data-lucide="history" class="tx-3"></i><b class="md grow">History</b></div><div class="tx-2" style="font-size:12px;margin-top:4px">v4 · approval added by Rohan, 1 Oct</div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;overflow:hidden;display:flex;flex-direction:column;gap:12px">
+          <div class="row"><span class="aid"></span><b class="grow">What AI may do here</b></div>
+          <div class="col">
+            <div class="hd-tg"><div class="col grow"><b class="md">Answer from articles</b><span>Cites the article. Person can still ask for a human</span></div><span class="sw on"></span></div>
+            <div class="hd-tg"><div class="col grow"><b class="md">Fill the form from the question</b><span>Every filled field is shown for the person to check</span></div><span class="sw on"></span></div>
+            <div class="hd-tg"><div class="col grow"><b class="md">Create the Assets request</b><span>Only after the person confirms. Approval still applies</span></div><span class="sw on"></span></div>
+            <div class="hd-tg"><div class="col grow"><b class="md">Close when the person confirms</b><span>Otherwise an agent closes it</span></div><span class="sw"></span></div>
+          </div>
+          <div class="well" style="padding:10px 12px">
+            <div class="row" style="font-size:12.5px"><span class="grow md">Auto-categorise above</span><b class="num">85%</b></div>
+            <div class="bar" style="margin-top:8px;height:6px;position:relative"><i style="width:85%;background:var(--ai)"></i></div>
+            <span class="tx-3" style="font-size:11.5px;display:block;margin-top:6px">Below it, the ticket goes to IT desk triage with AI's top 3 guesses</span>
+          </div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Preview<span class="src">by AI · last 54 tickets</span></div><p style="font-size:12.5px">With these settings, 41 of the last 54 would have been filed and sent to Assets without anyone retyping them. 6 needed Daniel or another manager.</p><div class="acts"><span class="btn sm">See the 13 others</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Six things per category</b>Queue, SLA, approval, fulfilment, form and AI rules, each inherited from the parent until changed. The highlighted card is the one overridden here.</div>
+    <div><b>Fields from the platform</b>Typed custom fields, with values the kernel already knows (desk, devices, manager) filled automatically and hidden where the person doesn't need them.</div>
+    <div><b>AI's permissions, per category</b>Admins decide what AI may do in each category, separately from what it may read. An MFA reset can need a manager tap; a monitor can need nothing.</div>
+  </div>
+</figure>
+<figure class="screen" id="hd-cfg-route" data-title="Routing, SLAs and hours">
+  <div class="scap"><b>Routing rules in words, SLAs in each office's hours</b><span>Rules read as sentences and replay against last month. Business hours are set per office, and holidays come from People when it's installed.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="helpdesk" data-link="hd.set" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!23","hd.kb":"7"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span>Helpdesk</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Routing</span></div>
+        <div class="htabs"><span class="htab">Teams</span><span class="htab">Categories</span><span class="htab on">Routing</span><span class="htab">SLAs</span><span class="htab">Channels</span><span class="htab">Macros</span><span class="htab">AI</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="flask-conical"></i>Replay last 30 days</span><span class="btn pri">Save rules</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px;display:flex;flex-direction:column;gap:10px">
+          <div class="row" style="margin-bottom:2px"><div class="col grow"><div class="h16">IT routing</div><span class="tx-3" style="font-size:12px">Checked top to bottom · first match wins · 5 rules</span></div><span class="seg"><span class="on">IT</span><span>People</span><span>Finance</span><span>Facilities</span><span>Legal</span></span></div>
+          <div class="hd-pol"><div class="row" style="margin-bottom:2px"><span class="ib sm"><i data-lucide="grip-vertical"></i></span><b class="grow">Travellers first</b><span class="tx-3" style="font-size:11.5px">matched 64 last month</span></div>
+            <div class="sent">When <span class="hd-tok">the person is travelling</span> and the category is under <span class="hd-tok">Network</span>, raise priority to <span class="hd-tok v">P2</span> and send to <span class="hd-tok">IT network</span> in <span class="hd-tok">the person's time zone</span>.</div></div>
+          <div class="hd-pol"><div class="row" style="margin-bottom:2px"><span class="ib sm"><i data-lucide="grip-vertical"></i></span><b class="grow">New joiners</b><span class="tx-3" style="font-size:11.5px">matched 23</span></div>
+            <div class="sent">When the person started <span class="hd-tok v">less than 30 days</span> ago, raise priority <span class="hd-tok v">one level</span> and assign to <span class="hd-tok">their onboarding buddy in IT</span>.</div></div>
+          <div class="hd-pol"><div class="row" style="margin-bottom:2px"><span class="ib sm"><i data-lucide="grip-vertical"></i></span><b class="grow">Europe in Berlin hours</b><span class="tx-3" style="font-size:11.5px">matched 188</span></div>
+            <div class="sent">When the office is <span class="hd-tok">Berlin</span> or the person is in <span class="hd-tok">Europe</span>, send to <span class="hd-tok">IT Europe</span> and assign <span class="hd-tok">round robin</span> among <span class="hd-tok">people on shift</span>.</div></div>
+          <div class="hd-pol"><div class="row" style="margin-bottom:2px"><span class="ib sm"><i data-lucide="grip-vertical"></i></span><b class="grow">Nearly breaching</b><span class="tx-3" style="font-size:11.5px">matched 31</span></div>
+            <div class="sent">When <span class="hd-tok v">80%</span> of the SLA has passed, notify <span class="hd-tok">the queue lead</span> in <span class="hd-tok">notifications and chat</span>. At <span class="hd-tok v">100%</span>, also notify <span class="hd-tok">Rohan Kapoor</span>.</div></div>
+          <div class="hd-pol" style="background:var(--sunken);box-shadow:none"><div class="sent" style="line-height:1.8"><b class="md">Otherwise</b>, send to <span class="hd-tok">the category's own queue</span>. If the category is below <span class="hd-tok v">85%</span> confidence, send to <span class="hd-tok">IT desk triage</span>.</div></div>
+          <div class="hd-pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);display:flex;align-items:center;gap:8px"><i data-lucide="plus"></i>Add a rule <span>or start from a template: VIP, outage, after hours, language</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px;overflow:hidden;display:flex;flex-direction:column;gap:14px">
+          <div><b>Business hours</b><div class="tx-3" style="font-size:12px">Each office in its own time zone · holidays from People</div></div>
+          <div class="hd-hours">
+            <span></span><span class="tx-3">Mon</span><span class="tx-3">Tue</span><span class="tx-3">Wed</span><span class="tx-3">Thu</span><span class="tx-3">Fri</span><span class="tx-3">Sat</span><span class="tx-3">Sun</span>
+            <span>Bengaluru <span class="tx-3">IST</span></span><span class="d"><i style="left:30%;right:22%"></i></span><span class="d"><i style="left:30%;right:22%"></i></span><span class="d"><i style="left:30%;right:22%"></i></span><span class="d"><i style="left:30%;right:22%"></i></span><span class="d"><i style="left:30%;right:22%"></i></span><span class="d"></span><span class="d"></span>
+            <span>Berlin <span class="tx-3">CET</span></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:33%"></i></span><span class="d"></span><span class="d"></span>
+            <span>Austin <span class="tx-3">CT</span></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"><i style="left:33%;right:25%"></i></span><span class="d"></span><span class="d"></span>
+          </div>
+          <div class="row tx-3" style="font-size:11.5px;gap:6px"><i data-lucide="calendar-x" style="width:13px;height:13px"></i>Next holiday: Diwali, Bengaluru, Mon 9 Nov</div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl"><thead><tr><th>SLA</th><th>First reply</th><th>Resolve</th><th>Clock</th></tr></thead><tbody>
+              <tr><td><span class="hd-pri p1">P1</span></td><td>15 min</td><td>4 h</td><td>24/7</td></tr>
+              <tr><td><span class="hd-pri p2">P2</span></td><td>30 min</td><td>4 h</td><td>Business</td></tr>
+              <tr><td><span class="hd-pri">P3</span></td><td>4 h</td><td>2 days</td><td>Business</td></tr>
+              <tr><td style="border-bottom:0"><span class="hd-pri">P4</span></td><td style="border-bottom:0">8 h</td><td style="border-bottom:0">5 days</td><td style="border-bottom:0">Business</td></tr>
+            </tbody></table>
+          </div>
+          <div class="well" style="padding:10px 12px;font-size:12px"><div class="row"><i data-lucide="flask-conical" class="tx-3"></i><b class="grow md">Replay of last 30 days</b></div><div class="tx-2" style="margin-top:4px">With these rules, 22 tickets would have reached the right queue first time instead of being moved by hand. SLA met would rise from 94.2% to 95.6%.</div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Rules anyone can read</b>Each rule is a sentence made of blocks, so Priya can read IT's rules and write her own for People without learning a query language.</div>
+    <div><b>Context-aware conditions</b>"Travelling", "started less than 30 days ago" and "on shift" are conditions only a platform with one person record can offer.</div>
+    <div><b>Know before it's live</b>Replay runs the draft rules over last month's tickets and shows how many would have landed differently, and the SLA impact.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person confirms anything that changes something, and nothing lilac appears while AI is off. The model is the workspace's choice, including a local one. Helpdesk works fully without AI: the same categories, forms, routing and SLAs, placed by keywords and rules.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>The front door</td><td>Splits a message into separate asks, answers from articles and records with citations, and proposes actions</td><td>The person confirms every action, and can always ask for a person instead</td><td>Search across articles, then a short form with a category picker that suggests from keywords</td></tr>
+  <tr><td>Actions in other products</td><td>Prepares an MFA reset, a monitor request, a reimbursement lookup or a leave balance, and lists the effects</td><td>The person says yes; approvals in the workflow engine still apply; admins choose which actions exist per category</td><td>Links into the right product's own request page, or a ticket to the owning team</td></tr>
+  <tr><td>Categorising</td><td>Places each ticket in the tree with a confidence score, using the category's words and past tickets</td><td>Below the threshold, triage decides. Agents correct it and the correction is kept</td><td>"Words people use" keyword rules, then a triage queue</td></tr>
+  <tr><td>Categories</td><td>Proposes new, merged and split categories from tickets that didn't fit, with evidence and a what-if</td><td>A team admin accepts, edits or dismisses. Nothing changes on its own</td><td>A report of tickets in Other and tickets moved by hand</td></tr>
+  <tr><td>Agent replies</td><td>Drafts replies, finds similar solved tickets, clusters tickets with one cause, summarises long threads</td><td>The agent edits and sends. Linking to an incident is the agent's call</td><td>Macros, similar tickets by keyword, manual linking</td></tr>
+  <tr><td>Knowledge</td><td>Finds gaps, drafts articles from resolved tickets, translates, and tests drafts against the tickets</td><td>The owner edits and publishes. AI never publishes</td><td>Gap report from search terms with no results</td></tr>
+  <tr><td>Insights</td><td>Explains what changed and why, groups "not useful" answers by cause</td><td>Teams choose what to fix</td><td>The same charts and tables, without the summary</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Help requests can hold health, pay, family and legal details. AI reads only what the asking person could see, and only within the categories an admin allows. People and Legal categories can be set to a local model or to no AI at all, independently of IT. Answers about one person (a leave balance, a claim) are never used to train or answer anyone else, and every AI action is written to the audit log with what it read.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Helpdesk is its own product. Use it alone, or with the others. It shares Bemmoly's kernel: one sign-in, one person directory, the workflow and approval engine, typed custom fields, the AI layer, audit and backups. Other products add actions and context; each action opens or calls that product with the person's confirmation, and each has a fallback when that product isn't installed.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul>
+    <li><b>Access</b>: MFA resets, password resets and app access requests. Without it: a ticket to IT with the right form</li>
+    <li><b>Assets</b>: request a monitor, see the person's devices, push an update. Without it: an IT task and a free-text device field</li>
+    <li><b>People</b>: leave balances, managers, offices, holidays, onboarding plans. Without it: the kernel's people list and a People team article</li>
+    <li><b>Expenses</b>: "has my claim been paid?" answered from the claim, trips as context. Without it: routed to Finance</li>
+    <li><b>Licences</b>: "I need a seat" becomes a licence request with the cost shown. Without it: an IT software request</li>
+    <li><b>Work and Docs</b>: incidents link to engineering work items; articles can live as Docs pages</li>
+  </ul></div>
+  <div><h3>Core objects</h3><ul>
+    <li><code>request</code>: one ask, with requester, category, form values, channel, priority, SLA clocks, state and the items it was split from</li>
+    <li><code>team</code>, <code>queue</code>, <code>category</code>: the tree, each category with form, routing, SLA, approval and AI policy</li>
+    <li><code>article</code>: knowledge with owner, audience, language and the tickets it came from</li>
+    <li><code>incident</code>: a cause linking many requests, with one shared reply</li>
+    <li><code>ai_action</code>: what AI proposed, what it read, who confirmed and what changed</li>
+  </ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>One door, many teams</b><ul><li>Portal, email and palette channels</li><li>Teams, category trees, forms, queues</li><li>SLAs with business hours per office</li><li>Agent queue and ticket view, macros</li><li>Knowledge base, AI answers with citations</li><li>Works with AI off</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Actions and learning</b><ul><li>Actions through Access, Assets, People, Expenses, Licences</li><li>Multi-intent splitting</li><li>AI categorising with confidence</li><li>Category proposals and knowledge gaps</li><li>Routing rules with replay, incidents</li><li>Chat connectors</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Beyond the company</b><ul><li>External customer support desks with their own portal and branding</li><li>Phone and voice channel connectors</li><li>Satisfaction surveys per team</li><li>Shared categories across workspaces</li><li>Proactive notices before people ask</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>External customer support: same product or a separate one?</b><span>Recommendation: the same product and engine, with an "external desk" that has its own portal, branding, contacts and stricter AI sources. Internal and external tickets never share a queue. Ship it after the internal desk is proven.</span></li>
+  <li><b>May AI act without confirmation for low-risk actions?</b><span>Recommendation: reads (a balance, a status) need no confirmation; anything that changes something always asks. Admins can't remove the confirmation, only the action.</span></li>
+  <li><b>Should People cases live in Helpdesk or in People?</b><span>Recommendation: in Helpdesk, as a private team with its own visibility, so there is one front door. People keeps the employee record and links to cases.</span></li>
+  <li><b>Who owns the category tree when teams overlap (a laptop for a new hire)?</b><span>Recommendation: one owning team per category, plus linked tasks for others. Cross-team categories appear in both trees but are edited by the owner.</span></li>
+  <li><b>Which chat tools come first?</b><span>Recommendation: email, portal and palette in the first release; Slack and Microsoft Teams as connectors next, built on the public connector interface so the community can add others.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://press.roberthalf.com/2016-03-22-Wasted-Workday-Employees-Lose-Over-Two-Weeks-Each-Year-Due-To-IT-Related-Issues">Robert Half Technology: Employees lose over two weeks each year due to IT-related issues (2016)</a></li>
+  <li><a href="https://www.thinkhdi.com/library/supportworld/2020/metric-of-month-tickets-prevented">HDI SupportWorld, Jeff Rumburg: Metric of the month, tickets prevented (2020)</a></li>
+  <li><a href="https://www.gartner.com/en/newsroom/press-releases/2024-08-19-gartner-survey-finds-only-14-percent-of-customer-service-issues-are-fully-resolved-in-self-service">Gartner: Only 14% of customer service issues are fully resolved in self-service (2024)</a></li>
+  <li><a href="https://www.zendesk.com/newsroom/articles/2025-cx-trends-report">Zendesk: 2025 CX Trends report</a></li>
+  <li><a href="https://www.zendesk.com/service/ai/ai-agents/">Zendesk: AI agents</a></li>
+  <li><a href="https://www.freshworks.com/freshservice/business-teams/esm/">Freshservice: Enterprise service management for business teams</a></li>
+  <li><a href="https://www.freshworks.com/freshservice/business-teams/ai-esm/">Freshservice: AI for enterprise service management</a></li>
+  <li><a href="https://www.servicenow.com/docs/r/H8yQl2SqBqnT6LbpTm28UQ/GXNvdl3PSy0nj_8_~VXwhQ">ServiceNow docs: Now Assist for HR Service Delivery</a></li>
+  <li><a href="https://newsroom.servicenow.com/press-releases/details/2025/ServiceNow-completes-acquisition-of-Moveworks/default.aspx">ServiceNow: Completes acquisition of Moveworks (December 2025)</a></li>
+  <li><a href="https://www.atlassian.com/software/jira/service-management/product-guide/tips-and-tricks/virtual-agent">Atlassian: The Jira Service Management virtual agent</a></li>
+  <li><a href="https://support.atlassian.com/jira-service-management-cloud/docs/atlassian-intelligence-features-in-jira-service-management">Atlassian: Atlassian Intelligence answers in the virtual service agent</a></li>
+  <li><a href="https://www.eesel.ai/blog/fin-ai-pricing">eesel: A guide to Intercom Fin AI pricing</a></li>
+  <li><a href="https://www.hubspot.com/products/artificial-intelligence/ai-customer-service-agent">HubSpot: Breeze customer agent</a></li>
+  <li><a href="https://www.helpscout.com/blog/introducing-ai-assist/">Help Scout: Introducing AI Assist</a></li>
+  <li><a href="https://www.eesel.ai/blog/help-scout-ai-features">eesel: Help Scout AI features and their limits</a></li>
+  <li><a href="https://user-docs.zammad.org/en/latest/extras/ai-features.html">Zammad docs: AI features</a></li>
+  <li><a href="https://admin-docs.zammad.org/en/pre-release/ai/knowledge-base-assistant.html">Zammad docs: Knowledge base assistant</a></li>
+  <li>Project pages for osTicket, FreeScout and GLPI (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

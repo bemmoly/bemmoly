@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Access</title>
+<meta name="description" content="Product proposal for Bemmoly Access, identity and access management: the problem today, market leaders, the dream experience, drawn screens, customisation and AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Access-only screen parts, all scoped with ac- */
+.ac-ap{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:none;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--tx-2)}
+.ac-ap svg.lucide{width:14px;height:14px}
+.ac-ap.sm{width:22px;height:22px;border-radius:6px}
+.ac-ap.sm svg.lucide{width:12px;height:12px}
+.ac-ap.lg{width:40px;height:40px;border-radius:10px}
+.ac-ap.lg svg.lucide{width:20px;height:20px}
+.ac-src{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:4px;font-size:11.5px;color:var(--tx-2);box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
+.ac-src svg.lucide{width:12px;height:12px;color:var(--tx-3)}
+.ac-tbl td{height:42px}
+.ac-tbl td .sub{display:block;font-size:11.5px;color:var(--tx-3);line-height:1.3}
+.ac-tbl .old{color:var(--amber-tx)}
+.ac-id{display:flex;gap:14px;align-items:center}
+.ac-facts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ac-kv{display:flex;align-items:center;gap:8px;min-height:30px;font-size:12.5px}
+.ac-kv>svg.lucide{color:var(--tx-3)}
+.ac-kv .k{color:var(--tx-2);flex:1;min-width:0}
+.ac-diff{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 14px;border-bottom:1px solid var(--line-2)}
+.ac-diff:last-child{border-bottom:0}
+.ac-diff .pm{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;flex:none}
+.ac-diff .pm svg.lucide{width:13px;height:13px;stroke-width:2.25}
+.ac-diff .pm.add{background:var(--green-50);color:var(--green-tx)}
+.ac-diff .pm.rem{background:var(--red-50);color:var(--red-tx)}
+.ac-diff .pm.keep{background:var(--sunken);color:var(--tx-3)}
+.ac-diff .when{font-size:11.5px;color:var(--tx-3);white-space:nowrap}
+.ac-ev{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.ac-ev.sel{background:var(--acc-50)}
+.ac-ev .ic{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;flex:none;background:var(--sunken);color:var(--tx-2)}
+.ac-ev .ic svg.lucide{width:15px;height:15px}
+.ac-ev .ic.join{background:var(--green-50);color:var(--green-tx)}
+.ac-ev .ic.move{background:var(--acc-50);color:var(--acc)}
+.ac-ev .ic.leave{background:var(--red-50);color:var(--red-tx)}
+.ac-ev .ic.pause{background:var(--amber-50);color:var(--amber-tx)}
+.ac-ev b{display:block;font-weight:600;font-size:13px}
+.ac-ev .tx-3{font-size:12px}
+.ac-step{display:flex;align-items:center;gap:10px;height:38px;padding:0 14px;border-bottom:1px solid var(--line-2)}
+.ac-step .how{font-size:11.5px;color:var(--tx-3);white-space:nowrap}
+.ac-step .res{width:170px;display:flex;justify-content:flex-end;flex:none}
+.ac-ring{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--done) var(--p,0%),var(--line-2) 0);position:relative;margin:4px auto 10px}
+.ac-ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--card)}
+.ac-ring>div{position:relative;text-align:center;line-height:1.2}
+.ac-ring b{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.ac-ring span{font-size:11.5px;color:var(--tx-3)}
+.ac-launch{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.ac-tile{background:var(--card);box-shadow:var(--e1);border-radius:10px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0;position:relative}
+.ac-tile b{font-weight:500;font-size:12.5px;line-height:1.3}
+.ac-tile .tx-3{font-size:11px;margin-top:-4px}
+.ac-tile .bdg{position:absolute;top:8px;right:8px;height:18px;padding:0 5px;font-size:10.5px}
+.ac-ask{display:flex;align-items:center;gap:10px;height:46px;padding:0 8px 0 14px;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line),var(--e1);font-size:14px}
+.ac-ask svg.lucide{color:var(--tx-3)}
+.ac-sens{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--tx-2);white-space:nowrap}
+.ac-sens i{display:inline-flex;gap:2px}
+.ac-sens i b{width:4px;height:10px;border-radius:1px;background:var(--line)}
+.ac-sens.s1 i b:nth-child(-n+1),.ac-sens.s2 i b:nth-child(-n+2){background:var(--tx-3)}
+.ac-sens.s3 i b:nth-child(-n+3){background:var(--amber)}
+.ac-sens.s4 i b{background:var(--red)}
+.ac-dur{display:flex;gap:6px;flex-wrap:wrap}
+.ac-dur span{height:28px;display:inline-flex;align-items:center;padding:0 10px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;color:var(--tx-2);background:var(--card)}
+.ac-dur span.on{box-shadow:inset 0 0 0 1.5px var(--acc);color:var(--acc);background:var(--acc-50);font-weight:500}
+.ac-path{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.ac-path .n{white-space:nowrap;display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;background:var(--sunken)}
+.ac-mode{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:var(--card);box-shadow:var(--e1)}
+.ac-mode .big-ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--acc-50);color:var(--acc);flex:none}
+.ac-chain{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;flex-wrap:nowrap}
+.ac-chain .n{padding:5px 9px;border-radius:6px;background:var(--sunken);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ac-chain .n.us{background:var(--acc-50);color:var(--acc);font-weight:500}
+.ac-chain>svg.lucide{color:var(--tx-3);width:14px;height:14px}
+.ac-meter{width:64px;height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;display:inline-block;vertical-align:middle}
+.ac-meter i{display:block;height:100%;background:var(--amber)}
+.ac-risk{border-radius:10px;background:var(--card);box-shadow:var(--e1);overflow:hidden}
+.ac-risk .top{display:flex;gap:12px;padding:14px 16px;align-items:flex-start;border-bottom:1px solid var(--line-2)}
+.ac-sig{display:flex;gap:10px;align-items:flex-start;padding:8px 16px;font-size:12.5px}
+.ac-sig svg.lucide{margin-top:1px;color:var(--amber)}
+.ac-sig.ok svg.lucide{color:var(--green)}
+.ac-map{position:relative;height:120px;margin:4px 16px 12px;border-radius:8px;background:var(--sunken);overflow:hidden}
+.ac-map svg{position:absolute;inset:0;width:100%;height:100%}
+.ac-pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.ac-pol .sent{font-size:14px;line-height:1.95}
+.ac-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.ac-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.ac-tok svg.lucide{width:12px;height:12px}
+.ac-tier td{height:58px;white-space:normal;line-height:1.4}
+.ac-tier td:first-child{white-space:nowrap}
+/* the composite, not-a-desktop screen */
+.ac-wrap{position:absolute;inset:0;background:radial-gradient(1200px 600px at 10% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:48px 48px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.ac-colc{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
+.ac-colc h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.ac-colc p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:300px}
+.ac-phone{width:262px;height:528px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.ac-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas)}
+.ac-phone .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:12px;background:#000;z-index:3}
+.ac-phone .pin{position:absolute;inset:0;padding:56px 18px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.ac-face{width:84px;height:84px;border-radius:24px;display:grid;place-items:center;background:var(--acc-50);color:var(--acc);margin-top:18px}
+.ac-face svg.lucide{width:44px;height:44px;stroke-width:1.25}
+.ac-chatw{width:100%;max-width:340px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.ac-chatw .ch{height:40px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line-2);font-size:12.5px;font-weight:600}
+.ac-chatw .cb2{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.ac-botcard{border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);padding:10px 12px;font-size:12.5px}
+.ac-mail{width:100%;max-width:340px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.ac-mail .mh{padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:52px 1fr;gap:4px 8px}
+.ac-mail .mh span{color:var(--tx-3)}
+.ac-mail .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2)}
+/* employees and reviewers do not see the admin saved views */
+.ac-nov .bx-label,.ac-nov .bx-label~.bx-r{display:none}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="access"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Access</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span>Bemmoly Access · product proposal</div>
+  <h1>Access that is ready on day one and gone on the last</h1>
+  <p class="lede">Bemmoly Access is a product of its own: use it alone, or with Bemmoly's other products. Each person has one identity. Their apps arrive from their role before their first morning, change when they change teams, and leave, verified, the minute they do. Anyone can ask for more access in a sentence, for exactly as long as they need it. It's open source, it runs on your own server, and it can be your identity provider or sit on top of the directory you already have.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>IT and security admins, managers, everyone who signs in</span>
+    <span class="chip"><i data-lucide="app-window"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="key-round"></i>SAML, OIDC, SCIM and passkeys</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Every company now runs on a hundred apps, and every one of them is a door. Identity is how attackers get in, and the doors are opened and closed by hand: a ticket to add someone, a checklist to remove them, and a spreadsheet once a year to pretend it was all checked.</p>
+<div class="stats">
+  <div><b>22%</b><span>of breaches began with credential abuse, the most common way in</span><small>Verizon DBIR, 2025</small></div>
+  <div><b>101</b><span>apps used by the average company, the first time past 100</span><small>Okta Businesses at Work, 2025</small></div>
+  <div><b>47%</b><span>of workers admit using a former employer's password after leaving</span><small>PasswordManager.com survey, 2023</small></div>
+  <div><b>99.2%</b><span>less risk of account compromise with multi-factor sign-in</span><small>Microsoft Research, 2023</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Leavers keep their keys</b><p>HR knows someone left on Friday. IT hears about it on Monday, then works through a checklist of apps by hand. Apps outside single sign-on, shared passwords and personal API tokens are the ones that get missed.</p><span class="src">Self-reported: nearly half of workers say an old password still worked.</span></div>
+  <div class="pain"><b>Access only ever grows</b><p>When someone changes team they get the new team's apps and keep the old ones. Three moves later an account executive can still open engineering's production console.</p></div>
+  <div class="pain"><b>Asking is a ticket, and access is forever</b><p>People request access in chat, email or a help desk form. Nobody is sure who approves, so it waits. When it's granted, it never ends, even if it was needed for one afternoon.</p></div>
+  <div class="pain"><b>Access reviews are rubber stamps</b><p>Once a quarter a manager gets a spreadsheet of hundreds of rows with no usage data, and approves all of them to make it go away. The audit passes and nothing changes.</p></div>
+  <div class="pain"><b>Security costs extra</b><p>Single sign-on and automatic provisioning are often locked behind an app's enterprise tier, the "SSO tax". Identity suites then charge per person again, with governance sold as a separate licence.</p><span class="src">sso.tax has tracked vendors' SSO price jumps since 2018.</span></div>
+  <div class="pain"><b>HR and IT live in different systems</b><p>The person record is in the HR tool, the account is in the directory, and the apps hold their own copies. Starts, transfers and exits are copied between them by people, late and incomplete.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet access every day. Only one of them should ever have to think about it.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l a">RK</span><div><b>Rohan, IT admin</b><span>Looks after 214 people and 64 apps</span></div></div>
+    <q>"When People says someone left, I want one button, and proof that every account is really gone."</q>
+    <ul><li>Joiners, movers and leavers driven by People, not by tickets</li><li>Removal checked against each app afterwards, not assumed</li><li>Apps without provisioning turned into owned tasks</li><li>One audit trail an auditor can read</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, engineering manager</b><span>Approves access for a team of 12</span></div></div>
+    <q>"Ask me about the risky ones. Show me who hasn't used what, and let me clean it up in a minute."</q>
+    <ul><li>Approve from chat or email, with the reason and the policy</li><li>Time-bound access by default for anything sensitive</li><li>Reviews that start with the unused and the unusual</li><li>No spreadsheets, ever</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l p">SL</span><div><b>Sofia, product designer</b><span>Uses 16 apps, needs a new one most months</span></div></div>
+    <q>"I just want to say what I need and have it in a few minutes, without learning who owns what."</q>
+    <ul><li>Every app she has, in one place, one sign-in</li><li>Ask in plain words, from the app or from chat</li><li>Sees who approves and how long it usually takes</li><li>Gets a reminder before something she uses expires</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The market splits into identity providers (who signs in), governance tools (who should have what), and the directories that come with an office suite. Most companies buy two or three of these and glue them together. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Okta</b><span>Workforce Identity, Identity Governance</span></header><p>The independent identity provider. A catalog of over 8,000 prebuilt integrations, lifecycle management with SCIM, no-code Workflows, and governance with access requests and certifications.</p>
+    <div class="plus"><i data-lucide="plus"></i>The broadest app catalog, and lifecycle that can start from an HR system.</div><div class="minus"><i data-lucide="minus"></i>Lifecycle, workflows and governance are separate products. Priced per person, per product.</div></div>
+  <div class="leader"><header><b>Microsoft Entra ID</b><span>With ID Governance</span></header><p>The default for Microsoft 365 companies. Conditional Access for sign-in risk, plus lifecycle workflows for joiners, movers and leavers, access packages and access reviews.</p>
+    <div class="plus"><i data-lucide="plus"></i>Conditional Access is the reference for risk-based sign-in policy.</div><div class="minus"><i data-lucide="minus"></i>Governance features need a higher licence. Setup is deep, and the screens are built for specialists.</div></div>
+  <div class="leader"><header><b>Google Workspace, JumpCloud</b><span>Directory-led</span></header><p>The directory that comes with the office suite, or an open directory with device management. SAML apps, groups and context-aware access for smaller teams.</p>
+    <div class="plus"><i data-lucide="plus"></i>Already there. Most small companies' identity lives here by accident.</div><div class="minus"><i data-lucide="minus"></i>Governance stops at groups. Requests and reviews need another tool.</div></div>
+  <div class="leader"><header><b>Ping Identity</b><span>Enterprise, hybrid</span></header><p>Federation, MFA and access gateways for large and regulated companies that mix cloud and on-premises apps.</p>
+    <div class="plus"><i data-lucide="plus"></i>Handles the old apps: headers, gateways and on-premises directories.</div><div class="minus"><i data-lucide="minus"></i>Built for big identity teams. Long projects, consultants, enterprise contracts.</div></div>
+  <div class="leader"><header><b>SailPoint</b><span>Enterprise governance</span></header><p>The governance incumbent: role models, separation of duties, certifications and AI-assisted recommendations across thousands of systems.</p>
+    <div class="plus"><i data-lucide="plus"></i>The deepest model of roles, entitlements and policy violations.</div><div class="minus"><i data-lucide="minus"></i>Heavy to run, and the people approving access rarely enjoy it.</div></div>
+  <div class="leader"><header><b>ConductorOne, Lumos, Opal</b><span>Modern governance</span></header><p>Self-service app stores, approvals in chat, just-in-time access to sensitive roles, and AI agents that pre-review access and turn a chat message into a request.</p>
+    <div class="plus"><i data-lucide="plus"></i>Requests in chat and time-bound access, done with taste.</div><div class="minus"><i data-lucide="minus"></i>They sit on top of an identity provider you buy separately, and on an HR system they only read.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Okta</th><th>Entra ID</th><th>Directory-led</th><th>Enterprise governance</th><th>Modern governance</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>SSO (SAML, OIDC) and MFA</td><td class="yes">Strong</td><td class="yes">Strong</td><td class="yes">Good</td><td class="no">Not its job</td><td class="no">Uses yours</td><td class="yes">Strong</td><td class="yes">Built in, or on top of yours</td></tr>
+  <tr><td>Joiner, mover, leaver from HR</td><td class="yes">Add-on</td><td class="yes">Higher licence</td><td class="part">Basic</td><td class="yes">Deep</td><td class="part">Reads HR</td><td class="no">Scripts</td><td class="yes">Native: People is the source</td></tr>
+  <tr><td>Verified removal at exit</td><td class="part">Deprovision</td><td class="part">Deprovision</td><td class="part">Suspend</td><td class="part">Reports</td><td class="part">Some</td><td class="no">No</td><td class="yes">Removed, then checked per app</td></tr>
+  <tr><td>Self-service, time-bound requests</td><td class="part">Governance add-on</td><td class="part">Access packages</td><td class="no">No</td><td class="part">Forms</td><td class="yes">Strong, in chat</td><td class="no">No</td><td class="yes">In a sentence, in chat or email</td></tr>
+  <tr><td>Access reviews with usage</td><td class="part">Add-on</td><td class="part">Higher licence</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes, AI</td><td class="no">No</td><td class="yes">Unused first, AI pre-review</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="part">Some</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Per person, per product</td><td>Per person, tiered</td><td>Bundled or per person</td><td>Enterprise contracts</td><td>Per person</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Keycloak, Authentik, Zitadel, Authelia and Kanidm. They are good at signing people in: SAML and OIDC, MFA, social and directory login, and in some cases SCIM or a forward-auth proxy for apps with no SSO. None of them knows when someone joins, moves or leaves, and none offers requests, approvals or access reviews. Shared secrets are a neighbouring problem that password managers such as 1Password and Bitwarden solve well; Access does not become a vault, it connects to one so shared credentials are rotated when someone leaves.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the best ideas (the catalog, risk-based sign-in, requests in chat, time-bound access) and join them to the one thing identity tools never own: the person record.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="contact-round"></i></span><b>The person record drives access</b><p>When People records a start date, a transfer or a last day, Access already knows. Joiners, movers and leavers are plans built from that event, not tickets raised by someone who remembered. With People not installed, the kernel's own person list does the same job.</p><span class="vs">vs Okta and Entra ID: lifecycle reads an HR system through a connector, often on a paid tier.</span></div>
+  <div><span class="ic"><i data-lucide="badge-check"></i></span><b>Removal you can prove</b><p>At exit, every account is removed and then checked: the app is asked again, sessions and tokens are listed, and anything that couldn't be automated becomes a named task. The result is an offboarding record with a timestamp per app.</p><span class="vs">New: leaders deprovision and assume it worked.</span></div>
+  <div><span class="ic"><i data-lucide="timer"></i></span><b>Time-bound by default</b><p>Sensitive access is granted for hours or days, not forever. Policies by sensitivity decide the approver, the longest duration and whether a fresh passkey check is needed.</p><span class="vs">vs ConductorOne and Opal: the same idea, without buying a second product on top of your identity provider.</span></div>
+  <div><span class="ic"><i data-lucide="layers"></i></span><b>Both modes, one product</b><p>Small companies use Access as their identity provider. Companies on Entra ID or Google Workspace keep sign-in there, and Access adds lifecycle, requests and reviews on top. Moving from one mode to the other is a setting, not a migration project.</p><span class="vs">vs Google Workspace and JumpCloud: governance stops at groups.</span></div>
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>AI that reads usage, not just lists</b><p>Reviews open with "41 grants were unused for 90 days", the mover's plan flags what they still need for a handover, and requests in plain words map to the right role. It runs on your model, local if you like, and it never grants anything by itself.</p><span class="vs">vs SailPoint: recommendations, but in a specialist's console.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>No SSO tax here, ever</b><p>Every person, contractor and service account is included. Single sign-on, provisioning, governance and AI are all in the box, under MIT.</p><span class="vs">vs every leader: per person per month, with governance as a separate product.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly's frame and tokens. Click the tabs, or the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+<p class="note"><b>Who sees what.</b> The admin places (People and groups, Requests for the whole company, Access reviews setup, the Audit log) are for IT and security admins. Everyone else opens Access as one place, Applications, which shows their own apps and a box to ask for more. Managers see their approvals and their review decisions, and nothing else. Approvals also arrive in chat and email, so most people never open Access at all.</p>
+
+<div class="screens" id="ac">
+<!-- 1 ======================== Access profile -->
+<figure class="screen" id="ac-person" data-title="One person, every app">
+  <div class="scap"><b>A person's access profile</b><span>Every app Tomás can open, how he got it, and when he last used it. One identity, read from the same person record as payroll and the org chart.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.people" data-me="Rohan Kapoor" data-counts='{"ac.req":"!4","ac.rev":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span>People and groups</span><span class="sep">/</span><span class="cur">Tomás García</span></div>
+        <div class="htabs"><span class="htab on">Access<span class="ct">10</span></span><span class="htab">Sign-ins</span><span class="htab">Devices<span class="ct">2</span></span><span class="htab">History</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="plus"></i>Grant access</span><span class="btn ghost" data-go="ac-leave"><i data-lucide="user-round-x"></i>Plan offboarding</span></div></div>
+      <div class="bx-body"><div style="padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;height:100%">
+        <div class="col" style="gap:14px;min-height:0">
+          <div class="ac-id"><span class="av xl k">TG</span><div class="col grow"><div class="h20">Tomás García</div><span class="tx-2" style="font-size:12.5px">Backend engineer · Platform team · Austin · reports to Daniel Okafor</span>
+            <div class="ac-facts"><span class="bdg ok"><i data-lucide="key-round"></i>Passkey and authenticator</span><span class="bdg"><i data-lucide="laptop"></i>Managed MacBook Pro</span><span class="bdg"><i data-lucide="users"></i>Engineering · Platform · On-call</span><span class="bdg plain"><i data-lucide="contact-round"></i>Person record in People</span></div></div></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl ac-tbl"><thead><tr><th>Application</th><th>Access</th><th>How it was granted</th><th>Last used</th></tr></thead><tbody>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="mail"></i></span>Google Workspace</div></td><td>Member</td><td><span class="ac-src"><i data-lucide="users"></i>Everyone</span></td><td class="tx-2">Today, 08:12</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="hash"></i></span>Slack</div></td><td>Member</td><td><span class="ac-src"><i data-lucide="users"></i>Everyone</span></td><td class="tx-2">6 min ago</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="git-branch"></i></span>GitHub</div></td><td>Member<span class="sub">Maintainer on platform-api</span></td><td><span class="ac-src"><i data-lucide="workflow"></i>Role: Engineering</span><span class="sub" style="margin-top:3px">Maintainer by request, 4 Aug</span></td><td class="tx-2">1 hour ago</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="cloud"></i></span>AWS · production</div></td><td>Read-only</td><td><span class="ac-src"><i data-lucide="workflow"></i>Role: Platform team</span></td><td class="tx-2">Yesterday</td></tr>
+              <tr class="sel"><td><div class="row"><span class="ac-ap"><i data-lucide="cloud"></i></span>AWS · production</div></td><td>Admin<span class="sub">Fresh passkey check at 14:02</span></td><td><span class="bdg acc"><i data-lucide="timer"></i>Time-bound · ends in 1h 48m</span></td><td class="tx-2">In use now</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="activity"></i></span>Datadog</div></td><td>Standard</td><td><span class="ac-src"><i data-lucide="workflow"></i>Role: Engineering</span></td><td class="tx-2">Today, 10:40</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="siren"></i></span>PagerDuty</div></td><td>Responder</td><td><span class="ac-src"><i data-lucide="users"></i>Group: Platform on-call</span></td><td class="tx-2">3 days ago</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="database"></i></span>Snowflake</div></td><td>Analyst</td><td><span class="ac-src"><i data-lucide="inbox"></i>Request · 12 Jul</span><span class="sub" style="margin-top:3px">Approved by Aiko Tanaka</span></td><td class="old">94 days ago</td></tr>
+              <tr><td><div class="row"><span class="ac-ap"><i data-lucide="pen-tool"></i></span>Figma</div></td><td>Viewer</td><td><span class="ac-src"><i data-lucide="hand"></i>Added by hand</span></td><td class="old">121 days ago</td></tr>
+              <tr><td style="border-bottom:0"><div class="row"><span class="ac-ap"><i data-lucide="square-kanban"></i></span>Bemmoly Work</div></td><td style="border-bottom:0">Member</td><td style="border-bottom:0"><span class="ac-src"><i data-lucide="users"></i>Everyone</span></td><td class="tx-2" style="border-bottom:0">Now</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div class="col" style="gap:12px;min-height:0">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>2 grants look unneeded<span class="src">by AI · from sign-ins</span></div>
+            <p>Snowflake hasn't been opened in 94 days, and none of the 11 people on Platform use it.<span class="cite"><i data-lucide="database"></i>Snowflake log</span> The Figma viewer seat was added by hand in June and never used since.<span class="cite"><i data-lucide="pen-tool"></i>Figma</span></p>
+            <div class="acts"><span class="btn sm">Remove 2 grants</span><span class="btn sm ghost">Ask Tomás</span><span class="nu">Not useful</span></div></div>
+          <div class="card">
+            <div class="card-h"><i data-lucide="fingerprint" class="tx-3"></i>Sign-in</div>
+            <div style="padding:6px 16px 10px">
+              <div class="ac-kv"><i data-lucide="key-round"></i><span class="k">Passkey on MacBook Pro</span><span class="bdg ok">Managed</span></div>
+              <div class="ac-kv"><i data-lucide="smartphone"></i><span class="k">Authenticator on iPhone 15</span><span class="tx-3">Backup</span></div>
+              <div class="ac-kv"><i data-lucide="monitor-smartphone"></i><span class="k">Active sessions</span><b>2</b></div>
+              <div class="ac-kv"><i data-lucide="map-pin"></i><span class="k">Last sign-in</span><span>Austin, 07:58 CDT</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><i data-lucide="calendar-clock" class="tx-3"></i>Coming up</div>
+            <div style="padding:6px 16px 10px">
+              <div class="ac-kv"><i data-lucide="timer"></i><span class="k">AWS production admin ends</span><span>16:40</span></div>
+              <div class="ac-kv"><i data-lucide="list-checks"></i><span class="k">In the Q4 access review</span><span>3 grants</span></div>
+              <div class="ac-kv"><i data-lucide="palmtree"></i><span class="k">Time off 2 to 6 Nov</span><span class="tx-3">From People</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>How, not just what</b>Every grant shows its source: everyone, a role, a group, a request with its approver, or by hand. Grants by hand are the ones that drift, so they stand out.</div>
+    <div><b>Usage is the truth</b>Last used comes from sign-in events and each app's own activity. Anything idle for 90 days is amber here and goes first in the next review.</div>
+    <div><b>Time-bound in plain sight</b>The admin role Tomás asked for this morning shows its countdown. It ends by itself at 16:40, and the person record knows when he's away.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Lifecycle -->
+<figure class="screen" id="ac-life" data-title="Joiners, movers, leavers">
+  <div class="scap"><b>Lifecycle, driven by People</b><span>Every start, team change, leave and exit arrives as an event from the person record, already turned into a plan. A mover's plan is a diff.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.people" data-me="Rohan Kapoor" data-counts='{"ac.req":"!4","ac.rev":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span class="cur">People and groups</span></div>
+        <div class="htabs"><span class="htab">Everyone<span class="ct">214</span></span><span class="htab">Groups<span class="ct">38</span></span><span class="htab on">Lifecycle<span class="ct">5</span></span><span class="htab">Service accounts<span class="ct">12</span></span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>Next 30 days</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:400px minmax(0,1fr);height:100%">
+        <div style="border-right:1px solid var(--line);overflow:hidden">
+          <div class="ghead">Today<span class="ct">1</span></div>
+          <div class="ac-ev" data-go="ac-leave" style="cursor:pointer"><span class="ic leave"><i data-lucide="user-round-x"></i></span><div class="col grow"><b>Vikram Shah leaves</b><span class="tx-3">Solutions engineer · Sales West · last day today, access ends 18:00</span><div class="row" style="margin-top:6px"><span class="bdg warn">23 accesses to remove</span><span class="tx-3">Set by Priya Raman, 5 Oct</span></div></div><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="ghead">Coming up<span class="ct">4</span></div>
+          <div class="ac-ev sel"><span class="ic move"><i data-lucide="arrow-right-left"></i></span><div class="col grow"><b>Arjun Mehta moves team</b><span class="tx-3">Sales West to Enterprise sales · Sat 31 Oct</span><div class="row" style="margin-top:6px"><span class="bdg ok">4 to add</span><span class="bdg bad">3 to remove</span><span class="bdg">11 stay</span></div></div></div>
+          <div class="ac-ev"><span class="ic join"><i data-lucide="user-round-plus"></i></span><div class="col grow"><b>Kavya Nair joins</b><span class="tx-3">Frontend engineer · Platform · Bengaluru · Mon 2 Nov</span><div class="row" style="margin-top:6px"><span class="bdg ok">14 apps ready</span><span class="tx-3">Invite to her phone on Fri 30 Oct</span></div></div></div>
+          <div class="ac-ev"><span class="ic pause"><i data-lucide="pause"></i></span><div class="col grow"><b>Aiko Tanaka starts parental leave</b><span class="tx-3">Data science · Mon 9 Nov to Fri 6 Mar</span><div class="row" style="margin-top:6px"><span class="bdg warn">Pause 3 critical apps</span><span class="tx-3">Email and Slack stay</span></div></div></div>
+          <div class="ac-ev" style="border-bottom:0"><span class="ic"><i data-lucide="hourglass"></i></span><div class="col grow"><b>Jonas Weber's contract ends</b><span class="tx-3">Contractor · Support · Berlin · Fri 13 Nov</span><div class="row" style="margin-top:6px"><span class="bdg">6 apps end with it</span><span class="tx-3">Owner: Lena Fischer</span></div></div></div>
+        </div>
+        <div style="overflow:hidden;padding:20px 24px" class="col">
+          <div class="row" style="align-items:flex-start;margin-bottom:14px"><span class="av l o">AM</span><div class="col grow"><div class="h16">Arjun Mehta moves to Enterprise sales</div><span class="tx-2" style="font-size:12.5px">Sat 31 Oct · Account executive · Bengaluru · new manager Ishaan Bose · from People</span></div><span class="btn sm"><i data-lucide="pencil"></i>Edit plan</span><span class="btn sm pri"><i data-lucide="check"></i>Approve the plan</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="ghead"><span class="dot" style="background:var(--green)"></span>Adds, from the Enterprise sales role<span class="ct">4</span></div>
+            <div class="ac-diff"><span class="pm add"><i data-lucide="plus"></i></span><span class="ac-ap sm"><i data-lucide="chart-no-axes-combined"></i></span><div class="col grow"><b>Salesforce · Enterprise territory</b><span class="tx-3" style="font-size:12px">Role change, same account</span></div><span class="when">Sat 31 Oct, 08:00</span></div>
+            <div class="ac-diff"><span class="pm add"><i data-lucide="plus"></i></span><span class="ac-ap sm"><i data-lucide="hash"></i></span><div class="col grow"><b>Slack · #enterprise-deals and #deal-desk</b></div><span class="when">Sat 31 Oct, 08:00</span></div>
+            <div class="ac-diff"><span class="pm add"><i data-lucide="plus"></i></span><span class="ac-ap sm"><i data-lucide="file-text"></i></span><div class="col grow"><b>Bemmoly Docs · Enterprise playbooks</b></div><span class="when">Sat 31 Oct, 08:00</span></div>
+            <div class="ac-diff"><span class="pm add"><i data-lucide="plus"></i></span><span class="ac-ap sm"><i data-lucide="signature"></i></span><div class="col grow"><b>E-signature · Sender</b><span class="tx-3" style="font-size:12px">Critical app · Ishaan approves</span></div><span class="when">After approval</span></div>
+            <div class="ghead"><span class="dot" style="background:var(--red)"></span>Removes, no longer in his role<span class="ct">3</span></div>
+            <div class="ac-diff"><span class="pm rem"><i data-lucide="minus"></i></span><span class="ac-ap sm"><i data-lucide="chart-no-axes-combined"></i></span><div class="col grow"><b>Salesforce · West territory</b><span class="ai-line" style="font-size:11.5px"><span class="aid"></span>Read-only for 30 days, suggested by AI</span></div><span class="when">Mon 30 Nov</span></div>
+            <div class="ac-diff"><span class="pm rem"><i data-lucide="minus"></i></span><span class="ac-ap sm"><i data-lucide="folder"></i></span><div class="col grow"><b>Shared drive · Sales West</b></div><span class="when">After 14 days · Sat 14 Nov</span></div>
+            <div class="ac-diff"><span class="pm rem"><i data-lucide="minus"></i></span><span class="ac-ap sm"><i data-lucide="hash"></i></span><div class="col grow"><b>Slack · #sales-west-leads</b></div><span class="when">Sat 31 Oct</span></div>
+            <div class="ac-diff" style="background:var(--sunken)"><span class="pm keep"><i data-lucide="equal"></i></span><span class="tx-2 grow">Google Workspace, Slack, Bemmoly Work, Zoom and 7 more stay as they are</span><span class="btn sm ghost">Show 11</span></div>
+          </div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Handover<span class="src">by AI · from Salesforce and Work</span></div>
+            <p>Arjun still owns 3 open West opportunities worth ₹62L, closing in November.<span class="cite"><i data-lucide="chart-no-axes-combined"></i>3 opportunities</span><span class="cite"><i data-lucide="square-kanban"></i>NW-2026</span> Keeping West read-only for 30 days lets him hand them over without a new request.</p>
+            <div class="acts"><span class="btn sm">Keep it, as planned</span><span class="btn sm ghost">Remove on 31 Oct instead</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Events, not tickets</b>A start date, a team change, a leave or a last day set in People becomes a plan here the same minute. Nobody files an IT ticket.</div>
+    <div><b>A mover is a diff</b>What gets added, what goes and when, and what stays. Removals can wait a grace period, so a handover doesn't need a new request.</div>
+    <div><b>Leave is not leaving</b>Long leave pauses critical apps and keeps email. Contractors' access ends with the contract date, owned by a named person.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Leaver, verified (signature) -->
+<figure class="screen" id="ac-leave" data-title="Leaver, verified">
+  <div class="scap"><b>Offboarding in one click, then proof</b><span>Every account removed, then checked again against the app. What can't be automated becomes a named task. The result is a record an auditor can read.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.people" data-me="Rohan Kapoor" data-counts='{"ac.req":"!4","ac.rev":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span>Lifecycle</span><span class="sep">/</span><span class="cur">Vikram Shah leaves</span></div>
+        <div class="hact"><span class="tx-3 lv-todo" style="font-size:12px">Runs by itself at 18:00 IST</span><span class="tx-3 lv-done" style="font-size:12px" hidden>Finished at 17:42:31 IST</span><span class="btn lv-done" hidden><i data-lucide="file-check-2"></i>Download the record</span><span class="btn pri hot lv-todo" data-show=".lv-done,.lv-toast" data-hide=".lv-todo"><i data-lucide="shield-x"></i>Remove all access now</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 320px;height:100%">
+        <div style="overflow:hidden;padding:16px 24px 0">
+          <div class="row" style="margin-bottom:12px"><span class="av l g">VS</span><div class="col grow"><div class="h16">Vikram Shah</div><span class="tx-2" style="font-size:12.5px">Solutions engineer · Sales West · last day today, Mon 19 Oct</span></div><span class="bdg"><i data-lucide="contact-round"></i>Exit set in People by Priya Raman</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="ghead"><i data-lucide="fingerprint" style="width:14px;height:14px"></i>Identity<span class="ct">3</span></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="user-round-x"></i></span><span class="grow">Suspend the Bemmoly identity, keep the record</span><span class="how">Kernel</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:02</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="monitor-smartphone"></i></span><span class="grow">End 4 sessions and revoke 2 passkeys</span><span class="how">Kernel</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:03</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="key-round"></i></span><span class="grow">Revoke 3 personal API tokens and 1 deploy key</span><span class="how">GitHub, Bemmoly</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:05</span></div></div>
+            <div class="ghead"><i data-lucide="plug-zap" style="width:14px;height:14px"></i>Apps, removed automatically<span class="ct">14</span></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="mail"></i></span><span class="grow">Google Workspace <span class="tx-3">· mail to Arjun for 30 days</span></span><span class="how">Directory API</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:11</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="chart-no-axes-combined"></i></span><span class="grow">Salesforce <span class="tx-3">· 6 open opportunities moved to Arjun</span></span><span class="how">SCIM</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:14</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="hash"></i></span><span class="grow">Slack</span><span class="how">SCIM</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:15</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="git-branch"></i></span><span class="grow">GitHub · acme-labs</span><span class="how">SCIM</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:18</span></div></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="cloud"></i></span><span class="grow">AWS · sandbox</span><span class="how">SCIM</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>Verified 17:42:22</span></div></div>
+            <div class="ac-step"><span class="tx-3 grow" style="padding-left:32px">Zoom, Gong, E-signature, Notion and 5 more</span><div class="res"><span class="st lv-todo"><i></i>Queued</span><span class="st done lv-done" hidden><i></i>9 verified</span></div></div>
+            <div class="ghead"><i data-lucide="user-round-check" style="width:14px;height:14px"></i>Needs a person<span class="ct">2</span></div>
+            <div class="ac-step"><span class="ac-ap sm"><i data-lucide="lock-keyhole"></i></span><span class="grow">Rotate 2 shared credentials he could see <span class="tx-3">· Sales demo vault</span></span><span class="how">Lena Fischer</span><div class="res"><span class="st prog lv-todo"><i></i>Sent to Lena</span><span class="st prog lv-done" hidden><i></i>Lena, due 18:30</span></div></div>
+            <div class="ac-step" style="border-bottom:0"><span class="ac-ap sm"><i data-lucide="calculator"></i></span><span class="grow">Tally · no SSO, remove the local user</span><span class="how">Meera Iyer</span><div class="res"><span class="st prog lv-todo"><i></i>Sent to Meera</span><span class="st prog lv-done" hidden><i></i>Meera, due 19:00</span></div></div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;margin-top:10px"><i data-lucide="scroll-text"></i>Every step, its method and the app's answer go into the offboarding record and the audit log.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:16px 18px;overflow:hidden" class="col">
+          <div class="card pad" style="text-align:center;padding:14px 16px">
+            <div class="ac-ring lv-todo" style="--p:0%"><div><b>0 of 23</b><span>removed and checked</span></div></div>
+            <div class="ac-ring lv-done" style="--p:91%" hidden><div><b>21 of 23</b><span>verified gone</span></div></div>
+            <span class="tx-2 lv-todo" style="font-size:12.5px">Each app is asked again after removal. Removal isn't counted until the app confirms it.</span>
+            <span class="tx-2 lv-done" style="font-size:12.5px" hidden>2 tasks are with people. You'll get the record when they're done.</span>
+          </div>
+          <div class="cap" style="margin:14px 0 6px">In other Bemmoly products</div>
+          <div class="ac-kv"><span class="tile" style="background:var(--m-assets);width:20px;height:20px;border-radius:5px"><i data-lucide="laptop" style="width:12px;height:12px"></i></span><span class="k">Laptop return booked</span><span class="tx-3">Assets</span></div>
+          <div class="ac-kv"><span class="tile" style="background:var(--m-licences);width:20px;height:20px;border-radius:5px"><i data-lucide="key-round" style="width:12px;height:12px"></i></span><span class="k">9 seats back in the pool</span><span class="tx-3">Licences</span></div>
+          <div class="ac-kv"><span class="tile" style="background:var(--m-expenses);width:20px;height:20px;border-radius:5px"><i data-lucide="receipt" style="width:12px;height:12px"></i></span><span class="k">Card ••2210 frozen</span><span class="tx-3">Expenses</span></div>
+          <div class="ac-kv"><span class="tile" style="background:var(--m-helpdesk);width:20px;height:20px;border-radius:5px"><i data-lucide="life-buoy" style="width:12px;height:12px"></i></span><span class="k">2 open tickets to Arjun</span><span class="tx-3">Helpdesk</span></div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Also his<span class="src">by AI · from Docs and Google</span></div>
+            <p style="font-size:12.5px">Vikram owns 38 docs, 2 Google groups and the calendar for the demo room. Hand them to Arjun?<span class="cite"><i data-lucide="file-text"></i>38 docs</span><span class="cite"><i data-lucide="users"></i>2 groups</span></p>
+            <div class="acts"><span class="btn sm">Hand to Arjun</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+      <div class="toast lv-toast" hidden><i data-lucide="circle-check"></i>21 accesses removed and verified. 2 tasks are with Lena and Meera.<span class="u" data-hide=".lv-toast">Close</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Removed, then proven</b>After each removal, Access asks the app again (a SCIM lookup, an API call) and records the answer with a time. "Verified" means the app said the account is gone.</div>
+    <div><b>The gaps get owners</b>Apps without provisioning and shared credentials become tasks for a named person, with a due time. They show in the record until someone confirms them.</div>
+    <div><b>The whole exit, not just logins</b>Other Bemmoly products do their part: the laptop return, the licence seats, the card, the open tickets. If one isn't installed, its step becomes a task for IT.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Employee: my apps and asking -->
+<figure class="screen" id="ac-mine" data-title="My apps, and asking">
+  <div class="scap"><b>What an employee sees: their apps, and a box to ask</b><span>Sofia sees one place. She says what she needs in her own words; Access finds the app and role, the approver and the right length of time.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side ac-nov" data-cur="access" data-link="ac.apps" data-me="Sofia Lindqvist" data-hide-links="ac.people,ac.rev,ac.log" data-counts='{"ac.req":"1"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span class="cur">My apps</span></div>
+        <div class="htabs"><span class="htab on">My apps<span class="ct">16</span></span><span class="htab">Catalog</span><span class="htab">My requests<span class="ct">1</span></span></div>
+        <div class="hact"><span class="btn pri hot" data-show=".my-peek,.my-scrim"><i data-lucide="plus"></i>Ask for access</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:22px">
+        <div class="ac-ask ai-field" style="margin-bottom:6px" data-show=".my-peek,.my-scrim"><i data-lucide="sparkles" style="color:var(--ai-600)"></i><span class="grow">I need to see the onboarding funnel numbers for the new signup flow</span><span class="btn sm pri">Find it</span></div>
+        <div class="tx-3" style="font-size:12px;margin:0 0 18px 4px">Say what you need. You'll see the app, the access, who approves and for how long before anything is sent.</div>
+        <div class="row" style="margin-bottom:10px"><b class="grow">Your apps</b><span class="seg"><span class="on">Most used</span><span>A to Z</span></span></div>
+        <div class="ac-launch">
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="pen-tool"></i></span><b>Figma</b><span class="tx-3">Editor</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="hash"></i></span><b>Slack</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="mail"></i></span><b>Google Workspace</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="square-kanban"></i></span><b>Bemmoly Work</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="git-branch"></i></span><b>GitHub</b><span class="tx-3">design-system</span><span class="bdg warn">4 days</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="video"></i></span><b>Zoom</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="file-text"></i></span><b>Bemmoly Docs</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="mic"></i></span><b>Dovetail</b><span class="tx-3">Researcher</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="type"></i></span><b>Fonts library</b><span class="tx-3">Viewer</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="flag"></i></span><b>Feature flags</b><span class="tx-3">Staging only</span></div>
+          <div class="ac-tile"><span class="ac-ap lg"><i data-lucide="image"></i></span><b>Stock images</b><span class="tx-3">Member</span></div>
+          <div class="ac-tile" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent"><span class="ac-ap lg" style="background:transparent;box-shadow:none"><i data-lucide="ellipsis"></i></span><b class="tx-2">5 more</b></div>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <div class="lrow" style="height:48px"><i data-lucide="hourglass" style="color:var(--amber)"></i><div class="col grow"><b>GitHub · write to design-system ends Fri 23 Oct</b><span class="tx-3" style="font-size:12px">You asked for 14 days on 9 Oct. You've used it every day this week.</span></div><span class="btn sm">Ask for 14 more days</span></div>
+          <div class="lrow" style="height:48px;border-bottom:0"><i data-lucide="loader" style="color:var(--prog)"></i><div class="col grow"><b>Feature flags · production, 2 hours</b><span class="tx-3" style="font-size:12px">With Daniel Okafor · he usually answers within 20 min</span></div><span class="st prog"><i></i>Waiting</span></div>
+        </div>
+        <div class="row" style="margin:18px 0 10px"><b class="grow">Popular in Product design</b><span class="tx-3" style="font-size:12px">Apps most designers have and you don't</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+          <div class="card row" style="padding:10px 12px;gap:10px"><span class="ac-ap"><i data-lucide="chart-column"></i></span><div class="col grow"><b>Amplitude · Viewer</b><span class="tx-3" style="font-size:11.5px">9 of 11 designers · Standard</span></div><span class="btn sm">Ask</span></div>
+          <div class="card row" style="padding:10px 12px;gap:10px"><span class="ac-ap"><i data-lucide="presentation"></i></span><div class="col grow"><b>Pitch · Member</b><span class="tx-3" style="font-size:11.5px">7 of 11 designers · Low, instant</span></div><span class="btn sm">Add</span></div>
+          <div class="card row" style="padding:10px 12px;gap:10px"><span class="ac-ap"><i data-lucide="flask-conical"></i></span><div class="col grow"><b>Maze · Researcher</b><span class="tx-3" style="font-size:11.5px">6 of 11 designers · Standard</span></div><span class="btn sm">Ask</span></div>
+        </div>
+      </div></div>
+      <div class="scrim my-scrim" hidden data-hide=".my-peek,.my-scrim"></div>
+      <div class="peek my-peek" hidden>
+        <div class="peek-h"><b class="grow">Ask for access</b><span class="ib sm" data-hide=".my-peek,.my-scrim"><i data-lucide="x"></i></span></div>
+        <div class="peek-b col" style="gap:14px;overflow:hidden">
+          <div class="inp ro" style="height:auto;min-height:44px;padding:8px 10px;align-items:flex-start;font-size:12.5px">"I need to see the onboarding funnel numbers for the new signup flow"</div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Found a match<span class="src">by AI · from the catalog and your team</span></div>
+            <p style="font-size:12.5px">The funnel lives in Amplitude, in the "Signup v2" space. 9 of the 11 designers have Viewer.<span class="cite"><i data-lucide="chart-column"></i>Signup v2</span><span class="cite"><i data-lucide="users"></i>Product design</span></p>
+            <div class="acts"><span class="btn sm ghost">Pick something else</span><span class="nu">Not useful</span></div></div>
+          <div class="row" style="gap:12px;padding:10px 12px;border-radius:8px;background:var(--sunken)"><span class="ac-ap lg"><i data-lucide="chart-column"></i></span><div class="col grow"><b>Amplitude · Viewer</b><span class="tx-3" style="font-size:12px">Space: Signup v2 · read-only</span></div><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></div>
+          <div class="fld"><label>For how long</label><div class="ac-dur"><span>1 day</span><span>7 days</span><span class="on">30 days</span><span>90 days</span></div><span class="help">Standard apps allow up to 90 days. You'll be asked before it ends.</span></div>
+          <div class="fld"><label>Why</label><div class="inp" style="font-size:12.5px">Checking drop-off on the new email step before the design review</div></div>
+          <div class="fld"><label>Who approves</label><div class="ac-path"><span class="n"><span class="av s g">AT</span>Aiko Tanaka, app owner</span><span class="tx-3">usually within 1 hour · in chat or email</span></div></div>
+        </div>
+        <div class="peek-f"><span class="btn ghost" data-hide=".my-peek,.my-scrim">Cancel</span><span class="btn pri" data-go="ac-jit"><i data-lucide="send"></i>Send to Aiko</span></div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>One place for everyone else</b>Employees see their apps and a way to ask. The admin places are hidden, and nothing about other people's access is visible.</div>
+    <div><b>Ask in your own words</b>AI maps a sentence to the app, the role and the space, and shows what peers have. With AI off, it's a search over the catalog.</div>
+    <div><b>Know before you send</b>The sensitivity, the longest allowed time, the approver and their usual response time are shown before anything leaves.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Approve anywhere, time-bound (not desktop) -->
+<figure class="screen" id="ac-jit" data-title="Approve anywhere, ends on time">
+  <div class="scap"><b>Approved where people are, proven when it matters, ended on time</b><span>Approvals arrive in chat and email. Sensitive access asks for a fresh passkey. Every grant with an end date ends by itself, and says what was done with it.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="ac-wrap">
+      <div class="ac-colc">
+        <div class="ac-chatw">
+          <div class="ch"><span class="tile" style="background:var(--m-access);width:20px;height:20px;border-radius:5px"><i data-lucide="shield-check" style="width:12px;height:12px"></i></span>Bemmoly Access<span class="tx-3" style="font-weight:400">· direct message</span></div>
+          <div class="cb2">
+            <div class="ac-botcard">
+              <div class="row" style="margin-bottom:6px"><span class="av s p">SL</span><b>Sofia Lindqvist asks for access</b></div>
+              <div class="row" style="gap:8px;margin-bottom:6px"><span class="ac-ap sm"><i data-lucide="chart-column"></i></span><b>Amplitude · Viewer</b><span class="tx-3">30 days</span></div>
+              <div class="tx-2" style="font-size:12px;margin-bottom:8px">"Checking drop-off on the new email step before the design review"</div>
+              <div class="tx-3" style="font-size:11.5px;margin-bottom:10px">Standard sensitivity · 9 of 11 designers have it · you own this app</div>
+              <div class="row" style="gap:6px"><span class="btn sm pri"><i data-lucide="check"></i>Approve 30 days</span><span class="btn sm">7 days</span><span class="btn sm ghost">Decline</span></div>
+            </div>
+            <div class="row" style="font-size:12px"><span class="av s g">AT</span><span class="tx-2"><b style="color:var(--tx)">Aiko</b> approved for 30 days · 14:20</span></div>
+            <div class="row" style="font-size:12px"><i data-lucide="circle-check" style="color:var(--green);width:14px;height:14px"></i><span class="tx-2">Sofia has Viewer. Ends Wed 18 Nov.</span></div>
+          </div>
+        </div>
+        <h4>Approve in chat</h4><p>The owner sees what, why, for how long and what peers have, and answers with one tap. Email works the same way.</p>
+      </div>
+      <div class="ac-colc">
+        <div class="ac-phone"><div class="scr"><div class="notch"></div>
+          <div class="pin">
+            <span class="tx-3" style="font-size:11px">Bemmoly Access</span>
+            <div style="font-size:16px;font-weight:600;line-height:1.3">Confirm it's you</div>
+            <div class="tx-2" style="font-size:12px">Tomás, you're starting AWS production admin for 2 hours. Critical access needs a fresh passkey.</div>
+            <div class="ac-face"><i data-lucide="scan-face"></i></div>
+            <div class="card" style="width:100%;padding:10px 12px;text-align:left;font-size:11.5px;margin-top:6px">
+              <div class="row"><span class="tx-3 grow">Approved by</span><b>Daniel Okafor</b></div>
+              <div class="row" style="margin-top:4px"><span class="tx-3 grow">Ends</span><b>16:40 today</b></div>
+              <div class="row" style="margin-top:4px"><span class="tx-3 grow">Reason</span><b>Incident 2291</b></div>
+            </div>
+            <span class="sp"></span>
+            <span class="btn pri" style="width:100%;justify-content:center"><i data-lucide="key-round"></i>Use passkey</span>
+          </div>
+        </div></div>
+        <h4>Prove it at the moment</h4><p>Critical access asks for a passkey when it starts, not just at sign-in, so a stolen session can't start it.</p>
+      </div>
+      <div class="ac-colc">
+        <div class="ac-mail">
+          <div class="mh"><span>From</span><b>Bemmoly Access</b><span>To</span><span style="color:var(--tx)">Tomás García</span><span>Subject</span><span style="color:var(--tx)">Your AWS production admin access has ended</span></div>
+          <div class="mb">
+            <div class="row" style="margin-bottom:10px"><span class="st done"><i></i>Ended at 16:40</span><span class="tx-3">· 2 hours, as approved</span></div>
+            <div class="col" style="gap:6px;font-size:12px">
+              <div class="row"><i data-lucide="activity" class="tx-3" style="width:14px;height:14px"></i><span class="grow">Actions while it was on</span><b>14</b></div>
+              <div class="row"><i data-lucide="scroll-text" class="tx-3" style="width:14px;height:14px"></i><span class="grow">Linked to</span><b>Incident 2291</b></div>
+              <div class="row"><i data-lucide="user-round-check" class="tx-3" style="width:14px;height:14px"></i><span class="grow">Daniel was sent the summary</span><b>16:41</b></div>
+            </div>
+            <div class="row" style="margin-top:12px;gap:6px"><span class="btn sm">Ask again</span><span class="btn sm ghost">See the log</span></div>
+          </div>
+        </div>
+        <div class="card" style="width:100%;max-width:340px;padding:12px 14px">
+          <div class="row" style="font-size:12px"><i data-lucide="timer" style="color:var(--acc)"></i><b class="grow">Time-bound grants active now</b><b>7</b></div>
+          <div class="bar" style="margin-top:8px"><i style="width:58%"></i></div>
+          <div class="tx-3" style="font-size:11.5px;margin-top:6px">Next to end: Feature flags production, Sofia, in 1h 12m</div>
+        </div>
+        <h4>It ends by itself</h4><p>No reminder to revoke. When time is up the access goes, the person and approver get a summary, and the log keeps what happened.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Approval where the approver is</b>Requests use the kernel's shared approval engine, so the same request can be answered in Access, chat or email, and delegates during time off come from People.</div>
+    <div><b>Step-up at the right moment</b>Policies by sensitivity decide when a fresh passkey check is needed. Starting critical access is one of those moments.</div>
+    <div><b>Access that leaves on its own</b>Time-bound is the default for sensitive apps. The end is a scheduled job with a verification, like an exit.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Applications, both modes -->
+<figure class="screen" id="ac-apps" data-title="Applications, both modes">
+  <div class="scap"><b>Every app, how people sign in to it, and how accounts are kept in step</b><span>Bemmoly can be the identity provider itself, or sit on top of Entra ID or Google Workspace. Click the switch to see both.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.apps" data-me="Rohan Kapoor" data-counts='{"ac.req":"!4","ac.rev":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span class="cur">Applications</span></div>
+        <div class="htabs"><span class="htab on">All<span class="ct">64</span></span><span class="htab">Needs attention<span class="ct">5</span></span><span class="htab">Found in spend<span class="ct">7</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="library"></i>Browse templates</span><span class="btn pri"><i data-lucide="plus"></i>Add an application</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:16px 24px;gap:12px">
+        <div class="ac-mode">
+          <span class="big-ic"><i data-lucide="layers"></i></span>
+          <div class="col grow">
+            <div class="m-idp"><b>Bemmoly is the identity provider for Acme Labs</b><div class="tx-2" style="font-size:12.5px;margin-top:2px">People sign in once with a passkey. 51 apps trust Bemmoly over SAML or OIDC, and 38 get accounts created and removed over SCIM.</div>
+              <div class="ac-chain"><span class="n"><i data-lucide="contact-round" style="width:13px;height:13px"></i>People</span><i data-lucide="arrow-right"></i><span class="n us"><i data-lucide="shield-check" style="width:13px;height:13px"></i>Access signs in and provisions</span><i data-lucide="arrow-right"></i><span class="n"><i data-lucide="layout-grid" style="width:13px;height:13px"></i>64 apps</span></div></div>
+            <div class="m-ent" hidden><b>Acme Labs signs in with Entra ID. Access works on top of it.</b><div class="tx-2" style="font-size:12.5px;margin-top:2px">Sign-in, MFA and Conditional Access stay in Entra ID. Access reads people and groups every 5 minutes and drives lifecycle, requests and reviews by writing to Entra groups and to apps over SCIM.</div>
+              <div class="ac-chain"><span class="n"><i data-lucide="contact-round" style="width:13px;height:13px"></i>People</span><i data-lucide="arrow-right"></i><span class="n us"><i data-lucide="shield-check" style="width:13px;height:13px"></i>Access decides</span><i data-lucide="arrow-right"></i><span class="n"><i data-lucide="building-2" style="width:13px;height:13px"></i>Entra ID groups</span><i data-lucide="arrow-right"></i><span class="n"><i data-lucide="layout-grid" style="width:13px;height:13px"></i>64 apps</span></div></div>
+          </div>
+          <div class="seg"><span class="on" data-on="1" data-show=".m-idp" data-hide=".m-ent">Bemmoly signs in</span><span class="hot" data-on="1" data-show=".m-ent" data-hide=".m-idp">On top of Entra ID</span></div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <table class="tbl ac-tbl"><thead><tr><th>Application</th><th>Sign-in</th><th>Accounts</th><th class="r">People</th><th>Sensitivity</th><th>Owner</th><th>Health</th></tr></thead><tbody>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="hash"></i></span>Slack</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">212</td><td><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></td><td>Rohan Kapoor</td><td><span class="st done"><i></i>In step · 2 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="git-branch"></i></span>GitHub · acme-labs</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">86</td><td><span class="ac-sens s3"><i><b></b><b></b><b></b><b></b></i>High</span></td><td>Daniel Okafor</td><td><span class="st done"><i></i>In step · 4 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="cloud"></i></span>AWS · production</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">41</td><td><span class="ac-sens s4"><i><b></b><b></b><b></b><b></b></i>Critical</span></td><td>Daniel Okafor</td><td><span class="st done"><i></i>In step · 1 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="chart-no-axes-combined"></i></span>Salesforce</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">38</td><td><span class="ac-sens s3"><i><b></b><b></b><b></b><b></b></i>High</span></td><td>Arjun Mehta</td><td><span class="st done"><i></i>In step · 6 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="database"></i></span>Snowflake</div></td><td><span class="m-idp">OIDC · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">12</td><td><span class="ac-sens s4"><i><b></b><b></b><b></b><b></b></i>Critical</span></td><td>Aiko Tanaka</td><td><span class="st warn"><i></i>2 accounts outside Access</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="activity"></i></span>Datadog</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">80</td><td><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></td><td>Tomás García</td><td><span class="st done"><i></i>In step · 3 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="chart-column"></i></span>Amplitude</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="user-round-check"></i>Tasks to owner</span></td><td class="r num">22</td><td><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></td><td>Aiko Tanaka</td><td><span class="st done"><i></i>Owner confirmed · 11 Oct</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="pen-tool"></i></span>Figma</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">34</td><td><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></td><td>Sofia Lindqvist</td><td><span class="st done"><i></i>In step · 5 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="siren"></i></span>PagerDuty</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="users"></i>Group sync</span></td><td class="r num">18</td><td><span class="ac-sens s3"><i><b></b><b></b><b></b><b></b></i>High</span></td><td>Daniel Okafor</td><td><span class="st done"><i></i>In step · 8 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="video"></i></span>Zoom</div></td><td><span class="m-idp">SAML · Bemmoly</span><span class="m-ent" hidden>SAML · Entra ID</span></td><td><span class="ac-src"><i data-lucide="refresh-cw"></i>SCIM</span></td><td class="r num">190</td><td><span class="ac-sens s1"><i><b></b><b></b><b></b><b></b></i>Low</span></td><td>Rohan Kapoor</td><td><span class="st done"><i></i>In step · 9 min ago</span></td></tr>
+            <tr><td><div class="row"><span class="ac-ap"><i data-lucide="calculator"></i></span>Tally</div></td><td><span class="bdg bad">No SSO · local passwords</span></td><td><span class="ac-src"><i data-lucide="user-round-check"></i>Tasks to owner</span></td><td class="r num">6</td><td><span class="ac-sens s4"><i><b></b><b></b><b></b><b></b></i>Critical</span></td><td>Meera Iyer</td><td><span class="st warn"><i></i>Review monthly</span></td></tr>
+            <tr><td style="border-bottom:0"><div class="row"><span class="ac-ap" style="border:1px dashed var(--line);background:transparent;box-shadow:none"><i data-lucide="radar"></i></span>Miro <span class="tx-3">· found in Expenses</span></div></td><td style="border-bottom:0"><span class="tx-3">Not connected</span></td><td style="border-bottom:0"><span class="tx-3">Unknown</span></td><td class="r num" style="border-bottom:0">14</td><td style="border-bottom:0"><span class="tx-3">Not set</span></td><td style="border-bottom:0"><span class="tx-3">Nobody yet</span></td><td style="border-bottom:0"><span class="btn sm">Connect with SAML</span></td></tr>
+          </tbody></table>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Two modes, one product</b>As the identity provider, Access signs people in with passkeys. On top of Entra ID or Google Workspace, sign-in stays put and Access governs through groups and SCIM. Lifecycle, requests and reviews work the same in both.</div>
+    <div><b>Health means "in step"</b>Each app is compared with what Access thinks should exist. Accounts created outside Access show up as drift, not as a surprise in the next audit.</div>
+    <div><b>Apps without SSO still count</b>Apps like Tally get a named owner, removal tasks and a monthly review. Apps found in Expenses or Licences spend appear here to be brought under sign-in.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Access review with AI -->
+<figure class="screen" id="ac-rev" data-title="Access review, unused first">
+  <div class="scap"><b>An access review that starts with what matters</b><span>Daniel's part of the quarterly review. The unused and the unusual come first, with the evidence, so the rest can be confirmed quickly and honestly.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side ac-nov" data-cur="access" data-link="ac.rev" data-me="Daniel Okafor" data-hide-links="ac.people,ac.log" data-counts='{"ac.rev":"!86","ac.req":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span>Access reviews</span><span class="sep">/</span><span class="cur">Q4 · production and finance apps</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Due Fri 30 Oct · 0 of 86 decided</span><div class="bar" style="width:100px"><i style="width:0%"></i></div></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px">
+          <div class="ai-card" style="margin-bottom:14px"><div class="ai-h"><span class="aid"></span>Pre-review<span class="src">by AI · from 90 days of sign-ins, roles and peers</span></div>
+            <p>41 of your 86 grants were unused for 90 days or more.<span class="cite"><i data-lucide="activity"></i>Sign-in log</span> 6 are outside what the person's role usually has.<span class="cite"><i data-lucide="workflow"></i>Roles</span> The other 39 are used every week and match the role.</p>
+            <div class="acts"><span class="btn sm pri hot rv-unused" data-hide=".rv-unused" data-show=".rv-toast,.rv-gone"><i data-lucide="trash-2"></i>Remove the 41 unused grants</span><span class="btn sm rv-unused">Show all 41 first</span><span class="nu">Not useful</span></div></div>
+          <div class="card" style="overflow:hidden">
+            <div class="rv-unused">
+            <div class="ghead"><span class="dot" style="background:var(--amber)"></span>Unused 90 days or more<span class="ct">41</span></div>
+            <div class="lrow sel" style="height:50px"><span class="av s k">TG</span><div class="col grow"><b>Tomás García · Snowflake, Analyst</b><span class="tx-3" style="font-size:12px">Request on 12 Jul · last used 18 Jul</span></div><span class="ac-meter"><i style="width:100%"></i></span><span class="tx-2 num" style="width:64px;text-align:right">94 days</span></div>
+            <div class="lrow" style="height:50px"><span class="av s g">AT</span><div class="col grow"><b>Aiko Tanaka · AWS production, read-only</b><span class="tx-3" style="font-size:12px">Role: Data science · never signed in</span></div><span class="ac-meter"><i style="width:100%"></i></span><span class="tx-2 num" style="width:64px;text-align:right">Never</span></div>
+            <div class="lrow" style="height:50px"><span class="av s o">AM</span><div class="col grow"><b>Arjun Mehta · Datadog, Standard</b><span class="tx-3" style="font-size:12px">Added by hand in March</span></div><span class="ac-meter"><i style="width:100%"></i></span><span class="tx-2 num" style="width:64px;text-align:right">203 days</span></div>
+            <div class="lrow" style="height:34px"><span class="tx-3" style="padding-left:30px;font-size:12px">and 38 more</span></div>
+            </div>
+            <div class="rv-gone" hidden><div class="ghead"><span class="dot" style="background:var(--green)"></span>Removed<span class="ct">41 · at the end of the review</span></div></div>
+            <div class="ghead"><span class="dot" style="background:var(--red)"></span>Outside their role<span class="ct">6</span></div>
+            <div class="lrow" style="height:50px"><span class="av s p">LF</span><div class="col grow"><b>Lena Fischer · GitHub, Maintainer on platform-api</b><span class="tx-3" style="font-size:12px">Support leads usually have Read · used twice in October</span></div><span class="btn sm">Keep</span><span class="btn sm">Make it Read</span></div>
+            <div class="lrow" style="height:50px"><span class="av s k">TG</span><div class="col grow"><b>Tomás García · Tally, Viewer</b><span class="tx-3" style="font-size:12px">No one else in Engineering has it</span></div><span class="btn sm">Keep</span><span class="btn sm">Remove</span></div>
+            <div class="lrow" style="height:34px"><span class="tx-3" style="padding-left:30px;font-size:12px">and 4 more</span></div>
+            <div class="ghead"><span class="dot" style="background:var(--green)"></span>Used and expected<span class="ct">39</span><span class="sp"></span><span class="btn sm" style="font-weight:500">Keep all 39</span></div>
+            <div class="lrow" style="height:44px;border-bottom:0"><span class="av s k">TG</span><div class="col grow"><b style="font-weight:500">Tomás García · GitHub, AWS read-only, Datadog and 4 more</b><span class="tx-3" style="font-size:12px">All from the Platform role · used this week</span></div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);overflow:hidden;position:relative">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--line-2)"><div class="row"><span class="ac-ap lg"><i data-lucide="database"></i></span><div class="col grow"><b>Snowflake · Analyst</b><span class="tx-3" style="font-size:12px">Tomás García · Critical app · owner Aiko Tanaka</span></div></div></div>
+          <div style="padding:14px 20px" class="col">
+            <div class="cap" style="margin-bottom:6px">Why he has it</div>
+            <div class="well" style="padding:10px 12px;font-size:12.5px">"Q3 latency analysis for the platform-api rewrite" · requested 12 Jul, approved by Aiko Tanaka for 90 days, extended by hand on 9 Oct</div>
+            <div class="cap" style="margin:14px 0 6px">Usage</div>
+            <svg viewBox="0 0 300 48" width="100%" height="48" aria-hidden="true"><g fill="var(--line)">
+              <rect x="0" y="20" width="8" height="28" rx="1.5" fill="var(--acc-500)"/><rect x="11" y="30" width="8" height="18" rx="1.5" fill="var(--acc-500)"/><rect x="22" y="44" width="8" height="4" rx="1.5"/><rect x="33" y="44" width="8" height="4" rx="1.5"/><rect x="44" y="44" width="8" height="4" rx="1.5"/><rect x="55" y="44" width="8" height="4" rx="1.5"/><rect x="66" y="44" width="8" height="4" rx="1.5"/><rect x="77" y="44" width="8" height="4" rx="1.5"/><rect x="88" y="44" width="8" height="4" rx="1.5"/><rect x="99" y="44" width="8" height="4" rx="1.5"/><rect x="110" y="44" width="8" height="4" rx="1.5"/><rect x="121" y="44" width="8" height="4" rx="1.5"/><rect x="132" y="44" width="8" height="4" rx="1.5"/><rect x="143" y="44" width="8" height="4" rx="1.5"/><rect x="154" y="44" width="8" height="4" rx="1.5"/><rect x="165" y="44" width="8" height="4" rx="1.5"/><rect x="176" y="44" width="8" height="4" rx="1.5"/><rect x="187" y="44" width="8" height="4" rx="1.5"/><rect x="198" y="44" width="8" height="4" rx="1.5"/><rect x="209" y="44" width="8" height="4" rx="1.5"/><rect x="220" y="44" width="8" height="4" rx="1.5"/><rect x="231" y="44" width="8" height="4" rx="1.5"/><rect x="242" y="44" width="8" height="4" rx="1.5"/><rect x="253" y="44" width="8" height="4" rx="1.5"/><rect x="264" y="44" width="8" height="4" rx="1.5"/><rect x="275" y="44" width="8" height="4" rx="1.5"/><rect x="286" y="44" width="8" height="4" rx="1.5"/></g></svg>
+            <div class="row tx-3" style="font-size:11px;margin-top:2px"><span class="grow">14 Jul</span><span>Weekly sessions</span><span class="grow" style="text-align:right">Today</span></div>
+            <div class="cap" style="margin:14px 0 6px">Context</div>
+            <div class="ac-kv"><i data-lucide="users"></i><span class="k">Platform team with this access</span><b>0 of 11</b></div>
+            <div class="ac-kv"><i data-lucide="square-kanban"></i><span class="k">platform-api rewrite in Work</span><span>Done 2 Aug</span></div>
+            <div class="ac-kv"><i data-lucide="key-round"></i><span class="k">Seat cost, from Licences</span><span>₹6,800 a month</span></div>
+            <div class="ac-kv"><i data-lucide="history"></i><span class="k">Last review, Q3</span><span>Kept by you</span></div>
+          </div>
+          <div class="peek-f" style="position:absolute;bottom:0;left:0;right:0;background:var(--canvas)"><span class="btn ghost">Ask Tomás</span><span class="btn">Keep</span><span class="btn pri"><i data-lucide="trash-2"></i>Remove<span class="kbd" style="background:transparent;color:inherit;border-color:rgba(255,255,255,.35)">R</span></span></div>
+        </div>
+      </div>
+      <div class="toast rv-toast" hidden style="left:calc(50% - 190px)"><i data-lucide="circle-check"></i>41 grants marked for removal when the review closes. Tomás and 17 others will be told why.<span class="u" data-show=".rv-unused" data-hide=".rv-toast,.rv-gone">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Evidence, not a spreadsheet</b>Each grant carries why it exists, its approver, its usage and what peers have. Reviewers decide on facts, in minutes.</div>
+    <div><b>AI sorts, the manager decides</b>The pre-review groups grants and offers one bulk action, listed in full and undoable. Nothing is removed until the review closes, and people are told why.</div>
+    <div><b>Reviewers see only their part</b>Daniel sees his team's grants and nothing else. Campaign setup and the audit log stay with IT and security.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Audit log and sign-in risk -->
+<figure class="screen" id="ac-log" data-title="Audit log, risky sign-ins">
+  <div class="scap"><b>Every change, and the sign-ins worth a look</b><span>One log for grants, removals, approvals and sign-ins, with the risky ones raised and already contained by policy until a person decides.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.log" data-me="Rohan Kapoor" data-counts='{"ac.req":"!4","ac.rev":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span class="cur">Audit log</span></div>
+        <div class="htabs"><span class="htab on">Events</span><span class="htab">Sign-in risk<span class="ct">2</span></span><span class="htab">Exports</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="download"></i>Export for audit</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:392px minmax(0,1fr);height:100%">
+        <div style="border-right:1px solid var(--line);padding:16px 16px;overflow:hidden;background:var(--canvas)" class="col">
+          <div class="ac-risk">
+            <div class="top"><span class="av l p">LF</span><div class="col grow"><b>Lena Fischer · unusual sign-in</b><span class="tx-3" style="font-size:12px">14:06 · São Paulo · unmanaged Windows</span></div><span class="bdg bad">High</span></div>
+            <div class="ac-map"><svg viewBox="0 0 380 120" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M30 40 Q 120 -10 250 30 T 360 50" fill="none" stroke="var(--line)" stroke-width="1"/>
+              <path d="M228 34 C 190 70, 150 96, 112 98" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <circle cx="228" cy="34" r="5" fill="var(--acc-500)"/><circle cx="112" cy="98" r="5" fill="var(--red)"/>
+              <text x="236" y="30" font-size="11" fill="var(--tx-2)" font-family="IBM Plex Sans, sans-serif">Berlin, 13:32</text>
+              <text x="122" y="102" font-size="11" fill="var(--tx-2)" font-family="IBM Plex Sans, sans-serif">São Paulo, 14:06</text>
+              <text x="140" y="64" font-size="11" fill="var(--amber-tx)" font-family="IBM Plex Sans, sans-serif">10,000 km in 34 min</text></svg></div>
+            <div class="ac-sig"><i data-lucide="plane"></i><span>Impossible travel from a Berlin sign-in 34 minutes earlier</span></div>
+            <div class="ac-sig"><i data-lucide="monitor-x"></i><span>New device, not in Assets, no passkey on it</span></div>
+            <div class="ac-sig ok"><i data-lucide="shield-check"></i><span>Held by policy: password and code accepted, High and Critical apps blocked</span></div>
+            <div class="ai-card" style="margin:6px 12px 10px"><div class="ai-h"><span class="aid"></span>Likely cause<span class="src">by AI · from 90 days of her sign-ins</span></div>
+              <p style="font-size:12.5px">The address belongs to a consumer VPN that Lena's phone used once on 1 Sep, but never from a Windows device.<span class="cite"><i data-lucide="activity"></i>1 Sep sign-in</span> Treat it as unconfirmed.</p>
+              <div class="acts"><span class="nu" style="margin-left:0">Not useful</span></div></div>
+            <div class="row" style="gap:6px;padding:0 12px 12px"><span class="btn sm danger"><i data-lucide="log-out" style="color:#fff"></i>Sign out everywhere</span><span class="btn sm"><i data-lucide="message-square"></i>Ask Lena</span><span class="btn sm ghost">Mark safe</span></div>
+          </div>
+          <div class="card" style="margin-top:12px"><div class="lrow" style="height:46px;border-bottom:0"><span class="bdg warn">Medium</span><div class="col grow"><b style="font-size:12.5px">12 failed passkey prompts · Tomás García</b><span class="tx-3" style="font-size:11.5px">13:40 to 13:44 · from his own iPhone · likely a stuck prompt</span></div></div></div>
+        </div>
+        <div style="overflow:hidden;padding:16px 20px" class="col">
+          <div class="fbar" style="margin-bottom:12px"><span class="inp" style="width:220px;height:28px"><i data-lucide="search"></i><span class="tx-3">Search people, apps, events</span></span><span class="fchip on"><i data-lucide="calendar"></i><b>Today</b></span><span class="fchip"><i data-lucide="filter"></i>All events</span><span class="fchip dash"><i data-lucide="plus"></i>Filter</span></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl ac-tbl"><thead><tr><th>Time</th><th>Who</th><th>What happened</th><th>Through</th></tr></thead><tbody>
+              <tr><td class="mono tx-3" style="font-size:12px">14:32</td><td><div class="row"><span class="av s a">RK</span>Rohan Kapoor</div></td><td>Removed Snowflake from Tomás García</td><td class="tx-2">Review Q4</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">14:31</td><td><div class="row"><span class="ac-ap sm"><i data-lucide="cpu"></i></span>Access</div></td><td>Removed GitHub from Vikram · <span style="color:var(--green-tx)">verified gone</span></td><td class="tx-2">SCIM</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">14:20</td><td><div class="row"><span class="av s g">AT</span>Aiko Tanaka</div></td><td>Approved Amplitude for Sofia, 30 days</td><td class="tx-2">Chat</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">14:06</td><td><div class="row"><span class="ac-ap sm"><i data-lucide="cpu"></i></span>Access</div></td><td>Held Lena's sign-in · <span style="color:var(--red-tx)">high risk</span></td><td class="tx-2">Sign-in policy</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">14:02</td><td><div class="row"><span class="av s k">TG</span>Tomás García</div></td><td>Started AWS production admin, 2 hours</td><td class="tx-2">Passkey check</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">13:58</td><td><div class="row"><span class="av s p">PR</span>Priya Raman</div></td><td>Set Kavya Nair's start date · 14 apps planned</td><td class="tx-2">People</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">13:15</td><td><div class="row"><span class="av s a">RK</span>Rohan Kapoor</div></td><td>Added Sentry to the Engineering role</td><td class="tx-2">Roles v12</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">12:40</td><td><div class="row"><span class="ac-ap sm"><i data-lucide="cpu"></i></span>Access</div></td><td>2 Snowflake accounts made outside Access</td><td class="tx-2">Nightly check</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">11:05</td><td><div class="row"><span class="av s v">DO</span>Daniel Okafor</div></td><td>Declined feature flags admin for Sofia</td><td class="tx-2">Email</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">10:22</td><td><div class="row"><span class="ac-ap sm"><i data-lucide="cpu"></i></span>Access</div></td><td>Ended 3 time-bound grants on schedule</td><td class="tx-2">Schedule</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px">09:48</td><td><div class="row"><span class="av s p">SL</span>Sofia Lindqvist</div></td><td>Asked for 14 more days on GitHub</td><td class="tx-2">My apps</td></tr>
+              <tr><td class="mono tx-3" style="font-size:12px;border-bottom:0">09:30</td><td style="border-bottom:0"><div class="row"><span class="ac-ap sm"><i data-lucide="cpu"></i></span>Access</div></td><td style="border-bottom:0">Synced 214 people from People · 1 change</td><td class="tx-2" style="border-bottom:0">People</td></tr>
+            </tbody></table>
+          </div>
+          <div class="row tx-3" style="font-size:12px;margin-top:10px"><i data-lucide="lock"></i>The log is append-only and kept for 7 years. Exports are signed so an auditor can check them.</div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Contained first, decided by a person</b>Sign-in policy holds risky sessions away from sensitive apps straight away. Signing someone out everywhere, or clearing them, is a person's call.</div>
+    <div><b>Signals in plain words</b>Impossible travel, unmanaged devices from Assets, failed passkeys and new countries, each written as a sentence with the evidence.</div>
+    <div><b>One log for everything</b>Grants, removals with their verification, approvals with the channel they came from, and changes to roles and policies, all in the kernel's audit trail.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Access is open source and used by companies of every shape, so who gets what is never hard-coded. A company sets six things, all from Access › Settings, without writing code. Each can be exported as a file and reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Roles and birthright rules</h3><p>Sentences that say who gets what by department, team, job, location or employment type ("Engineering in Austin gets the US VPN"). Every change is versioned, with a preview of who gains and loses access before it's live.</p></div>
+  <div><h3>Approval policies by sensitivity</h3><p>Each app or role is Low, Standard, High or Critical (or your own tiers). The tier sets the approvers, the longest time-bound grant, and whether a fresh passkey is needed. Routes run on the kernel's shared approval engine.</p></div>
+  <div><h3>Sign-in, session and MFA</h3><p>Passkeys first, with authenticator codes as a fallback. Session length by sensitivity, managed devices required for chosen apps, and what happens on a risky sign-in: hold, step up or block.</p></div>
+  <div><h3>Review cadence</h3><p>Which apps are reviewed, how often and by whom (manager, app owner or both), what counts as unused, and whether unanswered grants are kept or removed when a review closes.</p></div>
+  <div><h3>Directory mode</h3><p>Bemmoly as the identity provider, or on top of Entra ID, Google Workspace or an LDAP directory. Which side owns groups, how often to sync, and whether Access may write back.</p></div>
+  <div><h3>Connectors</h3><p>SCIM for most apps, API connectors for the rest, a vault connector for shared credentials, and owner tasks for apps with neither. Each connector is a plug-in with a public interface, so the community can add more.</p></div>
+</div>
+
+<div class="screens" id="cfg">
+<figure class="screen" id="ac-cfg-roles" data-title="Roles and birthright rules">
+  <div class="scap"><b>Birthright rules as sentences, with a preview</b><span>IT writes who gets what in words, and sees exactly who would gain or lose access before the change goes live.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Roles</span></div>
+        <div class="htabs"><span class="htab">Directory</span><span class="htab on">Roles</span><span class="htab">Policies</span><span class="htab">Sign-in</span><span class="htab">Reviews</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">Draft v13</span><span class="btn">Discard</span><span class="btn pri">Publish v13…</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:20px 28px" class="col">
+          <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Birthright access</div><span class="tx-3" style="font-size:12px">What people get from who they are, before anyone asks · v12 live since 19 Oct, 13:15</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="col" style="gap:10px">
+            <div class="ac-pol"><div class="row"><span class="ac-ap"><i data-lucide="users"></i></span><b class="grow">Everyone</b><span class="tx-3" style="font-size:12px">214 people</span></div>
+              <div class="sent">When someone is <span class="ac-tok">an employee or contractor</span>, give them <span class="ac-tok v">Google Workspace</span> <span class="ac-tok v">Slack</span> <span class="ac-tok v">Zoom</span> <span class="ac-tok v">Bemmoly Work and Docs</span> from <span class="ac-tok">their start date at 08:00</span>.</div></div>
+            <div class="ac-pol" style="box-shadow:0 0 0 1px var(--acc-100),0 0 0 4px var(--acc-50)"><div class="row"><span class="ac-ap"><i data-lucide="code-xml"></i></span><b class="grow">Engineering</b><span class="bdg acc">Changed</span><span class="tx-3" style="font-size:12px">86 people</span></div>
+              <div class="sent">When the department is <span class="ac-tok">Engineering</span>, give <span class="ac-tok v">GitHub · Member</span> <span class="ac-tok v">Datadog · Standard</span> <span class="ac-tok v">AWS sandbox</span> <span class="ac-tok v" style="box-shadow:inset 0 0 0 1px var(--green);color:var(--green-tx)"><i data-lucide="plus"></i>Sentry · Member</span>. If the team is <span class="ac-tok">Platform</span>, also <span class="ac-tok v">AWS production · Read-only</span> and <span class="ac-tok v">PagerDuty</span>.</div></div>
+            <div class="ac-pol"><div class="row"><span class="ac-ap"><i data-lucide="map-pin"></i></span><b class="grow">Austin office</b><span class="tx-3" style="font-size:12px">31 people</span></div>
+              <div class="sent">When the location is <span class="ac-tok">Austin</span>, give <span class="ac-tok v">US VPN</span> and <span class="ac-tok v">Austin door badge</span>, and send the badge to <span class="ac-tok">Assets</span>.</div></div>
+            <div class="ac-pol"><div class="row"><span class="ac-ap"><i data-lucide="hourglass"></i></span><b class="grow">Contractors</b><span class="tx-3" style="font-size:12px">9 people</span></div>
+              <div class="sent">When the employment type is <span class="ac-tok">Contractor</span>, end every grant on <span class="ac-tok">the contract end date</span>, and never give <span class="ac-tok">Critical</span> apps by birthright.</div></div>
+            <div class="ac-pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);flex-direction:row;align-items:center"><i data-lucide="plus"></i>Add a rule <span class="tx-3">by department, team, job, location, entity or a custom field</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:hidden" class="col">
+          <div class="row"><i data-lucide="git-compare" class="tx-3"></i><b class="grow">What v13 would change</b></div>
+          <span class="tx-3" style="font-size:12px;margin:4px 0 14px">Checked against all 214 people just now</span>
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Gain access</div><div class="v num" style="font-size:20px">38</div><div class="d">Sentry · Member</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Lose access</div><div class="v num" style="font-size:20px">0</div><div class="d">Nothing is removed</div></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Already have it some other way</div>
+          <div class="col" style="font-size:12.5px">
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="av s k">TG</span><span class="grow">Tomás García</span><span class="ac-src">Request · Sep</span></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="av s v">DO</span><span class="grow">Daniel Okafor</span><span class="ac-src">By hand</span></div>
+            <div class="row" style="height:34px"><span class="tx-3 grow">and 9 more become birthright</span><span style="color:var(--acc)">Open list</span></div>
+          </div>
+          <div class="ai-card" style="margin-top:14px"><div class="ai-h"><span class="aid"></span>Pattern<span class="src">by AI · from 214 people's grants</span></div>
+            <p style="font-size:12.5px">27 of 31 people in Sales have Gong, all by request. A birthright rule would save about 6 requests a quarter.<span class="cite"><i data-lucide="inbox"></i>27 requests</span></p>
+            <div class="acts"><span class="btn sm">Draft the rule</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Publishing v13</div>
+          <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Tell the 38 people what they're getting</div><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Ask Daniel, as the Sentry owner, to approve</div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Readable by anyone</b>A rule reads as a sentence, so an auditor, a manager and IT can all see why someone has an app. Blocks keep it exact.</div>
+    <div><b>Know the impact first</b>The preview lists who gains and loses access, and which grants by hand or by request quietly become birthright.</div>
+    <div><b>Rules from what already happens</b>AI spots access everyone in a group keeps requesting, and drafts the rule. IT publishes it, the app owner approves it.</div>
+  </div>
+</figure>
+<figure class="screen" id="ac-cfg-pol" data-title="Policies by sensitivity">
+  <div class="scap"><b>Sensitivity decides approval, duration, sign-in and review</b><span>One table sets how each tier of app is requested, approved, signed in to and reviewed. Every app and role sits in a tier.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="access" data-link="ac.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span>Access</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Policies</span></div>
+        <div class="htabs"><span class="htab">Directory</span><span class="htab">Roles</span><span class="htab on">Policies</span><span class="htab">Sign-in</span><span class="htab">Reviews</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="plus"></i>Add a tier</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:14px">
+        <div class="card" style="overflow:hidden">
+          <table class="tbl ac-tier"><thead><tr><th>Tier</th><th>Apps</th><th>Who approves</th><th>Longest grant</th><th>Sign-in</th><th>Reviewed</th></tr></thead><tbody>
+            <tr><td><span class="ac-sens s1"><i><b></b><b></b><b></b><b></b></i>Low</span></td><td class="tx-2">Zoom, Stock images and 14 more</td><td>Nobody, granted straight away</td><td>No limit</td><td>Session 30 days</td><td>Yearly · app owner</td></tr>
+            <tr><td><span class="ac-sens s2"><i><b></b><b></b><b></b><b></b></i>Standard</span></td><td class="tx-2">Slack, Datadog, Amplitude and 24 more</td><td>App owner</td><td>90 days, then renew</td><td>Session 7 days</td><td>Twice a year · manager</td></tr>
+            <tr class="sel"><td><span class="ac-sens s3"><i><b></b><b></b><b></b><b></b></i>High</span></td><td class="tx-2">GitHub, Salesforce and 9 more</td><td>Manager, then app owner</td><td>30 days</td><td>Passkey · managed device · 12 h</td><td>Quarterly · manager and owner</td></tr>
+            <tr><td style="border-bottom:0"><span class="ac-sens s4"><i><b></b><b></b><b></b><b></b></i>Critical</span></td><td class="tx-2" style="border-bottom:0">AWS production, Snowflake, Tally and 3 more</td><td style="border-bottom:0">App owner, plus security if out of hours</td><td style="border-bottom:0">8 hours, starts with a passkey</td><td style="border-bottom:0">Passkey each start · managed · 1 h</td><td style="border-bottom:0">Monthly · owner</td></tr>
+          </tbody></table>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px">
+          <div class="card pad col" style="gap:10px">
+            <div class="row"><i data-lucide="git-branch" class="tx-3"></i><b class="grow">High: approval route</b></div>
+            <div class="col" style="gap:8px;font-size:12.5px">
+              <div class="row"><span class="ac-path"><span class="n"><span class="tx-3">1</span>Their manager</span></span><span class="tx-3">from People · delegate when away</span></div>
+              <div class="row"><span class="ac-path"><span class="n"><span class="tx-3">2</span>App owner</span></span><span class="tx-3">or the owner's backup</span></div>
+              <div class="row"><span class="ac-path"><span class="n"><span class="tx-3">3</span>Security</span></span><span class="tx-3">only if outside the role</span></div>
+            </div>
+            <div class="tx-3" style="font-size:11.5px;border-top:1px solid var(--line-2);padding-top:8px">The kernel's shared approval engine, the same one Expenses, Time and Assets use</div>
+          </div>
+          <div class="card pad col" style="gap:8px">
+            <div class="row"><i data-lucide="fingerprint" class="tx-3"></i><b class="grow">On a risky sign-in</b></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">Impossible travel</span><span class="bdg warn">Hold</span></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">Unmanaged device for High</span><span class="bdg warn">Step up</span></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">Known bad address</span><span class="bdg bad">Block</span></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">New country</span><span class="bdg">Tell the person</span></div>
+          </div>
+          <div class="card pad col" style="gap:8px">
+            <div class="row"><i data-lucide="list-checks" class="tx-3"></i><b class="grow">Reviews</b></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">Counts as unused after</span><b>90 days</b></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">No answer by the due date</span><span>Keep, flag to IT</span></div>
+            <div class="ac-kv" style="min-height:28px"><span class="k">Next campaign</span><span>Q1 · 4 Jan</span></div>
+            <div class="row" style="font-size:12.5px;gap:8px;min-height:28px"><span class="sw on"></span><span class="tx-2">AI pre-review for reviewers</span></div>
+          </div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <div class="card-h"><i data-lucide="sliders-horizontal" class="tx-3"></i>Overrides for single apps<span class="tx-3">3</span><span class="sp"></span><span class="btn sm ghost"><i data-lucide="plus"></i>Add an override</span></div>
+          <div class="lrow"><span class="ac-ap sm"><i data-lucide="cloud"></i></span><span class="grow"><b style="font-weight:500">AWS production</b> <span class="tx-3">· Critical</span></span><span class="tx-2">Out of hours also needs security on call, from PagerDuty</span></div>
+          <div class="lrow"><span class="ac-ap sm"><i data-lucide="calculator"></i></span><span class="grow"><b style="font-weight:500">Tally</b> <span class="tx-3">· Critical</span></span><span class="tx-2">Only Finance can ask · no time-bound grants, reviewed monthly by Meera</span></div>
+          <div class="lrow" style="border-bottom:0"><span class="ac-ap sm"><i data-lucide="git-branch"></i></span><span class="grow"><b style="font-weight:500">GitHub · Owner role</b> <span class="tx-3">· raised from High to Critical</span></span><span class="tx-2">At most 4 hours, two approvers</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>One dial per app</b>Putting an app in a tier sets everything at once: who approves, for how long, how people sign in and how often it's reviewed.</div>
+    <div><b>Your tiers, your names</b>Four tiers ship by default. A company can rename them, add a fifth, or override one app without leaving the table.</div>
+    <div><b>Policies that act, then ask</b>Risky sign-ins are held or stepped up by rule. People decide the rest, and the AI pre-review can be switched off per campaign.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites what it read, a person applies the result, and nothing appears while AI is off. In identity, one more rule: AI never grants, removes or approves access by itself.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person decides</th><th>With AI off</th></tr>
+  <tr><td>Asking for access</td><td>Turns "I need the funnel numbers" into an app, a role and a space, and shows what peers have</td><td>The person confirms the request; the approver approves it</td><td>Search over the catalog, filtered by team</td></tr>
+  <tr><td>Movers</td><td>Spots what a mover still needs for a handover (open deals, owned docs) and suggests a grace period</td><td>IT or the new manager approves the plan</td><td>Fixed grace periods from settings</td></tr>
+  <tr><td>Leavers</td><td>Finds things outside any app list: owned docs, groups, calendars, deploy keys</td><td>IT hands them to someone, or not</td><td>A checklist of known object types</td></tr>
+  <tr><td>Access reviews</td><td>Groups grants into unused, outside the role and expected, with the evidence</td><td>The reviewer decides each group or each grant. Bulk actions list every grant and can be undone</td><td>The same groups by rule: last-used thresholds and role match</td></tr>
+  <tr><td>Roles</td><td>Suggests birthright rules from access that a group keeps requesting</td><td>IT drafts, previews and publishes; the app owner approves</td><td>A report of most-requested apps by group</td></tr>
+  <tr><td>Sign-in risk</td><td>Explains a risky sign-in from the person's history in plain words</td><td>Policy contains; a person signs out, asks or clears</td><td>Signals listed without the explanation</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Sign-in histories, device data and access lists are sensitive. A workspace can run Access's AI on a local model only, or turn it off. Prompts never include secrets, tokens or passkey material, and IP addresses are reduced to city and network before anything reaches a model. Every AI suggestion and its sources are kept in the audit log.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Access is its own product with its own app, and a company can run it alone. When other Bemmoly products are installed, they share one sign-in, one person directory and one approval engine through the kernel. Access is the one that provides that sign-in when it's the identity provider.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul><li><b>People</b>: starts, transfers, leave and exits are the events that drive lifecycle. Without People, the kernel's own person list and a manual "mark as leaving" do the same</li><li><b>Assets</b>: managed devices for sign-in policy, badges by location, and the laptop return at exit. Without Assets, device checks come from a device connector and returns become IT tasks</li><li><b>Licences</b>: seats freed when access is removed, costs shown in reviews, and apps found in spend brought under sign-in</li><li><b>Helpdesk</b>: "I can't get into…" is answered from the person's access, and requests can start as a ticket</li><li><b>Expenses</b>: a leaver's card is frozen, and new software vendors appear as apps to connect</li><li><b>Work and Docs</b>: owned projects and documents handed over at exit</li></ul><p style="font-size:12.5px;color:var(--tx-3)">Each cross-product step is shown to a person before it runs and calls the other product's public interface. If that product isn't installed, the step becomes a task.</p></div>
+  <div><h3>Core objects</h3><ul><li><code>identity</code>: the person's sign-in, factors, sessions and state, linked to the kernel's person record</li><li><code>app</code> and <code>app_account</code>: an application, its protocol, connector and sensitivity, and each person's account in it</li><li><code>grant</code>: who has what, its source (birthright, request, group, by hand), approver, expiry and last use</li><li><code>role</code> and <code>birthright_rule</code>: rules as data, versioned, with preview results</li><li><code>access_request</code>: on the kernel's approval engine</li><li><code>lifecycle_plan</code>: a joiner, mover or leaver plan, with per-step verification</li><li><code>review_campaign</code> and <code>review_decision</code></li><li><code>signin_event</code> and <code>risk_signal</code></li></ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>One identity, clean exits</b><ul><li>Bemmoly as identity provider: OIDC and SAML, passkeys, authenticator codes</li><li>Or sync people and groups from Entra ID or Google Workspace</li><li>Application catalog and access profiles</li><li>Leaver plans with SCIM removal and verification</li><li>Owner tasks for apps without provisioning</li><li>Append-only audit log and export</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Access that follows the role</b><ul><li>Birthright rules with preview, driven by People events</li><li>Joiner and mover plans with grace periods</li><li>Requests in a sentence, approvals in chat and email</li><li>Time-bound grants with passkey step-up</li><li>Sensitivity tiers and approval routes</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Prove it, continuously</b><ul><li>Review campaigns with AI pre-review</li><li>Risky sign-in signals and policies</li><li>Drift detection: accounts made outside Access</li><li>Vault connectors for shared credentials</li><li>Just-in-time cloud roles (AWS, GCP, Azure)</li><li>Service accounts and their owners</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Build our own identity provider, or wrap an existing open source one?</b><span>Recommendation: build on the kernel's existing sign-in with well-tested standard libraries for OIDC, SAML and WebAuthn, rather than embedding a separate server. One process, one database, one audit trail. Keep the protocol layer small and fuzz-tested, and publish a conformance report.</span></li>
+  <li><b>When Entra ID or Google Workspace is present, who owns groups?</b><span>Recommendation: People owns the person, the directory owns sign-in, and Access owns the groups it creates (prefixed and marked). It never edits groups it didn't create unless an admin allows it per group.</span></li>
+  <li><b>What about apps with no SCIM and no API?</b><span>Recommendation: owner tasks with a due time, a monthly confirmation, and a "verified by" person in the record. Community connectors can replace a task with automation later.</span></li>
+  <li><b>Should Access store app passwords for apps without SSO?</b><span>Recommendation: no. Being a password vault is a different product with different risks. Connect to the company's vault so shared credentials can be listed and rotated at exit.</span></li>
+  <li><b>How do we avoid locking everyone out?</b><span>Recommendation: two break-glass accounts outside SSO with hardware keys, alerts on every use, and a signed recovery file made during setup.</span></li>
+  <li><b>Does every employee need to open Access?</b><span>Recommendation: no. Requests and approvals work from chat and email. The "My apps" place is there for people who want a launcher, and is the only part employees see.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.verizon.com/business/resources/reports/dbir/">Verizon: 2025 Data Breach Investigations Report</a></li>
+  <li><a href="https://aembit.io/blog/credential-and-secrets-theft-2025-verizon-data-breach-report/">Aembit: Credential and secrets theft, insights from the 2025 DBIR</a></li>
+  <li><a href="https://www.okta.com/blog/2025/03/businesses-at-work-2025/">Okta: Businesses at Work 2025</a></li>
+  <li><a href="https://www.passwordmanager.com/47-of-workers-admit-to-hacking-accounts-with-former-employers-passwords/">PasswordManager.com: 47% of workers admit using former employers' passwords</a></li>
+  <li><a href="https://www.rmmagazine.com/articles/article/2023/06/01/half-of-workers-use-former-employers-passwords">Risk Management Magazine: Half of workers use former employers' passwords (2023)</a></li>
+  <li><a href="https://www.microsoft.com/research/publication/how-effective-is-multifactor-authentication-at-deterring-cyberattacks/">Microsoft Research: How effective is multifactor authentication at deterring cyberattacks?</a></li>
+  <li><a href="https://arxiv.org/abs/2305.00945">arXiv 2305.00945: the same study</a></li>
+  <li><a href="https://itpro.com/security/cyber-attacks/microsoft-logs-600-million-identity-attacks-per-day-as-threat-actors-collaborate-more">ITPro: Microsoft Digital Defense Report 2024, identity attacks</a></li>
+  <li><a href="https://sso.tax/">sso.tax: the SSO wall of shame</a></li>
+  <li><a href="https://www.okta.com/integrations/">Okta Integration Network</a></li>
+  <li><a href="https://help.okta.com/en-us/Content/Topics/apps/apps-about-scim.htm">Okta help: SCIM app integrations</a></li>
+  <li><a href="https://learn.microsoft.com/entra/architecture/governance-deployment-intro">Microsoft Learn: Entra ID Governance deployment</a></li>
+  <li><a href="https://www.conductorone.com/integrations/collaboration-productivity/slack">ConductorOne: Slack approvals and just-in-time access</a></li>
+  <li><a href="https://support.lumos.com/articles/9330271093-access-request-agent-support-in-slack-for-lumos-mentions">Lumos: Access request agent in Slack</a></li>
+  <li><a href="https://handbook.gitlab.com/handbook/security/corporate/systems/lumos/ar/">GitLab handbook: Lumos access requests</a></li>
+  <li><a href="https://cloudzy.com/blog/authentik-vs-zitadel-vs-keycloak/">Cloudzy: Authentik vs Zitadel vs Keycloak</a></li>
+  <li><a href="https://skycloak.io/blog/open-source-authentication-comparison-2026/">Skycloak: Open source authentication comparison</a></li>
+  <li>Vendor product pages for Okta, Microsoft Entra, JumpCloud, Google Workspace, Ping Identity, SailPoint, ConductorOne, Lumos, Opal, Keycloak, Authentik, Zitadel, Authelia and Kanidm (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

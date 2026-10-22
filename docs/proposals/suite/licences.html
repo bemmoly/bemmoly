@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Licences</title>
+<meta name="description" content="Product proposal for Bemmoly Licences: every app the company pays for, who uses it, what it costs, and the seats you can stop paying for.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Licences-only screen parts. Everything is prefixed li- so nothing leaks. */
+/* app monograms: category-tinted squares, never vendor logos */
+.li-ap{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;flex:none;font-size:11.5px;font-weight:600;letter-spacing:-.01em}
+.li-ap.l{width:44px;height:44px;border-radius:11px;font-size:16px}
+.li-ap.s{width:22px;height:22px;border-radius:6px;font-size:10px}
+/* data colours for app categories, taken from the kit's module palette (justified: categories, like Expenses' .cat) */
+.li-k-com{background:color-mix(in srgb,#0e9bb0 15%,transparent);color:#0e9bb0}
+.li-k-des{background:color-mix(in srgb,#c2536a 15%,transparent);color:#c2536a}
+.li-k-eng{background:color-mix(in srgb,#2356c9 15%,transparent);color:var(--acc)}
+.li-k-sal{background:color-mix(in srgb,#d46a2e 15%,transparent);color:#d46a2e}
+.li-k-pro{background:color-mix(in srgb,#2f9e6e 15%,transparent);color:#2f9e6e}
+.li-k-dat{background:color-mix(in srgb,#b7791f 15%,transparent);color:#b7791f}
+.li-k-fin{background:color-mix(in srgb,#9b4f96 15%,transparent);color:#9b4f96}
+.li-dc{width:8px;height:8px;border-radius:2px;flex:none;display:inline-block}
+/* utilisation meter: active / paid */
+.li-util{display:flex;align-items:center;gap:8px;min-width:0}
+.li-util .bar{flex:1;height:6px}
+.li-util .bar>i.lo{background:var(--amber)}
+.li-util .bar>i.bad{background:var(--red)}
+.li-util .bar>i.ok{background:var(--green)}
+.li-util span{font-size:12px;color:var(--tx-2);width:70px;text-align:right;white-space:nowrap}
+.li-sig{display:inline-flex;gap:3px}
+.li-sig i,.li-sig span{width:20px;height:20px;border-radius:5px;display:inline-grid;place-items:center;background:var(--sunken);color:var(--tx-3)}
+.li-sig svg.lucide{width:12px;height:12px}
+.li-tbl{table-layout:fixed}
+.li-tbl td{height:44px}
+.li-tbl tr.li-hl td{background:var(--acc-50)}
+/* stacked seat bar */
+.li-seats{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}
+.li-seats i{display:block;height:100%}
+.li-s-act{background:var(--green)}.li-s-view{background:var(--acc-500)}.li-s-idle{background:var(--amber)}.li-s-free{background:var(--line)}
+/* contract field list */
+.li-f{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:center;min-height:32px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.li-f:last-child{border-bottom:0}
+.li-f>span:first-child{color:var(--tx-3)}
+/* charts */
+.li-chart{display:block;width:100%;height:auto}
+.li-chart .grid{stroke:var(--line-2);stroke-width:1}
+.li-chart .paid{stroke:var(--tx-3);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.li-chart .act{stroke:var(--green);stroke-width:2;fill:none}
+.li-chart .actf{fill:color-mix(in srgb,var(--green) 12%,transparent)}
+.li-chart .plan{stroke:var(--acc);stroke-width:2;fill:none;stroke-dasharray:2 3}
+.li-chart text{fill:var(--tx-3);font:11px var(--sans)}
+.li-chart .pt{fill:var(--green)}
+.li-legend{display:flex;gap:14px;font-size:11.5px;color:var(--tx-2)}
+.li-legend span{display:inline-flex;align-items:center;gap:6px}
+.li-legend i{width:14px;height:0;border-top:2px solid;display:inline-block}
+/* gantt for renewals */
+.li-gantt{position:relative}
+.li-gh{display:grid;grid-template-columns:220px minmax(0,1fr) 110px;height:30px;align-items:center;font-size:11.5px;color:var(--tx-3);border-bottom:1px solid var(--line)}
+.li-gr{display:grid;grid-template-columns:220px minmax(0,1fr) 110px;height:56px;align-items:center;border-bottom:1px solid var(--line-2)}
+.li-gr:hover{background:var(--hover)}
+.li-gr.on{background:var(--acc-50)}
+.li-lane{position:relative;height:100%}
+.li-months{position:relative;height:100%}
+.li-months span{position:absolute;top:8px;transform:translateX(4px)}
+.li-tick{position:absolute;top:0;bottom:0;width:1px;background:var(--line-2)}
+.li-today{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);z-index:2}
+.li-today b{position:absolute;top:-22px;left:-18px;font-size:11px;font-weight:600;color:var(--acc);white-space:nowrap}
+.li-win{position:absolute;top:21px;height:14px;border-radius:4px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line)}
+.li-win.warn{background:var(--amber-50);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--amber) 40%,transparent)}
+.li-win.bad{background:var(--red-50);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--red) 35%,transparent)}
+.li-flag{position:absolute;top:16px;width:2px;height:24px;border-radius:1px;background:var(--tx-2)}
+.li-flag.warn{background:var(--amber)}
+.li-flag.bad{background:var(--red)}
+.li-ren{position:absolute;top:22px;width:12px;height:12px;border-radius:50%;margin-left:-6px;background:var(--card);box-shadow:inset 0 0 0 2px var(--tx-2)}
+/* sentences with tokens, for rules */
+.li-pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.li-pol .sent{font-size:14px;line-height:1.9;color:var(--tx)}
+.li-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.li-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+/* steps */
+.li-steps{display:flex;align-items:stretch;gap:0}
+.li-step{flex:1;position:relative;padding:10px 12px 10px 38px;min-width:0}
+.li-step .n{position:absolute;left:10px;top:10px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line);font-size:11px;font-weight:600;color:var(--tx-2)}
+.li-step b{display:block;font-size:12.5px;font-weight:600}
+.li-step span{display:block;font-size:11.5px;color:var(--tx-3);line-height:1.4}
+.li-step+.li-step{border-left:1px solid var(--line-2)}
+/* signal tiles on discovery */
+.li-signal{padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.li-signal .row svg.lucide{color:var(--tx-3)}
+.li-signal .v{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.li-ev{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:4px;font-size:11px;color:var(--tx-2);box-shadow:inset 0 0 0 1px var(--line);white-space:nowrap}
+.li-ev svg.lucide{width:11px;height:11px;color:var(--tx-3)}
+.li-tl{display:flex;flex-direction:column;gap:0;position:relative}
+.li-tl .e{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:7px 0;font-size:12.5px;position:relative}
+.li-tl .e .ic{width:24px;height:24px;border-radius:6px;background:var(--sunken);display:grid;place-items:center;color:var(--tx-2);z-index:1}
+.li-tl .e .ic svg.lucide{width:13px;height:13px}
+.li-tl .e+.e::before{content:"";position:absolute;left:11.5px;top:-7px;height:14px;width:1px;background:var(--line)}
+/* seat stepper in the brief */
+.li-step-n{display:flex;align-items:center;gap:0;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);background:var(--card);height:40px;overflow:hidden}
+.li-step-n span{width:40px;height:40px;display:grid;place-items:center;color:var(--tx-2)}
+.li-step-n b{flex:1;text-align:center;font-size:20px;font-weight:600;letter-spacing:-.02em;border-inline:1px solid var(--line-2);line-height:40px}
+.li-mix{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.li-mix .row b{margin-left:auto}
+.li-cmp{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:12.5px}
+.li-cmp .tx-2{white-space:nowrap}
+.li-save{border-radius:8px;background:var(--green-50);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.li-save b{color:var(--green-tx);font-size:18px;font-weight:600;letter-spacing:-.02em}
+/* bars for spend */
+.li-cols{display:flex;align-items:flex-end;gap:10px;height:170px;padding:0 4px}
+.li-cols>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.li-cols i{display:block;width:62%;border-radius:4px 4px 0 0;background:var(--acc-500)}
+.li-cols i.peak{background:var(--acc)}
+.li-cols span{font-size:11px;color:var(--tx-3)}
+.li-cols em{font-style:normal;font-size:11px;color:var(--tx-2)}
+/* the off-desktop canvas */
+.li-canvas{position:absolute;inset:0;background:radial-gradient(1100px 600px at 0% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 520px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:330px 1fr 1fr;gap:32px;padding:44px 48px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.li-c{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.li-c h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.li-c p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:320px}
+.li-phone{width:282px;height:566px;border-radius:42px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.li-phone .scr{width:100%;height:100%;border-radius:33px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.li-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:84px;height:24px;border-radius:12px;background:#000;z-index:3}
+.li-phone .top{padding:44px 16px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line-2)}
+.li-phone .bd{padding:12px 14px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;font-size:12.5px}
+.li-opt{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.li-chatwin{width:100%;max-width:400px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.li-chatwin .h{height:40px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.li-chatwin .b{padding:14px;display:flex;flex-direction:column;gap:10px}
+.li-bm{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px}
+.li-bm .tile{width:28px;height:28px;border-radius:7px}
+.li-bm .tile svg.lucide{width:15px;height:15px}
+.li-mailc{width:100%;max-width:400px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.li-mailc .mh{padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:52px 1fr;gap:4px 8px}
+.li-mailc .mh span{color:var(--tx-3)}
+.li-mailc .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2);display:flex;flex-direction:column;gap:10px}
+.li-chk{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.li-chk svg.lucide{width:15px;height:15px}
+.li-chk .ok{color:var(--green)}.li-chk .wn{color:var(--amber)}.li-chk .td{color:var(--tx-3)}
+/* connectors */
+.li-conn{padding:14px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.li-conn .hd{display:flex;align-items:center;gap:10px}
+.li-conn .ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--sunken);color:var(--tx-2);flex:none}
+.li-conn p{margin:0;font-size:12px;color:var(--tx-2);line-height:1.45}
+.li-conn .ft{display:flex;align-items:center;gap:8px;margin-top:auto;font-size:11.5px;color:var(--tx-3)}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="licences"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Licences</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span>Bemmoly Licences · product proposal</div>
+  <h1>Stop paying for software nobody opens</h1>
+  <p class="lede">Bemmoly Licences is a product of its own: use it alone, or with Bemmoly's other products. It finds every app the company pays for from the card spend, invoices and sign-ins it can see, shows who actually uses each one, and gives back the seats nobody needs, with a polite nudge first. Before each renewal it hands you a brief: how use has moved, how many seats to keep, and the date you must give notice by. It's open source, it runs on your own server, and your company sets every rule.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>IT, finance, app owners and everyone who needs a tool</span>
+    <span class="chip"><i data-lucide="app-window"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="calendar-clock"></i>Never miss a notice period again</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Software is bought by every team, on every card, and renews on its own. Nobody holds the full list, so nobody can say which seats are idle until the invoice has already been paid for another year.</p>
+<div class="stats">
+  <div><b>305</b><span>applications at the average company</span><small>Zylo SaaS Management Index, 2026</small></div>
+  <div><b>46%</b><span>of licences go unused in a typical 30-day window</span><small>Zylo SaaS Management Index, 2026</small></div>
+  <div><b>70%</b><span>of SaaS spend is managed by business teams rather than IT</span><small>Zylo SaaS Management Index, 2025</small></div>
+  <div><b>25%+</b><span>overspend forecast for companies without central visibility, through 2027</span><small>Gartner, as cited by Flexera, 2024</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Nobody has the full list</b><p>Apps arrive on corporate cards, personal cards that get expensed, invoices to someone's inbox and free trials that turn paid. The list lives in a spreadsheet that was right last March.</p><span class="src">Productiv found 51% of apps were still shadow IT in 2023.</span></div>
+  <div class="pain"><b>Seats are bought for the peak and never given back</b><p>Teams buy for headcount plans and launches. When people move teams or stop using a tool, the seat stays assigned and billed, because nobody owns the job of taking it back.</p><span class="src">Productiv: 53% of licences unused over 90 days, 2023.</span></div>
+  <div class="pain"><b>Renewals are surprises</b><p>Contracts auto-renew, and notice periods of 30 to 90 days pass quietly. By the time anyone looks at usage, the only option left is to pay and promise to fix it next year.</p><span class="src">Zylo 2025: 66.5% of IT leaders saw unexpected charges from usage-based or AI pricing.</span></div>
+  <div class="pain"><b>Usage is locked inside each vendor's admin page</b><p>Each vendor shows its own last-active dates in its own console. Single sign-on shows sign-ins, not cost. Finance has cost, not use. Putting the three together is a monthly spreadsheet job.</p></div>
+  <div class="pain"><b>Leavers keep costing money</b><p>Offboarding switches off the identity, but the seat is still on the invoice. The account sits deactivated and paid for until someone counts it at renewal.</p></div>
+  <div class="pain"><b>People buy what the company already has</b><p>An employee who needs a diagramming tool puts one on their card, while the company has 70 idle seats of another. There's no catalogue to check first, and asking IT means a ticket and a wait.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people care about every app: the one who runs the stack, the one who pays for it, and the one who just wants a tool that works today.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l k">RK</span><div><b>Rohan, IT admin</b><span>Runs 180 apps for 420 people</span></div></div>
+    <q>"Show me what we have, who's using it, and take the idle seats back without me sending forty emails."</q>
+    <ul><li>One list built from cards, invoices and sign-ins</li><li>Real last-active dates per seat, not guesses</li><li>Reclaim that asks first, then frees the seat itself</li><li>A request path that sends people to what we already own</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l g">MI</span><div><b>Meera, finance controller</b><span>Owns the software budget</span></div></div>
+    <q>"I want every renewal on one calendar, and a clear number to negotiate with before the notice date, not after."</q>
+    <ul><li>Renewals and notice dates on one calendar</li><li>A brief per renewal: trend, seats to keep, price change</li><li>Spend by team and category, with the idle cost shown</li><li>New apps that pass security and budget before anyone pays</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l a">AT</span><div><b>Aiko, data scientist</b><span>Needs a tool by this afternoon</span></div></div>
+    <q>"Tell me if we already have something. If we do, give it to me now. If not, tell me how long the approval takes."</q>
+    <ul><li>Ask in plain words, from phone or desk</li><li>Existing tools offered first, with a seat in one tap</li><li>A clear path and an honest wait time for new ones</li><li>Never chased for a seat she actually uses</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category grew up in four camps: discovery-led SaaS management, automation and identity-led SaaS operations, buying-led procurement, and asset-led software asset management. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Zylo</b><span>Discovery-led · enterprise</span></header><p>Builds the app inventory from finance and expense data, SSO and integrations, then tracks utilisation and renewals. Publishes the yearly SaaS Management Index.</p>
+    <div class="plus"><i data-lucide="plus"></i>The spend-first inventory: if money moved, the app is found.</div><div class="minus"><i data-lucide="minus"></i>Built for large IT and procurement teams, priced and sold that way.</div></div>
+  <div class="leader"><header><b>Torii</b><span>Automation-led</span></header><p>Discovers apps from identity, finance, browser extension and OAuth grants, then runs no-code workflows for requests, reclaim, onboarding and offboarding. Reads contracts with AI for renewal clauses.</p>
+    <div class="plus"><i data-lucide="plus"></i>Discovery and action in one place: find the idle seat, then remove it.</div><div class="minus"><i data-lucide="minus"></i>A separate system to keep in sync with HR, identity and finance.</div></div>
+  <div class="leader"><header><b>Zluri</b><span>Identity-led</span></header><p>Pairs a SaaS management platform with identity governance: discovery, renewals, access reviews and joiner, mover, leaver automation, including non-human identities.</p>
+    <div class="plus"><i data-lucide="plus"></i>Treats a seat and an access right as one thing, which is correct.</div><div class="minus"><i data-lucide="minus"></i>Governance depth comes with governance weight for small teams.</div></div>
+  <div class="leader"><header><b>BetterCloud</b><span>SaaS operations</span></header><p>Workflow automation across SaaS admin consoles: a no-code builder with a large action library, licence reclaim, shadow IT, and an IT agent that asks for approval before acting.</p>
+    <div class="plus"><i data-lucide="plus"></i>Deep actions inside each app, and every agent step approved by a person.</div><div class="minus"><i data-lucide="minus"></i>Workflow-first. Cost and renewal views are secondary.</div></div>
+  <div class="leader"><header><b>Vendr, Spendflo, Cledara</b><span>Buying-led</span></header><p>Help you buy and renew: price benchmarks from many customers' deals, negotiation help (Vendr, now part of Vertice), intake and approvals, renewal alerts with benchmarks (Spendflo), and payment cards per software purchase (Cledara).</p>
+    <div class="plus"><i data-lucide="plus"></i>Walk into the renewal with a number. Leverage before the deadline.</div><div class="minus"><i data-lucide="minus"></i>Pooled price data needs a vendor that sees everyone's contracts.</div></div>
+  <div class="leader"><header><b>Flexera, with Snow</b><span>Asset-led · SAM</span></header><p>Software asset management for installed and SaaS software: entitlements, compliance with vendor licence terms, and SaaS management. Flexera acquired Snow Software in 2024.</p>
+    <div class="plus"><i data-lucide="plus"></i>Handles desktop and server licences that SaaS tools ignore.</div><div class="minus"><i data-lucide="minus"></i>Enterprise rollouts, audit-grade depth most companies don't need.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Discovery-led</th><th>Automation and identity-led</th><th>Buying-led</th><th>Asset-led</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Find apps from spend and sign-ins</td><td class="yes">Strong</td><td class="yes">Strong</td><td class="part">From purchases</td><td class="part">Installs first</td><td class="no">Manual entry</td><td class="yes">Expenses, Access, invoices, opt-in browser</td></tr>
+  <tr><td>Seat-level usage</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Some</td><td class="part">Some</td><td class="no">Seat counts only</td><td class="yes">Yes, from vendor and sign-in data</td></tr>
+  <tr><td>Reclaim that finishes the job</td><td class="part">Via integrations</td><td class="yes">Workflows</td><td class="no">No</td><td class="part">Some</td><td class="no">Check-in by hand</td><td class="yes">Nudge, then free through Access</td></tr>
+  <tr><td>Renewal calendar and brief</td><td class="yes">Calendar</td><td class="part">Alerts</td><td class="yes">Benchmarks</td><td class="part">Calendar</td><td class="part">Expiry alerts</td><td class="yes">Brief with use, plans and notice date</td></tr>
+  <tr><td>Request an app, existing tools first</td><td class="part">Catalogue</td><td class="yes">Catalogue</td><td class="part">Intake form</td><td class="no">No</td><td class="no">No</td><td class="yes">Plain words, matched to what you own</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="part">Some on-premises</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Quoted, by size</td><td>Quoted, by size</td><td>Quoted, often by spend</td><td>Enterprise contracts</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Snipe-IT's licence records (seats, free seats, cost, expiry date, check-out to a person) and GLPI's licences (a maximum use count, over-quota control and an expiry date for alerts). Both are inventories that a person keeps up to date by hand; GLPI's own docs say licence management is not automated. Identity consoles such as Okta and the Microsoft 365 usage reports show last activity per person, but only for their own apps and with no cost attached. Productiv's usage analytics shaped this category; we cite its data, but couldn't confirm its current status. Nobody offers a premium, self-hosted product that joins spend, use and renewals. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We keep the leaders' best ideas (the spend-first inventory, reclaim as a workflow, a number before every renewal) and add what an open platform that already holds the expense, identity and people data can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="radar"></i></span><b>Discovery from signals it already owns</b><p>With Expenses and Access installed, the card swipes, invoices and SSO sign-ins are already in the same kernel. No finance export to schedule, no identity sync to babysit. On its own, Licences reads the same signals through connectors.</p><span class="vs">Leaders: the same signals, pulled in through integrations you set up and keep alive.</span></div>
+  <div><span class="ic"><i data-lucide="user-round-minus"></i></span><b>Reclaim that asks first and finishes the job</b><p>Inactive people get a one-tap "keep it or release it" message. A week later the seat is freed through Access or the vendor's admin API, and goes back to the pool for the next person who asks.</p><span class="vs">Leaders: automation-led tools do this well; discovery-led tools often stop at the report.</span></div>
+  <div><span class="ic ai"><i data-lucide="file-text"></i></span><b>A renewal brief that knows your plans</b><p>The brief joins the usage trend with open roles from Hiring, joiners and leavers from People, and the quote in the contract, so the seat number is grounded in what's coming, not just what happened.</p><span class="vs">Leaders: buying-led tools bring pooled price benchmarks. We can't and won't pool other companies' contracts; we bring your own plans.</span></div>
+  <div><span class="ic"><i data-lucide="search-check"></i></span><b>Request an app, and get one you already own</b><p>People describe the need in plain words. Licences offers tools the company already pays for, with an idle seat granted on the spot. Only truly new apps go to security and finance.</p><span class="vs">Leaders: app catalogues exist, usually as a separate portal that people forget.</span></div>
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>AI on your terms</b><p>Vendor matching, contract reading, briefs and request matching run on the model the workspace picks, including a local one. With AI off, rules and plain matching do the work and nothing lilac appears.</p><span class="vs">New: leaders run their AI in their own cloud, on your contracts.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>No percentage of what you save</b><p>No per-employee price, no fee tied to spend under management, no paid tier for automation. The tool that cuts software costs doesn't become one.</p><span class="vs">Leaders: priced on request, usually by company size or managed spend.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly's frame and tokens, at Acme Labs on Mon 19 Oct 2026. Click the tabs, or click the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="li">
+<!-- 1 ======================== Portfolio -->
+<figure class="screen" id="li-apps" data-title="Applications">
+  <div class="scap"><b>Every app, who uses it, and what it costs</b><span>The portfolio, built from spend and sign-ins. Sorted by money you can stop spending, not by name.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.apps" data-me="Rohan Kapoor" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Applications</span></div>
+        <div class="htabs"><span class="htab on">All<span class="ct">186</span></span><span class="htab">Paid<span class="ct">142</span></span><span class="htab">Free plans<span class="ct">44</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import</span><span class="btn pri"><i data-lucide="plus"></i>Add app</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:14px;padding:18px 24px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l"><i data-lucide="banknote"></i>Annual run-rate</div><div class="v num">₹3.42 Cr</div><div class="d">₹81,400 per person · <span class="down">+9%</span> on last year</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="armchair"></i>Idle seats</div><div class="v num">212</div><div class="d">No use in 45 days · worth ₹41.6L a year</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="calendar-clock"></i>Renewing in 90 days</div><div class="v num">8 · ₹1.18 Cr</div><div class="d">2 notice dates in the next 4 weeks</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="radar"></i>Found, not yet reviewed</div><div class="v num">14</div><div class="d">₹5.6L a year on cards and invoices</div></div>
+        </div>
+        <div class="fbar"><span class="fchip on"><i data-lucide="arrow-down-wide-narrow"></i>Sort: <b>idle cost</b></span><span class="fchip"><i data-lucide="shapes"></i>Category</span><span class="fchip"><i data-lucide="user-round"></i>Owner</span><span class="fchip"><i data-lucide="gauge"></i>Use under 60%</span><span class="fchip"><i data-lucide="calendar"></i>Renews in 90 days</span><span class="fchip dash"><i data-lucide="plus"></i>Filter</span><span class="sp"></span><div class="seg"><span class="on"><i data-lucide="table-2" style="width:13px;height:13px"></i>Table</span><span><i data-lucide="layout-grid" style="width:13px;height:13px"></i>Cards</span></div></div>
+        <div class="card" style="overflow:hidden;flex:1;min-height:0">
+          <table class="tbl li-tbl"><colgroup><col style="width:190px"><col style="width:150px"><col style="width:178px"><col style="width:92px"><col style="width:92px"><col style="width:170px"><col></colgroup>
+          <thead><tr><th>App</th><th>Owner</th><th>Seats in use</th><th class="r">Per year</th><th class="r">Idle cost</th><th>Renews</th><th>Seen in</th></tr></thead><tbody>
+            <tr><td><div class="row"><span class="li-ap li-k-des">Mi</span><div class="col"><b class="trunc">Miro</b><span class="tx-3" style="font-size:11.5px">Design · whiteboard</span></div></div></td><td><div class="row"><span class="av s p">SL</span><span class="trunc">Sofia Lindqvist</span></div></td><td><div class="li-util"><div class="bar"><i class="bad" style="width:38%"></i></div><span>46 of 120</span></div></td><td class="r num">₹9.6L</td><td class="r num" style="color:var(--red-tx)">₹5.9L</td><td>14 Dec <span class="tx-3">· notice 14 Nov</span></td><td><span class="li-sig"><span><i data-lucide="credit-card"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-com">Zo</span><div class="col"><b class="trunc">Zoom</b><span class="tx-3" style="font-size:11.5px">Communication · meetings</span></div></div></td><td><div class="row"><span class="av s k">RK</span><span class="trunc">Rohan Kapoor</span></div></td><td><div class="li-util"><div class="bar"><i class="bad" style="width:28%"></i></div><span>22 of 80</span></div></td><td class="r num">₹6.1L</td><td class="r num" style="color:var(--red-tx)">₹4.4L</td><td>2 Nov <span class="bdg bad" style="margin-left:2px">Auto-renews</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr class="li-hl" data-go="li-app"><td><div class="row hot"><span class="li-ap li-k-des">Fi</span><div class="col"><b class="trunc">Figma</b><span class="tx-3" style="font-size:11.5px">Design · interface design</span></div></div></td><td><div class="row"><span class="av s p">SL</span><span class="trunc">Sofia Lindqvist</span></div></td><td><div class="li-util"><div class="bar"><i class="lo" style="width:64%"></i></div><span>41 of 64</span></div></td><td class="r num">₹14.2L</td><td class="r num" style="color:var(--amber-tx)">₹3.1L</td><td>29 Nov <span class="bdg warn" style="margin-left:2px">Notice in 11d</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-com">Lo</span><div class="col"><b class="trunc">Loom</b><span class="tx-3" style="font-size:11.5px">Communication · video</span></div></div></td><td><div class="row"><span class="av s p">LF</span><span class="trunc">Lena Fischer</span></div></td><td><div class="li-util"><div class="bar"><i class="bad" style="width:32%"></i></div><span>12 of 38</span></div></td><td class="r num">₹3.8L</td><td class="r num" style="color:var(--red-tx)">₹2.6L</td><td>27 Nov <span class="tx-3">· notice 13 Nov</span></td><td><span class="li-sig"><span><i data-lucide="credit-card"></i></span><span><i data-lucide="log-in"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-eng">Gh</span><div class="col"><b class="trunc">GitHub</b><span class="tx-3" style="font-size:11.5px">Engineering · code</span></div></div></td><td><div class="row"><span class="av s v">DO</span><span class="trunc">Daniel Okafor</span></div></td><td><div class="li-util"><div class="bar"><i class="ok" style="width:94%"></i></div><span>131 of 140</span></div></td><td class="r num">₹21.8L</td><td class="r num">₹1.4L</td><td>11 Jan <span class="tx-3">· notice 12 Dec</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-sal">Sf</span><div class="col"><b class="trunc">Salesforce</b><span class="tx-3" style="font-size:11.5px">Sales · CRM</span></div></div></td><td><div class="row"><span class="av s o">AM</span><span class="trunc">Arjun Mehta</span></div></td><td><div class="li-util"><div class="bar"><i class="ok" style="width:95%"></i></div><span>57 of 60</span></div></td><td class="r num">₹62.0L</td><td class="r num">₹3.1L</td><td>1 Apr <span class="tx-3">· notice 30 Jan</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-com">Sl</span><div class="col"><b class="trunc">Slack</b><span class="tx-3" style="font-size:11.5px">Communication · chat</span></div></div></td><td><div class="row"><span class="av s k">RK</span><span class="trunc">Rohan Kapoor</span></div></td><td><div class="li-util"><div class="bar"><i class="ok" style="width:95%"></i></div><span>401 of 420</span></div></td><td class="r num">₹38.6L</td><td class="r num">₹1.7L</td><td>1 Feb <span class="tx-3">· notice 1 Jan</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-dat">Dd</span><div class="col"><b class="trunc">Datadog</b><span class="tx-3" style="font-size:11.5px">Engineering · usage-based</span></div></div></td><td><div class="row"><span class="av s g">TG</span><span class="trunc">Tomás García</span></div></td><td><span class="tx-3" style="font-size:12px">On usage · ₹2.4L in Sep</span></td><td class="r num">₹28.4L</td><td class="r num tx-3">n/a</td><td>Monthly</td><td><span class="li-sig"><span><i data-lucide="credit-card"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+            <tr><td><div class="row"><span class="li-ap li-k-pro">Gw</span><div class="col"><b class="trunc">Google Workspace</b><span class="tx-3" style="font-size:11.5px">Productivity · suite</span></div></div></td><td><div class="row"><span class="av s k">RK</span><span class="trunc">Rohan Kapoor</span></div></td><td><div class="li-util"><div class="bar"><i class="ok" style="width:97%"></i></div><span>418 of 430</span></div></td><td class="r num">₹52.4L</td><td class="r num">₹1.5L</td><td>14 Mar <span class="tx-3">· notice 14 Feb</span></td><td><span class="li-sig"><span><i data-lucide="receipt-text"></i></span><span><i data-lucide="log-in"></i></span><span><i data-lucide="plug"></i></span></span></td></tr>
+          <tr><td colspan="7" class="tx-3" style="font-size:12px;border-bottom:0">and 177 more apps · ₹1.05 Cr a year, ₹17.9L of it idle</td></tr>
+          </tbody></table>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Sorted by what you can save</b>Idle cost is seats with no use in 45 days times the price per seat. The worst offenders rise to the top, so the list is also a to-do list.</div>
+    <div><b>Seen in, honestly</b>Each app shows where it was found: an invoice, a card swipe, sign-ins, or a vendor connector that reads true last-active dates.</div>
+    <div><b>Usage-based apps stay honest</b>Apps billed on usage show spend, not fake seat counts. Click Figma to open its page.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== App page -->
+<figure class="screen" id="li-app" data-title="An app, in full">
+  <div class="scap"><b>One app: owners, contract, seats against real use</b><span>Everything you need before you touch a seat or a renewal, on one page.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.apps" data-me="Rohan Kapoor" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span>Applications</span><span class="sep">/</span><span class="cur">Figma</span></div>
+        <div class="htabs"><span class="htab on">Overview</span><span class="htab">People<span class="ct">64</span></span><span class="htab">Contract</span><span class="htab">Activity</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="file-text"></i>Renewal brief</span><span class="btn pri hot" data-go="li-reclaim"><i data-lucide="user-round-minus"></i>Reclaim 14 seats</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding:20px 28px;max-width:none">
+        <div class="row" style="gap:14px;margin-bottom:16px"><span class="li-ap l li-k-des">Fi</span><div class="col grow"><div class="row"><span class="h20">Figma</span><span class="tag"><span class="li-dc" style="background:#c2536a"></span>Design</span><span class="bdg ok"><i data-lucide="shield-check"></i>Approved · SSO enforced</span></div><span class="tx-2" style="font-size:12.5px;margin-top:2px">Interface design · Organization plan, annual · paid by invoice from Acme Labs India</span></div>
+          <div class="col" style="align-items:flex-end;gap:4px"><span class="cap">Owners</span><div class="row" style="font-size:12.5px"><span class="av s p">SL</span>Sofia Lindqvist<span class="tx-3">business</span><span class="av s k" style="margin-left:6px">RK</span>Rohan Kapoor<span class="tx-3">IT</span></div></div></div>
+        <div style="display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="card pad"><div class="row"><span class="cap grow">Seats · 64 paid</span><span class="tx-3" style="font-size:11.5px">last 45 days</span></div>
+            <div class="li-seats" style="margin:12px 0 10px"><i class="li-s-act" style="width:64%"></i><i class="li-s-view" style="width:14%"></i><i class="li-s-idle" style="width:22%"></i></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px">
+              <div class="col"><div class="row"><span class="li-dc" style="background:var(--green)"></span><b class="num">41</b></div><span class="tx-3">Editing</span></div>
+              <div class="col"><div class="row"><span class="li-dc" style="background:var(--acc-500)"></span><b class="num">9</b></div><span class="tx-3">Viewing only</span></div>
+              <div class="col"><div class="row"><span class="li-dc" style="background:var(--amber)"></span><b class="num">14</b></div><span class="tx-3">No activity</span></div></div></div>
+          <div class="card pad"><div class="cap">Cost</div><div class="big num" style="margin:8px 0 4px">₹14.2L <span class="tx-3" style="font-size:13px;font-weight:400">a year</span></div><div class="tx-2" style="font-size:12px">₹22,190 per seat · ₹34,630 per active editor</div><div class="tx-3" style="font-size:12px;margin-top:4px">Plus 3 personal plans on cards · ₹4,497 a month</div></div>
+          <div class="card pad"><div class="cap">Renewal</div><div class="row" style="margin:8px 0 4px"><span class="big num">29 Nov</span><span class="bdg warn">Notice in 11 days</span></div><div class="tx-2" style="font-size:12px">Give notice by Sat 31 Oct · auto-renews</div><div class="tx-3" style="font-size:12px;margin-top:4px">Quote on file: +12% per seat</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px">
+          <div class="card" style="padding:14px 16px 10px">
+            <div class="row" style="margin-bottom:6px"><b class="grow">Use over 12 months</b><div class="li-legend"><span><i style="border-color:var(--tx-3);border-top-style:dashed"></i>Paid seats</span><span><i style="border-color:var(--green)"></i>Active editors</span></div></div>
+            <svg class="li-chart" viewBox="0 0 580 168" aria-label="Paid seats flat at 64; active editors fall from 50 to 41">
+              <line class="grid" x1="36" y1="18" x2="560" y2="18"/><line class="grid" x1="36" y1="56" x2="560" y2="56"/><line class="grid" x1="36" y1="94" x2="560" y2="94"/><line class="grid" x1="36" y1="132" x2="560" y2="132"/>
+              <text x="0" y="22">70</text><text x="0" y="60">50</text><text x="0" y="98">30</text><text x="0" y="136">10</text>
+              <path class="actf" d="M40,56.0 L86,52.2 L131,52.2 L177,54.1 L222,57.9 L268,59.8 L313,63.6 L359,65.5 L404,67.4 L450,69.3 L495,71.2 L540,73.1 L540,151 L40,151 Z"/>
+              <line class="paid" x1="40" y1="29" x2="540" y2="29"/>
+              <path class="act" d="M40,56.0 L86,52.2 L131,52.2 L177,54.1 L222,57.9 L268,59.8 L313,63.6 L359,65.5 L404,67.4 L450,69.3 L495,71.2 L540,73.1"/>
+              <circle class="pt" cx="540" cy="73.1" r="4"/>
+              <text x="40" y="164">Nov</text><text x="131" y="164">Jan</text><text x="222" y="164">Mar</text><text x="313" y="164">May</text><text x="404" y="164">Jul</text><text x="495" y="164">Sep</text><text x="527" y="164">Oct</text>
+            </svg>
+          </div>
+          <div class="card">
+            <div class="card-h">Contract<span class="sp"></span><span class="tx-3" style="font-size:12px">Read from the PDF</span></div>
+            <div style="padding:4px 16px 8px">
+              <div class="li-f"><span>Term</span><span>1 Dec 2025 to 29 Nov 2026</span></div>
+              <div class="li-f"><span>Notice period</span><span>30 days · in writing</span></div>
+              <div class="li-f"><span>Price</span><span class="num">₹22,190 per editor a year</span></div>
+              <div class="li-f"><span>True-up</span><span>Quarterly, added seats only</span></div>
+              <div class="li-f"><span>Cost centre</span><span>CC-410 · Design</span></div>
+              <div class="li-f"><span>Documents</span><span class="row"><i data-lucide="file-text" class="tx-3"></i>Order form · <span style="color:var(--acc)">2 files</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px;overflow:hidden">
+          <div class="card-h">Least active seats<span class="tx-3">14 with no activity in 45 days</span><span class="sp"></span><span style="color:var(--acc);font-weight:500;font-size:12.5px">All 64 people</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr">
+            <div class="lrow" style="border-right:1px solid var(--line-2)"><span class="av s g">TG</span><span class="grow">Tomás García <span class="tx-3">· Platform</span></span><span class="tx-3" style="font-size:12px">Last edit 30 Jun</span><span class="bdg warn">112 days</span></div>
+            <div class="lrow"><span class="av s o">AM</span><span class="grow">Arjun Mehta <span class="tx-3">· Sales West</span></span><span class="tx-3" style="font-size:12px">Viewed 1 Oct</span><span class="bdg acc">Viewer</span></div>
+            <div class="lrow" style="border-right:1px solid var(--line-2);border-bottom:0"><span class="av s v">DO</span><span class="grow">Daniel Okafor <span class="tx-3">· Platform</span></span><span class="tx-3" style="font-size:12px">Last edit 1 Aug</span><span class="bdg plain">Kept in Sept</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="av s a">AT</span><span class="grow">Aiko Tanaka <span class="tx-3">· Data</span></span><span class="tx-3" style="font-size:12px">Viewed 13 Oct</span><span class="bdg acc">Viewer</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Seats against real use</b>Editing, viewing only and no activity come from the vendor connector, so 9 viewers are visible as people who could move to free viewer access.</div>
+    <div><b>Two owners, two jobs</b>The business owner decides who needs it; the IT owner runs access and security. Both get the renewal reminders.</div>
+    <div><b>The contract is data</b>Term, notice, price and true-up rules are typed fields, so the renewal calendar and the brief can do the arithmetic. Click Reclaim to continue.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Reclaim -->
+<figure class="screen" id="li-reclaim" data-title="Reclaim idle seats">
+  <div class="scap"><b>Take seats back, kindly</b><span>Inactive people get asked first. A week later the seat is freed through Access, and goes to whoever needs it next.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.apps" data-me="Rohan Kapoor" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span>Applications</span><span class="sep">/</span><span class="cur">Reclaim run, October</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Rule: no activity in 45 days</span><span class="btn">Edit rule</span><span class="btn pri hot" data-show=".li-rc-toast" data-hide=".li-rc-pend"><i data-lucide="send"></i>Ask 171 people</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px" class="col">
+          <div class="card" style="margin-bottom:14px"><div class="li-steps">
+            <div class="li-step"><span class="n">1</span><b>Ask today</b><span>A message in chat and email: keep it, or release it</span></div>
+            <div class="li-step"><span class="n">2</span><b>Wait 7 days</b><span>Anyone who taps keep, or uses the app, is dropped</span></div>
+            <div class="li-step"><span class="n">3</span><b>Free the seat, Mon 26 Oct</b><span>Through Access, or the vendor's admin API</span></div>
+            <div class="li-step"><span class="n">4</span><b>Back to the pool</b><span>Next request gets it; owner can lower the count</span></div>
+          </div></div>
+          <div class="row" style="margin-bottom:10px"><b class="grow">186 seats across 9 apps · ₹36.9L a year</b><span class="fchip"><i data-lucide="user-round-x"></i>15 left out</span><span class="fchip on"><i data-lucide="list-filter"></i>All apps</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="ghead"><span class="li-ap s li-k-des">Mi</span>Miro<span class="ct">68 seats · ₹5.4L</span><span class="sp"></span><span class="tx-3" style="font-weight:400">FigJam covers most of these</span></div>
+            <div class="lrow"><span class="cb on"><i data-lucide="check"></i></span><span class="av s a">AT</span><span class="grow">Aiko Tanaka <span class="tx-3">· Data</span></span><span class="tx-3" style="font-size:12px;width:150px">Last used 19 Jul</span><span class="bdg plain" style="width:96px">93 days</span></div>
+            <div class="lrow"><span class="cb on"><i data-lucide="check"></i></span><span class="av s o">AM</span><span class="grow">Arjun Mehta <span class="tx-3">· Sales West</span></span><span class="tx-3" style="font-size:12px;width:150px">Never opened</span><span class="bdg plain" style="width:96px">Since Mar</span></div>
+            <div class="lrow"><span class="cb on"><i data-lucide="check"></i></span><span class="tx-3 grow" style="padding-left:2px;font-size:12px">and 66 more</span></div>
+            <div class="ghead"><span class="li-ap s li-k-com">Zo</span>Zoom<span class="ct">54 seats · ₹4.1L</span><span class="sp"></span><span class="tx-3" style="font-weight:400">Freed seats lower next term's count</span></div>
+            <div class="lrow"><span class="cb on"><i data-lucide="check"></i></span><span class="av s p">LF</span><span class="grow">Lena Fischer <span class="tx-3">· Support</span></span><span class="tx-3" style="font-size:12px;width:150px">Last used 2 Aug</span><span class="bdg plain" style="width:96px">79 days</span></div>
+            <div class="ghead"><span class="li-ap s li-k-des">Fi</span>Figma<span class="ct">14 seats · ₹3.1L</span><span class="sp"></span><span class="tx-3" style="font-weight:400">1 goes to Kavya Nair on 2 Nov</span></div>
+            <div class="lrow"><span class="cb on"><i data-lucide="check"></i></span><span class="av s g">TG</span><span class="grow">Tomás García <span class="tx-3">· Platform</span></span><span class="tx-3" style="font-size:12px;width:150px">Last edit 30 Jun</span><span class="bdg plain" style="width:96px">112 days</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="cb"></span><span class="av s v">DO</span><span class="grow">Daniel Okafor <span class="tx-3">· Platform</span></span><span class="tx-3" style="font-size:12px;width:150px">Last edit 1 Aug</span><span class="bdg acc" style="width:96px">Kept in Sept</span></div>
+            <div class="ghead" style="border-bottom:0"><i data-lucide="ellipsis" style="width:14px;height:14px"></i>Loom, Adobe, GitHub and 3 more<span class="ct">50 seats · ₹24.3L</span></div>
+          </div>
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l"><i data-lucide="piggy-bank"></i>If nobody keeps a seat</div><div class="v num" style="font-size:18px">₹36.9L a year</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l"><i data-lucide="inbox"></i>Into the seat pool</div><div class="v num" style="font-size:18px">186 seats</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l"><i data-lucide="calendar-clock"></i>Lower at renewal</div><div class="v num" style="font-size:18px">Miro, Zoom, Loom</div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <b>What they'll see</b><span class="tx-3" style="font-size:12px;margin:2px 0 12px">In chat and email, in each person's language</span>
+          <div class="li-chatwin" style="box-shadow:var(--e1)">
+            <div class="b"><div class="li-bm"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><div class="col" style="gap:6px"><div class="row" style="font-size:12px"><b>Licences</b><span class="tx-3">10:02</span></div>
+              <span style="font-size:12.5px">Hi Aiko, you haven't opened Miro since 19 Jul. Do you still need your seat? If not, we'll free it on Mon 26 Oct. You can ask for it back any time.</span>
+              <div class="row"><span class="btn sm">Keep my seat</span><span class="btn sm ghost">Release it now</span></div></div></div></div>
+          </div>
+          <div class="cap" style="margin:18px 0 8px">Left out of this run · 15</div>
+          <div class="col" style="gap:8px;font-size:12.5px">
+            <div class="row"><i data-lucide="palmtree" class="tx-3"></i><span class="grow tx-2">On leave, from People</span><b class="num">6</b></div>
+            <div class="row"><i data-lucide="user-round-plus" class="tx-3"></i><span class="grow tx-2">Joined in the last 30 days</span><b class="num">2</b></div>
+            <div class="row"><i data-lucide="pin" class="tx-3"></i><span class="grow tx-2">Marked "keep" by an owner</span><b class="num">5</b></div>
+            <div class="row"><i data-lucide="user-round-x" class="tx-3"></i><span class="grow tx-2">Left Acme, freed already by Access</span><b class="num">2</b></div>
+          </div>
+          <div class="ai-card" style="margin-top:16px"><div class="ai-h"><span class="aid"></span>Worth a look<span class="src">by AI · from Miro and Figma sign-ins</span></div><p style="font-size:12.5px">31 of the 68 idle Miro seats belong to people active in FigJam this month. Consider not renewing Miro for the design team.<span class="cite"><i data-lucide="log-in"></i>Sign-ins</span></p><div class="acts"><span class="btn sm">Add to Miro's brief</span><span class="nu">Not useful</span></div></div>
+          <div class="sp"></div>
+          <div class="li-rc-pend tx-3" style="font-size:12px;display:flex;gap:6px;align-items:center"><i data-lucide="info" style="width:14px;height:14px"></i>Nothing is freed until the 7 days pass.</div>
+        </div>
+      </div>
+      <div class="toast li-rc-toast" hidden><i data-lucide="circle-check"></i>Asked 171 people. Seats free on Mon 26 Oct unless they keep them.<span class="u" data-hide=".li-rc-toast" data-show=".li-rc-pend">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Ask before you take</b>A one-tap message with a date. People who still use a tool keep it without filing a ticket, and nobody loses work by surprise.</div>
+    <div><b>Context from People and Access</b>People on leave and new joiners are left out automatically. Leavers' seats were already freed when Access closed their accounts.</div>
+    <div><b>Seats go somewhere useful</b>A freed Figma seat is held for Kavya Nair's onboarding on 2 Nov instead of buying a new one.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Discovered -->
+<figure class="screen" id="li-disc" data-title="Discovered apps">
+  <div class="scap"><b>Found from every signal, sorted for a decision</b><span>Card spend, invoices, sign-ins and opt-in browser data, merged into one app each. A person decides what to do with it.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.shadow" data-me="Rohan Kapoor" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Discovered</span></div>
+        <div class="htabs"><span class="htab on">To review<span class="ct">14</span></span><span class="htab">Added<span class="ct">63</span></span><span class="htab">Ignored<span class="ct">9</span></span></div>
+        <div class="hact"><span class="btn"><i data-lucide="plug"></i>Signals</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:14px;padding:18px 24px">
+        <div class="kpis" style="grid-template-columns:repeat(5,1fr);gap:10px">
+          <div class="card li-signal"><div class="row"><i data-lucide="credit-card"></i><span class="tx-2" style="font-size:12px">Card spend</span></div><div class="v num">41</div><span class="tx-3" style="font-size:11.5px">vendors · from Expenses</span></div>
+          <div class="card li-signal"><div class="row"><i data-lucide="mail"></i><span class="tx-2" style="font-size:12px">Invoices</span></div><div class="v num">28</div><span class="tx-3 mono" style="font-size:11px">licences@acmelabs.dev</span></div>
+          <div class="card li-signal"><div class="row"><i data-lucide="log-in"></i><span class="tx-2" style="font-size:12px">SSO sign-ins</span></div><div class="v num">132</div><span class="tx-3" style="font-size:11.5px">apps · from Access</span></div>
+          <div class="card li-signal"><div class="row"><i data-lucide="key-square"></i><span class="tx-2" style="font-size:12px">Account grants</span></div><div class="v num">57</div><span class="tx-3" style="font-size:11.5px">"Sign in with Google" apps</span></div>
+          <div class="card li-signal"><div class="row"><i data-lucide="globe"></i><span class="tx-2" style="font-size:12px">Browser, opt-in</span></div><div class="v num">74</div><span class="tx-3" style="font-size:11.5px">domains only · 96 people</span></div>
+        </div>
+        <div class="card" style="overflow:hidden;flex:1;min-height:0">
+          <div class="ghead"><i data-lucide="circle-alert" style="width:14px;height:14px;color:var(--amber)"></i>Needs a decision<span class="ct">14 · ₹5.6L a year</span></div>
+          <div class="lrow sel" style="height:58px" data-show=".li-peek"><span class="li-ap li-k-eng hot">Rt</span><div class="col grow"><b>Retool</b><span class="tx-3" style="font-size:12px">Internal tools · first seen 1 Oct · 6 people signing in</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="credit-card"></i>₹74,000 · Tomás</span><span class="li-ev"><i data-lucide="key-square"></i>Google grant</span><span class="li-ev"><i data-lucide="globe"></i>6 people</span></div><span class="bdg warn" style="width:120px">Not reviewed</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-des">Fi</span><div class="col grow"><b>Figma, personal plans</b><span class="tx-3" style="font-size:12px">3 people pay on their own cards · company has 14 idle seats</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="credit-card"></i>₹4,497 a month</span><span class="li-ev"><i data-lucide="receipt"></i>3 claims</span></div><span class="bdg acc" style="width:120px">Has a company seat</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-dat">Ai</span><div class="col grow"><b>ChatGPT Plus</b><span class="tx-3" style="font-size:12px">AI assistant · 11 people expense it monthly</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="receipt"></i>₹1.9L a year</span><span class="li-ev"><i data-lucide="globe"></i>38 people</span></div><span class="bdg bad" style="width:120px">Security review</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-des">Ca</span><div class="col grow"><b>Canva</b><span class="tx-3" style="font-size:12px">Design · invoice forwarded by Arjun Mehta</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="mail"></i>₹48,000 invoice</span><span class="li-ev"><i data-lucide="log-in"></i>4 people</span></div><span class="bdg warn" style="width:120px">Not reviewed</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-pro">Ca</span><div class="col grow"><b>Calendly</b><span class="tx-3" style="font-size:12px">Scheduling · free plan · can read calendars</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="key-square"></i>18 grants</span><span class="li-ev"><i data-lucide="globe"></i>18 people</span></div><span class="bdg" style="width:120px">Free · no spend</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-pro">Gr</span><div class="col grow"><b>Grammarly</b><span class="tx-3" style="font-size:12px">Writing · 7 people pay, 22 use the free plan</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="receipt"></i>₹62,000 a year</span><span class="li-ev"><i data-lucide="globe"></i>29 people</span></div><span class="bdg warn" style="width:120px">Not reviewed</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-sal">Ty</span><div class="col grow"><b>Typeform</b><span class="tx-3" style="font-size:12px">Forms · invoice to Sales West · last used 41 days ago</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="mail"></i>₹31,000 invoice</span><span class="li-ev"><i data-lucide="log-in"></i>2 people</span></div><span class="bdg" style="width:120px">Possibly unused</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:58px"><span class="li-ap li-k-dat">Pp</span><div class="col grow"><b>Perplexity Pro</b><span class="tx-3" style="font-size:12px">AI search · 4 people expense it monthly</span></div><div class="row" style="gap:4px"><span class="li-ev"><i data-lucide="receipt"></i>₹78,000 a year</span><span class="li-ev"><i data-lucide="globe"></i>9 people</span></div><span class="bdg bad" style="width:120px">Security review</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="height:44px;border-bottom:0"><span class="tx-3" style="padding-left:38px;font-size:12px">and 6 more, under ₹10,000 a year each</span></div>
+        </div>
+      </div></div>
+      <div class="peek li-peek" hidden>
+        <div class="peek-h"><span class="li-ap s li-k-eng">Rt</span><b class="grow">Retool</b><span class="ib sm" data-hide=".li-peek"><i data-lucide="x"></i></span></div>
+        <div class="peek-b">
+          <div class="cap" style="margin-bottom:6px">How we found it</div>
+          <div class="li-tl">
+            <div class="e"><span class="ic"><i data-lucide="credit-card"></i></span><div><b>₹74,000 on card ••0921</b><div class="tx-3" style="font-size:12px">Tomás García · 1 Oct · coded Software in Expenses</div></div></div>
+            <div class="e"><span class="ic"><i data-lucide="key-square"></i></span><div><b>"Sign in with Google" by 6 people</b><div class="tx-3" style="font-size:12px">Platform team · can read profile and email</div></div></div>
+            <div class="e"><span class="ic"><i data-lucide="globe"></i></span><div><b>Used most days since 2 Oct</b><div class="tx-3" style="font-size:12px">Browser signal · domain only, no pages</div></div></div>
+          </div>
+          <div class="ai-card" style="margin-top:14px"><div class="ai-h"><span class="aid"></span>Suggested setup<span class="src">by AI · from the swipe, grants and Work</span></div><p style="font-size:12.5px">Looks like a team tool for the Platform team's admin console project, owned by Tomás. The annual plan is ₹74,000 for 5 seats, and 6 people use it, so a seat is likely shared.<span class="cite"><i data-lucide="credit-card"></i>Swipe</span><span class="cite"><i data-lucide="square-kanban"></i>PLAT-88</span></p><div class="acts"><span class="btn sm">Use these values</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Add to applications</div>
+          <div class="col" style="gap:10px">
+            <div class="fld"><label>Owner</label><div class="inp ai-field"><span class="av s g">TG</span>Tomás García<span class="car tx-3" style="font-size:11px">suggested</span></div></div>
+            <div class="fld"><label>Category</label><div class="inp ai-field"><span class="li-dc" style="background:#2356c9"></span>Engineering · internal tools</div></div>
+            <div class="fld"><label>Approval</label><div class="inp">Send for security review, then Finance<i data-lucide="chevron-down" class="car"></i></div><span class="help">Customer data may pass through it. Policy asks for review above ₹50,000.</span></div>
+          </div>
+        </div>
+        <div class="peek-f"><span class="btn ghost">Mark as personal</span><span class="btn">Ignore</span><span class="btn pri"><i data-lucide="plus"></i>Add and send for review</span></div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Five signals, one app</b>A card swipe, an account grant and browser use are merged into a single Retool, with the evidence kept. Click Retool to see it.</div>
+    <div><b>Duplicates become savings</b>Three personal Figma plans on cards while 14 company seats sit idle. One click moves them over and asks Expenses to stop the claims.</div>
+    <div><b>Browser data, on your terms</b>The browser signal is opt-in, shows each person what it sends, and records domains only, never pages or content.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Renewals -->
+<figure class="screen" id="li-ren" data-title="Renewals calendar">
+  <div class="scap"><b>Every renewal, and the date that actually matters</b><span>The notice date is the deadline, not the renewal date. Each bar is your window to decide.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.ren" data-me="Meera Iyer" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Renewals</span></div>
+        <div class="htabs"><span class="htab on">Timeline</span><span class="htab">List</span><span class="htab">Past</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>Oct 2026 to Apr 2027</span><span class="btn"><i data-lucide="calendar-plus"></i>Subscribe to calendar</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:14px;padding:18px 24px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l">Renewing by April</div><div class="v num">₹2.08 Cr</div><div class="d">8 contracts, 61% of the year's spend</div></div>
+          <div class="card kpi"><div class="l">Notice dates this month</div><div class="v num" style="color:var(--amber-tx)">1</div><div class="d">Figma, by Sat 31 Oct</div></div>
+          <div class="card kpi"><div class="l">Missed this year</div><div class="v num">1</div><div class="d">Zoom renews 2 Nov at 80 seats</div></div>
+          <div class="card kpi"><div class="l">Saved at renewal, 2026</div><div class="v num" style="color:var(--green-tx)">₹18.4L</div><div class="d">Across 11 renewals, against quotes</div></div>
+        </div>
+        <div class="card" style="flex:1;min-height:0;overflow:hidden;padding:0 16px">
+          <div class="li-gantt">
+            <div class="li-gh"><span>Contract</span><div class="li-months"><span style="left:0">Oct</span><span style="left:9%;transform:translateX(-50%);color:var(--acc);font-weight:600">Today</span><span style="left:14.6%">Nov</span><span style="left:28.8%">Dec</span><span style="left:43.4%">Jan</span><span style="left:58%">Feb</span><span style="left:71.2%">Mar</span><span style="left:85.8%">Apr</span></div><span style="text-align:right">Per year</span></div>
+            <div style="position:relative">
+              <div style="position:absolute;left:220px;right:110px;top:0;bottom:0;pointer-events:none">
+                <span class="li-tick" style="left:14.6%"></span><span class="li-tick" style="left:28.8%"></span><span class="li-tick" style="left:43.4%"></span><span class="li-tick" style="left:58%"></span><span class="li-tick" style="left:71.2%"></span><span class="li-tick" style="left:85.8%"></span>
+                <span class="li-today" style="left:9%"></span>
+              </div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-com">Zo</span><div class="col"><b>Zoom</b><span class="tx-3" style="font-size:11.5px">Notice passed 3 Oct · 80 seats</span></div></div><div class="li-lane"><span class="li-win bad" style="left:0;width:1.4%"></span><span class="li-flag bad" style="left:1.4%"></span><span class="li-ren" style="left:15.6%"></span></div><b class="num" style="text-align:right">₹6.1L</b></div>
+              <div class="li-gr on" data-go="li-brief"><div class="row hot"><span class="li-ap s li-k-des">Fi</span><div class="col"><b>Figma</b><span class="tx-3" style="font-size:11.5px">Notice by 30 Oct · brief ready</span></div></div><div class="li-lane"><span class="li-win warn" style="left:9%;width:5.2%"></span><span class="li-flag warn" style="left:14.2%"></span><span class="li-ren" style="left:28.3%"></span></div><b class="num" style="text-align:right">₹14.2L</b></div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-com">Lo</span><div class="col"><b>Loom</b><span class="tx-3" style="font-size:11.5px">Notice by 13 Nov</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:11.8%"></span><span class="li-flag" style="left:20.8%"></span><span class="li-ren" style="left:27.4%"></span></div><b class="num" style="text-align:right">₹3.8L</b></div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-des">Mi</span><div class="col"><b>Miro</b><span class="tx-3" style="font-size:11.5px">Notice by 14 Nov</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:12.2%"></span><span class="li-flag" style="left:21.2%"></span><span class="li-ren" style="left:35.4%"></span></div><b class="num" style="text-align:right">₹9.6L</b></div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-eng">Gh</span><div class="col"><b>GitHub</b><span class="tx-3" style="font-size:11.5px">Notice by 12 Dec</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:25.4%"></span><span class="li-flag" style="left:34.4%"></span><span class="li-ren" style="left:48.6%"></span></div><b class="num" style="text-align:right">₹21.8L</b></div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-com">Sl</span><div class="col"><b>Slack</b><span class="tx-3" style="font-size:11.5px">Notice by 1 Jan</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:34.9%"></span><span class="li-flag" style="left:43.9%"></span><span class="li-ren" style="left:58%"></span></div><b class="num" style="text-align:right">₹38.6L</b></div>
+              <div class="li-gr"><div class="row"><span class="li-ap s li-k-sal">Sf</span><div class="col"><b>Salesforce</b><span class="tx-3" style="font-size:11.5px">Notice by 30 Jan · 60 days</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:48.5%"></span><span class="li-flag" style="left:57.5%"></span><span class="li-ren" style="left:85.8%"></span></div><b class="num" style="text-align:right">₹62.0L</b></div>
+              <div class="li-gr" style="border-bottom:0"><div class="row"><span class="li-ap s li-k-pro">Gw</span><div class="col"><b>Google Workspace</b><span class="tx-3" style="font-size:11.5px">Notice by 14 Feb</span></div></div><div class="li-lane"><span class="li-win" style="left:9%;width:55.2%"></span><span class="li-flag" style="left:64.2%"></span><span class="li-ren" style="left:77.4%"></span></div><b class="num" style="text-align:right">₹52.4L</b></div>
+            </div>
+          </div>
+          <div class="row tx-3" style="font-size:11.5px;gap:16px;padding:10px 0;border-top:1px solid var(--line-2)"><span class="row" style="gap:6px"><span class="li-win" style="position:static;display:inline-block;width:22px;height:10px"></span>Time left to decide</span><span class="row" style="gap:6px"><span class="li-flag" style="position:static;display:inline-block;height:12px"></span>Notice date</span><span class="row" style="gap:6px"><span class="li-ren" style="position:static;display:inline-block;margin:0;width:10px;height:10px"></span>Renewal</span><span class="sp"></span><span>Reminders go to both owners at 60, 30 and 7 days before each notice date</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The deadline is the notice date</b>Each bar ends where your leverage ends. Renewal dates are shown, but the reminders count down to notice.</div>
+    <div><b>Misses are visible, not hidden</b>Zoom's notice passed on 3 Oct. It's shown in red, and its reclaim lowers the count before the next true-up.</div>
+    <div><b>On your own calendar</b>Subscribe once and every notice date lands in the owners' calendars. Click Figma to open its brief.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Renewal brief (signature) -->
+<figure class="screen" id="li-brief" data-title="The renewal brief">
+  <div class="scap"><b>The renewal brief: the number, and why</b><span>Eleven days before the notice date, the brief has the use trend, the people who are coming, the quote, and a seat count you can defend.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.ren" data-me="Meera Iyer" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span>Renewals</span><span class="sep">/</span><span class="cur">Figma, 29 Nov 2026</span></div>
+        <div class="hact"><span class="faces"><span class="av s p">SL</span><span class="av s k">RK</span><span class="av s me">MI</span></span><span class="btn"><i data-lucide="file-text"></i>Open as a doc</span><span class="btn"><i data-lucide="mail"></i>Draft notice to vendor</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;height:100%">
+        <div style="overflow:hidden;padding:20px 28px" class="col">
+          <div class="row" style="align-items:flex-end;margin-bottom:12px"><div class="col grow"><div class="h24">Figma renewal brief</div><span class="tx-2" style="margin-top:4px;font-size:12.5px">Renews Mon 30 Nov · give notice by <b>Sat 31 Oct</b> · 64 editor seats · ₹14.2L a year</span></div><span class="bdg warn"><i data-lucide="timer"></i>11 days to notice</span></div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Recommendation<span class="src">by AI · from 12 months of use, the contract, the quote, People and Hiring</span></div>
+            <p>Renew at <b>48 seats</b>, not 64. Active editors fell from 50 to 41 since November<span class="cite"><i data-lucide="log-in"></i>Use</span>, and 9 people only view files, which free viewer access covers<span class="cite"><i data-lucide="eye"></i>Roles</span>. Keep room for 2 open design roles<span class="cite"><i data-lucide="user-round-plus"></i>Hiring</span> and a buffer of 5. Push back on the quoted 12% rise: last year's was 5%<span class="cite"><i data-lucide="file-text"></i>Quote</span>, and the contract lets you add seats quarterly, so starting lower costs nothing later<span class="cite"><i data-lucide="file-text"></i>Clause 4</span>.</p>
+            <div class="acts"><span class="btn sm">Use 48 in the plan</span><span class="btn sm ghost">Show the working</span><span class="nu">Not useful</span></div></div>
+          <div class="card" style="margin-top:12px;padding:12px 16px 6px">
+            <div class="row" style="margin-bottom:4px"><b class="grow">Seats against use</b><div class="li-legend"><span><i style="border-color:var(--tx-3);border-top-style:dashed"></i>Paid, 64</span><span><i style="border-color:var(--green)"></i>Active editors</span><span><i style="border-color:var(--acc);border-top-style:dotted"></i>Plan, 48</span></div></div>
+            <svg class="li-chart" viewBox="0 0 640 150" aria-label="Paid 64 seats, active editors falling to 41, plan of 48 seats from December">
+              <line class="grid" x1="30" y1="16" x2="630" y2="16"/><line class="grid" x1="30" y1="50" x2="630" y2="50"/><line class="grid" x1="30" y1="84" x2="630" y2="84"/><line class="grid" x1="30" y1="118" x2="630" y2="118"/>
+              <text x="0" y="20">70</text><text x="0" y="54">50</text><text x="0" y="88">30</text><text x="0" y="122">10</text>
+              <path class="actf" d="M34,50.0 L80,46.6 L126,46.6 L172,48.3 L218,51.7 L264,53.4 L310,56.8 L356,58.5 L402,60.2 L448,61.9 L494,63.6 L540,65.3 L540,135 L34,135 Z"/>
+              <line class="paid" x1="34" y1="26" x2="540" y2="26"/>
+              <path class="act" d="M34,50.0 L80,46.6 L126,46.6 L172,48.3 L218,51.7 L264,53.4 L310,56.8 L356,58.5 L402,60.2 L448,61.9 L494,63.6 L540,65.3"/>
+              <line class="plan" x1="540" y1="53.4" x2="630" y2="53.4"/>
+              <circle class="pt" cx="540" cy="65.3" r="4"/>
+              <text x="34" y="148">Nov 25</text><text x="218" y="148">Mar</text><text x="402" y="148">Jul</text><text x="522" y="148">Oct</text><text x="584" y="148">Next term</text>
+            </svg>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="card pad"><div class="cap" style="margin-bottom:8px">Who is coming and going</div>
+              <div class="col" style="gap:7px;font-size:12.5px">
+                <div class="row"><i data-lucide="user-round-plus" class="tx-3"></i><span class="grow">2 open product designer roles</span><span class="tx-3">Hiring</span></div>
+                <div class="row"><i data-lucide="calendar-check" class="tx-3"></i><span class="grow">Kavya Nair joins 2 Nov, viewer</span><span class="tx-3">People</span></div>
+                <div class="row"><i data-lucide="user-round-x" class="tx-3"></i><span class="grow">1 designer leaving 13 Nov</span><span class="tx-3">People</span></div></div></div>
+            <div class="card pad"><div class="cap" style="margin-bottom:8px">Price history</div>
+              <div class="col" style="gap:7px;font-size:12.5px">
+                <div class="row"><span class="grow tx-2">2024 to 2025</span><b class="num">₹21,130 a seat</b></div>
+                <div class="row"><span class="grow tx-2">2025 to 2026 · +5%</span><b class="num">₹22,190</b></div>
+                <div class="row"><span class="grow tx-2">Quoted 2026 to 2027 · +12%</span><b class="num" style="color:var(--amber-tx)">₹24,850</b></div></div></div>
+          </div>
+          <div class="card" style="margin-top:12px;padding:12px 16px">
+            <div class="row" style="margin-bottom:8px"><b class="grow">Talking points for the vendor</b><span class="tx-3" style="font-size:12px">From the brief · edit before you use them</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:12.5px">
+              <div class="row" style="align-items:flex-start"><span class="li-ap s li-k-eng">1</span><span class="tx-2">Active editors are down 18% this year; we'll commit to 48 seats.</span></div>
+              <div class="row" style="align-items:flex-start"><span class="li-ap s li-k-eng">2</span><span class="tx-2">The quarterly true-up covers growth, so we don't need headroom now.</span></div>
+              <div class="row" style="align-items:flex-start"><span class="li-ap s li-k-eng">3</span><span class="tx-2">Hold ₹22,190 a seat: our other renewals this year rose 6% on average.</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:hidden" class="col">
+          <b>Your plan</b><span class="tx-3" style="font-size:12px;margin:2px 0 12px">Change the seat count to see the effect</span>
+          <div class="li-step-n"><span><i data-lucide="minus"></i></span><b class="num">48</b><span><i data-lucide="plus"></i></span></div>
+          <div class="li-mix" style="margin:12px 0 4px">
+            <div class="row"><span class="li-dc" style="background:var(--green)"></span><span class="tx-2">Active editors</span><b class="num">41</b></div>
+            <div class="row"><span class="li-dc" style="background:var(--acc-500)"></span><span class="tx-2">Open roles, from Hiring</span><b class="num">2</b></div>
+            <div class="row"><span class="li-dc" style="background:var(--line)"></span><span class="tx-2">Buffer</span><b class="num">5</b></div>
+            <div class="row tx-3" style="font-size:12px"><i data-lucide="eye" style="width:14px;height:14px"></i>9 viewers move to free viewer access</div>
+          </div>
+          <div class="li-seats" style="margin:8px 0 6px"><i class="li-s-act" style="width:64%"></i><i class="li-s-view" style="width:3%"></i><i class="li-s-free" style="width:8%"></i><i style="width:25%;background:color-mix(in srgb,var(--red) 30%,transparent)"></i></div><div class="row tx-3" style="font-size:11.5px;margin-bottom:14px"><span class="sp"></span>16 of 64 seats not renewed</div>
+          <div class="li-cmp">
+            <span class="tx-2">This year, 64 seats</span><b class="num">₹14.2L</b>
+            <span class="tx-2">Quote, 64 seats at +12%</span><b class="num">₹15.9L</b>
+            <span class="tx-2">Plan, 48 at the quoted price</span><b class="num">₹11.9L</b>
+            <span class="tx-2">Plan, 48 at this year's price</span><b class="num">₹10.7L</b>
+          </div>
+          <div class="li-save" style="margin-top:14px"><i data-lucide="piggy-bank" style="color:var(--green-tx)"></i><div class="col"><b class="num">₹4.0L to ₹5.2L</b><span class="tx-2" style="font-size:12px">saved against the quote, a year</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Before 30 Oct</div>
+          <div class="col" style="gap:7px">
+            <div class="li-chk"><i data-lucide="circle-check" class="ok"></i>Reclaim run asks the 14 idle editors</div>
+            <div class="li-chk"><i data-lucide="circle-dashed" class="td"></i>Sofia confirms the design team's needs</div>
+            <div class="li-chk"><i data-lucide="circle-dashed" class="td"></i>Send written notice to the vendor</div>
+          </div>
+          <div class="sp"></div>
+          <span class="btn pri hot" style="justify-content:center" data-show=".li-br-toast"><i data-lucide="check"></i>Save plan and ask Sofia</span>
+        </div>
+      </div>
+      <div class="toast li-br-toast" hidden><i data-lucide="circle-check"></i>Plan saved at 48 seats. Sofia has it to confirm.<span class="u" data-hide=".li-br-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A number you can defend</b>Every part of 48 is traceable: active editors from use data, open roles from Hiring, a buffer you set. The vendor gets a seat count, not a guess.</div>
+    <div><b>Leverage, written down</b>Price history, the quoted rise and the true-up clause sit beside the number, so the negotiation starts from facts in your own contract.</div>
+    <div><b>A person sends the notice</b>AI drafts the brief and the email. Meera and Sofia agree the plan, and a person sends the notice from their own mail.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Request an app (off-desktop) -->
+<figure class="screen" id="li-req" data-title="Request an app">
+  <div class="scap"><b>Ask for a tool, get one you already own</b><span>On the phone, in chat or by email: existing tools come first, and only new ones go to review.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="li-canvas">
+      <div class="li-c">
+        <div class="li-phone"><div class="scr"><div class="notch"></div>
+          <div class="top"><span class="tile" style="background:var(--m-licences);width:22px;height:22px;border-radius:6px"><i data-lucide="key-round" style="width:12px;height:12px"></i></span><b style="font-size:13px">Request an app</b><span class="sp"></span><span class="av s a">AT</span></div>
+          <div class="bd">
+            <div class="inp" style="height:auto;min-height:56px;align-items:flex-start;padding:8px 10px;font-size:12.5px">Something to draw quick diagrams for sprint planning with the data team</div>
+            <div class="row" style="justify-content:space-between"><span class="ai-line" style="white-space:nowrap"><span class="aid"></span>You already have these</span><span class="tx-3" style="font-size:11px">by AI · from the catalogue</span></div>
+            <div class="li-opt" style="box-shadow:inset 0 0 0 1.5px var(--acc),var(--e1)"><span class="li-ap li-k-des">Mi</span><div class="col grow" style="gap:2px"><b>Miro</b><span class="tx-3" style="font-size:11.5px">Whiteboards and diagrams · 12 seats in the pool</span><span class="bdg ok" style="margin-top:4px;align-self:flex-start">No approval needed</span></div></div>
+            <div class="li-opt"><span class="li-ap li-k-des">Fi</span><div class="col grow" style="gap:2px"><b>FigJam, in Figma</b><span class="tx-3" style="font-size:11.5px">Your team uses it · free with viewer access</span></div></div>
+            <span class="btn pri" style="justify-content:center;height:38px"><i data-lucide="zap"></i>Get a Miro seat now</span>
+            <span class="tx-3" style="font-size:11.5px;text-align:center">Need something else? <span style="color:var(--acc)">Request a new app</span></span>
+            <div class="sp"></div>
+            <div class="well" style="padding:8px 10px;font-size:11.5px;color:var(--tx-2)">New apps go to security review, and to Finance above ₹50,000. Usually 2 working days.</div>
+          </div>
+        </div></div>
+        <h4>Ask in plain words</h4><p>The request is matched to apps the company already pays for. A free seat is granted on the spot through Access.</p>
+      </div>
+      <div class="li-c" style="justify-content:center">
+        <div class="li-chatwin">
+          <div class="h"><i data-lucide="hash" class="tx-3"></i><b>data-team</b><span class="tx-3">· chat</span></div>
+          <div class="b">
+            <div class="li-bm"><span class="av o" style="width:28px;height:28px">TG</span><div class="col" style="gap:4px"><div class="row" style="font-size:12px"><b>Tomás García</b><span class="tx-3">11:14</span></div><span style="font-size:12.5px">@Licences I need a Loom seat to record the incident walkthrough</span></div></div>
+            <div class="li-bm"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><div class="col" style="gap:6px"><div class="row" style="font-size:12px"><b>Licences</b><span class="tx-3">11:14</span></div>
+              <span style="font-size:12.5px">Done. You have a Loom seat from the company pool, as of now. It was freed last week, so nothing new was bought.</span>
+              <div class="row"><span class="btn sm"><i data-lucide="external-link"></i>Open Loom</span><span class="btn sm ghost">Not now</span></div></div></div>
+          </div>
+        </div>
+        <h4>Or just say it in chat</h4><p>Seats freed by reclaim are handed out first. People get what they need in seconds, and the company buys less.</p>
+      </div>
+      <div class="li-c" style="justify-content:center">
+        <div class="li-mailc">
+          <div class="mh"><span>From</span><b>Bemmoly Licences</b><span>To</span><span style="color:var(--tx)">Rohan Kapoor, Meera Iyer</span><span>Subject</span><span style="color:var(--tx)">New app request: Hex, for Aiko Tanaka</span></div>
+          <div class="mb">
+            <span>Aiko asked for Hex for notebook reports. Nothing the company owns does this. Annual plan: ₹2.6L for 5 seats.</span>
+            <div class="col" style="gap:7px">
+              <div class="li-chk"><i data-lucide="circle-check" class="ok"></i>SSO and SCIM supported</div>
+              <div class="li-chk"><i data-lucide="circle-check" class="ok"></i>Security report on file, from the vendor</div>
+              <div class="li-chk"><i data-lucide="circle-alert" class="wn"></i>Reads customer data: needs a data agreement</div>
+              <div class="li-chk"><i data-lucide="circle-dashed" class="td"></i>Finance: within the Data team's tools budget</div>
+            </div>
+            <div class="row"><span class="btn sm pri"><i data-lucide="shield-check"></i>Review in Licences</span><span class="btn sm">Ask Aiko a question</span></div>
+          </div>
+        </div>
+        <h4>New apps get a real review</h4><p>Security and Finance see the checks already done. The route runs on Bemmoly's shared approval engine.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Existing tools first</b>"Quick diagrams" matches Miro and FigJam. Aiko gets a seat now, and the company avoids a 187th app.</div>
+    <div><b>The pool pays off</b>Seats freed by reclaim are handed out before anything is bought, so reclaim and requests are one loop.</div>
+    <div><b>Review without the chase</b>SSO support, the security report and the data question are checked before anyone opens the request.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Spend -->
+<figure class="screen" id="li-spend" data-title="Spend dashboard">
+  <div class="scap"><b>Where the software money goes</b><span>By month, category and team, with the idle cost and overlapping tools called out.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.spend" data-me="Meera Iyer" data-counts='{"li.apps":"186","li.ren":"8","li.shadow":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Spend</span></div>
+        <div class="htabs"><span class="htab on">Overview</span><span class="htab">By team</span><span class="htab">By vendor</span><span class="htab">Budgets</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>Last 12 months</span><span class="fchip"><i data-lucide="building-2"></i>All entities · INR</span><span class="btn"><i data-lucide="download"></i>Export</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:14px;padding:18px 24px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l">Spent, last 12 months</div><div class="v num">₹3.51 Cr</div><div class="d"><span class="down">+9%</span> on the year before · headcount +6%</div></div>
+          <div class="card kpi"><div class="l">Per person</div><div class="v num">₹83,600</div><div class="d">420 people · Engineering highest at ₹1.6L</div></div>
+          <div class="card kpi"><div class="l">Paid for, unused</div><div class="v num" style="color:var(--amber-tx)">₹41.6L</div><div class="d">12% of spend · 212 idle seats</div></div>
+          <div class="card kpi"><div class="l">Outside the portfolio</div><div class="v num">₹5.6L</div><div class="d">14 apps on cards and invoices</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;flex:1;min-height:0">
+          <div class="col" style="gap:14px;min-height:0">
+            <div class="card" style="padding:14px 16px">
+              <div class="row" style="margin-bottom:12px"><b class="grow">By month</b><span class="tx-3" style="font-size:12px">₹ lakh · annual invoices land in their month</span></div>
+              <div class="li-cols">
+                <div><em>26.1</em><i style="height:69%"></i><span>Nov</span></div><div><em>27.4</em><i style="height:72%"></i><span>Dec</span></div><div><em>31.9</em><i class="peak" style="height:84%"></i><span>Jan</span></div><div><em>27.0</em><i style="height:71%"></i><span>Feb</span></div><div><em>30.2</em><i style="height:80%"></i><span>Mar</span></div><div><em>34.8</em><i class="peak" style="height:92%"></i><span>Apr</span></div><div><em>27.6</em><i style="height:73%"></i><span>May</span></div><div><em>28.1</em><i style="height:74%"></i><span>Jun</span></div><div><em>28.4</em><i style="height:75%"></i><span>Jul</span></div><div><em>29.0</em><i style="height:77%"></i><span>Aug</span></div><div><em>29.6</em><i style="height:78%"></i><span>Sep</span></div><div><em>30.4</em><i style="height:80%"></i><span>Oct</span></div>
+              </div>
+            </div>
+            <div class="card" style="flex:1;min-height:0;overflow:hidden">
+              <div class="card-h">By category<span class="tx-3 sp">₹ lakh a year</span></div>
+              <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 28px">
+                <div class="row"><span class="li-dc" style="background:#2356c9"></span><span style="width:104px">Engineering</span><div class="bar grow" style="height:8px"><i style="width:100%;background:#2356c9"></i></div><b class="num" style="width:44px;text-align:right">112.4</b></div>
+                <div class="row"><span class="li-dc" style="background:#0e9bb0"></span><span style="width:104px">Communication</span><div class="bar grow" style="height:8px"><i style="width:44%;background:#0e9bb0"></i></div><b class="num" style="width:44px;text-align:right">49.2</b></div>
+                <div class="row"><span class="li-dc" style="background:#d46a2e"></span><span style="width:104px">Sales</span><div class="bar grow" style="height:8px"><i style="width:66%;background:#d46a2e"></i></div><b class="num" style="width:44px;text-align:right">74.0</b></div>
+                <div class="row"><span class="li-dc" style="background:#c2536a"></span><span style="width:104px">Design</span><div class="bar grow" style="height:8px"><i style="width:26%;background:#c2536a"></i></div><b class="num" style="width:44px;text-align:right">28.9</b></div>
+                <div class="row"><span class="li-dc" style="background:#2f9e6e"></span><span style="width:104px">Productivity</span><div class="bar grow" style="height:8px"><i style="width:52%;background:#2f9e6e"></i></div><b class="num" style="width:44px;text-align:right">58.6</b></div>
+                <div class="row"><span class="li-dc" style="background:#b7791f"></span><span style="width:104px">Data and AI</span><div class="bar grow" style="height:8px"><i style="width:16%;background:#b7791f"></i></div><b class="num" style="width:44px;text-align:right">18.3</b></div>
+                <div class="row"><span class="li-dc" style="background:#9b4f96"></span><span style="width:104px">Finance and HR</span><div class="bar grow" style="height:8px"><i style="width:6%;background:#9b4f96"></i></div><b class="num" style="width:44px;text-align:right">6.8</b></div>
+                <div class="row"><span class="li-dc" style="background:var(--tx-3)"></span><span style="width:104px">Everything else</span><div class="bar grow" style="height:8px"><i style="width:3%;background:var(--tx-3)"></i></div><b class="num" style="width:44px;text-align:right">2.8</b></div>
+              </div>
+              <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding:10px 16px"><i data-lucide="link"></i>Each category maps to a ledger account · export as CSV or to your ledger</div>
+            </div>
+          </div>
+          <div class="col" style="gap:14px;min-height:0">
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>Overlapping tools<span class="src">by AI · from sign-ins and spend</span></div>
+              <p style="font-size:12.5px">Two pairs do the same job. 31 people use both Miro and FigJam<span class="cite"><i data-lucide="log-in"></i>Sign-ins</span>, and Loom overlaps with Zoom's recordings for the support team<span class="cite"><i data-lucide="log-in"></i>Sign-ins</span>. Keeping one of each could save about ₹11.8L a year.</p>
+              <div class="acts"><span class="btn sm">Add to the briefs</span><span class="nu">Not useful</span></div></div>
+            <div class="card" style="flex:1;min-height:0;overflow:hidden">
+              <div class="card-h">By team<span class="tx-3 sp">a year</span></div>
+              <div class="lrow"><span class="av s v">DO</span><span class="grow">Engineering</span><span class="tx-3" style="font-size:12px">140 people</span><b class="num" style="width:68px;text-align:right">₹1.62 Cr</b></div>
+              <div class="lrow"><span class="av s o">AM</span><span class="grow">Sales</span><span class="tx-3" style="font-size:12px">72 people</span><b class="num" style="width:68px;text-align:right">₹84.2L</b></div>
+              <div class="lrow"><span class="av s p">SL</span><span class="grow">Design</span><span class="tx-3" style="font-size:12px">28 people</span><b class="num" style="width:68px;text-align:right">₹31.6L</b></div>
+              <div class="lrow"><span class="av s p">LF</span><span class="grow">Support</span><span class="tx-3" style="font-size:12px">46 people</span><b class="num" style="width:68px;text-align:right">₹22.8L</b></div>
+              <div class="lrow"><span class="av s a">AT</span><span class="grow">Data</span><span class="tx-3" style="font-size:12px">22 people</span><b class="num" style="width:68px;text-align:right">₹18.4L</b></div>
+              <div class="lrow"><span class="av s me">PR</span><span class="grow">People and finance</span><span class="tx-3" style="font-size:12px">18 people</span><b class="num" style="width:68px;text-align:right">₹14.6L</b></div>
+              <div class="lrow" style="border-bottom:0"><span class="av s k">RK</span><span class="grow">Everyone else</span><span class="tx-3" style="font-size:12px">94 people</span><b class="num" style="width:68px;text-align:right">₹17.4L</b></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The idle cost, next to the total</b>12% of software spend buys seats nobody opened in 45 days. It's the number finance asks for first, so it sits in the top row.</div>
+    <div><b>Spend as it lands</b>Annual invoices show in the month they're paid, so January and April spikes are explained, not smoothed away.</div>
+    <div><b>Overlap, with the evidence</b>Tools that do the same job are found from who uses both, not from a category label.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Every company buys software differently, so nothing here is hard-coded. A company sets six things in Licences › Settings, without writing code. Each can be exported as a file, so it can be reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Categories</h3><p>The company's own list (Design, Engineering, Sales, Data and AI), each with a colour, a default owner, a cost centre and a ledger account. Start from a template or a blank list.</p></div>
+  <div><h3>Approval policy for new apps</h3><p>When a new app needs security review, Finance or a data agreement: by price, by data it touches, by whether it supports SSO. Routes run on Bemmoly's shared approval engine.</p></div>
+  <div><h3>Reclaim rules</h3><p>"No activity for N days", per app or category, with exceptions: people on leave, new joiners, owners' keep list. Ask first or free straight away. A dry run shows what today's rules would take back.</p></div>
+  <div><h3>Contract fields</h3><p>Term, notice period, price per seat, true-up rules, payment method, purchase order and any typed custom field (a DPA date, a reseller), all usable in reminders and filters.</p></div>
+  <div><h3>Owners</h3><p>A business owner and an IT owner per app, with what each gets: renewal reminders, reclaim approvals, requests. Owners can delegate while away, from People.</p></div>
+  <div><h3>Connectors</h3><p>Signals (spend, invoices, sign-ins, browser, devices) and vendor admin APIs for true last-active dates and seat changes. Each is a plug-in with a public interface, so the community can add more.</p></div>
+</div>
+
+<div class="screens" id="licfg">
+<figure class="screen" id="li-cfg-rules" data-title="Reclaim rules">
+  <div class="scap"><b>Reclaim rules as sentences, with a dry run</b><span>IT writes the rules in words, with overrides per app, and sees what they'd do today before they go live.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab">Categories</span><span class="htab">Approvals</span><span class="htab on">Reclaim</span><span class="htab">Contracts</span><span class="htab">Owners</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">2 changes</span><span class="btn">Discard</span><span class="btn pri">Save rules</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:22px 28px" class="col">
+          <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Reclaim rules</div><span class="tx-3" style="font-size:12px">Checked every Monday at 09:00 · edited by Rohan Kapoor</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="col" style="gap:10px">
+            <div class="li-pol"><div class="row"><i data-lucide="armchair" class="tx-3"></i><b>Default for every paid app</b><span class="sp"></span><span class="bdg acc">Changed</span></div>
+              <div class="sent">When a seat has <span class="li-tok">no activity</span> for <span class="li-tok v">45 days</span> <span class="li-tok v" style="text-decoration:line-through;color:var(--tx-3)">60 days</span>, <span class="li-tok">ask the person</span> in <span class="li-tok">chat and email</span>. If they don't keep it within <span class="li-tok v">7 days</span>, <span class="li-tok">free the seat</span> and <span class="li-tok">return it to the pool</span>.</div></div>
+            <div class="li-pol"><div class="row"><span class="li-dc" style="background:#c2536a"></span><b>Design tools</b><span class="sp"></span><span class="bdg acc">New</span></div>
+              <div class="sent">For <span class="li-tok">Design</span>, people who <span class="li-tok">only view</span> for <span class="li-tok v">30 days</span> move to <span class="li-tok">viewer access</span> instead of losing the app.</div></div>
+            <div class="li-pol"><div class="row"><i data-lucide="user-round-check" class="tx-3"></i><b>Never ask</b></div>
+              <div class="sent">Leave out people <span class="li-tok">on leave</span>, people who <span class="li-tok">joined in the last</span> <span class="li-tok v">30 days</span>, and seats on the <span class="li-tok">owner's keep list</span>.</div></div>
+            <div class="li-pol"><div class="row"><span class="li-ap s li-k-sal">Sf</span><b>Salesforce, override</b></div>
+              <div class="sent">For <span class="li-tok">Salesforce</span>, ask <span class="li-tok">the app owner</span> before freeing any seat, and wait <span class="li-tok v">14 days</span> instead of 7.</div></div>
+            <div class="li-pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);flex-direction:row;align-items:center"><i data-lucide="plus"></i>Add a rule <span class="tx-3">or start from a template: leavers, viewers, trials, seasonal teams</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:hidden" class="col">
+          <div class="row"><i data-lucide="flask-conical" class="tx-3"></i><b class="grow">Dry run: these rules, today</b></div>
+          <span class="tx-3" style="font-size:12px;margin:4px 0 14px">2,914 seats across 142 paid apps checked in 1.4s</span>
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">People asked</div><div class="v num" style="font-size:20px">171</div><div class="d">+38 with 45 days</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Could free</div><div class="v num" style="font-size:20px">₹36.9L</div><div class="d">A year, if nobody keeps</div></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Largest by app</div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="li-ap s li-k-des">Mi</span><span class="grow">Miro</span><span class="tx-3">68 seats</span><b class="num" style="width:56px;text-align:right">₹5.4L</b></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="li-ap s li-k-com">Zo</span><span class="grow">Zoom</span><span class="tx-3">54 seats</span><b class="num" style="width:56px;text-align:right">₹4.1L</b></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="li-ap s li-k-des">Fi</span><span class="grow">Figma · 9 to viewer</span><span class="tx-3">23 seats</span><b class="num" style="width:56px;text-align:right">₹5.1L</b></div>
+            <div class="row" style="height:34px"><span class="tx-3">and 6 more apps</span><span class="sp"></span><span style="color:var(--acc)">Open list</span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Left out</div>
+          <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><i data-lucide="palmtree" class="tx-3"></i><span class="grow tx-2">On leave, from People</span><b>6</b></div><div class="row"><i data-lucide="user-round-plus" class="tx-3"></i><span class="grow tx-2">New joiners</span><b>2</b></div><div class="row"><i data-lucide="pin" class="tx-3"></i><span class="grow tx-2">Owners' keep lists</span><b>5</b></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Readable by anyone</b>Each rule reads as a sentence, so app owners and people being asked can see exactly why. Blocks keep it exact.</div>
+    <div><b>Kinder than "remove"</b>Design viewers move to viewer access instead of losing the tool, a rule leaders leave to each vendor's console.</div>
+    <div><b>Impact before saving</b>The dry run shows who would be asked and what it's worth, so 45 days versus 60 is a decision with numbers.</div>
+  </div>
+</figure>
+<figure class="screen" id="li-cfg-conn" data-title="Signals and connectors">
+  <div class="scap"><b>Signals and connectors, each with what it can see</b><span>Turn on the signals you trust. Each connector says what it reads, and how often.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="licences" data-link="li.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-licences)"><i data-lucide="key-round"></i></span><span>Licences</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab">Categories</span><span class="htab">Approvals</span><span class="htab">Reclaim</span><span class="htab">Contracts</span><span class="htab">Owners</span><span class="htab on">Connectors</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import a spreadsheet</span><span class="btn pri"><i data-lucide="plus"></i>Add connector</span></div></div>
+      <div class="bx-body"><div class="full" style="gap:14px;padding:18px 24px">
+        <div class="cap">Where apps are found</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="card li-conn"><div class="hd"><span class="ic" style="background:var(--m-expenses);color:#fff"><i data-lucide="receipt"></i></span><div class="col grow"><b>Bemmoly Expenses</b><span class="tx-3" style="font-size:11.5px">Installed · same kernel</span></div><span class="sw on"></span></div><p>Card swipes and claims coded as software. Without Expenses: upload a card statement, or connect a bank feed.</p><div class="ft"><span class="st done"><i></i>Live</span><span class="sp"></span>41 vendors</div></div>
+          <div class="card li-conn"><div class="hd"><span class="ic"><i data-lucide="mail"></i></span><div class="col grow"><b>Invoices mailbox</b><span class="tx-3 mono" style="font-size:11px">licences@acmelabs.dev</span></div><span class="sw on"></span></div><p>Forward any software invoice or renewal notice. Contract fields are read from the PDF.</p><div class="ft"><span class="st done"><i></i>Live</span><span class="sp"></span>28 this year</div></div>
+          <div class="card li-conn"><div class="hd"><span class="ic" style="background:var(--m-access);color:#fff"><i data-lucide="shield-check"></i></span><div class="col grow"><b>Bemmoly Access</b><span class="tx-3" style="font-size:11.5px">Installed · SSO sign-ins</span></div><span class="sw on"></span></div><p>Sign-ins per app and person, and seat changes. Without Access: connect Google Workspace or Microsoft Entra directly.</p><div class="ft"><span class="st done"><i></i>Live</span><span class="sp"></span>132 apps</div></div>
+          <div class="card li-conn"><div class="hd"><span class="ic"><i data-lucide="globe"></i></span><div class="col grow"><b>Browser extension</b><span class="tx-3" style="font-size:11.5px">Opt-in per person</span></div><span class="sw on"></span></div><p>Domains of work apps people sign in to. Never pages, content or personal browsing. People see what it sends.</p><div class="ft"><span class="st prog"><i></i>Pilot · 96 people</span></div></div>
+        </div>
+        <div class="cap" style="margin-top:4px">Where real use comes from</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="card li-conn"><div class="hd"><span class="ic"><i data-lucide="plug"></i></span><div class="col grow"><b>Vendor admin APIs</b><span class="tx-3" style="font-size:11.5px">22 apps connected</span></div></div><p>Seats, roles and last-active dates, read daily. Seats freed through the same API when Access can't.</p><div class="ft"><span class="faces"><span class="li-ap s li-k-des">Fi</span><span class="li-ap s li-k-com">Sl</span><span class="li-ap s li-k-eng">Gh</span></span><span class="sp"></span><span style="color:var(--acc)">Manage</span></div></div>
+          <div class="card li-conn"><div class="hd"><span class="ic" style="background:var(--m-assets);color:#fff"><i data-lucide="laptop"></i></span><div class="col grow"><b>Bemmoly Assets</b><span class="tx-3" style="font-size:11.5px">Not installed</span></div><span class="sw"></span></div><p>Installed desktop software per device, for licences that live on a laptop. Or connect your device management tool.</p><div class="ft"><span class="st"><i></i>Off</span></div></div>
+          <div class="card li-conn"><div class="hd"><span class="ic"><i data-lucide="file-spreadsheet"></i></span><div class="col grow"><b>Import</b><span class="tx-3" style="font-size:11.5px">One-time or scheduled</span></div></div><p>Import from a spreadsheet, from Snipe-IT or from GLPI. Columns are matched for you; nothing is overwritten without a preview.</p><div class="ft"><span class="tx-3">Last: 140 apps, 2 Sep</span></div></div>
+          <div class="ai-card" style="display:flex;flex-direction:column;gap:6px"><div class="ai-h" style="margin:0"><span class="aid"></span>Vendor names<span class="src">by AI · local</span></div><p style="font-size:12px">"FIGMA* MONTHLY", "Figma Inc" and figma.com are one app. 38 statement names matched this month; 3 wait for you.</p><div class="acts" style="margin-top:auto"><span class="btn sm">Review 3</span><span class="nu">Not useful</span></div></div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <div class="ghead" style="background:transparent">Sync health<span class="ct">last 24 hours</span></div>
+          <div class="lrow" style="height:36px"><span class="st done"><i></i></span><span class="grow">Expenses, Access and the invoices mailbox</span><span class="tx-3" style="font-size:12px">Last read 4 min ago</span></div>
+          <div class="lrow" style="height:36px;border-bottom:0"><span class="st warn"><i></i></span><span class="grow">Figma admin API: the token expires in 9 days</span><span class="btn sm">Renew token</span></div>
+        </div>
+        <div class="note" style="margin:0;max-width:none;font-size:12.5px;display:flex;gap:10px;align-items:flex-start"><i data-lucide="lock" style="margin-top:2px;flex:none"></i><span><b>What Licences keeps.</b> App, person, last-active date and cost. Not messages, files or page views. Each signal can be turned off, and its data deleted, from this page. Every read and every seat change is in the audit log.</span></div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Better together, fine alone</b>With Expenses and Access installed, the key signals are already in the kernel. Without them, each card says what to connect instead.</div>
+    <div><b>Discovery and real use are separate</b>Spend and sign-ins find apps; vendor APIs give true activity. The page is clear about which is which.</div>
+    <div><b>Leave a spreadsheet behind</b>Import from a sheet, Snipe-IT or GLPI on day one, with a preview before anything changes.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing appears while AI is off. The model is the workspace's choice, including a local one.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Discovery</td><td>Matches messy statement names, invoice senders and domains to one app, and suggests owner and category</td><td>Adds, ignores or marks each app as personal</td><td>A shared vendor alias list and exact domain matches</td></tr>
+  <tr><td>Contracts</td><td>Reads term, notice period, price and true-up clauses from the PDF</td><td>Checks each field before it drives reminders</td><td>Typed fields filled in by hand</td></tr>
+  <tr><td>Renewal brief</td><td>Writes the recommendation from use, Hiring, People, the quote and price history, with each claim cited</td><td>Sets the seat count, agrees it with the owner, sends the notice</td><td>The same facts in a table, with the plan calculator</td></tr>
+  <tr><td>Request an app</td><td>Matches a plain-words need to tools the company already owns</td><td>The person picks; new apps still go through review</td><td>Search over the catalogue by name and category</td></tr>
+  <tr><td>Overlap</td><td>Finds tools that do the same job from who uses both</td><td>Owners decide whether to consolidate</td><td>Same-category lists with shared users counted</td></tr>
+  <tr><td>Reclaim</td><td>Points out patterns worth a look (idle seats whose people use another tool)</td><td>The rules and the run are set by IT; nothing is freed by AI</td><td>Rules only</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Licences sends a model app names, amounts, dates and seat counts, not who visited what. Contracts can be read by a local model only. The browser signal never reaches a model, and people's names can be replaced with roles before a brief is written.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Licences is its own product with its own app, and a company can run it alone. When other Bemmoly products are installed, they share one sign-in, one person directory and one approval engine through the kernel. A cross-product action opens or calls the other product after the person confirms, and each one has a fallback when that product isn't there.</p>
+<div class="cols">
+  <div><h3>With other Bemmoly products</h3><ul><li><b>Expenses</b>: card spend and software claims become discovered apps; moving someone to a company seat asks Expenses to stop their claims. Without it: card statements, bank feeds and the invoices mailbox.</li><li><b>Access</b>: SSO sign-ins for use, and seats granted or freed when Licences asks. Without it: Google Workspace or Microsoft Entra connectors, and vendor admin APIs.</li><li><b>People</b>: joiners, leavers, leave, teams and cost centres. Without it, the kernel's own people list.</li><li><b>Hiring</b>: open roles feed the renewal plan. Without it, a "planned hires" field per team.</li><li><b>Assets</b>: installed desktop software per device</li><li><b>Helpdesk</b>: "I need an app" requests are handed to Licences; Docs holds the renewal brief as a shared doc</li></ul></div>
+  <div><h3>Core objects</h3><ul><li><code>application</code>: name, category, owners, status (approved, in review, personal, ignored), custom fields</li><li><code>subscription</code>: the contract, with term, notice, price, true-up, documents and renewal history</li><li><code>seat</code>: a person on an app, role, last active, source of truth (vendor, sign-in)</li><li><code>signal</code>: a swipe, invoice, sign-in, grant or domain that points at an app</li><li><code>reclaim_run</code> and <code>app_request</code>: the ask, the wait, the result</li><li><code>renewal_brief</code>: the plan, the working and who agreed it</li></ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>Know what you have</b><ul><li>Portfolio from Expenses, Access, the invoices mailbox and imports</li><li>App pages with owners and contract fields</li><li>Renewals calendar with notice reminders</li><li>Request an app, catalogue first</li><li>Manual reclaim through Access</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Use and reclaim</b><ul><li>Vendor admin API connectors for real activity</li><li>Reclaim rules with the ask-then-free run</li><li>The seat pool shared with requests</li><li>Renewal briefs and the plan calculator</li><li>Spend dashboards and budgets per team</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>The whole estate</b><ul><li>Opt-in browser and device signals</li><li>Overlap and consolidation planning</li><li>Usage-billed apps and AI tokens as spend lines</li><li>Desktop licence compliance through Assets</li><li>Multi-entity and multi-currency contracts</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Do we ship a browser extension at all?</b><span>Recommendation: yes, but opt-in per person, off by default, domains only, with a page that shows each person exactly what was sent. Spend and sign-ins find most apps without it.</span></li>
+  <li><b>Who owns a seat, Licences or Access?</b><span>Recommendation: one <code>seat</code> object in the kernel. Access owns the account and its rights; Licences owns the cost, the count and the reclaim rules. Both read and write the same record.</span></li>
+  <li><b>Should we offer price benchmarks?</b><span>Recommendation: not from pooled customer data, which a self-hosted product shouldn't collect. Later, an opt-in community dataset of anonymised list prices could be a separate project.</span></li>
+  <li><b>Does Licences talk to vendors?</b><span>Recommendation: it drafts, a person sends. Notices go from the owner's own mail, so the legal notice is clearly theirs.</span></li>
+  <li><b>Does cloud infrastructure belong here?</b><span>Recommendation: no. Usage-billed apps show as spend lines only; cloud cost management is its own discipline.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://zylo.com/blog/how-zylo-automates-software-license-tracking">Zylo: How Zylo automates software license tracking (cites the 2026 SaaS Management Index)</a></li>
+  <li><a href="https://zylo.com/news/2025-saas-management-index">Zylo: 2025 SaaS Management Index release</a></li>
+  <li><a href="https://www.helpnetsecurity.com/?p=268694">Help Net Security: 53% of SaaS licenses remain unused (Productiv, 2023)</a></li>
+  <li><a href="https://www.flexera.com/blog/saas-management/flexera-recognized-in-the-latest-2024-gartner-magic-quadrant-for-saas-management-platforms/">Flexera: 2024 Gartner Magic Quadrant for SaaS Management Platforms, and the Snow acquisition</a></li>
+  <li><a href="https://www.toriihq.com/">Torii product site</a></li>
+  <li><a href="https://www.zluri.com/">Zluri product site</a></li>
+  <li><a href="https://www.bettercloud.com/">BetterCloud product site</a></li>
+  <li><a href="https://www.vendr.com/">Vendr product site</a></li>
+  <li><a href="https://www.spendflo.com/">Spendflo product site</a></li>
+  <li><a href="https://www.cledara.com/">Cledara product site</a></li>
+  <li><a href="https://snipe-it.readme.io/docs/licenses">Snipe-IT API docs: licenses</a></li>
+  <li><a href="https://help.glpi-project.org/documentation/12-en/management/licenses">GLPI docs: licenses</a></li>
+  <li><a href="https://support.office.com/en-us/article/fc1cf1d0-cd84-43fd-adb7-a4c4dfa8112d">Microsoft: Microsoft 365 Active Users report</a></li>
+</ul>
+</main>
+</div>
+</body>
+</html>

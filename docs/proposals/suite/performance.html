@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Performance</title>
+<meta name="description" content="Product proposal for Bemmoly Performance: goals, check-ins, 1:1s, reviews and calibration that rest on evidence from the work, with AI that never rates a person.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Performance-only screen parts, all prefixed pf- */
+.pf-ring{--p:50;--c:var(--acc-500);width:34px;height:34px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--line-2) 0);display:grid;place-items:center;flex:none}
+.pf-ring::before{content:"";grid-area:1/1;width:26px;height:26px;border-radius:50%;background:var(--card)}
+.pf-ring b{grid-area:1/1;position:relative;font-size:10px;font-weight:600}
+.pf-ring.ok{--c:var(--green)}.pf-ring.warn{--c:var(--amber)}
+.pf-ring.lg{width:52px;height:52px}.pf-ring.lg::before{width:42px;height:42px}.pf-ring.lg b{font-size:13px}
+.pf-g{display:flex;align-items:center;gap:10px;padding:0 16px;min-height:54px;border-bottom:1px solid var(--line-2)}
+.pf-g:hover{background:var(--hover)}
+.pf-g.sel{background:var(--acc-50)}
+.pf-g.l1{padding-left:40px}.pf-g.l2{padding-left:64px}
+.pf-g .lv{color:var(--tx-3);width:14px;height:14px}
+.pf-g .t{font-weight:500}
+.pf-g .pf-s{font-size:11.5px;color:var(--tx-3);display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;min-width:0}
+.pf-g .pf-s svg.lucide{width:12px;height:12px}
+.pf-et{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;flex:none}
+.pf-et svg.lucide{width:13px;height:13px}
+.pf-et.sm{width:18px;height:18px;border-radius:5px}.pf-et.sm svg.lucide{width:11px;height:11px}
+/* evidence types: the kit's module palette, one colour per source product */
+.t-work{background:color-mix(in srgb,var(--m-work) 14%,transparent);color:var(--m-work)}
+.t-docs{background:color-mix(in srgb,var(--m-docs) 16%,transparent);color:var(--m-docs)}
+.t-kudos{background:color-mix(in srgb,var(--m-people) 14%,transparent);color:var(--m-people)}
+.t-help{background:color-mix(in srgb,var(--m-helpdesk) 14%,transparent);color:var(--m-helpdesk)}
+.t-hire{background:color-mix(in srgb,var(--m-hiring) 14%,transparent);color:var(--m-hiring)}
+.t-inc{background:color-mix(in srgb,var(--m-assets) 16%,transparent);color:var(--m-assets)}
+.pf-d{width:8px;height:8px;border-radius:50%;display:block;flex:none}
+.d-work{background:var(--m-work)}.d-docs{background:var(--m-docs)}.d-kudos{background:var(--m-people)}.d-help{background:var(--m-helpdesk)}.d-hire{background:var(--m-hiring)}.d-inc{background:var(--m-assets)}
+.pf-tl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.pf-tl>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pf-tl .dots{height:44px;border-radius:6px;background:var(--card);box-shadow:var(--e1);display:flex;flex-wrap:wrap;align-content:flex-end;gap:3px;padding:6px}
+.pf-tl .dots .pf-d{width:7px;height:7px}
+.pf-tl span{font-size:11px;color:var(--tx-3);text-align:center}
+.pf-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--tx-2)}
+.pf-leg span{display:inline-flex;align-items:center;gap:5px}
+.pf-theme{background:var(--card);border-radius:8px;box-shadow:var(--e1);padding:12px 14px}
+.pf-theme b{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
+.pf-theme p{margin:0;font-size:12.5px;line-height:1.55;color:var(--tx)}
+.pf-theme .acts{display:flex;align-items:center;gap:6px;margin-top:8px}
+.pf-q{font-size:12px;font-weight:600;color:var(--tx-2);margin:0 0 6px}
+.pf-ed{font-size:13.5px;line-height:1.7;color:var(--tx)}
+.pf-ed p{margin:0 0 10px;max-width:none}
+.pf-ins{background:var(--ai-50);box-shadow:inset 2px 0 0 var(--ai);padding:4px 10px;border-radius:0 6px 6px 0}
+.pf-nud{text-decoration:underline wavy var(--ai);text-underline-offset:4px;text-decoration-thickness:1.5px;text-decoration-skip-ink:none}
+.pf-nud.cur{background:var(--ai-50);border-radius:3px}
+.pf-caret{display:inline-block;width:1px;height:16px;background:var(--acc);vertical-align:-3px;margin-left:1px}
+.pf-scale{display:flex;flex-direction:column;gap:6px}
+.pf-scale>div{display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;border-radius:7px;box-shadow:inset 0 0 0 1px var(--line);background:var(--card);font-weight:500}
+.pf-scale>div span:last-child{font-weight:400;color:var(--tx-3);font-size:12px;margin-left:auto}
+.pf-scale>div.on{box-shadow:inset 0 0 0 1.5px var(--acc),var(--ring);background:var(--acc-50)}
+.pf-radio{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line);flex:none;background:var(--card)}
+.on>.pf-radio{box-shadow:inset 0 0 0 4px var(--acc-fill)}
+.pf-dist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;align-items:end;height:190px;padding:0 6px;border-bottom:1px solid var(--line)}
+.pf-dist>div{display:flex;gap:5px;align-items:flex-end;justify-content:center;height:100%}
+.pf-dist i{display:block;width:30px;border-radius:5px 5px 0 0;position:relative}
+.pf-dist i.pr{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);border-bottom:0}
+.pf-dist i.ca{background:var(--acc-500)}
+.pf-dist i em{position:absolute;top:-18px;left:0;right:0;text-align:center;font-style:normal;font-size:11.5px;font-weight:600;color:var(--tx-2)}
+.pf-dist i.ca em{color:var(--tx)}
+.pf-dl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;padding:8px 6px 0;text-align:center;font-size:12px;color:var(--tx-2)}
+.pf-dl b{display:block;color:var(--tx);font-weight:500}
+.pf-chg{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:10px 14px;border-bottom:1px solid var(--line-2)}
+.pf-chg .mv{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx-2)}
+.pf-chg .mv svg.lucide{width:12px;height:12px;color:var(--tx-3)}
+.pf-chg q{display:block;quotes:none;font-size:12.5px;color:var(--tx);margin-top:3px;line-height:1.5}
+.pf-mx{width:100%;border-collapse:collapse;font-size:12.5px}
+.pf-mx th{font-size:12px;font-weight:500;color:var(--tx-3);text-align:left;padding:0 12px;height:34px;border-bottom:1px solid var(--line)}
+.pf-mx td{padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:top;line-height:1.45}
+.pf-mx td:first-child{font-weight:500;width:150px}
+.pf-mx td .tx-3{font-size:11.5px}
+.pf-mx tr:last-child td{border-bottom:0}
+.pf-mx .now{background:color-mix(in srgb,var(--acc-50) 60%,transparent)}
+.pf-step{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--card);box-shadow:var(--e1)}
+.pf-step .n{width:22px;height:22px;border-radius:50%;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;font:500 11px/1 var(--mono);color:var(--tx-2);flex:none}
+.pf-step.now .n{background:var(--acc-fill);color:var(--on-acc);box-shadow:none}
+.pf-tpl{border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);padding:12px;background:var(--card);display:flex;flex-direction:column;gap:6px;min-width:0}
+.pf-tpl.on{box-shadow:inset 0 0 0 1.5px var(--acc),var(--ring)}
+.pf-tpl .tx-3{font-size:11.5px;line-height:1.45}
+.pf-vis{width:100%;border-collapse:collapse;font-size:12.5px}
+.pf-vis th{font-size:11.5px;font-weight:500;color:var(--tx-3);height:30px;text-align:center;padding:0 4px;border-bottom:1px solid var(--line)}
+.pf-vis th:first-child{text-align:left}
+.pf-vis td{height:34px;border-bottom:1px solid var(--line-2);text-align:center}
+.pf-vis td:first-child{text-align:left}
+.pf-vis td svg.lucide{width:14px;height:14px}
+.pf-vis .y{color:var(--green)}.pf-vis .n{color:var(--tx-3)}.pf-vis .l{color:var(--amber)}
+.pf-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;box-shadow:inset 0 0 0 1px var(--acc-100);vertical-align:1px}
+.pf-tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+/* the "check in anywhere" board */
+.pf-cap{position:absolute;inset:0;background:radial-gradient(1100px 560px at 8% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;padding:48px 52px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.pf-cap .c{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.pf-cap h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.pf-cap .c>p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:300px}
+.pf-phone{width:270px;height:540px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.pf-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas);display:flex;flex-direction:column}
+.pf-phone .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:84px;height:24px;border-radius:12px;background:#000;z-index:3}
+.pf-phone .bar{height:44px;flex:none}
+.pf-phone .ph{padding:6px 16px 10px;border-bottom:1px solid var(--line-2)}
+.pf-phone .pb{padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:12px;flex:1;min-height:0}
+.pf-mood{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.pf-mood span{height:30px;border-radius:6px;display:grid;place-items:center;font-size:11.5px;font-weight:500;box-shadow:inset 0 0 0 1px var(--line);color:var(--tx-2);background:var(--card)}
+.pf-mood span.on{background:var(--acc-50);color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc)}
+.pf-mail{width:100%;max-width:330px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.pf-mail .mh{padding:11px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:48px 1fr;gap:3px 8px}
+.pf-mail .mh span{color:var(--tx-3)}
+.pf-mail .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2);display:flex;flex-direction:column;gap:8px}
+.pf-chat{width:100%;max-width:330px;background:var(--card);border-radius:12px;box-shadow:var(--e2);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.pf-spark{display:block}
+.pf-spark polyline{fill:none;stroke:var(--acc-500);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.pf-spark circle{fill:var(--acc-500)}
+.pf-mini{display:flex;align-items:flex-end;gap:3px;height:28px}
+.pf-mini i{display:block;width:10px;border-radius:2px;background:var(--acc-500)}
+.pf-mini i.w{background:var(--amber)}
+.pf-lock{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx-3)}
+.pf-lock svg.lucide{width:14px;height:14px}
+.pf-sec{font-size:12px;font-weight:600;color:var(--tx-2);display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.pf-sec .ct{color:var(--tx-3);font-weight:400}
+.pf-agi{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--line-2)}
+.pf-agi .grip{color:var(--tx-3);margin-top:2px}
+.pf-agi .b{font-weight:500}
+.pf-agi .pf-s{font-size:12px;color:var(--tx-2);margin-top:2px}
+.pf-tp{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--ai-100);font-size:12.5px;line-height:1.5}
+.pf-tp:first-of-type{border-top:0}
+.pf-tp .k{font:500 11px/18px var(--mono);color:var(--ai-600);width:14px;flex:none}
+/* local: keep long product names and tabs on one line inside the drawn frame */
+.bx .bx-search .sp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bx .htab{white-space:nowrap}
+#pf-brief .col>.card,#pf-mgr .col>.card,#pf-one .col>.card{flex-shrink:0}
+@media (max-width:1000px){.pf-wide{grid-template-columns:minmax(0,1fr)!important}}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="performance"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Performance</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span>Bemmoly Performance · product proposal</div>
+  <h1>Reviews that start from the work, not from memory</h1>
+  <p class="lede">Goals that move when the work moves. A weekly check-in that takes two minutes. 1:1s with an agenda both people own. And review season that opens with the evidence already gathered: the epics shipped, the docs written, the thanks received, each one linked. AI gathers and cites. People judge, and people rate. Its own product: use it alone, or with the others. It's open source, it runs on your own server, and every company sets its own cycles, levels and scales.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Everyone, their managers, the People team</span>
+    <span class="chip"><i data-lucide="box"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, and it never rates a person</span>
+    <span class="chip"><i data-lucide="target"></i>OKRs, KPIs or simple goals</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Most companies still run performance as a twice-a-year writing exercise. Managers rebuild six months from memory, people write self reviews from a blank page, and the ratings say almost as much about the person giving them as the person receiving them. The evidence exists, in the issue tracker, the docs and the support queue. The review never sees it.</p>
+<div class="stats">
+  <div><b>14%</b><span>of employees strongly agree their reviews inspire them to improve</span><small>Gallup, 2019</small></div>
+  <div><b>~2M hours</b><span>a year Deloitte found it spent on forms, meetings and ratings</span><small>Deloitte, in HBR, 2015</small></div>
+  <div><b>62%</b><span>of the variance in ratings came from the rater, not the person rated (53% in a second sample)</span><small>Scullen, Mount and Goff, 2000</small></div>
+  <div><b>22%</b><span>more feedback about personality for women than for men, in written reviews</span><small>Textio, 2022</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Reviews are written from memory</b><p>The last six weeks crowd out the first five months. What someone shipped in April, the incident they calmed in June, the doc everyone still links to: none of it is in the form unless someone remembers to dig it up.</p></div>
+  <div class="pain"><b>The blank self review</b><p>People spend an evening scrolling old tickets to remember what they did, then undersell it or oversell it. The ones who are good at writing about themselves do better, whatever their work was like.</p></div>
+  <div class="pain"><b>Goals are set in January and stale by March</b><p>Goals live in a slide or a spreadsheet, with progress typed in by hand before each review. Nobody can see how a team goal connects to the company's, so alignment is a meeting, not a fact.</p></div>
+  <div class="pain"><b>1:1s turn into status meetings</b><p>No agenda, notes in a private doc, actions forgotten by the next one. Only 16% of employees say their last conversation with their manager was extremely meaningful.</p><span class="src">Gallup, nearly 15,000 employees</span></div>
+  <div class="pain"><b>Ratings measure the rater</b><p>Some managers rate high, some rate low, and vague or personality-based language creeps in unevenly. Calibration happens in a spreadsheet, and the reason someone's rating moved is lost when the meeting ends.</p><span class="src">Scullen et al. 2000 · Textio 2022</span></div>
+  <div class="pain"><b>One process, priced per person</b><p>Tools assume an annual cycle with a five-point scale and charge per person per month, with AI sold as an add-on. A 40-person startup with no ratings and a 4,000-person company with a ladder per job family both have to bend.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet every review. Each wants less writing from memory, and more conversation about what actually happened.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l k">TG</span><div><b>Tomás, backend engineer</b><span>Austin · Platform team · on call one week in six</span></div></div>
+    <q>"Don't make me remember six months. Show me what I did, and let me say what it meant."</q>
+    <ul><li>A self review that starts from his own work, linked</li><li>A check-in he can do from his phone on Friday</li><li>A clear picture of what the next level asks for</li><li>Feedback that names what he did, not who he is</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, engineering manager</b><span>Platform team of nine, across three cities</span></div></div>
+    <q>"I want to walk into every 1:1 knowing what happened, and write reviews I'd be happy to have read back to me."</q>
+    <ul><li>Talking points from the past two weeks, before the 1:1</li><li>Goals whose progress he never has to type</li><li>A nudge when his writing is vague or slanted</li><li>Nine reviews in an afternoon, not a weekend</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l p">PR</span><div><b>Priya, Head of People</b><span>Runs the cycle for 180 people in three offices</span></div></div>
+    <q>"I want a process people trust: ratings with reasons, and a cycle I can shape without a consultant."</q>
+    <ul><li>Cycle templates she can change in an hour</li><li>A distribution view with every change explained</li><li>Patterns across managers, not just individual cases</li><li>Clear rules about who sees what, and when</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category has moved from annual appraisals to continuous performance: goals, check-ins, 1:1s and feedback between reviews, and since 2024 AI that drafts and summarises. Below is what each leader does best and where they leave a gap. Lattice here means the HR software company at lattice.com, not Bemmoly's former code name. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Lattice</b><span>People platform · US</span></header><p>Reviews, goals, 1:1s, feedback, engagement and pay in one product. Its AI agent drafts reviews from 1:1s, past reviews, feedback and growth areas, showing its sources, and summarises review packets during calibration.</p>
+    <div class="plus"><i data-lucide="plus"></i>The most complete suite, with AI that shows where each line came from and leaves ratings to managers.</div><div class="minus"><i data-lucide="minus"></i>Its evidence is what people typed into it. The work itself lives in other tools. Cloud only, per person.</div></div>
+  <div class="leader"><header><b>Culture Amp</b><span>Engagement-led · AU</span></header><p>Known for survey science. Perform adds reviews, goals, 1:1s and calibration, with a ratings preview where calibrators mark "I support" or "I have questions" before the meeting.</p>
+    <div class="plus"><i data-lucide="plus"></i>Research-backed templates, and calibration prepared before the room, not in it.</div><div class="minus"><i data-lucide="minus"></i>Its AI is strongest on survey comments. On the performance side it was still arriving in 2025.</div></div>
+  <div class="leader"><header><b>15Five</b><span>Manager-led · US</span></header><p>Built on the weekly check-in. Its AI, Kona, can join 1:1 calls, summarise them, suggest actions, coach managers afterwards and draft reviews from notes across the whole period.</p>
+    <div class="plus"><i data-lucide="plus"></i>The check-in habit, and drafting from the whole period to fight recency bias.</div><div class="minus"><i data-lucide="minus"></i>Kona is a paid add-on, and it works by joining and listening to the meeting.</div></div>
+  <div class="leader"><header><b>Leapsome</b><span>All-in-one · DE</span></header><p>Reviews of every kind, OKRs with goal trees, competency frameworks that drive reviews and learning paths, meetings with AI notes and follow-ups.</p>
+    <div class="plus"><i data-lucide="plus"></i>Competencies tied to reviews and learning, and goal trees that show who owns what.</div><div class="minus"><i data-lucide="minus"></i>The breadth can overwhelm a small team. Modules are priced separately.</div></div>
+  <div class="leader"><header><b>Betterworks</b><span>Goal-led enterprise · US</span></header><p>OKRs and alignment at scale, conversations, and AI that drafts goals from past performance and flags biased or harsh language while managers write. Offers a private model.</p>
+    <div class="plus"><i data-lucide="plus"></i>Bias nudges while writing, with the reason explained, and a private model option.</div><div class="minus"><i data-lucide="minus"></i>An enterprise rollout. Lighter on the 1:1 and the day-to-day.</div></div>
+  <div class="leader"><header><b>Workday</b><span>HR suite</span></header><p>Performance, check-ins, feedback, goals and talent reviews inside the HR system of record. AI agents that draft data-backed reviews and check-ins were announced in 2025.</p>
+    <div class="plus"><i data-lucide="plus"></i>One record for the person, from hire to promotion to pay.</div><div class="minus"><i data-lucide="minus"></i>Heavy to configure, and at its best only if the company runs all of it.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>People platforms<small>Lattice, Leapsome</small></th><th>Engagement-led<small>Culture Amp, 15Five</small></th><th>Goal-led<small>Betterworks</small></th><th>HR suite<small>Workday</small></th><th>Simple review tools<small>PerformYard, Small Improvements, Engagedly</small></th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Goals aligned to company goals</td><td class="yes">Strong, goal trees</td><td class="part">Good</td><td class="yes">Strong</td><td class="part">Good</td><td class="part">Basic to good</td><td class="part">Basic (KRAs, OKRs)</td><td class="yes">OKR, KPI or simple, per team</td></tr>
+  <tr><td>Progress from the real work</td><td class="part">Integrations</td><td class="part">Integrations</td><td class="part">Integrations</td><td class="part">Within the suite</td><td class="no">Mostly by hand</td><td class="no">By hand</td><td class="yes">Live from Work issues, epics and metrics</td></tr>
+  <tr><td>Weekly check-ins</td><td class="yes">Yes</td><td class="yes">Strong</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Some</td><td class="no">No</td><td class="yes">Two minutes, prefilled</td></tr>
+  <tr><td>1:1s with a shared agenda</td><td class="yes">Yes, AI notes</td><td class="yes">Yes, AI joins calls</td><td class="part">Conversations</td><td class="part">Check-ins</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes, talking points from the work, no recorder</td></tr>
+  <tr><td>Review drafts with sources</td><td class="yes">From what's in the tool</td><td class="part">Add-on or arriving</td><td class="part">Writing help</td><td class="part">Announced</td><td class="part">Writing help</td><td class="no">None</td><td class="yes">Evidence brief from the work itself, cited</td></tr>
+  <tr><td>Language and recency nudges</td><td class="part">Writing help</td><td class="part">Varies</td><td class="yes">Bias flags</td><td class="no">Not found</td><td class="part">Varies</td><td class="no">None</td><td class="yes">Vague, personality, absolutes, recency</td></tr>
+  <tr><td>Calibration with recorded reasons</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Talent reviews</td><td class="part">Some</td><td class="no">No</td><td class="yes">Distribution, plus a reason for every move</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Per person, by module</td><td>Per person, AI add-ons</td><td>Enterprise contracts</td><td>Enterprise contracts</td><td>Per person, from about $5</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Odoo Appraisals (manager and self evaluations from question templates), Frappe HR (appraisal cycles with weighted KRAs per designation, 360 feedback and a computed final score), and OrangeHRM (KPIs per job title, reviews and OKRs). All three are forms inside a larger HR system: useful for recording an appraisal, with no continuous loop of check-ins and 1:1s, no evidence from the work, and no AI. Nobody offers a premium, self-hosted performance product. That gap is ours.</p>
+<p class="note"><b>On practice.</b> Google's re:Work guide grades key results from 0.0 to 1.0, puts the sweet spot at 0.6 to 0.7, keeps OKRs public, and says plainly that OKRs are not employee evaluations. Bemmoly follows that: goal scores appear in a review as context, never as a formula for a rating.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (the weekly habit, goal trees, sourced AI drafts, bias nudges) and add what only an open, self-hosted platform next to the work can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="file-search"></i></span><b>Evidence from the work itself</b><p>The evidence brief cites shipped epics, merged design docs, incident write-ups, Helpdesk resolutions, interviews given and kudos received. Every line opens the real thing. People write the review; the brief makes sure nothing is forgotten.</p><span class="vs">vs leaders: AI drafts from what was typed into the performance tool (1:1 notes, feedback, past reviews). The work stays in other tools.</span></div>
+  <div><span class="ic"><i data-lucide="target"></i></span><b>Goals that update themselves</b><p>A key result can be a query in Work ("issues in epic PLAT-88"), a metric from a connector, or a number someone owns. Check-ins add a confidence call, so the goal tree shows both progress and how people feel about it.</p><span class="vs">vs leaders: goal-led tools offer integrations, but most goals are still updated by hand before the review.</span></div>
+  <div><span class="ic ai"><i data-lucide="scale"></i></span><b>AI never rates a person</b><p>A product rule, not a setting. AI gathers, summarises, cites and points out vague language. It never suggests a rating, a score, a ranking or a "flight risk" for anyone. In calibration it looks at the process (spread by manager, evidence by office), not at people.</p><span class="vs">vs leaders: they keep managers in control of ratings too. We make it visible on every screen and impossible to switch on.</span></div>
+  <div><span class="ic"><i data-lucide="users-round"></i></span><b>1:1s prepared, not recorded</b><p>Both people add to a shared agenda. Talking points come from the past two weeks of work and check-ins, so the meeting starts in the right place. Nothing listens in. Notes are written by the two people in the room.</p><span class="vs">vs leaders: the newest 1:1 AI joins the call to transcribe it. Ours prepares the meeting instead.</span></div>
+  <div><span class="ic"><i data-lucide="shield-check"></i></span><b>Fair by design</b><p>Peer anonymity with a minimum number of responses, nudges on vague, personality-based and absolute words, a recency check against the brief, and a recorded reason for every calibration change, visible to the person's manager and the People team.</p><span class="vs">vs leaders: Betterworks flags biased words. Few check recency against the record, or require a reason for every calibration move.</span></div>
+  <div><span class="ic"><i data-lucide="sliders-horizontal"></i></span><b>Your process, no seat price</b><p>Annual, half-yearly, quarterly or project cycles. Five points, three points, or no ratings at all. A ladder per job family. All in settings, exportable as files, self-hosted, with AI on the model you choose or off.</p><span class="vs">vs leaders: per person per month, with AI and calibration in higher tiers or add-ons.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly's frame and tokens. Click the tabs, or click the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="pf">
+<!-- 1 ======================== Goals -->
+<figure class="screen" id="pf-goals" data-title="Goals, aligned and live">
+  <div class="scap"><b>Goals that move when the work moves</b><span>Company, team and personal goals in one tree. Key results read their progress from Work, a metric or a person, and check-ins add how confident the owner feels.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.goals" data-me="Daniel Okafor" data-counts='{"pe.one":"3","pe.rev":"!9"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span class="cur">Goals</span></div>
+        <div class="htabs"><span class="htab">Company</span><span class="htab on">My team<span class="ct">14</span></span><span class="htab">Mine</span><span class="htab">Growth plans</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>Q4 2026 · Oct to Dec</span><span class="btn pri"><i data-lucide="plus"></i>New goal</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 372px;height:100%">
+        <div style="overflow:hidden;padding:18px 20px" class="col">
+          <div class="row" style="margin-bottom:12px"><div class="seg"><span class="on">Tree</span><span>List</span><span>Timeline</span></div><span class="sp"></span><span class="tx-3" style="font-size:12px">Week 3 of 13 · progress updated 4 min ago</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="pf-g"><span class="pf-ring" style="--p:58"><b>58</b></span><div class="col grow"><span class="row"><span class="bdg plain">Company</span><span class="t trunc">Be the most reliable product in our category</span></span><span class="pf-s" style="margin-top:3px">Leadership team · 4 team goals aligned</span></div><span class="st prog"><i></i>On track</span><i data-lucide="chevron-down" class="tx-3"></i></div>
+            <div class="pf-g l1 sel"><i data-lucide="corner-down-right" class="lv"></i><span class="pf-ring" style="--p:64"><b>64</b></span><div class="col grow"><span class="row"><span class="bdg plain">Platform</span><span class="t trunc">Make the API fast and boring</span></span><span class="pf-s" style="margin-top:3px"><span class="av s v">DO</span>Daniel Okafor · 3 key results · score 0.64</span></div><span class="st prog"><i></i>On track</span><i data-lucide="chevron-down" class="tx-3"></i></div>
+            <div class="pf-g l2"><span class="pf-ring ok" style="--p:90"><b>90</b></span><div class="col grow"><span class="t trunc">p95 latency on the v2 API under 200 ms</span><span class="pf-s"><i data-lucide="activity"></i>From the metrics connector · 340 ms to 214 ms</span></div><svg class="pf-spark" width="84" height="26" viewBox="0 0 84 26"><polyline points="2,4 14,6 26,9 38,12 50,15 62,19 74,20 82,21"/><circle cx="82" cy="21" r="2.5"/></svg></div>
+            <div class="pf-g l2 hot" data-show=".pf-pk1" style="background:var(--hover)"><span class="pf-ring" style="--p:64"><b>64</b></span><div class="col grow"><span class="t trunc">Ship multi-region failover</span><span class="pf-s"><i data-lucide="square-kanban"></i>From Work · epic PLAT-88 · 14 of 22 issues done</span></div><span class="bdg warn">Confidence dropped</span><i data-lucide="panel-right-open" class="tx-3"></i></div>
+            <div class="pf-g l2"><span class="pf-ring ok" style="--p:100"><b>0</b></span><div class="col grow"><span class="t trunc">No Sev-1 incidents this quarter</span><span class="pf-s"><i data-lucide="siren"></i>From Helpdesk incidents · 0 so far, 2 Sev-2</span></div><span class="st done"><i></i>Holding</span></div>
+            <div class="pf-g l2"><span class="av k">TG</span><div class="col grow"><span class="t trunc">Tomás · Make the v2 query path fast for Northwind</span><span class="pf-s"><i data-lucide="link"></i>Contributes to latency · 72% · checked in Fri</span></div><span class="st prog"><i></i>On track</span></div>
+            <div class="pf-g l2"><span class="av g">AT</span><div class="col grow"><span class="t trunc">Aiko · Forecast capacity for the failover region</span><span class="pf-s"><i data-lucide="link"></i>Contributes to failover · 40% · checked in Fri</span></div><span class="st warn"><i></i>At risk</span></div>
+            <div class="pf-g l1"><i data-lucide="corner-down-right" class="lv"></i><span class="pf-ring" style="--p:72"><b>72</b></span><div class="col grow"><span class="row"><span class="bdg plain">Support</span><span class="t trunc">Answer every Sev-2 within 30 minutes</span></span><span class="pf-s" style="margin-top:3px"><span class="av s a">LF</span>Lena Fischer · KPI · from Helpdesk</span></div><span class="st prog"><i></i>On track</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+            <div class="pf-g"><span class="pf-ring warn" style="--p:41"><b>41</b></span><div class="col grow"><span class="row"><span class="bdg plain">Company</span><span class="t trunc">Win and keep enterprise customers</span></span><span class="pf-s" style="margin-top:3px">Leadership team · 5 team goals aligned</span></div><span class="st warn"><i></i>At risk</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+            <div class="pf-g" style="border-bottom:0"><span class="pf-ring" style="--p:30"><b>30</b></span><div class="col grow"><span class="row"><span class="bdg plain">Company</span><span class="t trunc">Grow people who grow the company</span></span><span class="pf-s" style="margin-top:3px">Priya Raman · KPI · growth plans agreed, 54 of 180</span></div><span class="st prog"><i></i>On track</span><i data-lucide="chevron-right" class="tx-3"></i></div>
+          </div>
+          <div class="row" style="margin-top:12px;padding:12px 14px;border-radius:8px;border:1.5px dashed var(--line);gap:10px"><i data-lucide="unlink" class="tx-3"></i><div class="col grow"><b class="md">2 goals in your team aren't aligned yet</b><span class="tx-3" style="font-size:12px">Wei Chen, "Upgrade the job runner" · Fatima Ali, "Write the on-call handbook"</span></div><span class="btn sm">Align them</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row" style="align-items:flex-start;gap:12px"><span class="pf-ring lg" style="--p:64"><b>0.64</b></span><div class="col grow"><div class="h16">Make the API fast and boring</div><span class="tx-3" style="font-size:12px;margin-top:2px">Platform · OKR · aligned to "Be the most reliable product"</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Confidence from weekly check-ins</div>
+          <div class="well" style="padding:10px 12px"><div class="row" style="font-size:12px"><span class="tx-2 grow">Wk 1 to wk 3 · 4 owners</span><span class="bdg warn">Failover: 7 to 5 of 10</span></div>
+            <div class="pf-mini" style="margin-top:8px"><i style="height:24px"></i><i style="height:24px"></i><i style="height:26px"></i><i style="height:22px"></i><i style="height:24px"></i><i class="w" style="height:17px"></i><i style="height:25px"></i><i style="height:26px"></i><i class="w" style="height:14px"></i></div></div>
+          <div class="cap" style="margin:16px 0 8px">Latest notes</div>
+          <div class="col" style="gap:10px;font-size:12.5px">
+            <div class="row" style="align-items:flex-start"><span class="av s g">AT</span><div class="col grow"><span><b class="md">Aiko</b> <span class="tx-3">Fri</span></span><span class="tx-2">Capacity model waits on two weeks of traffic from the new region.</span></div></div>
+            <div class="row" style="align-items:flex-start"><span class="av s k">TG</span><div class="col grow"><span><b class="md">Tomás</b> <span class="tx-3">Fri</span></span><span class="tx-2">Query cache is live for 30% of tenants. p95 is holding.</span></div></div>
+          </div>
+          <div class="ai-card" style="margin-top:16px"><div class="ai-h"><span class="aid"></span>Key result check<span class="src">by AI · from this goal</span></div><p style="font-size:12.5px">"Ship multi-region failover" counts work done, not the outcome. A key result like "Fail over to the second region in under 5 minutes in the December drill" says when it worked.<span class="cite"><i data-lucide="square-kanban"></i>PLAT-88</span></p><div class="acts"><span class="btn sm">Use this wording</span><span class="btn sm ghost">Keep mine</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Reviewed together</div>
+          <div class="row" style="font-size:12.5px"><i data-lucide="calendar-days" class="tx-3"></i><span class="grow tx-2">Platform weekly · Tue 20 Oct, 11:00</span><span class="faces"><span class="av s v">DO</span><span class="av s k">TG</span><span class="av s g">AT</span><span class="av s o">WC</span></span></div>
+        </div>
+      </div>
+      <div class="pf-pk1" hidden>
+        <div class="peek">
+          <div class="peek-h"><span class="pf-et t-work"><i data-lucide="square-kanban"></i></span><b class="grow">Ship multi-region failover</b><span class="ib" data-hide=".pf-pk1"><i data-lucide="x"></i></span></div>
+          <div class="peek-b">
+            <div class="row" style="margin-bottom:6px"><span class="tx-2 grow">Progress source</span><span class="bdg acc"><i data-lucide="square-kanban"></i>Work · epic PLAT-88</span></div>
+            <div class="tx-3" style="font-size:12px;margin-bottom:12px">Done issues weighted by estimate. Updates when an issue moves, no typing.</div>
+            <div class="bar" style="height:8px"><i style="width:64%;background:var(--green)"></i><i style="width:14%;background:var(--acc-500)"></i></div>
+            <div class="row tx-3" style="font-size:11.5px;margin:6px 0 16px"><span>14 done</span><span>3 in progress</span><span class="sp"></span><span>5 to do</span></div>
+            <div class="card" style="overflow:hidden">
+              <div class="lrow"><span class="st done"><i></i></span><span class="mono tx-3" style="font-size:11.5px">PLAT-201</span><span class="grow trunc">Replicate tenant config to eu-west</span><span class="av s k">TG</span></div>
+              <div class="lrow"><span class="st done"><i></i></span><span class="mono tx-3" style="font-size:11.5px">PLAT-204</span><span class="grow trunc">Health checks for regional routing</span><span class="av s v">DO</span></div>
+              <div class="lrow"><span class="st prog"><i></i></span><span class="mono tx-3" style="font-size:11.5px">PLAT-209</span><span class="grow trunc">Capacity model for the second region</span><span class="av s g">AT</span></div>
+              <div class="lrow"><span class="st prog"><i></i></span><span class="mono tx-3" style="font-size:11.5px">PLAT-211</span><span class="grow trunc">Runbook: manual failover</span><span class="av s k">TG</span></div>
+              <div class="lrow" style="border-bottom:0"><span class="st"><i></i></span><span class="mono tx-3" style="font-size:11.5px">PLAT-215</span><span class="grow trunc">December failover drill</span><span class="tx-3" style="font-size:11.5px">Unassigned</span></div>
+            </div>
+            <div class="rule" style="display:flex;gap:10px;padding:10px 12px;border-radius:8px;background:var(--amber-50);margin-top:14px"><i data-lucide="circle-alert" style="color:var(--amber);margin-top:2px"></i><div style="font-size:12px"><b style="display:block;font-size:12.5px">Confidence fell from 7 to 5 this week</b><span class="tx-2">Aiko: "waits on two weeks of traffic". Talk about it in Tuesday's 1:1s.</span></div></div>
+          </div>
+          <div class="peek-f"><span class="btn"><i data-lucide="external-link"></i>Open in Work</span><span class="btn pri" data-hide=".pf-pk1">Done</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Alignment you can see</b>Every team goal hangs from a company goal, and every person's goal names what it contributes to. The tree is the alignment meeting.</div>
+    <div><b>Progress nobody types</b>Key results read from an epic in Work, a metric connector or Helpdesk. The source is named on every row; click one to see the issues behind the number.</div>
+    <div><b>Practice, built in</b>Scores run from 0 to 1 with 0.6 to 0.7 as a healthy stretch, and AI points out key results that measure activity instead of outcomes. The owner decides.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Check-in -->
+<figure class="screen" id="pf-chk" data-title="Two-minute check-in">
+  <div class="scap"><b>A weekly check-in that takes two minutes</b><span>What you got done is already listed from Work, Docs and Helpdesk. You pick, add a line, set your confidence, and say what's in the way.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.chk" data-me="Tomás García" data-counts='{"pe.chk":"!1","pe.one":"1"}' data-hide-links="pe.cal"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Check-ins</span><span class="sep">/</span><span class="cur">Week of 12 Oct</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px"><i data-lucide="timer" style="width:13px;height:13px;vertical-align:-2px"></i> About 2 minutes · draft saved</span><span class="btn">Save for later</span><span class="btn pri hot" data-show=".pf-t1"><i data-lucide="send"></i>Send to Daniel</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:20px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;max-width:1040px">
+        <div class="card" style="padding:18px 20px" >
+          <div class="pf-q">How was your week?</div>
+          <div class="seg"><span>Rough</span><span class="on">Okay</span><span>Good</span><span>Great</span></div>
+          <div class="pf-q" style="margin-top:18px">What you got done <span class="tx-3" style="font-weight:400">· untick anything you'd rather not mention</span></div>
+          <div class="col" style="gap:6px">
+            <div class="row ai-field" style="padding:7px 10px;border-radius:6px"><span class="cb on"><i data-lucide="check"></i></span><span class="pf-et sm t-work"><i data-lucide="square-kanban"></i></span><span class="grow trunc">Cached query plans per tenant, live for 30% of tenants</span><span class="mono tx-3" style="font-size:11px">PLAT-131</span></div>
+            <div class="row ai-field" style="padding:7px 10px;border-radius:6px"><span class="cb on"><i data-lucide="check"></i></span><span class="pf-et sm t-work"><i data-lucide="square-kanban"></i></span><span class="grow trunc">Load-tested the v2 query path at twice peak traffic</span><span class="mono tx-3" style="font-size:11px">PLAT-137</span></div>
+            <div class="row ai-field" style="padding:7px 10px;border-radius:6px"><span class="cb on"><i data-lucide="check"></i></span><span class="pf-et sm t-docs"><i data-lucide="file-text"></i></span><span class="grow trunc">Wrote "Query cache design", approved by Daniel and Aiko</span><span class="tx-3" style="font-size:11px">Docs</span></div>
+            <div class="row ai-field" style="padding:7px 10px;border-radius:6px"><span class="cb"></span><span class="pf-et sm t-help"><i data-lucide="life-buoy"></i></span><span class="grow trunc">Helped Support close the Northwind timeout escalation</span><span class="mono tx-3" style="font-size:11px">HD-2291</span></div>
+            <div class="ai-line" style="margin-top:2px"><span class="aid"></span>Lines written by AI from what you closed, 12 to 16 Oct. Edit any of them.</div>
+          </div>
+          <div class="pf-q" style="margin-top:18px">Your goals</div>
+          <div class="col" style="gap:8px">
+            <div class="row"><span class="pf-ring" style="--p:72"><b>72</b></span><span class="grow">Make the v2 query path fast for Northwind</span><div class="seg"><span class="on">On track</span><span>At risk</span><span>Off track</span></div></div>
+            <div class="row"><span class="pf-ring" style="--p:0"><b>0</b></span><span class="grow">Buddy Kavya Nair through onboarding <span class="tx-3">· starts Mon 2 Nov</span></span><div class="seg"><span class="on">Not started</span><span>On track</span></div></div>
+          </div>
+          <div class="pf-q" style="margin-top:18px">Anything in your way?</div>
+          <div class="inp focus" style="height:auto;min-height:36px;padding:8px 10px;align-items:flex-start">On-call was heavy: three pages on Tuesday night. I'd like to talk about the rota on Tuesday.<span class="pf-caret"></span></div>
+          <div class="row" style="margin-top:16px;justify-content:space-between"><span class="pf-lock"><i data-lucide="lock"></i>Seen by you and Daniel. Your week answer shows to him as a trend only.</span></div>
+        </div>
+        <div class="col" style="gap:12px">
+          <div class="card kpi"><div class="l"><i data-lucide="repeat"></i>Your streak</div><div class="v">11 weeks</div><div class="d">Skipped weeks on leave don't count, from People</div></div>
+          <div class="card pad"><div class="row" style="margin-bottom:8px"><b class="grow">Next week</b><span class="tx-3" style="font-size:12px">from Work</span></div>
+            <div class="col" style="gap:7px;font-size:12.5px"><div class="row"><span class="st prog"><i></i></span><span class="grow trunc">Roll the cache to all tenants</span><span class="mono tx-3" style="font-size:11px">PLAT-140</span></div><div class="row"><span class="st"><i></i></span><span class="grow trunc">Runbook: manual failover</span><span class="mono tx-3" style="font-size:11px">PLAT-211</span></div><div class="row"><span class="st"><i></i></span><span class="grow trunc">Prepare Kavya's first-week issues</span><span class="mono tx-3" style="font-size:11px">PLAT-219</span></div></div></div>
+          <div class="card pad"><div class="row" style="margin-bottom:8px"><span class="av s v">DO</span><b class="grow">Daniel, on last week</b></div><div class="tx-2" style="font-size:12.5px">"Thanks for taking the Northwind page on Friday. Let's look at the rota together."</div><div class="tx-3" style="font-size:11.5px;margin-top:6px">Fri 9 Oct · reply to your check-in</div></div>
+          <div class="card pad"><div class="row" style="margin-bottom:8px"><span class="pf-et sm t-kudos"><i data-lucide="heart"></i></span><b class="grow">Thank someone</b></div><div class="row" style="font-size:12.5px"><span class="av s g">RK</span><span class="grow tx-2">Rohan got you staging access on Thursday</span></div><span class="btn sm" style="margin-top:10px">Send kudos to Rohan</span></div>
+        </div>
+      </div></div>
+      <div class="toast pf-t1" hidden><i data-lucide="circle-check"></i>Check-in sent. Daniel will see it before your 1:1 on Tuesday.<span class="u" data-hide=".pf-t1">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Prefilled, never presumed</b>The list comes from what Tomás closed in Work, wrote in Docs and helped with in Helpdesk. He unticks what he'd rather not mention, and edits any line.</div>
+    <div><b>Confidence, not percentages</b>Progress already comes from the work. The check-in asks the thing only a person knows: are we going to make it?</div>
+    <div><b>Private where it should be</b>The "how was your week" answer is shown to the manager as a trend, never compared across people, and is not used in reviews.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Check in anywhere -->
+<figure class="screen" id="pf-any" data-title="Check in anywhere">
+  <div class="scap"><b>Check in from the phone, from chat, or not at all this week</b><span>Friday's nudge is three taps on a phone or a reply in chat. The manager gets one Monday digest instead of nine notifications.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="pf-cap">
+      <div class="c">
+        <div class="pf-phone"><div class="scr"><div class="notch"></div><div class="bar"></div>
+          <div class="ph"><div class="row"><span class="tile" style="background:var(--m-performance);width:22px;height:22px;border-radius:6px"><i data-lucide="target" style="width:12px;height:12px"></i></span><b>Check-in</b><span class="sp"></span><span class="tx-3" style="font-size:11px">Fri 16 Oct</span></div></div>
+          <div class="pb">
+            <div><div class="pf-q" style="font-size:11.5px">How was your week?</div><div class="pf-mood"><span>Rough</span><span class="on">Okay</span><span>Good</span><span>Great</span></div></div>
+            <div><div class="pf-q" style="font-size:11.5px">Done this week · 3 picked</div>
+              <div class="col" style="gap:5px"><div class="row ai-field" style="padding:6px 8px;border-radius:6px;font-size:11.5px"><span class="cb on" style="width:13px;height:13px"><i data-lucide="check"></i></span><span class="trunc">Query plan cache, 30% of tenants</span></div><div class="row ai-field" style="padding:6px 8px;border-radius:6px;font-size:11.5px"><span class="cb on" style="width:13px;height:13px"><i data-lucide="check"></i></span><span class="trunc">Load test at twice peak</span></div><div class="row ai-field" style="padding:6px 8px;border-radius:6px;font-size:11.5px"><span class="cb on" style="width:13px;height:13px"><i data-lucide="check"></i></span><span class="trunc">"Query cache design" doc</span></div></div></div>
+            <div><div class="pf-q" style="font-size:11.5px">Northwind query goal</div><div class="pf-mood" style="grid-template-columns:repeat(3,1fr)"><span class="on">On track</span><span>At risk</span><span>Off</span></div></div>
+            <div><div class="pf-q" style="font-size:11.5px">In your way?</div><div class="inp" style="font-size:11.5px;height:auto;padding:7px 8px">On-call was heavy, 3 pages Tue</div></div>
+            <div class="sp"></div>
+            <span class="btn pri" style="justify-content:center;width:100%"><i data-lucide="send"></i>Send to Daniel</span>
+          </div>
+        </div></div>
+        <h4>Three taps on Friday</h4><p>The phone version asks the same four things, with the list already picked. It takes less time than reading a notification about it.</p>
+      </div>
+      <div class="c" style="justify-content:center">
+        <div class="pf-chat">
+          <div class="row" style="font-size:12px"><span class="tile" style="background:var(--m-performance);width:20px;height:20px;border-radius:5px"><i data-lucide="target" style="width:11px;height:11px"></i></span><b>Bemmoly Performance</b><span class="sp"></span><span class="tx-3" style="font-size:11px">16:00</span></div>
+          <div class="tx-2" style="font-size:12.5px">Your weekly check-in for Daniel is ready. You closed 3 issues and wrote 1 doc this week. How did it go?</div>
+          <div class="row" style="gap:4px;flex-wrap:wrap"><span class="btn sm">Rough</span><span class="btn sm" style="box-shadow:inset 0 0 0 1.5px var(--acc);color:var(--acc)">Okay</span><span class="btn sm">Good</span><span class="btn sm">Great</span></div>
+          <div class="row" style="font-size:12px;margin-top:4px"><span class="av s k">TG</span><b>Tomás</b><span class="tx-3">16:02</span></div>
+          <div class="tx-2" style="font-size:12.5px;margin-left:28px">okay. on-call was heavy, want to talk rota on tue</div>
+          <div class="row" style="font-size:11.5px;margin-left:28px;color:var(--green-tx)"><i data-lucide="circle-check" style="width:13px;height:13px"></i>Check-in sent, with your 3 issues and the doc</div>
+        </div>
+        <div class="pf-chat" style="flex-direction:row;align-items:center;gap:10px"><span class="ib" style="background:var(--sunken)"><i data-lucide="palmtree"></i></span><div class="col grow"><b style="font-size:12.5px">Aiko is on leave next week</b><span class="tx-3" style="font-size:11.5px">No check-in asked for. From People time off.</span></div></div>
+        <h4>Or reply in chat</h4><p>A chat connector carries the same questions. A plain sentence is enough; leave and holidays switch the nudge off.</p>
+      </div>
+      <div class="c" style="justify-content:center">
+        <div class="pf-mail">
+          <div class="mh"><span>From</span><b>Bemmoly Performance</b><span>To</span><span style="color:var(--tx)">Daniel Okafor</span><span>Subject</span><span style="color:var(--tx)">Your team's week, 12 to 16 Oct</span></div>
+          <div class="mb">
+            <div class="row"><span class="faces"><span class="av s k">TG</span><span class="av s g">AT</span><span class="av s p">SL</span><span class="av s o">WC</span></span><span>8 of 9 checked in · 1 on leave</span></div>
+            <div class="row" style="font-size:12px"><span class="tx-3 grow">Team week, last 6 weeks</span><div class="pf-mini" style="height:20px"><i style="height:16px;width:8px"></i><i style="height:18px;width:8px"></i><i style="height:17px;width:8px"></i><i style="height:18px;width:8px"></i><i class="w" style="height:12px;width:8px"></i><i class="w" style="height:11px;width:8px"></i></div></div>
+            <div class="ai-card" style="padding:10px 12px"><div class="ai-h" style="margin-bottom:4px"><span class="aid"></span>Worth raising<span class="src">by AI · from 8 check-ins</span></div><p style="font-size:12px">Two people mention on-call load for the second week. Failover confidence fell from 7 to 5.<span class="cite">Tomás</span><span class="cite">Wei</span><span class="cite">PLAT-88</span></p></div>
+            <span class="btn sm pri" style="align-self:flex-start">Open the team's check-ins</span>
+          </div>
+        </div>
+        <h4>One digest for the manager</h4><p>Monday morning, one summary: who checked in, the team's trend, and the two things worth raising in 1:1s.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Where people already are</b>The phone, a chat connector or the desktop. Each one fills the same check-in, so nobody has to remember where they answered.</div>
+    <div><b>Aware of time off</b>Leave and public holidays come from People, so nobody is nagged on holiday, and streaks don't break.</div>
+    <div><b>Signal, not noise</b>Managers get one digest. Moods are shown as a team trend, and the AI only points to themes, citing whose check-in said it.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== 1:1 -->
+<figure class="screen" id="pf-one" data-title="1:1 with a shared agenda">
+  <div class="scap"><b>A 1:1 that starts in the right place</b><span>A shared agenda both people add to, actions carried over, and talking points drawn from the past two weeks of work. Nothing records the meeting.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.one" data-me="Daniel Okafor" data-counts='{"pe.one":"3","pe.rev":"!9"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>1:1s</span><span class="sep">/</span><span class="cur">Tomás García</span></div>
+        <div class="htabs"><span class="htab on">Tue 20 Oct</span><span class="htab">History<span class="ct">14</span></span><span class="htab">Actions<span class="ct">2</span></span></div>
+        <div class="hact"><span class="btn" data-go="pf-mgr"><i data-lucide="clipboard-check"></i>Open his H1 review</span><span class="btn pri"><i data-lucide="video"></i>Join · 16:30</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 22px" class="col">
+          <div class="row" style="margin-bottom:14px"><span class="faces"><span class="av l me">DO</span><span class="av l k">TG</span></span><div class="col grow"><div class="h16">Daniel and Tomás · weekly</div><span class="tx-3" style="font-size:12px">Tue 20 Oct, 16:30 Berlin, 09:30 Austin · 30 min · his check-in is in</span></div><span class="bdg ok"><i data-lucide="circle-check"></i>Both added items</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="ghead">Agenda<span class="ct">4</span><span class="sp"></span><span class="tx-3" style="font-weight:400">Both of you can add and reorder</span></div>
+            <div class="pf-agi"><i data-lucide="grip-vertical" class="grip"></i><span class="av s k">TG</span><div class="col grow"><span class="b">On-call rota after INC-311</span><span class="pf-s">From his check-in: "three pages on Tuesday night"</span></div><span class="bdg plain">Tomás</span></div>
+            <div class="pf-agi"><i data-lucide="grip-vertical" class="grip"></i><span class="av s k">TG</span><div class="col grow"><span class="b">Path to E4: what's still missing?</span><span class="pf-s">Linked: growth plan, 3 items · Engineering ladder</span></div><span class="bdg plain">Tomás</span></div>
+            <div class="pf-agi"><i data-lucide="grip-vertical" class="grip"></i><span class="av s me">DO</span><div class="col grow"><span class="b">Kavya's first week: buddy plan</span><span class="pf-s">She joins Mon 2 Nov · 3 starter issues ready in Work</span></div><span class="bdg plain">Daniel</span></div>
+            <div class="pf-agi pf-add1" hidden style="background:var(--acc-50)"><i data-lucide="grip-vertical" class="grip"></i><span class="av s me">DO</span><div class="col grow"><span class="b">Thanks for the Northwind fix at 23:10</span><span class="pf-s">Added from a talking point · Lena's kudos, HD-2291</span></div><span class="bdg acc">Just added</span></div>
+            <div class="pf-agi" style="border-bottom:0"><i data-lucide="grip-vertical" class="grip"></i><span class="av s me">DO</span><div class="col grow"><span class="b">Failover confidence dropped to 5</span><span class="pf-s">From the goal · PLAT-88</span></div><span class="bdg plain">Daniel</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="card pad"><div class="pf-sec">From last time<span class="ct">Tue 13 Oct</span></div>
+              <div class="col" style="gap:7px;font-size:12.5px"><div class="row"><span class="cb on"><i data-lucide="check"></i></span><span class="grow tx-2" style="text-decoration:line-through">Daniel: ask Rohan for staging access</span></div><div class="row"><span class="cb"></span><span class="grow">Tomás: draft the E4 growth plan</span><span class="bdg">Half done</span></div><div class="row"><span class="cb"></span><span class="grow">Both: pick the failover drill date</span></div></div></div>
+            <div class="card pad"><div class="pf-sec">Notes<span class="ct">shared</span><span class="sp"></span><span class="seg" style="font-weight:400"><span class="on">Shared</span><span><i data-lucide="lock" style="width:12px;height:12px"></i>Mine</span></span></div>
+              <div class="tx-3" style="font-size:12.5px;line-height:1.6">Both of you see shared notes. Private notes are only yours, and are never read by AI or used in a review.</div></div>
+          </div>
+          <div class="card" style="margin-top:12px;overflow:hidden"><div class="ghead">Earlier 1:1s<span class="ct">14</span></div>
+            <div class="lrow"><span class="tx-3 mono" style="font-size:11.5px;width:52px">13 Oct</span><span class="grow trunc">Staging access, E4 plan started, Northwind follow-up</span><span class="tx-3" style="font-size:12px">3 actions</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="tx-3 mono" style="font-size:11.5px;width:52px">6 Oct</span><span class="grow trunc">INC-311 postmortem, on-call swap with Wei</span><span class="tx-3" style="font-size:12px">2 actions</span></div></div>
+          <div class="pf-lock" style="margin-top:12px"><i data-lucide="mic-off"></i>No recording and no transcript. Notes are written by the two of you.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Talking points<span class="src">by AI · from the last 2 weeks</span></div>
+            <div class="pf-tp"><span class="k">1</span><div>His week went from Great to Okay over two check-ins, and both mention on-call.<span class="cite"><i data-lucide="messages-square"></i>9 Oct</span><span class="cite"><i data-lucide="messages-square"></i>16 Oct</span></div></div>
+            <div class="pf-tp"><span class="k">2</span><div>PLAT-131 waited 9 days for staging access before it moved. It closed on Thursday.<span class="cite"><i data-lucide="square-kanban"></i>PLAT-131</span></div></div>
+            <div class="pf-tp pf-tp3"><span class="k">3</span><div>Lena thanked him for fixing the Northwind timeouts late on a Friday. Worth saying out loud.<span class="cite"><i data-lucide="heart"></i>Kudos</span><span class="cite"><i data-lucide="life-buoy"></i>HD-2291</span>
+              <div class="row" style="margin-top:6px"><span class="btn sm hot" data-show=".pf-add1" data-hide=".pf-tp3"><i data-lucide="plus"></i>Add to agenda</span></div></div></div>
+            <div class="acts" style="margin-top:4px"><span class="btn sm">Add all</span><span class="nu">Not useful</span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Since your last 1:1</div>
+          <div class="col" style="gap:8px;font-size:12.5px">
+            <div class="row"><span class="pf-et sm t-work"><i data-lucide="square-kanban"></i></span><span class="grow tx-2">Issues closed</span><b class="num">6</b></div>
+            <div class="row"><span class="pf-et sm t-docs"><i data-lucide="file-text"></i></span><span class="grow tx-2">Docs written or approved</span><b class="num">1</b></div>
+            <div class="row"><span class="pf-et sm t-kudos"><i data-lucide="heart"></i></span><span class="grow tx-2">Kudos received</span><b class="num">2</b></div>
+            <div class="row"><span class="pf-et sm t-inc"><i data-lucide="siren"></i></span><span class="grow tx-2">On-call pages</span><b class="num">5</b></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">His goals</div>
+          <div class="col" style="gap:8px;font-size:12.5px"><div class="row"><span class="pf-ring" style="--p:72"><b>72</b></span><span class="grow">v2 query path for Northwind</span><span class="st prog"><i></i>On track</span></div><div class="row"><span class="pf-ring" style="--p:0"><b>0</b></span><span class="grow">Buddy for Kavya</span><span class="st"><i></i>2 Nov</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>An agenda both people own</b>Either person adds items through the week, from the 1:1 or straight from a check-in or a goal. Open actions carry over until someone ticks them.</div>
+    <div><b>Talking points from the work</b>Mood trends, a blocked issue, a thank-you worth repeating. Each one cites where it came from, and the manager adds it or ignores it.</div>
+    <div><b>Prepared, not recorded</b>No bot joins the call. Private notes stay private, even from AI. Trust in the 1:1 matters more than a transcript.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Evidence brief (signature) -->
+<figure class="screen" id="pf-brief" data-title="Self review, from evidence">
+  <div class="scap"><b>The self review opens with six months already gathered</b><span>An evidence brief, by AI, from everything Tomás did in Bemmoly from April to September. Every line opens the real thing. He decides what it meant, in his own words.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.rev" data-me="Tomás García" data-counts='{"pe.rev":"!1","pe.one":"1"}' data-hide-links="pe.cal"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Reviews</span><span class="sep">/</span><span class="cur">H1 2026</span></div>
+        <div class="htabs"><span class="htab on">Self review</span><span class="htab">Goals<span class="ct">3</span></span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Due Fri 30 Oct</span><span class="btn">Preview as Daniel</span><span class="btn pri"><i data-lucide="send"></i>Submit self review</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:540px minmax(0,1fr);height:100%">
+        <div style="background:var(--sunken);border-right:1px solid var(--line);overflow:hidden;padding:18px 20px" class="col">
+          <div class="row" style="margin-bottom:2px"><span class="aid"></span><b class="grow" style="font-size:14px">Your evidence brief</b><span class="bdg ai">by AI · from 214 items, Apr to Sep</span></div>
+          <div class="tx-2" style="font-size:12px;margin:2px 0 12px 15px">Read from Work, Docs, Helpdesk, Hiring and kudos. Nothing here is a rating, and only you and Daniel see it.</div>
+          <div class="pf-tl">
+            <div><div class="dots"><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-docs"></i><i class="pf-d d-hire"></i><i class="pf-d d-kudos"></i><i class="pf-d d-work"></i></div><span>Apr</span></div>
+            <div><div class="dots"><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-help"></i><i class="pf-d d-hire"></i><i class="pf-d d-hire"></i><i class="pf-d d-docs"></i></div><span>May</span></div>
+            <div><div class="dots"><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-docs"></i><i class="pf-d d-docs"></i><i class="pf-d d-help"></i><i class="pf-d d-kudos"></i></div><span>Jun</span></div>
+            <div><div class="dots"><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-help"></i><i class="pf-d d-help"></i><i class="pf-d d-hire"></i><i class="pf-d d-kudos"></i></div><span>Jul</span></div>
+            <div><div class="dots"><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-docs"></i><i class="pf-d d-kudos"></i><i class="pf-d d-kudos"></i><i class="pf-d d-help"></i></div><span>Aug</span></div>
+            <div><div class="dots"><i class="pf-d d-inc"></i><i class="pf-d d-docs"></i><i class="pf-d d-work"></i><i class="pf-d d-work"></i><i class="pf-d d-help"></i><i class="pf-d d-help"></i><i class="pf-d d-kudos"></i><i class="pf-d d-hire"></i></div><span>Sep</span></div>
+          </div>
+          <div class="pf-leg" style="margin:8px 0 14px"><span><i class="pf-d d-work"></i>Work 118</span><span><i class="pf-d d-docs"></i>Docs 9</span><span><i class="pf-d d-help"></i>Helpdesk 14</span><span><i class="pf-d d-hire"></i>Interviews 7</span><span><i class="pf-d d-kudos"></i>Kudos 6</span><span><i class="pf-d d-inc"></i>Incidents 2</span></div>
+          <div class="col" style="gap:10px">
+            <div class="pf-theme"><b>Made the query path fast</b><p>Shipped rate limiter v2 (12 issues, 18 Aug) and the per-tenant query cache. p95 on the v2 query API went from 340 ms to 214 ms.<span class="cite"><i data-lucide="square-kanban"></i>PLAT-104</span><span class="cite"><i data-lucide="square-kanban"></i>PLAT-131</span><span class="cite"><i data-lucide="file-text"></i>Query cache design</span><span class="cite"><i data-lucide="activity"></i>p95 chart</span></p>
+              <div class="acts"><span class="btn sm hot pf-add-a" data-show=".pf-ins1,.pf-add-b" data-hide=".pf-add-a"><i data-lucide="plus"></i>Add to my review</span><span class="bdg ok pf-add-b" hidden><i data-lucide="check"></i>Added to question 1</span><span class="tx-3" style="font-size:11.5px">5 items</span></div></div>
+            <div class="pf-theme"><b>Steady when things broke</b><p>Led INC-311 (11 Sep) to recovery in 48 minutes and wrote the postmortem. Helped Support close 9 escalations, including Northwind's.<span class="cite"><i data-lucide="siren"></i>INC-311</span><span class="cite"><i data-lucide="file-text"></i>Postmortem</span><span class="cite"><i data-lucide="life-buoy"></i>HD-2291 and 8 more</span></p>
+              <div class="acts"><span class="btn sm"><i data-lucide="plus"></i>Add to my review</span><span class="tx-3" style="font-size:11.5px">11 items</span></div></div>
+            <div class="pf-theme"><b>Helping the team grow</b><p>7 interviews for Backend engineer, all scorecards on time. 6 kudos, from Lena, Sofia and Aiko.<span class="cite"><i data-lucide="user-round-plus"></i>Interviews</span><span class="cite"><i data-lucide="heart"></i>6 kudos</span></p>
+              <div class="acts"><span class="btn sm"><i data-lucide="plus"></i>Add to my review</span><span class="tx-3" style="font-size:11.5px">13 items</span></div></div>
+            <div class="row" style="padding:10px 12px;border-radius:8px;background:var(--card);box-shadow:inset 0 0 0 1px var(--ai-100);align-items:flex-start;gap:10px"><i data-lucide="search" style="color:var(--ai-600);margin-top:2px"></i><div style="font-size:12px"><b style="display:block;font-size:12.5px">Thin evidence: mentoring</b><span class="tx-2">One item (a design review with Aiko). The brief only sees what's in Bemmoly. If you mentored in other ways, say so.</span></div><span class="nu tx-2" style="font-size:11.5px;margin-left:auto;white-space:nowrap">Not useful</span></div>
+          </div>
+        </div>
+        <div style="overflow:hidden;padding:20px 26px" class="col">
+          <div class="row" style="margin-bottom:14px"><span class="av l k">TG</span><div class="col grow"><div class="h16">Tomás García · H1 2026</div><span class="tx-3" style="font-size:12px">Backend engineer, E3 · Platform · Apr to Sep 2026 · reviewer Daniel Okafor</span></div></div>
+          <div class="pf-q">1 · What are you most proud of this half?</div>
+          <div class="card" style="padding:14px 16px">
+            <div class="pf-ed">
+              <p>The thing I'm proudest of is that Northwind stopped paging us. In April their dashboards timed out every Monday morning, and by September they didn't.</p>
+              <p class="pf-ins pf-ins1" hidden>I shipped rate limiter v2 in August and then the per-tenant query cache, which took p95 on the v2 query API from 340 ms to 214 ms.<span class="cite"><i data-lucide="square-kanban"></i>PLAT-104</span><span class="cite"><i data-lucide="square-kanban"></i>PLAT-131</span><span class="cite"><i data-lucide="activity"></i>p95</span></p>
+              <p style="margin:0">I also wrote the query cache design up front, and four people<span class="pf-caret"></span></p>
+            </div>
+          </div>
+          <div class="ai-line pf-ins1" hidden style="margin-top:6px"><span class="aid"></span>Added from the brief. Shaded until you edit it, so Daniel knows which words started as AI's.</div>
+          <div class="pf-q" style="margin-top:16px">2 · Where do you want to grow next half?</div>
+          <div class="card" style="padding:12px 16px"><div class="pf-ed tx-3" style="font-size:13px">I want to lead the failover drill end to end, and get better at</div></div>
+          <div class="pf-q" style="margin-top:16px">3 · How do you see yourself against the E3 expectations?</div>
+          <div class="card" style="overflow:hidden">
+            <div class="lrow"><span class="grow">Technical craft</span><div class="seg"><span>Growing</span><span>Meets</span><span class="on">Beyond</span></div></div>
+            <div class="lrow"><span class="grow">Delivery</span><div class="seg"><span>Growing</span><span class="on">Meets</span><span>Beyond</span></div></div>
+            <div class="lrow" style="border-bottom:0"><span class="grow">Mentoring</span><div class="seg"><span class="on">Growing</span><span>Meets</span><span>Beyond</span></div></div>
+          </div>
+          <div class="pf-lock" style="margin-top:12px"><i data-lucide="scale"></i>Your words, your self-assessment. AI gathered the evidence; it does not score you.</div>
+                  </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Six months, gathered for you</b>The timeline shows the whole half, so April counts as much as September. Themes group the work; every claim is a link to the issue, doc, ticket or kudos behind it.</div>
+    <div><b>Your voice, with receipts</b>"Add to my review" drops a cited paragraph into the draft, shaded until he rewrites it. The reviewer can open every citation in one click.</div>
+    <div><b>Honest about gaps</b>The brief says where evidence is thin, and that it only sees Bemmoly. People are told what to add, not judged by what's missing.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Manager review -->
+<figure class="screen" id="pf-mgr" data-title="Manager review, with nudges">
+  <div class="scap"><b>A manager review that's specific and fair</b><span>Daniel writes with the brief beside him. Gentle nudges mark vague praise, personality words and absolutes, and check his examples against the whole half. The rating is his alone.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.rev" data-me="Daniel Okafor" data-counts='{"pe.one":"3","pe.rev":"!9"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Reviews</span><span class="sep">/</span><span class="cur">Tomás García</span></div>
+        <div class="htabs"><span class="htab on">My review</span><span class="htab">His self review</span><span class="htab">Peers<span class="ct">4</span></span><span class="htab">Evidence brief</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">3 of 9 written · due Fri 13 Nov</span><span class="btn pri" data-go="pf-cal"><i data-lucide="send"></i>Send to calibration</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:20px 26px;position:relative" class="col">
+          <div class="pf-q">Summary of the half</div>
+          <div class="card" style="padding:14px 16px">
+            <div class="pf-ed">
+              <p>Tomás is a <span class="pf-nud">rockstar</span> and <span class="pf-nud">always</span> brings energy to the team. This half he shipped rate limiter v2 and the per-tenant query cache, which took p95 on the v2 query API from 340 ms to 214 ms and ended Northwind's Monday timeouts.<span class="cite"><i data-lucide="square-kanban"></i>PLAT-104</span></p>
+              <p style="margin:0">He led INC-311 calmly and wrote a postmortem the whole org now uses as the template. <span class="pf-old">He can be <span class="pf-nud cur">abrasive</span> in code review</span><span class="pf-new" hidden style="background:var(--acc-50);border-radius:3px">In two August reviews his comments were short enough that the author asked for a call, and he now adds a suggested change with each one</span>, but people respect his judgement.<span class="pf-caret"></span></p>
+            </div>
+          </div>
+          <div class="ai-card pf-pop" style="position:absolute;left:150px;top:236px;width:420px;box-shadow:inset 0 0 0 1px var(--ai-100),var(--e2);background:linear-gradient(0deg,var(--ai-50),var(--ai-50)),var(--card);z-index:2"><div class="ai-h"><span class="aid"></span>Describe the behaviour, not the person<span class="src">by AI · from 2 reviews</span></div><p style="font-size:12.5px">"Abrasive" is a word about personality, and it reads very differently depending on who it describes. Say what happened and its effect. For example: "In two August reviews his comments were short enough that the author asked for a call."<span class="cite"><i data-lucide="square-kanban"></i>PLAT-119 review</span><span class="cite"><i data-lucide="square-kanban"></i>PLAT-122 review</span></p><div class="acts"><span class="btn sm hot" data-hide=".pf-old,.pf-pop" data-show=".pf-new"><i data-lucide="check"></i>Use this, then edit</span><span class="btn sm ghost" data-hide=".pf-pop">Keep my words</span><span class="nu">Not useful</span></div></div>
+          <div class="pf-q" style="margin-top:16px">Goals this half <span class="tx-3" style="font-weight:400">· context for your judgement, not a formula</span></div>
+          <div class="card" style="overflow:hidden">
+            <div class="lrow"><span class="pf-ring ok" style="--p:100"><b>1.0</b></span><span class="grow">Ship rate limiter v2</span><span class="tx-3" style="font-size:12px">from Work · PLAT-104</span></div>
+            <div class="lrow"><span class="pf-ring" style="--p:70"><b>0.7</b></span><span class="grow">p95 under 200 ms on the v2 query API</span><span class="tx-3" style="font-size:12px">214 ms at the end of Sep</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="pf-ring ok" style="--p:90"><b>0.9</b></span><span class="grow">Write the multi-region failover design</span><span class="tx-3" style="font-size:12px">approved 2 Jul</span></div>
+          </div>
+          <div class="pf-q" style="margin-top:16px">What should he focus on next?</div>
+          <div class="card" style="padding:12px 16px"><div class="pf-ed tx-3" style="font-size:13px">Lead the December failover drill, and be Kavya's onboarding buddy from 2 Nov.</div></div>
+          <div class="row" style="margin-top:16px"><div class="pf-q grow" style="margin:0">Ready for the next level?</div><div class="seg"><span>Not yet</span><span class="on">Next cycle</span><span>Now</span></div></div>
+          <div class="tx-3" style="font-size:11.5px;margin-top:6px">Your call, discussed in calibration. It starts a promotion case only when you choose "Now".</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:8px"><b class="grow">Overall rating</b><span class="tx-3" style="font-size:12px">5-point scale</span></div>
+          <div class="pf-scale">
+            <div><span class="pf-radio"></span>Exceptional<span>well beyond E3</span></div>
+            <div class="on"><span class="pf-radio"></span>Strong<span>above E3</span></div>
+            <div><span class="pf-radio"></span>Solid<span>meets E3</span></div>
+            <div><span class="pf-radio"></span>Growing<span>some gaps</span></div>
+          </div>
+          <div class="pf-lock" style="margin:8px 0 16px"><i data-lucide="lock"></i>Ratings are yours. AI never suggests one.</div>
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Writing checks<span class="src">by AI · from your draft</span></div>
+            <div class="col" style="gap:8px;font-size:12.5px">
+              <div class="row" style="align-items:flex-start"><span class="bdg ai" style="flex:none">Vague</span><span>"Rockstar" is praise without a fact. Name what he did.</span></div>
+              <div class="row" style="align-items:flex-start"><span class="bdg ai" style="flex:none">Absolute</span><span>"Always" invites a counter-example. Try "this half".</span></div>
+              <div class="row" style="align-items:flex-start"><span class="bdg ai" style="flex:none">Personality</span><span>"Abrasive" describes him, not what happened.</span></div>
+              <div class="row" style="align-items:flex-start"><span class="bdg ai" style="flex:none">Recency</span><span>All your examples are from Aug and Sep. The brief has strong work from April and May.<span class="cite"><i data-lucide="file-text"></i>Failover design</span></span></div>
+            </div>
+            <div class="acts"><span class="btn sm">Show in the draft</span><span class="nu">Not useful</span></div></div>
+          <div class="cap" style="margin:16px 0 8px">Peer feedback · 4 responses, anonymous</div>
+          <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><i data-lucide="quote" class="tx-3"></i><span class="tx-2 grow">"Unblocked us on the Northwind escalation in an hour."</span></div><div class="row"><i data-lucide="quote" class="tx-3"></i><span class="tx-2 grow">"Reviews are fast and thorough. Could explain more."</span></div><span style="color:var(--acc);font-size:12px;margin-left:24px">Read all 4</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Nudges, not a red pen</b>Vague praise, personality words, absolutes and recency are marked in lilac with a reason. The manager keeps his words, or takes a suggestion and edits it.</div>
+    <div><b>Recency, checked against the record</b>Because the brief covers the whole half, the review can say when a manager's examples all come from the last six weeks.</div>
+    <div><b>The rating is human</b>No suggested rating, no score from goal maths. Goal scores sit next to the rating as context, the way re:Work says they should.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Calibration -->
+<figure class="screen" id="pf-cal" data-title="Calibration, with reasons">
+  <div class="scap"><b>Calibration with the distribution in view, and a reason for every move</b><span>Managers bring their proposed ratings. The room sees the spread, changes what it agrees to change, and records why. AI looks at the process, never at a person.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.cal" data-me="Priya Raman" data-counts='{"pe.rev":"112","pe.cal":"!1"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Calibration</span><span class="sep">/</span><span class="cur">Engineering · H1 2026</span></div>
+        <div class="htabs"><span class="htab on">Distribution</span><span class="htab">People<span class="ct">48</span></span><span class="htab">Changes<span class="ct">7</span></span></div>
+        <div class="hact"><span class="faces"><span class="av s v">DO</span><span class="av s g">FA</span><span class="av s o">JW</span><span class="av s a">NR</span><span class="av s me">PR</span></span><span class="tx-3" style="font-size:12px">Live · Mon 16 Nov</span><span class="btn pri"><i data-lucide="lock"></i>Close calibration</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;height:100%">
+        <div style="overflow:hidden;padding:18px 22px;gap:14px" class="col">
+          <div class="card" style="padding:16px 18px 14px">
+            <div class="row" style="margin-bottom:26px"><b class="grow">48 people in Engineering</b><span class="pf-leg"><span><i style="width:12px;height:10px;border-radius:2px;box-shadow:inset 0 0 0 1.5px var(--line);display:inline-block"></i>Proposed by managers</span><span><i style="width:12px;height:10px;border-radius:2px;background:var(--acc-500);display:inline-block"></i>After calibration</span></span><span class="bdg plain" style="margin-left:10px">No forced curve</span></div>
+            <div class="pf-dist">
+              <div><i class="pr" style="height:42px"><em>6</em></i><i class="ca" style="height:28px"><em>4</em></i></div>
+              <div><i class="pr" style="height:105px"><em>15</em></i><i class="ca" style="height:91px"><em>13</em></i></div>
+              <div><i class="pr" style="height:147px"><em>21</em></i><i class="ca" style="height:168px"><em>24</em></i></div>
+              <div><i class="pr" style="height:35px"><em>5</em></i><i class="ca" style="height:42px"><em>6</em></i></div>
+              <div><i class="pr" style="height:7px"><em>1</em></i><i class="ca" style="height:7px"><em>1</em></i></div>
+            </div>
+            <div class="pf-dl"><span><b>Exceptional</b>8%</span><span><b>Strong</b>27%</span><span><b>Solid</b>50%</span><span><b>Growing</b>13%</span><span><b>Not yet</b>2%</span></div>
+          </div>
+          <div class="card" style="overflow:hidden;flex:1;min-height:0">
+            <div class="card-h">Changes in this session<span class="tx-3">7 · each one needs a reason</span><span class="sp"></span><span class="seg" style="font-weight:400"><span class="on">All</span><span>Up</span><span>Down</span></span></div>
+            <div class="pf-chg"><span class="av g">AT</span><div class="col"><div class="row"><b>Aiko Tanaka</b><span class="mv">Solid<i data-lucide="arrow-right"></i>Strong</span><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Daniel · 5 agreed</span></div><q>The churn model Sales West uses every week was missing from the first draft because it lives in the Data project. With it in, she is above E3.</q></div></div>
+            <div class="pf-chg"><span class="av o">WC</span><div class="col"><div class="row"><b>Wei Chen</b><span class="mv">Exceptional<i data-lucide="arrow-right"></i>Strong</span><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Fatima · 4 agreed, 1 abstained</span></div><q>Strong delivery all half. The two biggest examples were team efforts led by others; credit them there.</q></div></div>
+            <div class="pf-chg"><span class="av a">NR</span><div class="col"><div class="row"><b>Nikhil Rao</b><span class="mv">Growing<i data-lucide="arrow-right"></i>Solid</span><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Jonas · 5 agreed</span></div><q>Was on parental leave for 10 weeks. Judged on the time he was here, as the policy says.</q></div></div>
+            <div class="pf-chg" style="border-bottom:0"><span class="av k">TG</span><div class="col"><div class="row"><b>Tomás García</b><span class="mv">Strong · discussed, no change</span><span class="sp"></span><span class="tx-3" style="font-size:11.5px">Daniel · 5 agreed</span></div><q>Held at Strong. Craft and delivery are at E4; mentoring is still a plan item, so the promotion case waits for H2.</q></div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Patterns to check<span class="src">by AI · from 48 reviews</span></div>
+            <div class="pf-tp"><span class="k">1</span><div>Platform's proposed ratings average half a step above teams with similar goal scores.<span class="cite"><i data-lucide="chart-column"></i>By manager</span></div></div>
+            <div class="pf-tp"><span class="k">2</span><div>Reviews of people in Austin cite 40% fewer pieces of evidence than Bengaluru, with briefs of similar size.<span class="cite"><i data-lucide="map-pin"></i>By office</span></div></div>
+            <div class="pf-tp"><span class="k">3</span><div>Three reviews still lean on personality words rather than examples.<span class="cite"><i data-lucide="file-pen-line"></i>3 reviews</span></div></div>
+            <div class="acts"><span class="btn sm">Open the breakdowns</span><span class="nu">Not useful</span></div></div>
+          <div class="pf-lock" style="margin:8px 2px 16px"><i data-lucide="scale"></i>AI looks at the process. It never proposes a rating for anyone.</div>
+          <div class="cap" style="margin-bottom:8px">Spread by group</div>
+          <div class="col" style="gap:9px;font-size:12.5px">
+            <div class="row"><span style="width:84px" class="tx-2">Bengaluru</span><div class="bar grow" style="height:8px"><i style="width:9%;background:var(--acc-600)"></i><i style="width:28%;background:var(--acc-500)"></i><i style="width:49%;background:var(--acc-100)"></i></div><span class="num tx-3" style="width:26px;text-align:right">22</span></div>
+            <div class="row"><span style="width:84px" class="tx-2">Berlin</span><div class="bar grow" style="height:8px"><i style="width:7%;background:var(--acc-600)"></i><i style="width:27%;background:var(--acc-500)"></i><i style="width:53%;background:var(--acc-100)"></i></div><span class="num tx-3" style="width:26px;text-align:right">15</span></div>
+            <div class="row"><span style="width:84px" class="tx-2">Austin</span><div class="bar grow" style="height:8px"><i style="width:9%;background:var(--acc-600)"></i><i style="width:27%;background:var(--acc-500)"></i><i style="width:46%;background:var(--acc-100)"></i></div><span class="num tx-3" style="width:26px;text-align:right">11</span></div>
+            <div class="row"><span style="width:84px" class="tx-2">On leave</span><div class="bar grow" style="height:8px"><i style="width:0%"></i><i style="width:33%;background:var(--acc-500)"></i><i style="width:67%;background:var(--acc-100)"></i></div><span class="num tx-3" style="width:26px;text-align:right">3</span></div>
+            <div class="tx-3" style="font-size:11.5px">Exceptional, strong and solid shares. Groups under 5 people are hidden outside this room.</div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Next</div>
+          <div class="col" style="gap:6px;font-size:12.5px"><div class="row"><span class="st done"><i></i></span><span class="grow">Platform, Data</span></div><div class="row"><span class="st prog"><i></i></span><span class="grow">Infrastructure · 9 people</span></div><div class="row"><span class="st"><i></i></span><span class="grow">Frontend · 11 people</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The spread, before and after</b>Proposed and calibrated ratings side by side, with shares. Guidance can be set per company, but nothing forces a curve.</div>
+    <div><b>Every move has a reason</b>A rating can't change without a sentence and a show of agreement. Reasons stay on the record for the manager, the People team and later audits.</div>
+    <div><b>AI watches the process</b>Spread by manager, evidence by office, words in reviews. It points the room at patterns. It never says who should move.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Growth -->
+<figure class="screen" id="pf-grow" data-title="Career ladder and growth plan">
+  <div class="scap"><b>A ladder you can read, and a plan that lives in the work</b><span>Tomás sees what E4 asks for, where his evidence already meets it, and three plan items he agreed with Daniel, each tied to real work.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.goals" data-me="Tomás García" data-counts='{"pe.one":"1"}' data-hide-links="pe.cal"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Goals</span><span class="sep">/</span><span class="cur">My growth plan</span></div>
+        <div class="htabs"><span class="htab">My goals<span class="ct">2</span></span><span class="htab on">Growth plan</span><span class="htab">Engineering ladder</span></div>
+        <div class="hact"><span class="faces"><span class="av s me">TG</span><span class="av s v">DO</span></span><span class="tx-3" style="font-size:12px">Agreed with Daniel · 20 Oct</span><span class="btn"><i data-lucide="share-2"></i>Share</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 22px" class="col">
+          <div class="row" style="margin-bottom:12px"><div class="col grow"><div class="h16">Backend engineer E3, working toward E4</div><span class="tx-3" style="font-size:12px">Engineering ladder v3 · six competencies · expectations written by the engineering leads</span></div><div class="seg"><span>E2</span><span class="on">E3 and E4</span><span>All levels</span></div></div>
+          <div class="card" style="overflow:hidden">
+            <table class="pf-mx"><thead><tr><th>Competency</th><th>E3 · Engineer II</th><th class="now">E4 · Senior engineer</th><th style="width:118px">Where you are</th></tr></thead><tbody>
+              <tr><td>Technical craft</td><td class="tx-2">Designs features within a service</td><td class="now">Designs across services and owns the trade-offs<div class="tx-3">Evidence: Query cache design, Failover design</div></td><td><span class="bdg ok">Meets E4</span></td></tr>
+              <tr><td>Delivery</td><td class="tx-2">Ships predictable work for the team</td><td class="now">Delivers multi-quarter work for the team<div class="tx-3">Evidence: PLAT-104, PLAT-131</div></td><td><span class="bdg ok">Meets E4</span></td></tr>
+              <tr><td>Operations</td><td class="tx-2">Handles incidents with help</td><td class="now">Leads incidents and fixes the cause<div class="tx-3">Evidence: INC-311 and its postmortem</div></td><td><span class="bdg ok">Meets E4</span></td></tr>
+              <tr><td>Mentoring</td><td class="tx-2">Helps teammates when asked</td><td class="now">Grows others on purpose<div class="tx-3">Evidence: 1 item</div></td><td><span class="bdg warn">Plan item</span></td></tr>
+              <tr><td>Influence</td><td class="tx-2">Shapes decisions in the team</td><td class="now">Shapes decisions beyond the team<div class="tx-3">Evidence: 1 item</div></td><td><span class="bdg warn">Plan item</span></td></tr>
+              <tr><td>Collaboration</td><td class="tx-2">Works well with the team</td><td class="now">Raises how the team works together<div class="tx-3">Evidence: 4 kudos from other teams</div></td><td><span class="bdg acc">Showing</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="pf-lock" style="margin-top:10px"><i data-lucide="info"></i>"Where you are" was set by Tomás and Daniel together. Evidence links are suggestions they accepted.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:10px"><b class="grow">Growth plan · next half</b><span class="tx-3" style="font-size:12px">3 items</span></div>
+          <div class="col" style="gap:8px">
+            <div class="card pad" style="padding:12px 14px"><div class="row"><span class="pf-et t-hire"><i data-lucide="sprout"></i></span><b class="grow">Be Kavya Nair's onboarding buddy</b></div><div class="tx-2" style="font-size:12px;margin:6px 0 0 32px">She joins Mon 2 Nov as a frontend engineer. Pair weekly for 90 days. <span class="tag" style="margin-top:4px">Mentoring</span></div></div>
+            <div class="card pad" style="padding:12px 14px"><div class="row"><span class="pf-et t-work"><i data-lucide="square-kanban"></i></span><b class="grow">Lead the December failover drill</b></div><div class="tx-2" style="font-size:12px;margin:6px 0 0 32px">PLAT-215 in Work, with Support and Infrastructure. <span class="tag" style="margin-top:4px">Influence</span></div></div>
+            <div class="card pad" style="padding:12px 14px"><div class="row"><span class="pf-et t-docs"><i data-lucide="file-text"></i></span><b class="grow">Run two design reviews for Data</b></div><div class="tx-2" style="font-size:12px;margin:6px 0 0 32px">Their first service on the v2 API. <span class="tag" style="margin-top:4px">Influence</span> <span class="tag">Mentoring</span></div></div>
+          </div>
+          <div class="ai-card" style="margin-top:14px"><div class="ai-h"><span class="aid"></span>Evidence against E4<span class="src">by AI · from your brief</span></div><p style="font-size:12.5px">Craft, delivery and operations have several items each. Mentoring and influence have one each, both from May.<span class="cite"><i data-lucide="file-text"></i>Brief</span><span class="cite"><i data-lucide="list-checks"></i>Ladder v3</span> The plan items above cover both.</p><div class="acts"><span class="btn sm">Show the items</span><span class="nu">Not useful</span></div></div>
+          <div class="well" style="padding:10px 12px;margin-top:12px;font-size:12px" ><div class="row"><i data-lucide="flag" class="tx-3"></i><span class="tx-2">Promotion case: revisit at the H2 review. Plan items show in every 1:1 and check-in until then.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A ladder in plain words</b>Each level says what it looks like in practice, written by the company. People see the next level, not just their own.</div>
+    <div><b>Evidence, agreed together</b>AI suggests which items in the brief support which competency. The person and manager decide where they are, side by side.</div>
+    <div><b>The plan is real work</b>Plan items link to issues, docs and a new hire's start date, so they come up in check-ins and 1:1s, not only at review time.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Bemmoly is open source and used by companies of every shape, so no part of the performance process is hard-coded. A 30-person startup with no ratings and a 3,000-person company with a ladder per job family both set it up from Performance › Settings, without writing code. Every setting can be exported as a file and reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Cycles</h3><p>Templates for annual, half-yearly, quarterly, project-based and 90-day probation reviews. Each cycle picks its steps (self, peer, upward, manager, calibration, sign-off), dates, and who takes part by a filter on the person record.</p></div>
+  <div><h3>Goals</h3><p>A method per team: OKRs scored 0 to 1, KPIs with targets, or simple goals with a done date. Quarterly or custom periods, whether goals must align upward, and which ones are private.</p></div>
+  <div><h3>Competencies and levels</h3><p>A ladder per job family, with levels and expectations in plain words. Competencies can be weighted per level, shared across families, or used only for growth and never for ratings.</p></div>
+  <div><h3>Ratings, or none</h3><p>Five points, three points, separate "what" and "how" ratings, or no ratings at all, just written reviews. Labels are the company's own. Distribution guidance is optional, and never a quota.</p></div>
+  <div><h3>Feedback and who sees what</h3><p>Peer feedback named, anonymous to the person, or fully anonymous, with a minimum number of responses. A matrix for who sees each part of a review, and when results are shared and signed.</p></div>
+  <div><h3>Evidence and AI</h3><p>Which sources the brief may read, and a list it never reads (leave, health, pay, private notes). The model is the workspace's choice, including a local one, and AI can be off for one cycle or for good.</p></div>
+</div>
+
+<div class="screens" id="pfcfg">
+<figure class="screen" id="pf-set-cycle" data-title="Review cycles">
+  <div class="scap"><b>A cycle from a template, shaped in minutes</b><span>Pick a template, adjust the steps and dates, choose who takes part, and set peer anonymity and who sees what.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Review cycles</span></div>
+        <div class="htabs"><span class="htab on">Cycles</span><span class="htab">Goals</span><span class="htab">Ladders</span><span class="htab">Ratings</span><span class="htab">Privacy</span><span class="htab">AI</span></div>
+        <div class="hact"><span class="bdg acc">Draft</span><span class="btn">Preview</span><span class="btn pri">Launch cycle</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px" class="col">
+          <div class="cap" style="margin-bottom:8px">Start from a template</div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <div class="pf-tpl"><div class="row"><i data-lucide="calendar-range" class="tx-3"></i><b>Annual</b></div><span class="tx-3">One review a year, quarterly check-ins</span></div>
+            <div class="pf-tpl on"><div class="row"><i data-lucide="calendar-range" style="color:var(--acc)"></i><b class="grow">Half-yearly</b></div><span class="tx-3">Two reviews, ratings in one · in use</span></div>
+            <div class="pf-tpl"><div class="row"><i data-lucide="folder-kanban" class="tx-3"></i><b>Project-based</b></div><span class="tx-3">Opens when an epic or project closes</span></div>
+            <div class="pf-tpl"><div class="row"><i data-lucide="user-round-check" class="tx-3"></i><b>90-day probation</b></div><span class="tx-3">From each start date in People</span></div>
+          </div>
+          <div class="row" style="margin:18px 0 8px"><b class="grow">H1 2026 · Apr to Sep</b><span class="tx-3" style="font-size:12px">Half-yearly template v2 · edited by Priya Raman</span></div>
+          <div class="col" style="gap:6px">
+            <div class="pf-step now"><span class="n">1</span><div class="col grow"><b>Self review</b><span class="tx-3" style="font-size:12px">3 questions and the ladder · evidence brief on</span></div><span class="tx-2 num" style="font-size:12.5px">Mon 19 Oct to Fri 30 Oct</span></div>
+            <div class="pf-step"><span class="n">2</span><div class="col grow"><b>Peer feedback</b><span class="tx-3" style="font-size:12px">Person picks 3 to 5, manager approves</span></div><span class="tx-2 num" style="font-size:12.5px">Mon 19 Oct to Fri 6 Nov</span></div>
+            <div class="pf-step"><span class="n">3</span><div class="col grow"><b>Manager review and rating</b><span class="tx-3" style="font-size:12px">5-point scale · writing checks on</span></div><span class="tx-2 num" style="font-size:12.5px">to Fri 13 Nov</span></div>
+            <div class="pf-step"><span class="n">4</span><div class="col grow"><b>Calibration</b><span class="tx-3" style="font-size:12px">By department · reasons required</span></div><span class="tx-2 num" style="font-size:12.5px">Mon 17 to Fri 20 Nov</span></div>
+            <div class="pf-step"><span class="n">5</span><div class="col grow"><b>Share in the 1:1, then sign</b><span class="tx-3" style="font-size:12px">Person can add a comment before signing</span></div><span class="tx-2 num" style="font-size:12.5px">from Mon 30 Nov</span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Who takes part</div>
+          <div class="card" style="padding:12px 14px;font-size:13.5px;line-height:2">Everyone in <span class="pf-tok">Engineering</span> <span class="pf-tok">Sales</span> <span class="pf-tok">Support</span> who started before <span class="pf-tok v">1 Aug 2026</span>, except <span class="pf-tok">contractors</span>. <span class="tx-3" style="font-size:12.5px">112 people, from People</span></div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <b style="margin-bottom:8px">Peer feedback</b>
+          <div class="seg" style="align-self:flex-start"><span>Named</span><span class="on">Anonymous to them</span><span>Anonymous to all</span></div>
+          <div class="row tx-2" style="font-size:12.5px;margin-top:10px"><span class="grow">Show only when at least</span><span class="inp" style="height:28px;width:52px;justify-content:center">3</span><span>responses</span></div>
+          <div class="tx-3" style="font-size:11.5px;margin-top:6px">The manager sees names. The person sees themes and quotes, never who wrote them.</div>
+          <b style="margin:18px 0 6px">Who sees what</b>
+          <table class="pf-vis"><thead><tr><th>Part</th><th>Person</th><th>Manager</th><th>Skip level</th><th>People team</th></tr></thead><tbody>
+            <tr><td>Evidence brief</td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="n"><i data-lucide="minus"></i></td><td class="n"><i data-lucide="minus"></i></td></tr>
+            <tr><td>Self review</td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td></tr>
+            <tr><td>Manager review</td><td class="l"><i data-lucide="clock"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td></tr>
+            <tr><td>Rating</td><td class="l"><i data-lucide="clock"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td></tr>
+            <tr><td>Calibration reasons</td><td class="n"><i data-lucide="minus"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td><td class="y"><i data-lucide="check"></i></td></tr>
+            <tr><td>Private 1:1 notes</td><td class="n"><i data-lucide="minus"></i></td><td class="n"><i data-lucide="minus"></i></td><td class="n"><i data-lucide="minus"></i></td><td class="n"><i data-lucide="minus"></i></td></tr>
+          </tbody></table>
+          <div class="row tx-3" style="font-size:11.5px;margin-top:8px;gap:12px"><span class="row" style="gap:4px"><i data-lucide="clock" style="width:12px;height:12px;color:var(--amber)"></i>After sharing, from 30 Nov</span><span>Private notes: only their author</span></div>
+          <b style="margin:18px 0 8px">Reminders</b>
+          <div class="col" style="gap:8px;font-size:12.5px">
+            <div class="row"><i data-lucide="bell" class="tx-3"></i><span class="grow">Nudge 3 days before each due date</span><span class="sw on"></span></div>
+            <div class="row"><i data-lucide="mail" class="tx-3"></i><span class="grow">Weekly progress digest to managers</span><span class="sw on"></span></div>
+            <div class="row"><i data-lucide="palmtree" class="tx-3"></i><span class="grow">Pause for people on leave, from People</span><span class="sw on"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Templates, not a blank form</b>Four starting points cover most companies. Project-based cycles open when an epic closes in Work; probation cycles follow start dates in People.</div>
+    <div><b>Participants by rule</b>A sentence over the person record decides who's in, so new joiners, contractors and people on leave are handled without a spreadsheet.</div>
+    <div><b>Visibility you can read</b>One matrix answers "who will see this?" for every part of a review, and people can see the same matrix from their own review.</div>
+  </div>
+</figure>
+
+<figure class="screen" id="pf-set-frame" data-title="Ladders, ratings and goals">
+  <div class="scap"><b>The company's own ladder, scale and goal method</b><span>Levels and expectations per job family, a rating scale (or none), a goal method per team, and the sources the evidence brief may and may not read.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="performance" data-link="pe.set" data-me="Priya Raman"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span>Performance</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Ladders</span></div>
+        <div class="htabs"><span class="htab">Cycles</span><span class="htab">Goals</span><span class="htab on">Ladders</span><span class="htab">Ratings</span><span class="htab">Privacy</span><span class="htab">AI</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import CSV or YAML</span><span class="btn pri"><i data-lucide="plus"></i>New ladder</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:hidden;padding:18px 24px" class="col">
+          <div class="row" style="margin-bottom:12px"><div class="seg"><span class="on">Engineering</span><span>Design</span><span>Sales</span><span>Support</span><span>People and finance</span></div><span class="sp"></span><span class="tx-3" style="font-size:12px">v3 · 46 people</span></div>
+          <div class="row" style="gap:6px;margin-bottom:12px">
+            <span class="bdg plain">E1 Associate</span><span class="bdg plain">E2 Engineer I</span><span class="bdg acc">E3 Engineer II</span><span class="bdg acc">E4 Senior</span><span class="bdg plain">E5 Staff</span><span class="bdg plain">E6 Principal</span><span class="sp"></span><span class="tx-3" style="font-size:12px">Showing E3 and E4</span>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <table class="pf-mx"><thead><tr><th>Competency</th><th>E3 · Engineer II</th><th>E4 · Senior engineer</th><th style="width:96px">Used in</th></tr></thead><tbody>
+              <tr><td>Technical craft</td><td class="tx-2">Designs features within a service</td><td class="tx-2">Designs across services and owns the trade-offs</td><td><span class="tag">Rating</span></td></tr>
+              <tr><td>Delivery</td><td class="tx-2">Ships predictable work for the team</td><td class="tx-2">Delivers multi-quarter work for the team</td><td><span class="tag">Rating</span></td></tr>
+              <tr><td>Operations</td><td class="tx-2">Handles incidents with help</td><td class="tx-2">Leads incidents and fixes the cause</td><td><span class="tag">Rating</span></td></tr>
+              <tr><td>Mentoring</td><td class="tx-2">Helps teammates when asked</td><td class="tx-2">Grows others on purpose</td><td><span class="tag">Growth only</span></td></tr>
+              <tr><td>Influence</td><td class="tx-2">Shapes decisions in the team</td><td class="tx-2">Shapes decisions beyond the team</td><td><span class="tag">Rating</span></td></tr>
+              <tr><td style="color:var(--tx-3);font-weight:400" colspan="4"><span class="row"><i data-lucide="plus"></i>Add a competency, or copy one from another ladder</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Goal method by team</div>
+          <div class="card" style="overflow:hidden">
+            <div class="lrow"><span class="grow">Engineering, Data</span><div class="seg"><span class="on">OKR, scored 0 to 1</span><span>KPI</span><span>Simple</span></div></div>
+            <div class="lrow"><span class="grow">Sales, Support</span><div class="seg"><span>OKR, scored 0 to 1</span><span class="on">KPI</span><span>Simple</span></div></div>
+            <div class="lrow" style="border-bottom:0"><span class="grow">Design, People and finance</span><div class="seg"><span>OKR, scored 0 to 1</span><span>KPI</span><span class="on">Simple</span></div></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 20px;overflow:hidden" class="col">
+          <b style="margin-bottom:8px">Rating scale</b>
+          <div class="pf-scale">
+            <div class="on"><span class="pf-radio"></span>Five named points<span>in use</span></div>
+            <div><span class="pf-radio"></span>Three points<span>below, meets, above</span></div>
+            <div><span class="pf-radio"></span>No ratings<span>written reviews only</span></div>
+          </div>
+          <div class="tx-3" style="font-size:11.5px;margin:8px 0 0">Labels: Exceptional, Strong, Solid, Growing, Not yet. Distribution guidance: off.</div>
+          <b style="margin:18px 0 8px">The evidence brief may read</b>
+          <div class="col" style="gap:7px;font-size:12.5px">
+            <div class="row"><span class="pf-et sm t-work"><i data-lucide="square-kanban"></i></span><span class="grow">Work: issues, epics, reviews</span><span class="sw on"></span></div>
+            <div class="row"><span class="pf-et sm t-docs"><i data-lucide="file-text"></i></span><span class="grow">Docs: authored and approved</span><span class="sw on"></span></div>
+            <div class="row"><span class="pf-et sm t-help"><i data-lucide="life-buoy"></i></span><span class="grow">Helpdesk: resolutions, not ratings</span><span class="sw on"></span></div>
+            <div class="row"><span class="pf-et sm t-hire"><i data-lucide="user-round-plus"></i></span><span class="grow">Hiring: interviews given</span><span class="sw on"></span></div>
+            <div class="row"><span class="pf-et sm t-kudos"><i data-lucide="heart"></i></span><span class="grow">Kudos and feedback</span><span class="sw on"></span></div>
+          </div>
+          <div class="well" style="padding:10px 12px;margin-top:12px;font-size:12px"><div class="row" style="margin-bottom:4px"><i data-lucide="shield-check" style="color:var(--green)"></i><b>Never read, and not a setting</b></div><span class="tx-2">Leave and health, pay, private 1:1 notes, the person's own Helpdesk requests, and check-in mood.</span></div>
+          <div class="row" style="margin-top:14px;font-size:12.5px"><i data-lucide="cpu" class="tx-3"></i><span class="grow">Model for Performance</span><span class="fchip"><b>Local model</b><i data-lucide="chevron-down"></i></span></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>A ladder per job family</b>Levels and expectations in plain words, versioned, importable from a spreadsheet or a YAML file kept in Git. A competency can count for ratings or for growth only.</div>
+    <div><b>Scale, or no scale</b>The same product runs a five-point cycle, a three-point one, or none. Goal methods are chosen per team, because sales and engineering measure differently.</div>
+    <div><b>Evidence with limits</b>Each source can be switched off. Some things are never read, and that list is fixed in the product, not left to a setting.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing lilac appears while AI is off. In Performance there is one more rule, fixed in the product: AI never rates, scores or ranks a person. The model is the workspace's choice, from the models.dev catalog or a local model.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person decides</th><th>With AI off</th></tr>
+  <tr><td>Goals</td><td>Suggests key results from the team's objective, and points out ones that measure activity instead of outcomes</td><td>The owner writes and owns every goal</td><td>Templates by method, and progress still flows from Work</td></tr>
+  <tr><td>Check-ins</td><td>Writes one line for each issue, doc or ticket closed that week</td><td>The person picks what to include and edits every line</td><td>The plain list of what they closed</td></tr>
+  <tr><td>1:1s</td><td>Prepares talking points from two weeks of work, check-ins and kudos, each cited</td><td>Both people decide the agenda. Nothing is recorded</td><td>Carried-over actions and a recent-activity list</td></tr>
+  <tr><td>Self and manager reviews</td><td>Builds the evidence brief: themes over the whole period, with links to every item, and notes where evidence is thin</td><td>People write the review in their own words, and the manager sets the rating</td><td>The same evidence, as a filterable timeline without summaries</td></tr>
+  <tr><td>Writing checks</td><td>Marks vague praise, personality words, absolutes and recency, with a reason and a suggestion</td><td>The writer accepts, edits or keeps their words</td><td>A word list the company edits, with no suggestions</td></tr>
+  <tr><td>Calibration</td><td>Finds process patterns: spread by manager, evidence by office, wording across reviews</td><td>The room decides every rating and records a reason for every change</td><td>The same charts, without the written patterns</td></tr>
+  <tr><td>Growth</td><td>Maps brief items to the competencies of the next level</td><td>Person and manager agree where they are and what the plan is</td><td>The ladder, with evidence linked by hand</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Performance data is among the most sensitive a company holds. The brief never reads leave, health, pay, private 1:1 notes, check-in mood or a person's own Helpdesk requests. A workspace can run every performance feature on a local model, or turn AI off for one cycle. Nothing is used to train a model. Briefs are not stored as scores, and every brief is visible to the person it is about.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Its own product. Use it alone, or with the others. Underneath it shares Bemmoly's kernel: one sign-in across products, one person directory, the shared workflow engine for sign-offs, typed custom fields, the AI layer, audit and backups. Cross-product actions open or call the other product with the person's confirmation, and each one has a fallback when that product isn't installed.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul>
+    <li><b>Work</b>: epics, issues and metrics drive key results, and closed work fills check-ins and the brief. Without Work, a tracker connector does the same, or progress is typed by hand</li>
+    <li><b>Docs</b>: design docs and postmortems count as evidence, and a finished review can be exported as a doc. Without it, people attach links</li>
+    <li><b>People</b>: manager, level, job family, start dates and time off. Promotions write back to the person record. Without it, the kernel's own people list holds managers and levels</li>
+    <li><b>Helpdesk</b>: resolutions for support staff, incident counts for team goals. Without it, these sources are simply absent from the brief</li>
+    <li><b>Hiring</b>: interviews given count as contribution, and ladders double as hiring levels. Without it, not shown</li>
+    <li><b>Time</b> and <b>Expenses</b>: never read for reviews. Hours worked is not performance</li>
+  </ul></div>
+  <div><h3>Core objects</h3><ul>
+    <li><code>goal</code> and <code>key_result</code>: owner, period, method, parent goal, and a progress source (manual, work query, metric connector)</li>
+    <li><code>check_in</code>: week, items picked, confidence per goal, blockers, mood (private trend only)</li>
+    <li><code>one_on_one</code> and <code>agenda_item</code>: shared and private notes, actions that carry over</li>
+    <li><code>review_cycle</code>, <code>review</code>, <code>evidence_item</code>: each item points at its source object, so citations never break</li>
+    <li><code>calibration_session</code> and <code>rating_change</code>: from, to, who agreed, and the reason</li>
+    <li><code>ladder</code>, <code>competency</code>, <code>level</code>, <code>growth_plan</code>, <code>kudos</code></li>
+  </ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>The weekly loop</b><ul><li>Goals: OKR, KPI and simple, with the alignment tree</li><li>Progress from Work epics and issues</li><li>Two-minute check-ins, desktop and phone</li><li>1:1s with a shared agenda and carried actions</li><li>Kudos</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Reviews from evidence</b><ul><li>Cycle templates, steps and participants by rule</li><li>Self, peer, upward and manager reviews</li><li>The evidence brief, with and without AI</li><li>Writing checks and recency</li><li>Rating scales or none, sharing and sign-off</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Fairness and growth</b><ul><li>Calibration with distribution and reasons</li><li>Ladders per job family, growth plans</li><li>Metric connectors for key results</li><li>Chat check-ins and the manager digest</li><li>Handover of outcomes to pay reviews in People</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Should the brief show counts, like issues closed?</b><span>Recommendation: only as context inside a person's own brief, never ranked, compared between people or shown on a dashboard. Counting issues rewards splitting them.</span></li>
+  <li><b>Do we ever record 1:1s?</b><span>Recommendation: not in the first releases. If added later, both people opt in for each meeting, transcripts stay with the two of them, and a local model is the default.</span></li>
+  <li><b>Are kudos public by default?</b><span>Recommendation: public to the team, with a private option. Kudos feed the brief as evidence, never as a score or a count in calibration.</span></li>
+  <li><b>Does compensation live here?</b><span>Recommendation: no. Calibrated outcomes are handed to People for pay reviews, through the shared workflow engine. Pay never appears in Performance.</span></li>
+  <li><b>Can a person ask to remove an item from their brief?</b><span>Recommendation: yes. They can hide any item from their own brief and the manager sees that it was hidden, not what it was. The source object is untouched.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.gallup.com/workplace/236135/give-performance-reviews-actually-inspire-employees.aspx">Gallup: How to give performance reviews that actually inspire employees</a></li>
+  <li><a href="https://www.gallup.com/workplace/505370/great-manager-important-habit.aspx">Gallup: A great manager's most important habit</a></li>
+  <li><a href="https://store.hbr.org/product/reinventing-performance-management/R1504B">HBR: Reinventing performance management (Buckingham and Goodall, 2015)</a></li>
+  <li><a href="https://www.hcamag.com/ca/news/general/the-big-risk-to-your-performance-ratings/128089">HC Magazine: The big risk to your performance ratings (Scullen, Mount and Goff, 2000)</a></li>
+  <li><a href="https://www.businessperspectives.org/index.php/journals/problems-and-perspectives-in-management/issue-359/manifestation-of-idiosyncratic-rater-effect-in-employee-performance-appraisal">Problems and Perspectives in Management: Idiosyncratic rater effect in appraisal</a></li>
+  <li><a href="https://www.businesswire.com/news/home/20220615005008/en">Textio: Workplace performance feedback shows major demographic biases (2022)</a></li>
+  <li><a href="https://textio.com/blog/job-performance-feedback-is-heavily-biased-new-textio-report">Textio: Job performance feedback is heavily biased</a></li>
+  <li><a href="https://rework.withgoogle.com/en/guides/set-goals-with-okrs">Google re:Work: Set goals with OKRs</a></li>
+  <li><a href="https://lattice.com/blog/lattice-spring-summer-2026-product-release">Lattice: Spring and summer 2026 product release</a></li>
+  <li><a href="https://lattice.com/blog/february-2025-product-updates-ai-summaries-in-calibrations-shareable-survey-links-grow-ui-improvements-and-more">Lattice: AI summaries in calibrations (Feb 2025)</a></li>
+  <li><a href="https://www.cultureamp.com/blog/whats-new-culture-amp-q3-2025">Culture Amp: What's new, Q3 2025</a></li>
+  <li><a href="https://www.15five.com/products/kona">15Five: Kona</a></li>
+  <li><a href="https://success.15five.com/hc/en-us/articles/36196491046043">15Five help: Kona for managers</a></li>
+  <li><a href="https://www.leapsome.com/en/product/performance-reviews">Leapsome: Performance reviews</a></li>
+  <li><a href="https://www.businesswire.com/news/home/20231005148829/en/Betterworks-Announces-New-Generative-AI-Capabilities-to-Help-Make-Managers-More-Effective">Betterworks: New generative AI capabilities (2023)</a></li>
+  <li><a href="https://www.businesswire.com/news/home/20240924353434/en/Betterworks-Elevates-Privacy-and-Reduces-Performance-Management-Tasks-With-Launch-of-LLM-and-AI-Assisted-Tools">Betterworks: Private LLM and AI-assisted tools (2024)</a></li>
+  <li><a href="https://www.workday.com/en-us/artificial-intelligence/ai-agents/talent-management.html">Workday: Talent management agent</a></li>
+  <li><a href="https://www.workday.com/en-us/products/talent-management/talent-optimization.html">Workday: Talent optimization</a></li>
+  <li><a href="https://peoplemanagingpeople.com/tools/performyard-review/">People Managing People: PerformYard review</a></li>
+  <li><a href="https://www.small-improvements.com/1-on-1-meetings/">Small Improvements: 1:1 meetings</a></li>
+  <li><a href="https://vendordirectory.shrm.org/company/774144/products/251123/engagedly-performance-reviews">SHRM vendor directory: Engagedly performance reviews</a></li>
+  <li><a href="https://docs.frappe.io/hr/appraisal">Frappe HR docs: Appraisal</a></li>
+  <li><a href="https://www.cleverence.com/articles/odoo-documentation/appraisals-odoo-18-0-documentation-8392/">Odoo 18 Appraisals documentation (mirror)</a></li>
+  <li><a href="https://orangehrmlive.com/en/resources/blog/the-performance-module">OrangeHRM: The performance module</a></li>
+</ul>
+</main>
+</div>
+</body>
+</html>

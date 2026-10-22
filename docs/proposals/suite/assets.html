@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Assets</title>
+<meta name="description" content="Product proposal for Bemmoly Assets: the problem today, market leaders, the dream experience, drawn screens, customisation and AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Assets-only screen parts. Everything is prefixed .as- so nothing leaks into the kit. */
+/* asset type tiles: data colours from the kit's module palette, one per type */
+.as-ty{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:none}
+.as-ty svg.lucide{width:14px;height:14px}
+.as-ty.l{width:40px;height:40px;border-radius:10px}.as-ty.l svg.lucide{width:20px;height:20px}
+.as-ty.s{width:20px;height:20px;border-radius:5px}.as-ty.s svg.lucide{width:12px;height:12px}
+.t-lap{background:color-mix(in srgb,#2356c9 14%,transparent);color:var(--acc)}
+.t-ph{background:color-mix(in srgb,#0e9bb0 14%,transparent);color:#0e9bb0}
+.t-mon{background:color-mix(in srgb,#d46a2e 14%,transparent);color:#d46a2e}
+.t-bdg{background:color-mix(in srgb,#c2536a 14%,transparent);color:#c2536a}
+.t-fur{background:color-mix(in srgb,#b7791f 14%,transparent);color:#b7791f}
+.t-lab{background:color-mix(in srgb,#2f9e6e 14%,transparent);color:#2f9e6e}
+.as-tag{font:500 11.5px/1 var(--mono);color:var(--tx-2)}
+/* inventory rail */
+.as-rail{border-right:1px solid var(--line);background:var(--canvas);padding:14px 10px;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.as-rail .cap{padding:10px 8px 4px}
+.as-vi{height:30px;display:flex;align-items:center;gap:9px;padding:0 8px;border-radius:6px;color:var(--tx-2);font-weight:500;white-space:nowrap}
+.as-vi svg.lucide{width:15px;height:15px;color:var(--tx-3)}
+.as-vi .ct{margin-left:auto;font-size:11.5px;color:var(--tx-3);font-weight:400}
+.as-vi.on{background:var(--card);box-shadow:var(--e1);color:var(--tx)}
+.as-vi.on svg.lucide{color:var(--tx)}
+.as-vi .ct.w{color:var(--amber-tx)}
+.as-vi .ct.b{color:var(--red-tx)}
+/* asset timeline */
+.as-tl{position:relative;padding:4px 0}
+.as-ev{display:grid;grid-template-columns:96px 28px minmax(0,1fr);gap:0 12px;position:relative;padding:9px 0}
+.as-ev .d{font-size:12px;color:var(--tx-3);text-align:right;padding-top:5px;white-space:nowrap}
+.as-ev .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);color:var(--tx-2);position:relative;z-index:1}
+.as-ev .ic svg.lucide{width:14px;height:14px}
+.as-ev .ic.ok{background:var(--green-50);box-shadow:none;color:var(--green-tx)}
+.as-ev .ic.warn{background:var(--amber-50);box-shadow:none;color:var(--amber-tx)}
+.as-ev .ic.acc{background:var(--acc-50);box-shadow:none;color:var(--acc)}
+.as-ev::before{content:"";position:absolute;left:121px;top:0;bottom:0;width:1.5px;background:var(--line-2)}
+.as-ev:first-child::before{top:22px}.as-ev:last-child::before{bottom:calc(100% - 22px)}
+.as-ev b{font-weight:600;display:block;font-size:13px}
+.as-ev .m{font-size:12px;color:var(--tx-2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.as-kv{display:flex;align-items:center;gap:8px;font-size:12.5px;min-height:28px}
+.as-kv>span:first-child{color:var(--tx-2);flex:1;min-width:0}
+.as-kv b{font-weight:500}
+/* paper: the vendor invoice and the printed label are paper, so they keep paper colours in both themes */
+.as-inv{position:relative;width:392px;background:#fffdf8;color:#2a2620;font:10.5px/1.5 var(--mono);padding:22px 22px 18px;box-shadow:0 18px 40px rgba(16,24,40,.18),0 0 0 1px rgba(16,24,40,.06);overflow:hidden}
+.as-inv .h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.as-inv .b{font-weight:500}
+.as-inv hr{border:0;border-top:1px dashed #b9b2a3;margin:8px 0}
+.as-inv .l{display:grid;grid-template-columns:18px minmax(0,1fr) 26px 66px 74px;gap:6px}
+.as-inv .l span:nth-child(n+3){text-align:right}
+.as-inv .s{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px 14px}
+.as-inv mark{background:color-mix(in srgb,var(--ai) 30%,transparent);color:inherit;border-radius:2px;padding:0 2px;box-shadow:0 0 0 1px color-mix(in srgb,var(--ai) 60%,transparent)}
+.as-inv .tt{display:flex;justify-content:space-between}
+.as-row{display:grid;align-items:center;gap:10px;height:36px;padding:0 12px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.as-row .ai-field{height:24px;display:flex;align-items:center;padding:0 7px;border-radius:5px;font:500 11.5px/1 var(--mono)}
+/* kit track */
+.as-track{display:flex;align-items:flex-start}
+.as-track .s{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative;font-size:11.5px;color:var(--tx-3);text-align:center;line-height:1.3}
+.as-track .s i{width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;z-index:1}
+.as-track .s.done i{background:var(--done);box-shadow:none;color:#fff}
+.as-track .s.done i svg.lucide{width:11px;height:11px;stroke-width:3}
+.as-track .s.now i{box-shadow:inset 0 0 0 1.5px var(--prog),0 0 0 4px var(--acc-50)}
+.as-track .s.now{color:var(--tx);font-weight:500}
+.as-track .s+.s::before{content:"";position:absolute;top:9px;right:50%;width:100%;height:1.5px;background:var(--line)}
+.as-track .s.done+.s::before{background:var(--done)}
+.as-track small{display:block;font-weight:400;color:var(--tx-3);font-size:11px}
+.as-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line-2)}
+.as-item:last-child{border-bottom:0}
+/* my devices */
+.as-dev{display:flex;flex-direction:column;gap:10px;padding:16px}
+.as-meter{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx-2)}
+.as-meter .bar{flex:1}
+/* phones, for the audit screen */
+.as-wrap3{position:absolute;inset:0;background:radial-gradient(1200px 600px at 10% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:300px 300px minmax(0,1fr);gap:40px;padding:44px 56px 36px;font:13px/1.45 var(--sans);color:var(--tx)}
+.as-col{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.as-col h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.as-col p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:290px}
+.as-phone{width:276px;height:560px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative;flex:none}
+.as-phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:var(--canvas)}
+.as-phone .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:84px;height:24px;border-radius:12px;background:#000;z-index:3}
+/* the camera view is a photo, so it keeps photo colours in both themes */
+.as-cam{position:absolute;inset:0;background:radial-gradient(circle at 50% 38%,#4a4237,#1b1814 72%)}
+.as-cam .bezel{position:absolute;left:-30px;right:-30px;top:150px;height:150px;background:linear-gradient(180deg,#2b2e33,#16181b);border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.as-cam .bezel::after{content:"";position:absolute;left:30px;right:30px;top:-120px;height:110px;background:linear-gradient(180deg,#34404f,#20262e);border-radius:4px}
+.as-cam .lab{position:absolute;left:78px;top:178px;width:100px;height:82px;background:#fff;border-radius:3px;padding:6px;display:flex;gap:5px;align-items:center;transform:rotate(-3deg);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.as-cam .lab svg{width:44px;height:44px;flex:none;color:#111}
+.as-cam .lab span{font:600 7px/1.25 var(--mono);color:#111}
+.as-cam .frm{position:absolute;left:62px;top:160px;width:132px;height:118px;border-radius:12px;box-shadow:0 0 0 2px var(--ai),0 0 0 9999px rgba(0,0,0,.38)}
+.as-cam .top{position:absolute;top:48px;left:0;right:0;text-align:center;color:#fff;font-size:11.5px;font-weight:500}
+.as-cam .top small{display:block;font-size:10.5px;font-weight:400;opacity:.75}
+.as-sheet{position:absolute;left:8px;right:8px;bottom:8px;background:var(--card);border-radius:22px;padding:14px 14px 12px;box-shadow:var(--e2);font-size:12px}
+.as-ph-h{padding:44px 16px 10px;border-bottom:1px solid var(--line-2)}
+.as-ph-r{display:flex;align-items:center;gap:9px;padding:9px 16px;border-bottom:1px solid var(--line-2);font-size:12px}
+.as-ph-g{padding:10px 16px 4px;font-size:11px;font-weight:600;color:var(--tx-3)}
+.as-qr{display:block}
+/* the printed label preview */
+.as-lbl{width:300px;height:150px;background:#fff;color:#111;border-radius:6px;box-shadow:0 10px 26px rgba(16,24,40,.16),0 0 0 1px rgba(16,24,40,.08);display:flex;gap:14px;padding:14px;align-items:center}
+.as-lbl svg{width:112px;height:112px;flex:none;color:#111}
+.as-lbl .t{font:600 18px/1.1 var(--mono);letter-spacing:.01em}
+.as-lbl .n{font:500 11px/1.4 var(--sans);margin-top:6px;color:#333}
+.as-lbl .o{font:400 10px/1.4 var(--sans);margin-top:8px;color:#555}
+/* lifecycle and route nodes */
+.as-states{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.as-node{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 10px;border-radius:7px;background:var(--card);box-shadow:var(--e1);font-weight:500;font-size:12.5px;white-space:nowrap}
+.as-node.sel{box-shadow:0 0 0 1px var(--acc-100),0 0 0 4px var(--acc-50)}
+.as-arrow{color:var(--tx-3)}
+.as-arrow svg.lucide{width:14px;height:14px}
+.as-flow{display:flex;align-items:center;gap:8px}
+.as-flow .node{padding:9px 11px;border-radius:8px;background:var(--card);box-shadow:var(--e1);min-width:0;flex:1}
+.as-flow .node .cap{margin-bottom:3px}
+.as-flow .node b{font-size:12.5px}
+.as-tbl td{height:38px}
+.as-chart text{font:11px var(--sans);fill:var(--tx-3)}
+.as-tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--card);color:var(--tx);font-weight:500;font-size:12.5px;box-shadow:inset 0 0 0 1px var(--ai-100)}
+.as-tok svg.lucide{width:13px;height:13px;color:var(--ai-600)}
+.as-q{height:52px;display:flex;align-items:center;gap:12px;padding:0 16px;border-radius:10px;font-size:16px;font-weight:500}
+.as-q svg.lucide{width:18px;height:18px;color:var(--ai-600)}
+.as-sugg{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:var(--card);box-shadow:var(--e1);font-size:12.5px;color:var(--tx-2);white-space:nowrap}
+.as-sugg svg.lucide{width:13px;height:13px;color:var(--tx-3)}
+@media (max-width:1000px){.as-hide-m{display:none}}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="as-qr" viewBox="-1 -1 27 27"><path fill="currentColor" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM11 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM16 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM11 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM12 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM15 7h1v1h-1zM2 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM18 8h1v1h-1zM19 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM1 9h1v1h-1zM2 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM15 9h1v1h-1zM16 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM18 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM10 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM17 11h1v1h-1zM18 11h1v1h-1zM21 11h1v1h-1zM23 11h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM18 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM24 12h1v1h-1zM2 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM15 13h1v1h-1zM18 13h1v1h-1zM23 13h1v1h-1zM24 13h1v1h-1zM1 14h1v1h-1zM4 14h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM1 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM7 15h1v1h-1zM8 15h1v1h-1zM10 15h1v1h-1zM11 15h1v1h-1zM12 15h1v1h-1zM14 15h1v1h-1zM15 15h1v1h-1zM18 15h1v1h-1zM23 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM1 16h1v1h-1zM3 16h1v1h-1zM4 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM12 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM9 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM21 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM9 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM10 19h1v1h-1zM13 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM13 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM24 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM20 21h1v1h-1zM21 21h1v1h-1zM22 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM9 22h1v1h-1zM13 22h1v1h-1zM14 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM21 22h1v1h-1zM23 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM12 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM21 23h1v1h-1zM23 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM12 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM20 24h1v1h-1zM23 24h1v1h-1z"/></symbol></svg>
+<header class="topbar" data-page="assets"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Assets</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span>Bemmoly Assets · product proposal</div>
+  <h1>Know where every laptop is, and where it goes next</h1>
+  <p class="lede">Every physical thing the company owns, from laptops and phones to badges, desks and lab gear, with who has it, what state it's in, what it's worth and everything that has happened to it. A new hire's laptop arrives before day one. A leaver's laptop comes back with a courier label nobody had to chase. An invoice becomes twelve tagged assets in a minute. It's open source, it runs on your own server, and your company decides what an asset is.</p>
+  <p class="lede" style="font-size:15.5px;margin-top:-8px"><b style="font-weight:600;color:var(--tx)">Its own product. Use it alone, or with the others.</b> Bemmoly Assets has its own app and its own shell. Under the hood it shares Bemmoly's kernel: one sign-in across products, one person directory, the shared approval engine, typed custom fields, the AI layer, audit and backups. A company can install Assets and nothing else.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>IT, finance, every person who holds a device</span>
+    <span class="chip"><i data-lucide="layout-grid"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="boxes"></i>Any asset type, with its own fields</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Most companies can tell you what they paid for their laptops. Far fewer can tell you where each one is today, who has it, and whether it still works well. The facts exist (on the invoice, in device management, in the HR system) but they live in different tools, and the asset register is a spreadsheet someone updates when they remember.</p>
+<div class="stats">
+  <div><b>17%</b><span>of organisations actually inventory all of their IT hardware</span><small>HDI research, 2015</small></div>
+  <div><b>36%</b><span>of ITAM teams say they have complete visibility of their IT estate</span><small>Flexera State of ITAM, 2026</small></div>
+  <div><b>71%</b><span>of HR staff say at least one leaver kept a company laptop or phone</span><small>Capterra offboarding survey, 2022</small></div>
+  <div><b>5%</b><span>of lost or stolen laptops are ever recovered</span><small>Ponemon Institute for Intel, 2010</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>The register is a spreadsheet</b><p>A quarter of organisations in HDI's study tracked hardware in a spreadsheet, and on average about a quarter of their IT hardware was not inventoried at all. Monitors, docks, badges and furniture are the first to drop off.</p><span class="src">HDI, IT hardware asset management, 2015</span></div>
+  <div class="pain"><b>Leavers keep the laptop</b><p>The return is a polite email, then a reminder, then a write-off. Capterra found remote and hybrid leavers were 17% more likely not to return equipment than on-site ones. Nobody owns the chase.</p><span class="src">Capterra, 2022</span></div>
+  <div class="pain"><b>Day one starts without a laptop</b><p>HR knows the start date, IT knows the stock, a courier knows the address. Joining them is a thread of messages, and a new hire in another city loses their first morning waiting.</p></div>
+  <div class="pain"><b>Audits are a clipboard exercise</b><p>Someone walks the floor with a printout, ticks tags by eye and types the result back in. Items that moved desks look missing, and items that are actually missing stay on the books.</p></div>
+  <div class="pain"><b>IT and finance keep different books</b><p>IT knows the serial and the holder. Finance knows the cost and the depreciation, in a separate fixed asset sheet. Retirements and disposals rarely reach both, so the two never quite match.</p></div>
+  <div class="pain"><b>Refresh by age, not by condition</b><p>Device management already knows battery health, storage and warranty, but the tools that hold it don't plan purchases. So companies replace every four-year-old laptop, healthy or not, and miss the two-year-old one that is failing.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet every device. Each wants the record to be right without being the one who keeps it right.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l k">RK</span><div><b>Rohan, IT admin</b><span>Looks after 1,842 assets in three offices</span></div></div>
+    <q>"I want the inventory to update itself. When someone joins or leaves, the device part should just happen, and I only step in when it doesn't."</q>
+    <ul><li>Records created from the invoice, not typed in</li><li>Joiner and leaver kits triggered from People</li><li>Audits by phone in minutes, not a day</li><li>Health and warranty from device management, on the asset</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l p">SL</span><div><b>Sofia, product designer</b><span>Works from the Berlin office</span></div></div>
+    <q>"When my laptop acts up, I want to say so in one sentence and get a loaner, not fill in a form about my serial number."</q>
+    <ul><li>All my devices in one place, with what to do for each</li><li>Report a problem, and the ticket already knows the device</li><li>Request a monitor or headset in two clicks</li><li>Clear return steps when I leave or upgrade</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l g">MI</span><div><b>Meera, finance controller</b><span>Owns the fixed asset register</span></div></div>
+    <q>"I want one register that IT and finance both trust, with depreciation worked out and disposals that actually reach the books."</q>
+    <ul><li>Cost, method and book value on every asset</li><li>A refresh plan she can budget from</li><li>Purchases that need approval go through the same engine as everything else</li><li>A clean export to the ledger every month</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category splits into five camps: enterprise service platforms, mid-market service desks, device management, discovery and integration platforms, and device-lifecycle services that ship and collect hardware. Below is what each leader does best and where they leave a gap. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>ServiceNow HAM</b><span>Enterprise</span></header><p>Hardware asset management on a large service platform: stockroom receiving and picking, repair and RMA flows, deploy, swap and retire tasks, and refresh planning from end-of-life data.</p>
+    <div class="plus"><i data-lucide="plus"></i>The deepest lifecycle model, tied to incidents, changes and the CMDB.</div><div class="minus"><i data-lucide="minus"></i>Sold as a subscription on a heavy platform. Rollouts are projects, and small teams are priced out.</div></div>
+  <div class="leader"><header><b>Freshservice</b><span>Mid-market service desk</span></header><p>Asset management inside a friendly service desk: discovery probe and agent, asset types, CSV import, and depreciation by straight line, declining balance or sum of years' digits.</p>
+    <div class="plus"><i data-lucide="plus"></i>Depreciation and book value on the asset page, set up in admin.</div><div class="minus"><i data-lucide="minus"></i>IT-first. Furniture, badges and lab gear fit awkwardly, and joiner logistics are out of scope.</div></div>
+  <div class="leader"><header><b>Jamf, Iru (formerly Kandji)</b><span>Device management</span></header><p>Enrolment, configuration, security and inventory for Apple fleets, with Iru now widening to Windows and Android. They know each device's health in real time.</p>
+    <div class="plus"><i data-lucide="plus"></i>Zero-touch enrolment: the laptop configures itself on first sign-in.</div><div class="minus"><i data-lucide="minus"></i>Only managed devices exist. No cost, no depreciation, no monitors or desks, no people process.</div></div>
+  <div class="leader"><header><b>Oomnitza, Lansweeper</b><span>Discovery and integration</span></header><p>Oomnitza pulls asset data from many systems without an agent and runs workflows on it. Lansweeper scans networks to find every connected device.</p>
+    <div class="plus"><i data-lucide="plus"></i>Reconciles what each tool says into one record, and finds what nobody registered.</div><div class="minus"><i data-lucide="minus"></i>Powerful but technical. Implementation is the hard part, and non-networked things are invisible.</div></div>
+  <div class="leader"><header><b>Asset Panda</b><span>Configurable tracking</span></header><p>Tracks any physical asset with customisable fields and actions, and a free mobile app that scans QR codes and many barcode types for check-in, check-out and audits.</p>
+    <div class="plus"><i data-lucide="plus"></i>Anything can be an asset, and the phone is the scanner.</div><div class="minus"><i data-lucide="minus"></i>A tracking database more than a lifecycle. No device health, no joiner kits, pricing on request.</div></div>
+  <div class="leader"><header><b>Firstbase, Workwize</b><span>Device-lifecycle services</span></header><p>Buy, ship, store, collect and recycle laptops for distributed teams. Retrieval kits and labels go out automatically when the HR system marks someone as leaving.</p>
+    <div class="plus"><i data-lucide="plus"></i>The logistics nobody wants to do, done in many countries.</div><div class="minus"><i data-lucide="minus"></i>Your asset records live with the service, and the economics tie you to its warehouses.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Enterprise</th><th>Mid-market desk</th><th>Device management</th><th>Discovery-led</th><th>Lifecycle services</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Any physical asset, not only IT</td><td class="part">Mostly IT</td><td class="part">Mostly IT</td><td class="no">Managed devices only</td><td class="part">Networked first</td><td class="no">Laptops and peripherals</td><td class="yes">Yes</td><td class="yes">Yes, typed per company</td></tr>
+  <tr><td>Asset types with their own fields</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="part">Fixed</td><td class="yes">Yes</td><td class="part">Fixed</td><td class="yes">Fieldsets</td><td class="yes">Typed fields, usable in rules</td></tr>
+  <tr><td>Device health from device management</td><td class="part">Integration</td><td class="part">Integration</td><td class="yes">Native</td><td class="yes">Integration</td><td class="part">Some</td><td class="part">Fleet only</td><td class="yes">Connectors, on the asset page</td></tr>
+  <tr><td>Joiner and leaver kits with shipping</td><td class="part">Workflows</td><td class="part">Workflows</td><td class="no">No</td><td class="part">Workflows</td><td class="yes">Core service</td><td class="no">No</td><td class="yes">Triggered from People, courier connectors</td></tr>
+  <tr><td>Audits by scanning on a phone</td><td class="yes">Mobile app</td><td class="part">Some</td><td class="no">No</td><td class="part">Some</td><td class="no">No</td><td class="part">QR labels</td><td class="yes">Any phone camera, no app needed</td></tr>
+  <tr><td>Depreciation and book value</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="part">Some</td><td class="part">Reports</td><td class="part">Basic</td><td class="yes">Methods per type, ledger export</td></tr>
+  <tr><td>Invoice to asset records with AI</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="part">They buy for you</td><td class="no">No</td><td class="yes">Yes, with serials and a person checking</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="part">Private cloud</td><td class="no">No</td><td class="part">Some on-premises</td><td class="part">Some on-premises</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Enterprise contracts</td><td>Per agent, by plan</td><td>Per device</td><td>By assets or quote</td><td>Per device plus logistics</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Snipe-IT (check-in and check-out, QR labels, custom fields, EULA acceptance at checkout, requestable assets and audit reminders), GLPI (a service desk with an inventory agent) and Fleet (open-core device management built on osquery). They are capable and loved, but each covers one slice: the register, the service desk or the device. Ivanti and ManageEngine AssetExplorer sit in the same space as the service-desk leaders. Nobody joins the register to people, finance, the help desk and device health in one premium, self-hosted product. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (the lifecycle model, zero-touch logistics, the phone as scanner) and add what only an open platform that already knows your people can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="boxes"></i></span><b>Anything can be an asset, typed your way</b><p>A laptop has a serial, memory and a device-management id. A lab oscilloscope has a calibration date. A desk has a floor and a seat. Each type gets its own typed fields, states, depreciation and tag format.</p><span class="vs">Leaders: most model IT hardware first; furniture and lab gear are an afterthought.</span></div>
+  <div><span class="ic"><i data-lucide="package-check"></i></span><b>Joiners and leavers run themselves</b><p>A start date in People picks a kit, reserves stock and books the courier so the laptop lands before day one. A last day sends a return kit and label, locks the device and closes the loop when it's back.</p><span class="vs">Leaders: lifecycle services do the logistics, but your records live with them.</span></div>
+  <div><span class="ic ai"><i data-lucide="file-scan"></i></span><b>Invoice in, assets out</b><p>Drop the supplier's invoice and AI reads every line and serial, matches models and the purchase order, creates tagged records and queues the labels. A person checks it before anything is saved.</p><span class="vs">New: leaders import CSVs or discover devices after they're switched on.</span></div>
+  <div><span class="ic ai"><i data-lucide="battery-medium"></i></span><b>Refresh by condition, not age</b><p>Battery health, cycles, storage and warranty come in from device management. AI predicts when each laptop will cross your threshold, so you replace the failing ones and keep the healthy ones a year longer.</p><span class="vs">Leaders: enterprise tools plan from end-of-life dates; most plan from purchase date.</span></div>
+  <div><span class="ic"><i data-lucide="landmark"></i></span><b>One register for IT and finance</b><p>Cost, depreciation method, book value and disposal live on the same record as the serial and the holder. Retiring a laptop updates the books, and the month's changes export to the ledger.</p><span class="vs">Leaders: service desks have depreciation; most others leave it to a finance spreadsheet.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>Self-service, and no price per asset</b><p>Every person sees their devices under "Assigned to me", requests what they need and reports a problem that opens a Helpdesk ticket with diagnostics attached. Track ten assets or a hundred thousand: nothing is metered.</p><span class="vs">Leaders: priced per asset, per device or per agent, with self-service on higher plans.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Eight screens, drawn in Bemmoly's frame and tokens. Click the tabs, or click the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="as">
+<!-- 1 ======================== Inventory -->
+<figure class="screen" id="as-inv" data-title="Inventory">
+  <div class="scap"><b>The inventory, with smart views</b><span>Every asset with its state, holder, place and value. Smart views surface what needs a decision before anyone asks.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.inv" data-me="Rohan Kapoor" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span class="cur">Inventory</span></div>
+        <div class="htabs"><span class="htab on">Assets<span class="ct">1,842</span></span><span class="htab">Models</span><span class="htab">Stockrooms</span><span class="htab" data-go="as-refresh">Refresh plan</span></div>
+        <div class="hact"><span class="btn ai hot" data-go="as-invoice"><i data-lucide="file-scan"></i>Add from invoice</span><span class="btn pri"><i data-lucide="plus"></i>New asset</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:212px minmax(0,1fr);height:100%">
+        <div class="as-rail">
+          <div class="as-vi on"><i data-lucide="boxes"></i>All assets<span class="ct">1,842</span></div>
+          <div class="as-vi"><i data-lucide="laptop"></i>Laptops<span class="ct">468</span></div>
+          <div class="as-vi"><i data-lucide="smartphone"></i>Phones<span class="ct">212</span></div>
+          <div class="as-vi"><i data-lucide="monitor"></i>Monitors<span class="ct">391</span></div>
+          <div class="as-vi"><i data-lucide="id-card"></i>Badges<span class="ct">446</span></div>
+          <div class="as-vi"><i data-lucide="armchair"></i>Furniture<span class="ct">287</span></div>
+          <div class="as-vi"><i data-lucide="flask-conical"></i>Lab gear<span class="ct">38</span></div>
+          <div class="cap">Smart views</div>
+          <div class="as-vi"><i data-lucide="shield-alert"></i>Warranty ends soon<span class="ct w">17</span></div>
+          <div class="as-vi"><i data-lucide="battery-warning"></i>Battery below 80%<span class="ct w">41</span></div>
+          <div class="as-vi"><i data-lucide="user-round-minus"></i>Held by leavers<span class="ct w">2</span></div>
+          <div class="as-vi"><i data-lucide="hourglass"></i>In stock over 60 days<span class="ct">23</span></div>
+          <div class="as-vi"><i data-lucide="search-x"></i>Not found in audit<span class="ct b">6</span></div>
+        </div>
+        <div class="full" style="padding:16px 20px;gap:12px">
+          <div class="row" style="gap:8px">
+            <div class="inp ph grow"><i data-lucide="search"></i>Search a tag, serial, person or model, or ask a question<span class="sp"></span><span class="kbd">/</span></div>
+            <span class="btn ai" data-go="as-ask"><span class="aid"></span>Who has a spare 16-inch laptop in Berlin?</span>
+          </div>
+          <div class="row" style="justify-content:space-between">
+            <div class="fbar"><span class="fchip"><i data-lucide="building-2"></i>Office <b>All</b></span><span class="fchip"><i data-lucide="circle-dot"></i>State <b>Any</b></span><span class="fchip dash"><i data-lucide="plus"></i>Filter</span></div>
+            <div class="row"><span class="tx-3" style="font-size:12px;white-space:nowrap">Book value <b class="num" style="color:var(--tx)">₹4.86 Cr</b> · 214 in stock</span><span class="seg"><span class="on">Table</span><span>Board</span></span></div>
+          </div>
+          <div class="card" style="overflow:hidden;flex:1;min-height:0">
+            <table class="tbl as-tbl" style="font-size:12.5px"><thead><tr><th style="width:96px">Tag</th><th>Asset</th><th>State</th><th>With</th><th>Warranty</th><th class="r">Book value</th></tr></thead><tbody>
+              <tr class="sel" data-go="as-asset"><td class="as-tag">AL-LT-0287</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">MacBook Pro 16-inch, 2023</span></div></td><td><span class="st done"><i></i>In use</span></td><td><div class="row"><span class="av s g">AT</span>Aiko Tanaka</div></td><td><span class="bdg warn">Ends 12 Nov</span></td><td class="r num">₹85,700</td></tr>
+              <tr><td class="as-tag">AL-LT-0612</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">MacBook Pro 14-inch, M4 Pro</span></div></td><td><span class="st prog"><i></i>Shipping</span></td><td><div class="row"><span class="av s a">KN</span>Kavya Nair</div></td><td class="tx-2">Oct 2027</td><td class="r num">₹2,29,900</td></tr>
+              <tr><td class="as-tag">AL-LT-0544</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">MacBook Pro 16-inch, 2024</span></div></td><td><span class="st warn"><i></i>In repair</span></td><td><div class="row"><span class="av s p">SL</span>Sofia Lindqvist</div></td><td class="tx-2">Mar 2027</td><td class="r num">€1,940</td></tr>
+              <tr><td class="as-tag">AL-LT-0598</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">ThinkPad X1 Carbon Gen 12</span></div></td><td><span class="st done"><i></i>In use</span></td><td><div class="row"><span class="av s o">TG</span>Tomás García</div></td><td class="tx-2">Jun 2027</td><td class="r num">$1,410</td></tr>
+              <tr><td class="as-tag">AL-LT-0401</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">MacBook Air 13-inch, M2</span></div></td><td><span class="st prog"><i></i>Returning</span></td><td><div class="row"><span class="av s v">NR</span>Nikhil Rao</div></td><td class="tx-3">Ended</td><td class="r num">₹38,200</td></tr>
+              <tr><td class="as-tag">AL-PH-0133</td><td><div class="row"><span class="as-ty s t-ph"><i data-lucide="smartphone"></i></span><span class="trunc">iPhone 15, 128 GB</span></div></td><td><span class="st done"><i></i>In use</span></td><td><div class="row"><span class="av s o">AM</span>Arjun Mehta</div></td><td class="tx-2">Feb 2027</td><td class="r num">₹41,600</td></tr>
+              <tr><td class="as-tag">AL-MN-0871</td><td><div class="row"><span class="as-ty s t-mon"><i data-lucide="monitor"></i></span><span class="trunc">Dell UltraSharp 27, U2724D</span></div></td><td><span class="st done"><i></i>In use</span></td><td class="tx-2"><div class="row"><i data-lucide="map-pin" style="width:14px;height:14px;color:var(--tx-3)"></i>Desk B2-14</div></td><td class="tx-2">Aug 2028</td><td class="r num">€310</td></tr>
+              <tr><td class="as-tag">AL-BD-1048</td><td><div class="row"><span class="as-ty s t-bdg"><i data-lucide="id-card"></i></span><span class="trunc">Access badge, Bengaluru</span></div></td><td><span class="st todo"><i></i>Ready</span></td><td><div class="row"><span class="av s a">KN</span>Kavya Nair</div></td><td class="tx-3">None</td><td class="r num tx-3">Not tracked</td></tr>
+              <tr><td class="as-tag">AL-LB-0019</td><td><div class="row"><span class="as-ty s t-lab"><i data-lucide="cpu"></i></span><span class="trunc">GPU workstation, 2x RTX 6000</span></div></td><td><span class="st done"><i></i>Booked</span></td><td><div class="row"><span class="av s g">AT</span>Aiko, until Fri</div></td><td class="tx-2">Jan 2028</td><td class="r num">₹9,84,000</td></tr>
+              <tr><td class="as-tag">AL-FN-0230</td><td><div class="row"><span class="as-ty s t-fur"><i data-lucide="armchair"></i></span><span class="trunc">Standing desk, 160 cm</span></div></td><td><span class="st done"><i></i>In use</span></td><td class="tx-2"><div class="row"><i data-lucide="map-pin" style="width:14px;height:14px;color:var(--tx-3)"></i>Desk B2-09</div></td><td class="tx-2">2031</td><td class="r num">€412</td></tr>
+              <tr><td class="as-tag">AL-LT-0377</td><td><div class="row"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><span class="trunc">MacBook Pro 14-inch, 2022</span></div></td><td><span class="st bad"><i></i>Missing</span></td><td class="tx-3">Last: Lena Fischer</td><td class="tx-3">Ended</td><td class="r num">€520</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Smart views answer the real questions</b>Warranties about to end, weak batteries, leavers' devices, stock that has sat too long. Each is a saved filter anyone can make.</div>
+    <div><b>Every kind of thing, one list</b>Laptops, badges, desks and a shared GPU workstation sit side by side, each with its own type, fields and value in its own currency.</div>
+    <div><b>Search or ask</b>Type a tag or a serial, or ask a question in plain words. The answer becomes a view you can save.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== Asset page -->
+<figure class="screen" id="as-asset" data-title="An asset's life story">
+  <div class="scap"><b>An asset's life story</b><span>Bought, assigned, repaired, returned, wiped, reassigned. Every event is on the timeline, with health, warranty and value beside it.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.inv" data-me="Rohan Kapoor" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span>Inventory</span><span class="sep">/</span><span class="cur mono">AL-LT-0287</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="printer"></i>Print label</span><span class="btn"><i data-lucide="repeat"></i>Reassign</span><span class="btn pri"><i data-lucide="undo-2"></i>Check in</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 352px;height:100%">
+        <div style="overflow:hidden;padding:22px 28px">
+          <div class="row" style="gap:14px;align-items:flex-start;margin-bottom:16px">
+            <span class="as-ty l t-lap"><i data-lucide="laptop"></i></span>
+            <div class="col grow"><div class="h20">MacBook Pro 16-inch, 2023</div><span class="tx-2" style="font-size:12.5px;margin-top:2px">M3 Pro · 36 GB · 1 TB · Space black · serial <span class="mono">C02FK3XYMD6T</span></span>
+              <div class="row" style="margin-top:10px;gap:8px"><span class="st done"><i></i>In use</span><span class="tx-3">·</span><span class="av s g">AT</span><span>Aiko Tanaka, since 1 Sep 2025</span><span class="tx-3">·</span><span class="tx-2">Bengaluru, floor 3</span></div></div>
+            <span class="bdg plain"><i data-lucide="tag"></i>Grade A</span>
+          </div>
+          <div class="row" style="margin-bottom:12px"><div class="seg"><span class="on">Timeline</span><span>Details</span><span>Files<span class="ct"> 4</span></span><span>Software<span class="ct"> 23</span></span></div><span class="sp"></span><span class="tx-3" style="font-size:12px">7 events from 4 sources</span></div>
+          <div class="card" style="padding:6px 18px">
+            <div class="as-tl">
+              <div class="as-ev"><span class="d">Mon 5 Oct 2026</span><span class="ic acc"><i data-lucide="scan-line"></i></span><div><b>Scanned in the Q4 audit</b><div class="m">Bengaluru floor 3 · by Rohan Kapoor on his phone · in the expected place</div></div></div>
+              <div class="as-ev"><span class="d">Mon 1 Sep 2025</span><span class="ic ok"><i data-lucide="user-round-check"></i></span><div><b>Assigned to Aiko Tanaka</b><div class="m">Accepted the device terms in Assets · <span class="cite" style="margin:0"><i data-lucide="file-signature"></i>Signed</span></div></div></div>
+              <div class="as-ev"><span class="d">Thu 28 Aug 2025</span><span class="ic"><i data-lucide="shield-check"></i></span><div><b>Wiped and graded A</b><div class="m">Erase certificate attached · re-enrolled in device management</div></div></div>
+              <div class="as-ev"><span class="d">Fri 22 Aug 2025</span><span class="ic"><i data-lucide="undo-2"></i></span><div><b>Returned by Daniel Okafor</b><div class="m">Upgraded to a 14-inch for travel · back to the Bengaluru stockroom</div></div></div>
+              <div class="as-ev"><span class="d">Thu 12 Jun 2025</span><span class="ic warn"><i data-lucide="wrench"></i></span><div><b>Battery replaced under warranty</b><div class="m"><span class="tile" style="background:var(--m-helpdesk);width:16px;height:16px;border-radius:4px"><i data-lucide="life-buoy" style="width:10px;height:10px"></i></span>Helpdesk HD-1840 · 3 days · loaner AL-LT-0233 · cost ₹0</div></div></div>
+              <div class="as-ev"><span class="d">Mon 20 Nov 2023</span><span class="ic ok"><i data-lucide="user-round-check"></i></span><div><b>Assigned to Daniel Okafor</b><div class="m">New laptop for the Platform team lead</div></div></div>
+              <div class="as-ev"><span class="d">Tue 14 Nov 2023</span><span class="ic"><i data-lucide="package-check"></i></span><div><b>Received in the Bengaluru stockroom</b><div class="m">Northstar Systems · invoice INV-NS-61207 · PO-2023-118 · ₹2,49,900</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:18px 18px;overflow:hidden" class="col">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Battery check, while it's free<span class="src">by AI · from warranty, health</span></div>
+            <p>Warranty ends Thu 12 Nov, in 24 days. Battery health is 79% after 612 cycles and is dropping about 1.2 points a month. A replacement is free until then.<span class="cite"><i data-lucide="shield"></i>Warranty</span><span class="cite"><i data-lucide="battery-medium"></i>Health</span><span class="cite"><i data-lucide="life-buoy"></i>HD-1840</span></p>
+            <div class="acts"><span class="btn sm">Ask Aiko to book a slot</span><span class="nu">Not useful</span></div></div>
+          <div class="card" style="margin-top:12px">
+            <div class="card-h" style="font-size:12.5px"><i data-lucide="activity" style="width:14px;height:14px;color:var(--tx-3)"></i>Device health<span class="tx-3 sp" style="text-align:right;font-size:11.5px">checked in 12 min ago</span></div>
+            <div style="padding:8px 16px 10px">
+              <div class="as-kv"><span>Battery</span><div class="bar" style="width:90px"><i style="width:79%;background:var(--amber)"></i></div><b class="num">79%</b></div>
+              <div class="as-kv"><span>Charge cycles</span><b class="num">612</b></div>
+              <div class="as-kv"><span>Storage used</span><b class="num">71% of 1 TB</b></div>
+              <div class="as-kv"><span>Disk encryption</span><span class="bdg ok">On</span></div>
+              <div class="as-kv"><span>Operating system</span><b>macOS 15.6, up to date</b></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px">
+            <div class="card-h" style="font-size:12.5px"><i data-lucide="landmark" style="width:14px;height:14px;color:var(--tx-3)"></i>Value<span class="tx-3 sp" style="text-align:right;font-size:11.5px;font-weight:400">straight line, 4 years</span></div>
+            <div style="padding:12px 16px">
+              <div class="row" style="align-items:flex-end"><div class="col grow"><span class="tx-3" style="font-size:11.5px">Book value today</span><span class="big num">₹85,700</span></div><div class="col" style="text-align:right"><span class="tx-3" style="font-size:11.5px">Cost</span><b class="num">₹2,49,900</b></div></div>
+              <svg class="as-chart" viewBox="0 0 316 70" width="316" height="70" style="display:block;margin-top:8px">
+                <line x1="0" y1="60" x2="316" y2="60" stroke="var(--line)" stroke-width="1"/>
+                <polyline points="0,6 76,18.4 152,30.8 228,43.2 304,55.6" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <polyline points="0,6 76,18.4 152,30.8 222,42.2" fill="none" stroke="var(--acc)" stroke-width="2"/>
+                <circle cx="222" cy="42.2" r="4" fill="var(--acc)" stroke="var(--card)" stroke-width="2"/>
+                <text x="0" y="70">Nov 2023</text><text x="196" y="70">Today</text><text x="268" y="70">Nov 2027</text>
+              </svg>
+              <div class="tx-3" style="font-size:11.5px;margin-top:4px">Salvage ₹24,990 · ledger account 1520, computers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The whole story, from every product</b>The repair came from Helpdesk, the holders from People, the scan from the audit. Nobody typed a history; the events wrote it.</div>
+    <div><b>Health on the record</b>The device-management connector keeps battery, storage and encryption current, so IT sees condition without opening another tool.</div>
+    <div><b>Value that finance trusts</b>Cost, method, salvage and book value follow the type's depreciation rule, and the ledger account comes with it.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== Invoice to assets (signature) -->
+<figure class="screen" id="as-invoice" data-title="Invoice in, assets out">
+  <div class="scap"><b>Invoice in, twelve assets out</b><span>Drop the supplier's invoice. Every line and serial becomes a tagged, valued record, matched to the purchase order, with labels ready to print.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.inv" data-me="Rohan Kapoor" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span>Inventory</span><span class="sep">/</span><span class="cur">From invoice INV-NS-88213</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Nothing is saved until you create them</span><span class="btn">Discard</span><span class="btn pri hot" data-show=".as-t-inv"><i data-lucide="printer"></i>Create 12 assets and print labels</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:460px minmax(0,1fr);height:100%">
+        <div style="background:var(--sunken);position:relative;display:grid;place-items:center;overflow:hidden;border-right:1px solid var(--line)">
+          <div class="as-inv">
+            <div class="h"><div><div class="b" style="font-size:13px"><mark>NORTHSTAR SYSTEMS PVT LTD</mark></div><div>14 Residency Rd, Bengaluru 560025</div><div>GSTIN 29AAKCN4410Q1Z8</div></div><div style="text-align:right"><div class="b">TAX INVOICE</div><div><mark>INV-NS-88213</mark></div><div><mark>16/10/2026</mark></div></div></div>
+            <hr><div>Bill to: Acme Labs Pvt Ltd, Bengaluru · PO <mark>PO-2026-311</mark></div><hr>
+            <div class="l b"><span>#</span><span>Item</span><span>Qty</span><span>Rate</span><span>Amount</span></div>
+            <div class="l"><span>1</span><span><mark>MacBook Pro 14 M4 Pro 24/1TB</mark></span><span><mark>8</mark></span><span>2,29,900</span><span>18,39,200</span></div>
+            <div class="l"><span>2</span><span><mark>Dell U2724D 27" monitor</mark></span><span><mark>3</mark></span><span>41,500</span><span>1,24,500</span></div>
+            <div class="l"><span>3</span><span><mark>Thunderbolt 4 dock, 140W</mark></span><span><mark>1</mark></span><span>30,000</span><span>30,000</span></div>
+            <div class="l"><span>4</span><span>Warranty: 1 year, onsite</span><span></span><span></span><span>incl.</span></div>
+            <hr><div class="tt"><span>Subtotal</span><span>19,93,700.00</span></div><div class="tt"><span>IGST 18%</span><span>3,58,866.00</span></div>
+            <div class="tt b" style="font-size:12px"><span>TOTAL INR</span><span><mark>23,52,566.00</mark></span></div><hr>
+            <div class="b" style="margin-bottom:3px">Annexure A: serial numbers</div>
+            <div class="s"><span>1 <mark>SH7K2LQ9WXF</mark></span><span>1 <mark>SM4T9CR2D1P</mark></span><span>1 <mark>SJ2W7NV4Q6K</mark></span><span>1 <mark>SC9P3XQ7TL2</mark></span><span>1 <mark>SL6F1HM8R3Z</mark></span><span>1 <mark>SG8D4KT2XQ4T</mark></span><span>1 <mark>SK3R5WN9B7M</mark></span><span>1 <mark>SF1Q8YH6C4V</mark></span><span>2 <mark>CN0X7J1K4021</mark></span><span>2 <mark>CN0X7J1K4058</mark></span><span>2 <mark>CN0X7J1K4063</mark></span><span>3 <mark>TB4D-22R0917</mark></span></div>
+            <div class="ai-scan"></div>
+          </div>
+          <div class="ai-line" style="position:absolute;top:14px;left:14px;background:var(--card);box-shadow:var(--e1);padding:6px 10px;border-radius:6px"><span class="aid"></span>Read by AI in 2.4s · highlighted text is what it used</div>
+          <div class="row" style="position:absolute;bottom:14px;left:14px;gap:6px"><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="zoom-in"></i></span><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="file-text"></i></span><span class="tx-3" style="font-size:12px">Page 1 of 1 · from purchasing@ email</span></div>
+        </div>
+        <div style="overflow:hidden;padding:18px 22px" class="col">
+          <div class="row" style="margin-bottom:4px"><div class="col grow"><div class="h20">12 assets found</div><span class="tx-2" style="font-size:12.5px">Northstar Systems · matched to <span style="color:var(--acc)">PO-2026-311</span>, approved by Meera Iyer · totals match</span></div><span class="bdg ai"><span class="aid" style="box-shadow:none;width:6px;height:6px"></span>58 fields by AI</span></div>
+          <div class="ai-card" style="margin:12px 0"><div class="ai-h"><span class="aid"></span>Two things I did, check them<span class="src">by AI · from the invoice, inventory and People</span></div>
+            <p>Kavya Nair joins Mon 2 Nov in Bengaluru with no laptop reserved, so I reserved AL-LT-0612 for her engineering kit.<span class="cite"><i data-lucide="contact-round"></i>People</span> Serial SG8D4KT2XQ4T was on a laptop returned to the supplier in July, so this one may be a refurbished unit.<span class="cite"><i data-lucide="history"></i>RMA-0412</span></p>
+            <div class="acts"><span class="btn sm">Keep the reservation</span><span class="btn sm">Ask Northstar about the serial</span><span class="nu">Not useful</span></div></div>
+          <div class="card" style="overflow:hidden">
+            <div class="ghead"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span>MacBook Pro 14-inch, M4 Pro<span class="ct">8 · model in catalog · ₹2,29,900 each</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-LT-0612</span><span class="ai-field">SH7K2LQ9WXF</span><span class="row"><span class="av s a">KN</span>Reserved for Kavya Nair</span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-LT-0613</span><span class="ai-field">SM4T9CR2D1P</span><span class="tx-2">In stock</span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-LT-0614</span><span class="ai-field">SJ2W7NV4Q6K</span><span class="tx-2">In stock</span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-LT-0617</span><span class="ai-field" style="box-shadow:inset 0 0 0 1px var(--amber);background:var(--amber-50)">SG8D4KT2XQ4T</span><span class="row"><span class="bdg warn">Serial seen before</span></span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="tx-3" style="grid-column:1/3">and 4 more, in stock</span><span></span><span style="color:var(--acc)">Show all</span></div>
+            <div class="ghead"><span class="as-ty s t-mon"><i data-lucide="monitor"></i></span>Dell UltraSharp 27, U2724D<span class="ct">3 · ₹41,500 each</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-MN-0902</span><span class="ai-field">CN0X7J1K4021</span><span class="row"><span class="av s a">KN</span>Kavya's desk, F3-22</span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-MN-0903</span><span class="ai-field">CN0X7J1K4058</span><span class="tx-2">In stock</span><span class="tx-3">Bengaluru</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px"><span class="as-tag">AL-MN-0904</span><span class="ai-field">CN0X7J1K4063</span><span class="tx-2">In stock</span><span class="tx-3">Bengaluru</span></div>
+            <div class="ghead"><span class="as-ty s t-lab"><i data-lucide="plug"></i></span>Thunderbolt 4 dock<span class="ct">1 · new model, added to catalog</span></div>
+            <div class="as-row" style="grid-template-columns:96px 128px minmax(0,1fr) 92px;border-bottom:0"><span class="as-tag">AL-AC-0311</span><span class="ai-field">TB4D-22R0917</span><span class="tx-2">In stock</span><span class="tx-3">Bengaluru</span></div>
+          </div>
+          <div class="row tx-3" style="font-size:12px;margin-top:12px;gap:14px"><span class="row" style="gap:5px"><i data-lucide="landmark" style="width:14px;height:14px"></i>Depreciation from each type's rule</span><span class="row" style="gap:5px"><i data-lucide="shield" style="width:14px;height:14px"></i>Warranty to 15 Oct 2027, from line 4</span><span class="row" style="gap:5px"><i data-lucide="printer" style="width:14px;height:14px"></i>Labels to the Bengaluru printer</span></div>
+        </div>
+      </div>
+      <div class="toast as-t-inv" hidden><i data-lucide="circle-check"></i>12 assets created, ₹19.9L added to the register. 12 labels are printing.<span class="u" data-hide=".as-t-inv">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The invoice is the source of truth</b>Model, quantity, price, serials and warranty all come from the paper, with each value highlighted where it was read. Totals are checked against the purchase order.</div>
+    <div><b>It connects the dots for you</b>A new hire with no laptop gets one reserved. A serial that was returned before is flagged. Both are suggestions a person keeps or undoes.</div>
+    <div><b>Tags and labels in the same step</b>Tags follow each type's format, and labels go to the office printer, so the boxes are tagged before they are opened.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Joiners and leavers -->
+<figure class="screen" id="as-kits" data-title="Joiners and leavers">
+  <div class="scap"><b>Joiners and leavers, handled before anyone asks</b><span>A start date in People picks a kit and books the courier. A last day sends a return kit and label. IT watches the exceptions.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.req" data-me="Rohan Kapoor" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span class="cur">Requests</span></div>
+        <div class="htabs"><span class="htab">Requests<span class="ct">4</span></span><span class="htab on">Joiners and leavers<span class="ct">5</span></span><span class="htab">Repairs<span class="ct">3</span></span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="calendar"></i>Next 30 days</span><span class="btn"><i data-lucide="package"></i>Edit kits</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:340px minmax(0,1fr);height:100%">
+        <div style="border-right:1px solid var(--line);overflow:hidden">
+          <div class="ghead"><i data-lucide="user-round-plus" style="width:14px;height:14px;color:var(--tx-3)"></i>Joining<span class="ct">3</span></div>
+          <div class="lrow sel" style="height:58px"><span class="av a">KN</span><div class="col grow"><b>Kavya Nair</b><span class="tx-3" style="font-size:12px">Bengaluru · joins Mon 2 Nov</span></div><span class="st prog"><i></i>Shipped</span></div>
+          <div class="lrow" style="height:58px"><span class="av k">JW</span><div class="col grow"><b>Jonas Weber</b><span class="tx-3" style="font-size:12px">Berlin · joins Mon 9 Nov</span></div><span class="st todo"><i></i>Kit ready</span></div>
+          <div class="lrow" style="height:58px"><span class="av o">MB</span><div class="col grow"><b>Maya Brooks</b><span class="tx-3" style="font-size:12px">Austin · joins Mon 16 Nov</span></div><span class="bdg warn">No stock</span></div>
+          <div class="ghead"><i data-lucide="user-round-minus" style="width:14px;height:14px;color:var(--tx-3)"></i>Leaving<span class="ct">2</span></div>
+          <div class="lrow" style="height:58px"><span class="av v">NR</span><div class="col grow"><b>Nikhil Rao</b><span class="tx-3" style="font-size:12px">Bengaluru · last day Fri 30 Oct</span></div><span class="st prog"><i></i>Kit delivered</span></div>
+          <div class="lrow" style="height:58px"><span class="av p">EP</span><div class="col grow"><b>Elena Petrova</b><span class="tx-3" style="font-size:12px">Berlin · last day Fri 13 Nov</span></div><span class="st todo"><i></i>Not started</span></div>
+          <div style="padding:14px 14px">
+            <div class="well" style="padding:12px 14px;font-size:12px" class="tx-2"><div class="row" style="margin-bottom:4px"><i data-lucide="contact-round" style="width:14px;height:14px;color:var(--m-people)"></i><b style="font-size:12.5px">From People, automatically</b></div><span class="tx-2">Start dates, last days, roles and home addresses come from each person record. IT sees an address only while a delivery is open.</span></div>
+          </div>
+        </div>
+        <div style="overflow:hidden;padding:20px 24px" class="col">
+          <div class="row" style="gap:12px;margin-bottom:16px"><span class="av l a">KN</span><div class="col grow"><div class="h20">Kavya Nair</div><span class="tx-2" style="font-size:12.5px">Frontend engineer · Platform team · reports to Daniel Okafor · joins Mon 2 Nov 2026</span></div><span class="btn sm"><i data-lucide="message-square"></i>Message Kavya</span></div>
+          <div class="card pad" style="padding:16px 18px 14px">
+            <div class="as-track">
+              <div class="s done"><i><i data-lucide="check"></i></i>Offer signed<small>Tue 6 Oct</small></div>
+              <div class="s done"><i><i data-lucide="check"></i></i>Kit reserved<small>Fri 16 Oct</small></div>
+              <div class="s done"><i><i data-lucide="check"></i></i>Enrolled and boxed<small>Mon 19 Oct</small></div>
+              <div class="s now"><i></i>With the courier<small>since 11:40 today</small></div>
+              <div class="s"><i></i>Delivered<small>due Thu 29 Oct</small></div>
+              <div class="s"><i></i>Day one<small>Mon 2 Nov</small></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px">
+            <div class="card" style="overflow:hidden">
+              <div class="card-h" style="font-size:12.5px">Engineering kit, Bengaluru<span class="tx-3 sp" style="text-align:right;font-size:11.5px">4 items · from the role</span></div>
+              <div class="as-item"><span class="as-ty t-lap"><i data-lucide="laptop"></i></span><div class="col grow"><b>MacBook Pro 14-inch, M4 Pro</b><span class="tx-3" style="font-size:12px"><span class="mono">AL-LT-0612</span> · unlocks at first sign-in</span></div><span class="st prog"><i></i>Shipping</span></div>
+              <div class="as-item"><span class="as-ty t-mon"><i data-lucide="monitor"></i></span><div class="col grow"><b>Dell UltraSharp 27</b><span class="tx-3" style="font-size:12px"><span class="mono">AL-MN-0902</span> · at desk F3-22</span></div><span class="st done"><i></i>At desk</span></div>
+              <div class="as-item"><span class="as-ty t-bdg"><i data-lucide="id-card"></i></span><div class="col grow"><b>Access badge</b><span class="tx-3" style="font-size:12px"><span class="mono">AL-BD-1048</span> · photo from People</span></div><span class="st done"><i></i>Printed</span></div>
+              <div class="as-item"><span class="as-ty t-lab"><i data-lucide="headphones"></i></span><div class="col grow"><b>Headset and charger</b><span class="tx-3" style="font-size:12px">Consumables · 31 left in stock</span></div><span class="st done"><i></i>In the box</span></div>
+            </div>
+            <div class="col" style="gap:12px">
+              <div class="card pad">
+                <div class="row" style="margin-bottom:8px"><i data-lucide="truck" class="tx-3"></i><b class="grow">Courier</b><span class="bdg ok">On time</span></div>
+                <div class="tx-2" style="font-size:12.5px">Blue Dart · AWB <span class="mono">7812 4410 093</span></div>
+                <div class="tx-3" style="font-size:12px;margin-top:4px">Picked up 11:40 · delivers Thu 29 Oct to her home in Indiranagar · signature needed</div>
+              </div>
+              <div class="card pad">
+                <div class="row" style="margin-bottom:8px"><span class="av s v">NR</span><b class="grow">Nikhil's return</b><span class="st prog"><i></i>Kit delivered</span></div>
+                <div class="col" style="gap:5px;font-size:12px" class="tx-2">
+                  <div class="row"><i data-lucide="package-open" style="width:14px;height:14px;color:var(--tx-3)"></i><span class="tx-2">Return box and prepaid label delivered Sat</span></div>
+                  <div class="row"><i data-lucide="lock" style="width:14px;height:14px;color:var(--tx-3)"></i><span class="tx-2">Laptop locks Fri 30 Oct, 18:00, with Access</span></div>
+                  <div class="row"><i data-lucide="calendar-check" style="width:14px;height:14px;color:var(--tx-3)"></i><span class="tx-2">Pickup booked Mon 2 Nov, 10:00 to 13:00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Triggered by People, not by a ticket</b>The offer signature started this kit. The role chose its contents. Nobody filed a request, and nobody had to remember.</div>
+    <div><b>Logistics as a connector</b>Couriers plug in with a public interface, so each office uses its local carrier. Tracking and proof of delivery land on the asset's timeline.</div>
+    <div><b>Leaving is the same flow, reversed</b>A return box, a prepaid label and a booked pickup, with the laptop locked by Access on the last evening and wiped when it arrives.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== My devices -->
+<figure class="screen" id="as-hub" data-title="Assigned to me">
+  <div class="scap"><b>Assigned to me</b><span>Each person sees what they hold and what to do with it. Reporting a problem opens a Helpdesk ticket that already knows the device.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.mine" data-me="Sofia Lindqvist" data-counts='{"as.mine":"5"}' data-hide-links="as.inv,as.maint,as.audit"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span class="cur">Assigned to me</span></div>
+        <div class="htabs"><span class="htab on">Devices<span class="ct">5</span></span><span class="htab">My requests<span class="ct">1</span></span><span class="htab">History</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="plus"></i>Request something</span><span class="btn pri hot" data-show=".as-rp"><i data-lucide="life-buoy"></i>Report a problem</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:24px">
+        <div class="row" style="margin-bottom:16px;align-items:flex-end"><div class="col grow"><div class="h24">Your devices</div><span class="tx-2" style="margin-top:4px">Five things are with you. Rohan's team looks after them, and the Berlin IT desk is on floor 2.</span></div></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:12px">
+          <div class="card" style="grid-row:span 2">
+            <div class="as-dev">
+              <div class="row" style="gap:12px"><span class="as-ty l t-lap"><i data-lucide="laptop"></i></span><div class="col grow"><b class="h16">MacBook Pro 16-inch</b><span class="tx-3" style="font-size:12px"><span class="mono">AL-LT-0544</span> · with you since Mar 2024</span></div></div>
+              <div class="col" style="gap:8px;margin-top:4px">
+                <div class="as-meter"><i data-lucide="battery-low" style="width:15px;height:15px;color:var(--amber)"></i><span style="width:96px">Battery health</span><div class="bar"><i style="width:71%;background:var(--amber)"></i></div><b class="num" style="color:var(--tx)">71%</b></div>
+                <div class="as-meter"><i data-lucide="hard-drive" style="width:15px;height:15px;color:var(--tx-3)"></i><span style="width:96px">Storage</span><div class="bar"><i style="width:48%"></i></div><b class="num" style="color:var(--tx)">48%</b></div>
+                <div class="as-meter"><i data-lucide="shield-check" style="width:15px;height:15px;color:var(--green)"></i><span style="width:96px">Security</span><span class="grow tx-2">Encrypted, up to date</span></div>
+              </div>
+              <div class="rule" style="display:flex;gap:10px;padding:10px 12px;border-radius:8px;background:var(--amber-50);margin-top:2px"><i data-lucide="circle-alert" style="color:var(--amber);margin-top:2px"></i><div style="font-size:12px"><b style="display:block;font-size:12.5px">Battery is getting weak</b><span class="tx-2">Still under warranty until Mar 2027, so a new one is free.</span></div></div>
+              <div class="row" style="gap:6px;margin-top:2px"><span class="btn sm" data-show=".as-rp"><i data-lucide="life-buoy"></i>Report a problem</span><span class="btn sm ghost">Device terms</span></div>
+            </div>
+          </div>
+          <div class="card"><div class="as-dev"><div class="row" style="gap:10px"><span class="as-ty t-mon"><i data-lucide="monitor"></i></span><div class="col grow"><b>Two Dell UltraSharp 27</b><span class="tx-3" style="font-size:12px">At desk B2-11</span></div></div><span class="tx-3" style="font-size:12px">Tied to your desk. If you move desks, they stay.</span></div></div>
+          <div class="card"><div class="as-dev"><div class="row" style="gap:10px"><span class="as-ty t-bdg"><i data-lucide="id-card"></i></span><div class="col grow"><b>Access badge</b><span class="tx-3" style="font-size:12px">Berlin, floors 1 and 2</span></div></div><span class="btn sm ghost" style="align-self:flex-start;margin-left:-8px"><i data-lucide="circle-off"></i>Report it lost</span></div></div>
+          <div class="card"><div class="as-dev"><div class="row" style="gap:10px"><span class="as-ty t-fur"><i data-lucide="armchair"></i></span><div class="col grow"><b>Standing desk</b><span class="tx-3" style="font-size:12px">Home office, since Jan 2025</span></div></div><span class="tx-3" style="font-size:12px">Yours to keep after 3 years, from Jan 2028.</span></div></div>
+          <div class="card"><div class="as-dev"><div class="row" style="gap:10px"><span class="as-ty t-ph"><i data-lucide="headphones"></i></span><div class="col grow"><b>Noise-cancelling headset</b><span class="tx-3" style="font-size:12px">Requested Thu 15 Oct</span></div></div><span class="st done" style="font-size:12px"><i></i>Approved · at the IT desk Wed</span></div></div>
+        </div>
+        <div class="card" style="margin-top:12px;padding:12px 16px;display:flex;align-items:center;gap:10px"><i data-lucide="info" class="tx-3"></i><span class="tx-2 grow" style="font-size:12.5px">Leaving or changing teams? Your return steps will appear here, with a box and a prepaid label sent to you.</span><span style="color:var(--acc);font-size:12.5px">How returns work</span></div>
+      </div></div>
+      <div class="scrim as-rp" hidden data-hide=".as-rp"></div>
+      <div class="modal as-rp" hidden style="width:580px;top:64px">
+        <div class="modal-h"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><b class="h16 grow">Report a problem with your MacBook Pro 16-inch</b><span class="ib sm" data-hide=".as-rp"><i data-lucide="x"></i></span></div>
+        <div class="modal-b">
+          <div class="fld"><label>What's happening?</label><div class="inp focus" style="height:64px;align-items:flex-start;padding-top:8px">The battery lasts about two hours now, and it gets hot on video calls.<span style="width:1px;height:16px;background:var(--acc);margin-left:1px"></span></div></div>
+          <div class="ai-card" style="margin-top:12px"><div class="ai-h"><span class="aid"></span>Attached from your laptop<span class="src">by AI · from device management, with your permission</span></div>
+            <p>Battery health 71% after 840 cycles, marked "service recommended". No other faults. This looks like a battery replacement, which is covered until Mar 2027.<span class="cite"><i data-lucide="battery-low"></i>Health</span><span class="cite"><i data-lucide="shield"></i>Warranty</span></p>
+            <div class="acts"><span class="btn sm">Remove the diagnostics</span><span class="nu">Not useful</span></div></div>
+          <div class="col" style="gap:8px;margin-top:14px;font-size:12.5px">
+            <div class="row"><span class="cb on"><i data-lucide="check"></i></span>I need a loaner while it's repaired<span class="tx-3">· a 16-inch is free at the Berlin IT desk</span></div>
+            <div class="row"><span class="cb"></span>It's urgent, I can't work</div>
+          </div>
+        </div>
+        <div class="modal-f"><span class="tx-3 grow" style="font-size:12px;align-self:center">Opens in Helpdesk, Berlin IT queue</span><span class="btn ghost" data-hide=".as-rp">Cancel</span><span class="btn pri" data-hide=".as-rp" data-show=".as-t-rp"><i data-lucide="send"></i>Open Helpdesk request</span></div>
+      </div>
+      <div class="toast as-t-rp" hidden><i data-lucide="circle-check"></i>Request HD-2291 opened. Pick up your loaner at the IT desk today.<span class="u" data-hide=".as-t-rp">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>What you hold, and what to do</b>Each device says where it lives, how healthy it is and what happens to it if you move desks or leave. No serial numbers to look up.</div>
+    <div><b>One sentence opens the right ticket</b>The Helpdesk request already knows the device, its warranty and its diagnostics, so the first reply is a fix, not a question.</div>
+    <div><b>Works without Helpdesk too</b>With Helpdesk installed, this opens a ticket there. Without it, the request lands in Assets' own Repairs list. Either way the person sees and can remove the diagnostics first.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Audit by phone -->
+<figure class="screen" id="as-audit" data-title="Audit by phone">
+  <div class="scap"><b>An audit is a walk with a phone</b><span>Any phone camera reads the label. Things in the wrong place move with one tap, and what's missing is checked against device check-ins before anyone worries.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="as-wrap3">
+      <div class="as-col">
+        <div class="as-phone"><div class="scr"><div class="notch"></div><div class="as-cam">
+          <div class="top">Berlin floor 2 · Q4 audit<small>142 of 168 found</small></div>
+          <div class="bezel"></div>
+          <div class="lab"><svg viewBox="-1 -1 27 27"><use href="#as-qr"/></svg><span>AL-MN-0871<br>Acme Labs<br>Dell U2724D</span></div>
+          <div class="frm"></div>
+          <div class="as-sheet">
+            <div class="row" style="gap:10px"><span class="as-ty t-mon"><i data-lucide="monitor"></i></span><div class="col grow"><b style="font-size:12.5px">Dell UltraSharp 27</b><span class="tx-3 mono" style="font-size:11px">AL-MN-0871</span></div><span class="bdg warn">Moved</span></div>
+            <div class="tx-2" style="font-size:11.5px;margin:8px 0 10px">Expected at desk B2-14. You're scanning at desk B2-09.</div>
+            <div class="row" style="gap:6px"><span class="btn sm pri" style="flex:1;justify-content:center">Move it to B2-09</span><span class="btn sm" style="flex:1;justify-content:center">Leave as is</span></div>
+          </div>
+        </div></div></div>
+        <h4>Scan it</h4><p>Point any phone at the label. No app to install: the code opens the asset in Bemmoly, already in audit mode.</p>
+      </div>
+      <div class="as-col">
+        <div class="as-phone"><div class="scr"><div class="notch"></div>
+          <div class="as-ph-h"><div class="row"><b class="grow" style="font-size:14px">Berlin floor 2</b><span class="tx-3" style="font-size:11px">Q4 audit</span></div>
+            <div class="row" style="margin-top:8px;font-size:11.5px"><span class="tx-2 grow">142 of 168 found</span><b class="num">85%</b></div><div class="bar" style="margin-top:6px"><i style="width:85%;background:var(--green)"></i></div></div>
+          <div class="as-ph-g">Found somewhere else · 3</div>
+          <div class="as-ph-r"><span class="as-ty s t-mon"><i data-lucide="monitor"></i></span><div class="col grow"><b>AL-MN-0871</b><span class="tx-3" style="font-size:11px">B2-14 to B2-09</span></div><span class="bdg ok">Moved</span></div>
+          <div class="as-ph-r"><span class="as-ty s t-fur"><i data-lucide="armchair"></i></span><div class="col grow"><b>AL-FN-0188</b><span class="tx-3" style="font-size:11px">Meeting room Ostsee</span></div><span class="bdg ok">Moved</span></div>
+          <div class="as-ph-g">Not found yet · 26</div>
+          <div class="as-ph-r"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><div class="col grow"><b>AL-LT-0519</b><span class="tx-3" style="font-size:11px">Stockroom, shelf B-2</span></div><i data-lucide="chevron-right" class="tx-3" style="width:14px;height:14px"></i></div>
+          <div class="as-ph-r"><span class="as-ty s t-lap"><i data-lucide="laptop"></i></span><div class="col grow"><b>AL-LT-0377</b><span class="tx-3" style="font-size:11px">Lena Fischer</span></div><span class="bdg bad">No check-in</span></div>
+          <div class="as-ph-r"><span class="as-ty s t-mon"><i data-lucide="monitor"></i></span><div class="col grow"><b>AL-MN-0866</b><span class="tx-3" style="font-size:11px">Desk B2-03</span></div><i data-lucide="chevron-right" class="tx-3" style="width:14px;height:14px"></i></div>
+          <div class="as-ph-r"><span class="as-ty s t-lab"><i data-lucide="flask-conical"></i></span><div class="col grow"><b>AL-LB-0007</b><span class="tx-3" style="font-size:11px">Hardware lab</span></div><i data-lucide="chevron-right" class="tx-3" style="width:14px;height:14px"></i></div>
+          <div style="position:absolute;left:14px;right:14px;bottom:18px"><span class="btn pri" style="width:100%;justify-content:center">Finish floor 2</span></div>
+        </div></div>
+        <h4>See the gaps as you go</h4><p>The list of what's left is ordered by where you are standing, so you walk the floor once.</p>
+      </div>
+      <div class="as-col" style="justify-content:center;align-items:stretch">
+        <div class="card" style="padding:16px 18px">
+          <div class="row" style="margin-bottom:12px"><span class="tile" style="background:var(--m-assets);width:22px;height:22px;border-radius:6px"><i data-lucide="scan-line" style="width:12px;height:12px"></i></span><b class="grow">Q4 audit · Berlin</b><span class="faces"><span class="av s k">RK</span><span class="av s p">LF</span></span></div>
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr);gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Found</div><div class="v num" style="font-size:20px">142</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Moved</div><div class="v num" style="font-size:20px">3</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Not found</div><div class="v num" style="font-size:20px">26</div></div>
+          </div>
+          <div class="tx-3" style="font-size:12px;margin-top:10px">Started 09:10 · floor 1 done in 22 minutes · 2 people scanning</div>
+        </div>
+        <div class="ai-card" style="padding:14px 16px">
+          <div class="ai-h"><span class="aid"></span>Most of these are not lost<span class="src">by AI · from device check-ins</span></div>
+          <p>17 of the 26 are laptops that checked in to device management from home networks this week, so they are probably with their people. 1 has not checked in for 41 days.<span class="cite"><i data-lucide="activity"></i>Check-ins</span><span class="cite"><i data-lucide="laptop"></i>AL-LT-0377</span></p>
+          <div class="acts"><span class="btn sm">Ask 17 people to confirm</span><span class="nu">Not useful</span></div>
+        </div>
+        <div class="card" style="padding:12px 16px;display:flex;gap:10px;align-items:center"><i data-lucide="tag" class="tx-3"></i><span class="tx-2" style="font-size:12.5px">Labels are QR codes on durable stickers, or NFC tags for lab gear. Printed from Assets settings.</span></div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>No app, no scanner gun</b>The label is a link. Any phone camera opens the asset, and in an open audit it records the scan with place and time.</div>
+    <div><b>Moved is not missing</b>Something found at the wrong desk moves in one tap, so the register follows reality instead of flagging it.</div>
+    <div><b>Missing, checked first</b>Device check-ins sort "at home with its person" from "really gone", so people chase one laptop, not twenty-six.</div>
+  </div>
+</figure>
+
+<!-- 7 ======================== Ask -->
+<figure class="screen" id="as-ask" data-title="Ask Assets">
+  <div class="scap"><b>Ask in plain words, get a view you can trust</b><span>The question becomes filters you can see and change, and the answer cites the records it used. Reserve straight from the answer.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.inv" data-me="Rohan Kapoor" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span class="cur">Ask</span></div>
+        <div class="hact"><span class="btn ghost"><i data-lucide="history"></i>Earlier questions</span><span class="btn"><i data-lucide="bookmark-plus"></i>Save as smart view</span></div></div>
+      <div class="bx-body"><div class="wrap" style="max-width:980px;padding-top:26px">
+        <div class="as-q ai-field"><i data-lucide="sparkles"></i>Who has a spare 16-inch laptop in Berlin?<span class="sp"></span><span class="kbd">Enter</span></div>
+        <div class="row" style="margin:12px 0 18px;flex-wrap:wrap;gap:6px"><span class="tx-3" style="font-size:12px;margin-right:4px">Read as</span><span class="as-tok"><i data-lucide="laptop"></i>Type is Laptop</span><span class="as-tok"><i data-lucide="ruler"></i>Screen size is 16-inch</span><span class="as-tok"><i data-lucide="map-pin"></i>Location is Berlin</span><span class="as-tok"><i data-lucide="circle-dot"></i>State is In stock, or back within 7 days</span><span class="as-tok"><i data-lucide="user-round-x"></i>Not reserved</span></div>
+        <div class="chat"><div class="msg bot" style="max-width:100%">
+          <div class="ai-line" style="margin-bottom:6px"><span class="aid"></span>by AI · from the inventory, device health and Helpdesk</div>
+          Nobody is holding a spare, but the Berlin stockroom has two free 16-inch laptops today, and a third comes back from repair on Wed 21 Oct. AL-LT-0551 is the best one: grade A, battery 94%, warranty to Mar 2027.<span class="cite"><i data-lucide="laptop"></i>AL-LT-0551</span><span class="cite"><i data-lucide="laptop"></i>AL-LT-0519</span><span class="cite"><i data-lucide="life-buoy"></i>HD-2291</span>
+        </div></div>
+        <div class="card" style="margin-top:14px;overflow:hidden">
+          <table class="tbl as-tbl"><thead><tr><th>Tag</th><th>Model</th><th>Where</th><th>Grade</th><th>Battery</th><th>Warranty</th><th></th></tr></thead><tbody>
+            <tr class="sel"><td class="as-tag">AL-LT-0551</td><td>MacBook Pro 16-inch, 2024</td><td>Shelf B-1</td><td>A</td><td><div class="row"><div class="bar" style="width:54px"><i style="width:94%;background:var(--green)"></i></div><span class="num">94%</span></div></td><td>Mar 2027</td><td class="r"><span class="btn sm pri hot" data-show=".as-t-ask">Reserve for Jonas</span></td></tr>
+            <tr><td class="as-tag">AL-LT-0519</td><td>MacBook Pro 16-inch, 2023</td><td>Shelf B-2</td><td>B</td><td><div class="row"><div class="bar" style="width:54px"><i style="width:82%;background:var(--amber)"></i></div><span class="num">82%</span></div></td><td>Jan 2027</td><td class="r"><span class="btn sm">Reserve</span></td></tr>
+            <tr><td class="as-tag">AL-LT-0544</td><td>MacBook Pro 16-inch, 2024</td><td>Back Wed 21 Oct</td><td>A</td><td><span class="tx-2">New battery</span></td><td>Mar 2027</td><td class="r"><span class="tx-3" style="font-size:12px">Sofia Lindqvist's</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="row" style="margin-top:10px;gap:10px"><span class="tx-3" style="font-size:12px">Jonas Weber joins Berlin Sales on Mon 9 Nov and his kit asks for a 16-inch. Reserving updates his kit.</span><span class="sp"></span><span class="nu tx-2" style="font-size:12px">Not useful</span></div>
+        <div class="cap" style="margin:24px 0 8px">Try asking</div>
+        <div class="row" style="flex-wrap:wrap;gap:8px"><span class="as-sugg"><i data-lucide="shield-alert"></i>Which laptops leave warranty this quarter?</span><span class="as-sugg"><i data-lucide="user-round-minus"></i>Who still holds a device from someone who left?</span><span class="as-sugg"><i data-lucide="landmark"></i>What did we spend on monitors in Austin this year?</span><span class="as-sugg"><i data-lucide="flask-conical"></i>Which lab gear is due for calibration in November?</span></div>
+      </div></div>
+      <div class="toast as-t-ask" hidden><i data-lucide="circle-check"></i>AL-LT-0551 reserved for Jonas Weber's kit. It ships from Berlin on Thu 5 Nov.<span class="u" data-hide=".as-t-ask">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The question becomes filters</b>Each condition AI read is shown as a chip you can change or remove, so the answer is checkable, and saving it makes a smart view.</div>
+    <div><b>It answers the question behind the question</b>"Who has a spare" is really "which one should I give". It ranks by grade, battery and warranty, and says why.</div>
+    <div><b>Act from the answer</b>Reserving updates the joiner's kit, books the shipment and writes to the timeline. Undo is always there.</div>
+  </div>
+</figure>
+
+<!-- 8 ======================== Refresh plan -->
+<figure class="screen" id="as-refresh" data-title="Refresh by condition">
+  <div class="scap"><b>A refresh plan built on condition, not age</b><span>Battery and warranty data predict which laptops will fail your bar and when. Finance budgets from it, and the purchase goes through the shared approval engine.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.inv" data-me="Meera Iyer" data-counts='{"as.req":"!4","as.maint":"3"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span>Inventory</span><span class="sep">/</span><span class="cur">Refresh plan 2027</span></div>
+        <div class="hact"><div class="seg"><span class="on">By condition</span><span>By age</span></div><span class="btn pri"><i data-lucide="send"></i>Request 22 laptops for Q1</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:20px 24px;gap:14px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l"><i data-lucide="laptop"></i>To replace in 2027</div><div class="v num">58</div><div class="d">By age it would be 96</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="battery-warning"></i>Battery below 80%</div><div class="v num">41</div><div class="d">Your bar is 75% or 1,000 cycles</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="wallet"></i>Budget for 2027</div><div class="v num">₹1.33 Cr</div><div class="d"><span class="up">₹87L less</span> than replacing by age</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="recycle"></i>Healthy enough for a year more</div><div class="v num">38</div><div class="d">Four years old, battery above 85%</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;flex:1;min-height:0">
+          <div class="card" style="display:flex;flex-direction:column;min-height:0">
+            <div class="card-h">Laptops to replace, by quarter<span class="tx-3 sp">all offices</span><span class="row tx-3" style="font-size:11.5px;font-weight:400;gap:12px"><span class="row" style="gap:5px"><span class="dot" style="background:var(--acc-500);border-radius:2px"></span>By condition</span><span class="row" style="gap:5px"><span class="dot" style="background:var(--line);border-radius:2px"></span>By age</span></span></div>
+            <div style="padding:14px 18px;flex:1">
+              <svg class="as-chart" viewBox="0 0 520 300" width="100%" height="300" preserveAspectRatio="none" style="display:block">
+                <g stroke="var(--line-2)" stroke-width="1"><line x1="34" y1="20" x2="520" y2="20"/><line x1="34" y1="90" x2="520" y2="90"/><line x1="34" y1="160" x2="520" y2="160"/><line x1="34" y1="230" x2="520" y2="230"/></g>
+                <line x1="34" y1="270" x2="520" y2="270" stroke="var(--line)"/>
+                <text x="0" y="24">40</text><text x="0" y="94">30</text><text x="0" y="164">20</text><text x="0" y="234">10</text><text x="6" y="274">0</text>
+                <g fill="var(--line)"><rect x="56" y="32.5" width="34" height="237.5" rx="3"/><rect x="156" y="132.5" width="34" height="137.5" rx="3"/><rect x="256" y="170.0" width="34" height="100.0" rx="3"/><rect x="356" y="145.0" width="34" height="125.0" rx="3"/></g><g fill="var(--acc-500)"><rect x="94" y="132.5" width="34" height="137.5" rx="3"/><rect x="194" y="195.0" width="34" height="75.0" rx="3"/><rect x="294" y="207.5" width="34" height="62.5" rx="3"/><rect x="394" y="182.5" width="34" height="87.5" rx="3"/></g><text x="70" y="292">Q1 2027</text><text x="170" y="292">Q2</text><text x="270" y="292">Q3</text><text x="370" y="292">Q4</text><text x="66" y="24.5">38</text><text x="166" y="124.5">22</text><text x="266" y="162.0">16</text><text x="366" y="137.0">20</text><text x="102" y="124.5" style="fill:var(--tx);font-weight:600">22</text><text x="202" y="187.0" style="fill:var(--tx);font-weight:600">12</text><text x="302" y="199.5" style="fill:var(--tx);font-weight:600">10</text><text x="402" y="174.5" style="fill:var(--tx);font-weight:600">14</text>
+              </svg>
+            </div>
+          </div>
+          <div class="col" style="gap:12px;min-height:0">
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>Why Q1 is 22, not 38<span class="src">by AI · from 468 laptops' health history</span></div>
+              <p>16 of the laptops that turn four in Q1 have batteries above 85% and are losing less than half a point a month, so they will still meet your bar in a year. That saves ₹36.8L in Q1 alone.<span class="cite"><i data-lucide="battery-medium"></i>Health trends</span><span class="cite"><i data-lucide="file-text"></i>Refresh rule v2</span></p>
+              <div class="acts"><span class="btn sm">See the 16 laptops</span><span class="nu">Not useful</span></div></div>
+            <div class="card" style="overflow:hidden">
+              <div class="card-h" style="font-size:12.5px">Replace first<span class="tx-3 sp" style="text-align:right;font-weight:400;font-size:11.5px">predicted to cross 75%</span></div>
+              <div class="lrow"><span class="as-tag" style="width:84px">AL-LT-0544</span><span class="grow tx-2 trunc">Sofia Lindqvist · 2 years old</span><span class="bdg warn">Now · 71%</span></div>
+              <div class="lrow"><span class="as-tag" style="width:84px">AL-LT-0309</span><span class="grow tx-2 trunc">Arjun Mehta · 3 years old</span><span class="bdg warn">Dec · 76%</span></div>
+              <div class="lrow"><span class="as-tag" style="width:84px">AL-LT-0287</span><span class="grow tx-2 trunc">Aiko Tanaka · 3 years old</span><span class="bdg">Feb · 79%</span></div>
+              <div class="lrow" style="border-bottom:0"><span class="as-tag" style="width:84px">AL-LT-0264</span><span class="grow tx-2 trunc">Lena Fischer · 3 years old</span><span class="bdg">Mar · 80%</span></div>
+            </div>
+            <div class="card pad" style="padding:12px 16px"><div class="row" style="font-size:12.5px"><i data-lucide="git-branch" class="tx-3"></i><span class="grow tx-2">Request route: IT, then Finance over ₹20L, then the CFO</span></div><div class="tx-3" style="font-size:11.5px;margin-top:4px">Shared approval engine · same route as other capital purchases</div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Condition decides</b>The rule is yours ("replace below 75% battery or 1,000 cycles"), and the forecast applies it to every laptop's trend, not just its birthday.</div>
+    <div><b>A number finance can budget</b>Quarter by quarter, by office, with the difference against an age-based plan, so the saving is visible and defensible.</div>
+    <div><b>From plan to purchase</b>The request goes through the shared approval engine. When the invoice arrives, it becomes assets in one step.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">A design studio, a hospital lab and a 3,000-person sales company own very different things. Nothing about assets is hard-coded. A company changes six things from Assets › Settings, without writing code, and each can be exported as a file so it can be reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Asset types and fields</h3><p>The company's own types (laptop, oscilloscope, forklift, artwork), each with typed custom fields: text, number, choice, date, person, place, link to another asset. Fields can be filled from a connector and used in views and rules.</p></div>
+  <div><h3>Lifecycle states</h3><p>States and the moves between them, per type. Rules on each move: retiring needs a wipe certificate, assigning a phone needs signed terms, "missing" for 30 days notifies finance.</p></div>
+  <div><h3>Depreciation</h3><p>Straight line, declining balance, sum of years' digits, or none, with useful life, salvage value and the ledger account, set per type and changeable per asset. Multiple books for companies that need tax and accounting views.</p></div>
+  <div><h3>Locations and stockrooms</h3><p>Offices, floors, rooms, desks and stockrooms as a tree, each with an owner, a label printer and a courier. Stock levels and reorder points per stockroom for laptops and consumables.</p></div>
+  <div><h3>Tags and labels</h3><p>Tag formats from tokens (<code>AL-{type}-{seq:4}</code>), label templates sized for your printer, QR, barcode or NFC, and an existing tag kept when you import from another tool.</p></div>
+  <div><h3>Kits and request routes</h3><p>Kits per role and office for joiners, return flows for leavers, what people can request from "Assigned to me", and who approves it, built on the shared workflow and approval engine.</p></div>
+</div>
+
+<div class="screens" id="ascfg">
+<figure class="screen" id="as-cfg-types" data-title="Asset types and fields">
+  <div class="scap"><b>Asset types, each with its own fields</b><span>A laptop and a lab instrument need different facts. Each type has typed fields, where they come from, and its own lifecycle, depreciation and tag format.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Types</span></div>
+        <div class="htabs"><span class="htab on">Types</span><span class="htab">Lifecycle</span><span class="htab">Locations</span><span class="htab">Labels</span><span class="htab">Kits and requests</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="btn pri"><i data-lucide="plus"></i>New type</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:200px minmax(0,1fr) 290px;height:100%">
+        <div class="as-rail">
+          <div class="cap">Types</div>
+          <div class="as-vi on"><i data-lucide="laptop"></i>Laptop<span class="ct">468</span></div>
+          <div class="as-vi"><i data-lucide="smartphone"></i>Phone<span class="ct">212</span></div>
+          <div class="as-vi"><i data-lucide="monitor"></i>Monitor<span class="ct">391</span></div>
+          <div class="as-vi"><i data-lucide="id-card"></i>Badge<span class="ct">446</span></div>
+          <div class="as-vi"><i data-lucide="armchair"></i>Furniture<span class="ct">287</span></div>
+          <div class="as-vi"><i data-lucide="flask-conical"></i>Lab gear<span class="ct">38</span></div>
+          <div class="as-vi"><i data-lucide="plug"></i>Accessory<span class="ct">0</span></div>
+          <div class="as-vi" style="color:var(--tx-3)"><i data-lucide="plus"></i>New type, or start from a template</div>
+        </div>
+        <div style="padding:20px 24px;overflow:hidden" class="col">
+          <div class="row" style="margin-bottom:14px"><span class="as-ty l t-lap"><i data-lucide="laptop"></i></span><div class="col grow"><div class="h20">Laptop</div><span class="tx-3" style="font-size:12px">468 assets · 12 fields · edited by Rohan Kapoor on 1 Oct</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl as-tbl" style="font-size:12.5px"><thead><tr><th>Field</th><th>Kind</th><th>Filled from</th><th>Required</th></tr></thead><tbody>
+              <tr><td class="md">Serial number</td><td><span class="tag">Text, unique</span></td><td class="tx-2">Invoice or connector</td><td><span class="cb on"><i data-lucide="check"></i></span></td></tr>
+              <tr><td class="md">Model</td><td><span class="tag">Catalog link</span></td><td class="tx-2">Invoice</td><td><span class="cb on"><i data-lucide="check"></i></span></td></tr>
+              <tr><td class="md">Screen size</td><td><span class="tag">Choice</span></td><td class="tx-2">Model</td><td><span class="cb on"><i data-lucide="check"></i></span></td></tr>
+              <tr><td class="md">Memory</td><td><span class="tag">Number, GB</span></td><td class="tx-2">Connector</td><td><span class="cb"></span></td></tr>
+              <tr class="sel"><td class="md">Battery health</td><td><span class="tag">Percent</span></td><td class="tx-2">Connector, hourly</td><td><span class="cb"></span></td></tr>
+              <tr><td class="md">Disk encryption</td><td><span class="tag">Yes or no</span></td><td class="tx-2">Connector</td><td><span class="cb"></span></td></tr>
+              <tr><td class="md">Grade</td><td><span class="tag">Choice</span></td><td class="tx-2">Set on return</td><td><span class="cb"></span></td></tr>
+              <tr><td class="md">Purchase order</td><td><span class="tag">Purchase link</span></td><td class="tx-2">Invoice</td><td><span class="cb"></span></td></tr>
+              <tr><td class="md">Keyboard layout</td><td><span class="tag">Choice</span></td><td class="tx-2">Manual</td><td><span class="cb"></span></td></tr>
+            </tbody></table>
+            <div class="lrow" style="border-bottom:0;color:var(--tx-3)"><i data-lucide="plus"></i>Add a field <span class="tx-3">· text, number, choice, date, person, place, money, file, link</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px 18px;overflow:hidden" class="col">
+          <b style="margin-bottom:12px">Rules for laptops</b>
+          <div class="col" style="gap:14px">
+            <div class="fld"><label>Depreciation</label><div class="inp">Straight line<span class="tx-3" style="font-size:12px">· or declining, sum of years, none</span><i data-lucide="chevron-down" class="car"></i></div><div class="row" style="gap:8px"><div class="inp" style="flex:1">4 years</div><div class="inp" style="flex:1">10% salvage</div></div><span class="help">Ledger account 1520, computers</span></div>
+            <div class="fld"><label>Tag format</label><div class="inp mono" style="font-size:12.5px">AL-LT-{seq:4}</div><span class="help">Next tag AL-LT-0620</span></div>
+            <div class="fld"><label>Lifecycle</label><div class="inp">Hardware, 8 states<i data-lucide="chevron-down" class="car"></i></div></div>
+            <div class="fld"><label>Who can request one</label><div class="inp">Everyone, from Assigned to me<i data-lucide="chevron-down" class="car"></i></div><span class="help">Approval route: Laptop request</span></div>
+            <div class="fld"><label>Refresh bar</label><div class="inp">Battery below 75% or 1,000 cycles</div></div>
+            <div class="row" style="font-size:12.5px"><span class="sw on"></span><span class="tx-2">Holder accepts device terms on assignment</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Fields know where they come from</b>Each field says whether it's typed, read from the invoice or kept current by a connector, so nobody overwrites live data by hand.</div>
+    <div><b>Rules live with the type</b>Depreciation, tag format, lifecycle, who can request it and the refresh bar are set once per type, and every asset follows.</div>
+    <div><b>Readable as a file</b>The YAML view lets a company keep its asset model in Git and review changes like code.</div>
+  </div>
+</figure>
+<figure class="screen" id="as-cfg-life" data-title="Lifecycle, labels and routes">
+  <div class="scap"><b>Lifecycle states, labels and request routes</b><span>The states a laptop moves through, the rule on each move, the label your printer makes, and who approves a request, on the shared engine.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="assets" data-link="as.set" data-me="Rohan Kapoor"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span>Assets</span><span class="sep">/</span><span>Settings</span><span class="sep">/</span><span class="cur">Lifecycle</span></div>
+        <div class="htabs"><span class="htab">Types</span><span class="htab on">Lifecycle</span><span class="htab">Locations</span><span class="htab">Labels</span><span class="htab">Kits and requests</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">Draft</span><span class="btn">Discard</span><span class="btn pri">Publish</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:20px 24px;gap:14px">
+        <div class="card" style="padding:16px 18px">
+          <div class="row" style="margin-bottom:12px"><b class="grow">Hardware lifecycle</b><span class="tx-3" style="font-size:12px">Used by Laptop, Phone and Monitor · 8 states</span></div>
+          <div class="as-states">
+            <span class="as-node"><span class="st todo"><i></i></span>Ordered</span><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+            <span class="as-node"><span class="st todo"><i></i></span>In stock</span><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+            <span class="as-node"><span class="st prog"><i></i></span>Reserved</span><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+            <span class="as-node"><span class="st done"><i></i></span>In use</span><span class="as-arrow"><i data-lucide="arrow-right-left"></i></span>
+            <span class="as-node"><span class="st warn"><i></i></span>In repair</span><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+            <span class="as-node"><span class="st prog"><i></i></span>Returning</span><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+            <span class="as-node sel"><span class="st todo"><i></i></span>Retired</span>
+            <span class="tx-3" style="margin-left:8px">and</span><span class="as-node"><span class="st bad"><i></i></span>Missing</span>
+          </div>
+          <div class="row" style="margin-top:14px;gap:10px;align-items:flex-start">
+            <div class="well" style="padding:10px 12px;flex:1"><div class="cap" style="margin-bottom:4px">Moving to Retired requires</div><div class="col" style="gap:4px;font-size:12.5px"><div class="row"><span class="cb on"><i data-lucide="check"></i></span>A wipe certificate on the asset</div><div class="row"><span class="cb on"><i data-lucide="check"></i></span>A disposal reason: recycled, sold, donated, lost</div><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Notify Finance, and post the disposal to the ledger</div></div></div>
+            <div class="well" style="padding:10px 12px;flex:1"><div class="cap" style="margin-bottom:4px">When an asset is Missing for 30 days</div><div class="col" style="gap:4px;font-size:12.5px"><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Ask Access to sign the device out everywhere</div><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Open a Helpdesk ticket for the last holder</div><div class="row"><span class="cb"></span>Write it off automatically</div></div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:380px minmax(0,1fr);gap:14px;flex:1;min-height:0">
+          <div class="card" style="padding:16px 18px">
+            <div class="row" style="margin-bottom:12px"><b class="grow">Label</b><span class="tx-3" style="font-size:12px">50 x 25 mm · Bengaluru printer</span></div>
+            <div style="display:grid;place-items:center;padding:6px 0 12px"><div class="as-lbl"><svg viewBox="-1 -1 27 27"><use href="#as-qr"/></svg><div><div class="t">AL-LT-0612</div><div class="n">MacBook Pro 14-inch</div><div class="o">Property of Acme Labs<br>If found: it@acmelabs.dev</div></div></div></div>
+            <div class="row" style="gap:6px"><div class="seg"><span class="on">QR</span><span>Barcode</span><span>NFC</span></div><span class="sp"></span><span class="btn sm"><i data-lucide="printer"></i>Test print</span></div>
+          </div>
+          <div class="card" style="padding:16px 18px;display:flex;flex-direction:column">
+            <div class="row" style="margin-bottom:14px"><b class="grow">Request route: Laptop request</b><span class="tx-3" style="font-size:12px">Shared workflow engine · used by Expenses, Time and Access too</span></div>
+            <div class="as-flow">
+              <div class="node"><div class="cap">Start</div><b>Request in Assets</b></div><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+              <div class="node"><div class="cap">Step 1</div><b>Their manager</b><div class="tx-3" style="font-size:11px">From People</div></div><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+              <div class="node" style="box-shadow:0 0 0 1px var(--acc-100),0 0 0 4px var(--acc-50)"><div class="cap">If no stock</div><b>Finance buys</b><div class="tx-3" style="font-size:11px">Meera Iyer</div></div><span class="as-arrow"><i data-lucide="arrow-right"></i></span>
+              <div class="node"><div class="cap">End</div><b>IT ships it</b><div class="tx-3" style="font-size:11px">Office courier</div></div>
+            </div>
+            <div class="row tx-3" style="font-size:12px;margin-top:auto;padding-top:14px;gap:6px"><i data-lucide="info" style="width:14px;height:14px"></i>Joiner kits skip step 1: the offer was already approved in Hiring.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>States are yours</b>Add "Loaned", "At vendor" or "Quarantined". Each move can require evidence and can call other Bemmoly products.</div>
+    <div><b>Labels for your printer</b>Templates sized to the stickers you buy, with QR, barcode or NFC. The QR is a link, so any phone can scan it.</div>
+    <div><b>One approval engine</b>The route builder is the same one used across Bemmoly, so admins learn it once and People supplies the approvers.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing appears while AI is off. The model is the company's choice, from the models.dev catalog or a local model.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Invoice to assets</td><td>Reads supplier, lines, quantities, prices, serials and warranty from a PDF or email, matches models and the purchase order</td><td>Checks the draft and creates the assets. Nothing is saved before that</td><td>CSV import with a saved column mapping, or scan serials with a phone</td></tr>
+  <tr><td>Ask Assets</td><td>Turns a question into visible filters, ranks the results and explains the pick</td><td>Changes the filters, chooses what to reserve or assign</td><td>The same filters and smart views, built by hand</td></tr>
+  <tr><td>Refresh forecast</td><td>Predicts when each device will cross the company's bar from health trends</td><td>Sets the bar, approves the plan and the purchase</td><td>Plan by age or warranty end date</td></tr>
+  <tr><td>Audit follow-up</td><td>Sorts "not found" into likely at home and likely lost, from device check-ins</td><td>Decides whom to ask and what to write off</td><td>A plain "not found" list with last holder and last check-in</td></tr>
+  <tr><td>Report a problem</td><td>Summarises the device's diagnostics and suggests the likely fix and a loaner</td><td>The holder sees and can remove what is attached; IT decides the fix</td><td>The ticket links the device, its warranty and raw health fields</td></tr>
+  <tr><td>Data clean-up</td><td>Spots duplicate serials, merges model names ("MBP 16 M3" and "MacBook Pro 16-inch, 2023") and flags records that disagree with a connector</td><td>Approves each merge or fix</td><td>Exact duplicate checks only</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Asset records carry personal data: home addresses for deliveries, who holds what, and device telemetry. Addresses are visible to IT only while a delivery is open and are never sent to a model. Diagnostics are attached to a ticket only after the holder sees them. A workspace can run invoice reading on a local model and keep everything else off, or turn AI off entirely.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Assets is its own product. It shares the kernel with the others (sign-in, the person directory, the approval engine, custom fields, AI, audit, backups) and calls another product only when it is installed, with the person confirming. Each link below has a fallback for when it is not.</p>
+<div class="cols">
+  <div><h3>Other Bemmoly products</h3><ul><li><b>People</b>: holders, managers, offices, desks, and the start dates and last days that trigger kits. Without People, the kernel's person list and a "joining" or "leaving" date set in Assets do the same</li><li><b>Helpdesk</b>: "Report a problem" opens a ticket with the device attached, and repairs write back to the timeline. Without it, requests go to Assets' own Repairs list</li><li><b>Access</b>: a leaver's devices lock on the last evening, and a missing device is signed out everywhere. Without it, the lock goes through the device-management connector</li><li><b>Licences</b>: software found on a laptop counts against seats, and retiring a device frees them. Without it, the software list stays on the asset page</li><li><b>Expenses</b>: a laptop bought on a card becomes an asset draft for IT to confirm. Without it, the invoice or a CSV does the job</li><li><b>Hiring</b>: an accepted offer reserves the joiner's kit before day one. Without it, the kit starts from the start date</li><li><b>Notifications</b>: approvals, returns and "accept your device" reach people by email and in the product, through the kernel</li></ul></div>
+  <div><h3>Core objects</h3><ul><li><code>asset</code>: type, tag, serial, model, state, holder (person or place), location, cost, typed fields</li><li><code>asset_type</code>: fields, lifecycle, depreciation rule, tag format, request route</li><li><code>asset_event</code>: the timeline, written by Assets and the products it works with (received, assigned, repaired, scanned, retired)</li><li><code>location</code>: offices, floors, desks and stockrooms as a tree, with stock levels</li><li><code>kit</code> and <code>shipment</code>: joiner and leaver bundles, courier tracking and proof of delivery</li><li><code>audit</code>: a scope, the scans, and the reconciliation</li><li><code>depreciation_schedule</code>: book value by period, posted to the ledger export</li></ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>A register people trust</b><ul><li>Asset types, typed fields, lifecycle states</li><li>Assign, check in, reassign, with the timeline</li><li>Locations, stockrooms, tags and QR labels</li><li>"Assigned to me" for every person, requests on the shared engine</li><li>CSV import from other tools, keeping existing tags</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Joiners, leavers and audits</b><ul><li>Kits triggered from People and Hiring</li><li>Courier connectors and return labels</li><li>Phone audits with reconciliation</li><li>Device-management connectors for health</li><li>Depreciation and ledger export</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>The register runs itself</b><ul><li>Invoice to assets with AI</li><li>Refresh forecasting by condition</li><li>Maintenance schedules and calibration for lab gear</li><li>Leases and rentals with return dates</li><li>Multi-entity books and transfers between entities</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Do we ship our own discovery agent?</b><span>Recommendation: no. Read from device-management connectors and an osquery-based connector, so we never compete with the tools that already run on every laptop.</span></li>
+  <li><b>Which couriers come first?</b><span>Recommendation: a generic label connector first (upload a label, paste a tracking number), then one carrier per launch office, chosen by the first companies that adopt it.</span></li>
+  <li><b>Are consumables assets?</b><span>Recommendation: no tags. Cables, mice and headsets are quantities per stockroom with reorder points, and kits draw them down.</span></li>
+  <li><b>Is Assets the fixed asset register, or a mirror of the ledger?</b><span>Recommendation: Assets calculates depreciation and posts monthly entries, while the ledger stays the book of record. A mismatch is shown, never silently fixed.</span></li>
+  <li><b>What about personal devices?</b><span>Recommendation: register them as "personal" with no cost or depreciation, only so Access can check posture. They never appear in audits or refresh plans.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.thinkhdi.com/~/media/HDICorp/Files/Research-Corner/rb-asset-mgmt-may15.pdf">HDI: IT hardware asset management, research brief, May 2015</a></li>
+  <li><a href="https://www.flexera.com/blog/it-asset-management/state-of-itam-2026/">Flexera: State of ITAM 2026</a></li>
+  <li><a href="https://www.capterra.com/resources/offboarding-best-practices/">Capterra: HR says ex-workers ghost exit interviews, keep equipment (2022)</a></li>
+  <li><a href="https://www.hcamag.com/au/specialisation/employee-engagement/its-not-just-when-hiring-hr-ghosted-with-exit-interviews/434848">HRD: coverage of the Capterra offboarding survey</a></li>
+  <li><a href="https://gato-docs.its.txst.edu/jcr:e9cb0ca7-e003-4b93-aab1-daab1bc9e1fe/The_Billion_Dollar_Lost_Laptop_Study.pdf">Ponemon Institute for Intel: The billion dollar lost laptop problem (2010)</a></li>
+  <li><a href="https://www.servicenow.com/community/ham-blog/whats-new-in-vancouver-release-for-hardware-asset-management/ba-p/2675167">ServiceNow: what's new in Hardware Asset Management</a></li>
+  <li><a href="https://support.freshservice.com/support/solutions/articles/196934-adding-depreciation-to-assets-in-freshservice">Freshservice: adding depreciation to assets</a></li>
+  <li><a href="https://www.uaf.edu/news/apple-device-management-platform-rebrands.php">University of Alaska Fairbanks: Kandji is now Iru</a></li>
+  <li><a href="https://oomnitza.com/product">Oomnitza: product overview</a></li>
+  <li><a href="https://tech.co/asset-tracking/asset-panda-review">Tech.co: Asset Panda review</a></li>
+  <li><a href="https://www.firstbase.com/asset-lifecycle-management">Firstbase: asset lifecycle management</a></li>
+  <li><a href="https://www.goworkwize.com/blog/streamlining-laptop-returns">Workwize: streamlining laptop returns</a></li>
+  <li><a href="https://snipeitapp.com/features">Snipe-IT: features</a></li>
+  <li>Vendor product pages for Jamf, Lansweeper, Ivanti Neurons for ITAM, ManageEngine AssetExplorer, GLPI and Fleet (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

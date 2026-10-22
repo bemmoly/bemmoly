@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Expenses</title>
+<meta name="description" content="Product proposal for Bemmoly Expenses: the problem today, market leaders, the dream experience, drawn screens, customisation and AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Expenses-only screen parts */
+.rcpt{position:relative;width:300px;background:#fffdf8;color:#2a2620;font:12px/1.55 var(--mono);padding:22px 22px 30px;box-shadow:0 18px 40px rgba(16,24,40,.18),0 0 0 1px rgba(16,24,40,.06);transform:rotate(-1.6deg);overflow:hidden}
+.rcpt::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:radial-gradient(circle at 6px 10px,var(--sunken) 6px,transparent 6.5px) 0 0/12px 10px repeat-x}
+.rcpt .c{text-align:center}.rcpt .b{font-weight:500}
+.rcpt hr{border:0;border-top:1px dashed #b9b2a3;margin:8px 0}
+.rcpt .l{display:flex;justify-content:space-between;gap:8px}
+.rcpt mark{background:color-mix(in srgb,var(--ai) 30%,transparent);color:inherit;border-radius:2px;padding:0 2px;box-shadow:0 0 0 1px color-mix(in srgb,var(--ai) 60%,transparent)}
+.drop{border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card)}
+.drop .ic{width:36px;height:36px;border-radius:9px;background:var(--sunken);display:grid;place-items:center;color:var(--tx-2)}
+.thumb{width:30px;height:36px;border-radius:4px;background:#fffdf8;box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.06);position:relative;flex:none;overflow:hidden}
+.thumb::before{content:"";position:absolute;left:5px;right:5px;top:7px;height:2px;background:#cfc8b8;box-shadow:0 5px 0 #e3ddcf,0 10px 0 #e3ddcf,0 15px 0 #e3ddcf,0 20px 0 #cfc8b8}
+.thumb.pdf{background:var(--red-50)}
+.thumb.pdf::before{display:none}
+.thumb.pdf::after{content:"PDF";position:absolute;inset:0;display:grid;place-items:center;font:600 8px var(--sans);color:var(--red-tx)}
+.cat{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:none}
+.cat svg.lucide{width:14px;height:14px}
+.c-meal{background:color-mix(in srgb,#d46a2e 14%,transparent);color:#d46a2e}
+.c-travel{background:color-mix(in srgb,#0e9bb0 14%,transparent);color:#0e9bb0}
+.c-hotel{background:color-mix(in srgb,#6e56cf 14%,transparent);color:#7d68d8}
+.c-soft{background:color-mix(in srgb,#2356c9 14%,transparent);color:var(--acc)}
+.c-car{background:color-mix(in srgb,#2f9e6e 14%,transparent);color:#2f9e6e}
+.c-gift{background:color-mix(in srgb,#c2536a 14%,transparent);color:#c2536a}
+.track{display:flex;align-items:center;gap:0;margin-top:10px}
+.track .s{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative;font-size:11.5px;color:var(--tx-3)}
+.track .s i{width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;z-index:1}
+.track .s.done i{background:var(--done);box-shadow:none;color:#fff}
+.track .s.done i svg.lucide{width:11px;height:11px;stroke-width:3}
+.track .s.now i{box-shadow:inset 0 0 0 1.5px var(--prog),0 0 0 4px var(--acc-50)}
+.track .s.now{color:var(--tx);font-weight:500}
+.track .s+.s::before{content:"";position:absolute;top:9px;right:50%;width:100%;height:1.5px;background:var(--line)}
+.track .s.done+.s::before{background:var(--done)}
+.ef{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:center;gap:10px;min-height:38px;border-bottom:1px solid var(--line-2)}
+.ef>span:first-child{color:var(--tx-2);font-size:12.5px}
+.ef .val{display:flex;align-items:center;gap:8px;min-width:0;height:32px;padding:0 10px;border-radius:6px}
+.ef .val.ai-field{color:var(--tx)}
+.ef .val .conf{margin-left:auto;font-size:11px;color:var(--ai-600)}
+.rule{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--sunken)}
+.rule svg.lucide{margin-top:2px}
+.rule.ok svg.lucide{color:var(--green)}
+.rule.warn{background:var(--amber-50)}
+.rule.warn svg.lucide{color:var(--amber)}
+.rule b{font-weight:600;font-size:12.5px;display:block}
+.rule span{font-size:12px;color:var(--tx-2)}
+.risk{width:6px;align-self:stretch;border-radius:3px;flex:none}
+.spark{display:block}
+.pol{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.pol .sent{font-size:14px;line-height:1.9;color:var(--tx)}
+.tok{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:5px;background:var(--acc-50);color:var(--acc);font-weight:500;font-size:12.5px;vertical-align:1px;box-shadow:inset 0 0 0 1px var(--acc-100)}
+.tok.v{background:var(--sunken);color:var(--tx);box-shadow:inset 0 0 0 1px var(--line)}
+.flow{display:flex;align-items:center;gap:10px}
+.node{padding:10px 12px;border-radius:8px;background:var(--card);box-shadow:var(--e1);min-width:150px}
+.node .cap{margin-bottom:4px}
+.arrow{color:var(--tx-3)}
+.cap-wrap{position:absolute;inset:0;background:radial-gradient(1200px 600px at 10% -10%,var(--acc-50),transparent 60%),radial-gradient(900px 500px at 110% 110%,var(--ai-50),transparent 60%),var(--side);display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:56px 56px 40px;font:13px/1.45 var(--sans);color:var(--tx)}
+.cap-col{display:flex;flex-direction:column;gap:14px;align-items:center}
+.cap-col h4{margin:0;font-size:15px;font-weight:600;text-align:center}
+.cap-col p{margin:0;color:var(--tx-2);text-align:center;font-size:12.5px;max-width:300px}
+.phone{width:270px;height:540px;border-radius:40px;background:#0c0f13;padding:10px;box-shadow:var(--e3);position:relative}
+.phone .scr{width:100%;height:100%;border-radius:31px;overflow:hidden;position:relative;background:#111}
+.phone .notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:84px;height:24px;border-radius:12px;background:#000;z-index:3}
+.cam{position:absolute;inset:0;background:radial-gradient(circle at 40% 30%,#4a4237,#1b1814 70%)}
+.cam .rcpt{position:absolute;left:38px;top:96px;width:176px;padding:14px 12px 20px;font-size:7.5px;transform:rotate(-4deg)}
+.cam .frm{position:absolute;left:28px;top:84px;width:196px;height:300px;border-radius:14px;box-shadow:0 0 0 2px var(--ai),0 0 0 9999px rgba(0,0,0,.35)}
+.cam .shut{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;box-shadow:0 0 0 4px rgba(255,255,255,.9);background:rgba(255,255,255,.18)}
+.cam .lbl{position:absolute;top:56px;left:0;right:0;text-align:center;color:#fff;font-size:11px;font-weight:500}
+.cam .got{position:absolute;left:16px;right:16px;bottom:100px;background:rgba(24,28,34,.92);border-radius:14px;padding:10px 12px;color:#e8ebf1;font-size:11px;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.cam .got b{display:block;font-size:12px}
+.mail{width:100%;max-width:340px;background:var(--card);border-radius:12px;box-shadow:var(--e2);overflow:hidden}
+.mail .mh{padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:12px;display:grid;grid-template-columns:44px 1fr;gap:4px 8px}
+.mail .mh span{color:var(--tx-3)}
+.mail .mb{padding:12px 14px;font-size:12.5px;color:var(--tx-2)}
+.att{display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;background:var(--sunken);margin-top:10px}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="expenses"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Expenses</h4>
+  <a href="#problem">The problem today</a>
+  <a href="#dream">The dream</a>
+  <a href="#market">Market leaders</a>
+  <a href="#take">Where we do better</a>
+  <a href="#experience">The experience</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI, with a person in charge</a>
+  <a href="#connects">How it connects</a>
+  <a href="#phases">Phasing</a>
+  <a href="#questions">Open questions</a>
+  <a href="#sources">Sources</a>
+</nav>
+<main>
+<section class="hero">
+  <div class="eyebrow"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span>Bemmoly Expenses · product proposal</div>
+  <h1>The expense report that writes itself</h1>
+  <p class="lede">Bemmoly Expenses is a product of its own: use it alone, or alongside Bemmoly's other products. Take a photo of a receipt, forward an email or tap a card, and the expense files itself, already coded and already checked against policy. Managers approve the safe ones in one go. Finance closes the month without chasing anyone. It's open source, it runs on your own server, and your company shapes every rule.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="users"></i>Everyone who spends, their managers, finance</span>
+    <span class="chip"><i data-lucide="app-window"></i>Its own product, on Bemmoly's kernel</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, local models supported</span>
+    <span class="chip"><i data-lucide="globe"></i>Multi-currency, GST, VAT and sales tax</span>
+  </div>
+</section>
+
+<h2 id="problem"><span class="n">01</span>The problem today</h2>
+<p class="sub">Expense reports are the most hated form at work, and most of the work in them is copying. The data already exists on the receipt, the card feed, the calendar and the travel booking. People still type it in by hand, and someone else checks it by hand.</p>
+<div class="stats">
+  <div><b>~$58</b><span>to process one simple expense report</span><small>GBTA Foundation, 2015</small></div>
+  <div><b>19%</b><span>of reports come back with an error or missing data</span><small>GBTA Foundation, 2015</small></div>
+  <div><b>18 min</b><span>to correct each report that has a problem</span><small>GBTA Foundation, 2015</small></div>
+  <div><b>37%</b><span>of travel managers say attaching receipts is the worst step</span><small>GBTA Foundation, 2015</small></div>
+</div>
+<div class="pains">
+  <div class="pain"><b>Receipts get lost before they are filed</b><p>People keep paper in wallets and PDFs in inboxes, then rebuild the month from memory. The worst steps are attaching receipts and typing in the data.</p></div>
+  <div class="pain"><b>Policy is checked after the money is spent</b><p>The policy is a PDF nobody reads. People find out they broke a rule when finance rejects the claim three weeks later, and that feels like a punishment.</p></div>
+  <div class="pain"><b>Managers rubber-stamp, or sit on it</b><p>An approver sees 40 lines with no context. They either approve all of them blind or let the queue sit, and reimbursements wait on whoever is slowest.</p></div>
+  <div class="pain"><b>Finance does the real review by hand</b><p>Duplicates, split bills, weekend claims and round numbers get caught by eye in spreadsheets. Most errors are found late, and most claims that are fine still get checked line by line.</p></div>
+  <div class="pain"><b>Tools are priced per seat and locked to a card</b><p>The best experiences come bundled with a corporate card or a travel agency, and they are priced per person per month. Small teams and companies outside the US get the leftovers.</p></div>
+  <div class="pain"><b>Every company's rules are different</b><p>Per diems by city, mileage rates by vehicle, GST input credit, project codes and cost centres all differ. Rigid tools force the company to bend its policy to the software.</p></div>
+</div>
+
+<h2 id="dream"><span class="n">02</span>The dream, by the people who use it</h2>
+<p class="sub">Three people meet each claim. Each one wants the product to vanish into what they were already doing.</p>
+<div class="dreams">
+  <div class="dream"><div class="who"><span class="av l g">AM</span><div><b>Arjun, account executive</b><span>Spends on the road, 30 receipts a month</span></div></div>
+    <q>"I take a photo and forget about it. If something's wrong, tell me now, while I'm still at the restaurant."</q>
+    <ul><li>Capture from camera, email, chat or the card itself</li><li>Fields, category and project filled in for them</li><li>Policy shown before they submit, in plain words</li><li>A tracker that says when the money arrives</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l v">DO</span><div><b>Daniel, engineering manager</b><span>Approves for a team of 12</span></div></div>
+    <q>"Show me only the ones that need my judgement. Let me approve the rest without reading every line."</q>
+    <ul><li>Claims sorted by risk, with the reason shown</li><li>Approve every in-policy claim at once, with a clear summary</li><li>Approve from the app, email or chat</li><li>Budget left for the team shown next to each claim</li></ul></div>
+  <div class="dream"><div class="who"><span class="av l k">MI</span><div><b>Meera, finance controller</b><span>Closes the books every month</span></div></div>
+    <q>"I want to audit by exception, not read every receipt, and I want the ledger to match without me fixing exports."</q>
+    <ul><li>Every claim already checked for duplicates and tax</li><li>Policy written as rules she can read and change</li><li>GL codes, cost centres and tax mapped once</li><li>Reimbursements in one batch, with a clean export</li></ul></div>
+</div>
+
+<h2 id="market"><span class="n">03</span>Market leaders, and what they teach us</h2>
+<p class="sub">The category splits into three camps: card-led spend platforms, travel-led suites, and classic expense reporting. Below is what each leader does best and where they leave a gap. This is an internal benchmark. Product screens never name these products.</p>
+<div class="leaders">
+  <div class="leader"><header><b>Ramp</b><span>Card-led · US</span></header><p>Treats the card as the expense. Receipts are matched from SMS, email and integrations. Controls are set before spending, and accounting is automated.</p>
+    <div class="plus"><i data-lucide="plus"></i>Best "zero-touch" feel. Most expenses never need a form.</div><div class="minus"><i data-lucide="minus"></i>The full experience needs its card. Out-of-pocket claims and non-US use come second.</div></div>
+  <div class="leader"><header><b>Brex</b><span>Card-led · global</span></header><p>Global cards and spend limits per budget, with policies attached to each budget, an AI assistant that answers spenders, and multi-entity support.</p>
+    <div class="plus"><i data-lucide="plus"></i>Budget-first thinking: you spend from a budget, not just against a policy.</div><div class="minus"><i data-lucide="minus"></i>Tied to its own financial products. Hard to fit to a company that keeps its own bank.</div></div>
+  <div class="leader"><header><b>Navan</b><span>Travel-led</span></header><p>Booking, card and expense in one. Trip spend is reconciled automatically against the booking.</p>
+    <div class="plus"><i data-lucide="plus"></i>A trip is the unit, so hotel, flights and meals group themselves.</div><div class="minus"><i data-lucide="minus"></i>Shines only if you also book travel through it.</div></div>
+  <div class="leader"><header><b>SAP Concur</b><span>Enterprise</span></header><p>The incumbent for large companies: deep policy, audit services, multi-level approvals, global tax and ERP integration.</p>
+    <div class="plus"><i data-lucide="plus"></i>Covers every edge case: per diems, VAT reclaim, delegates, audit trails.</div><div class="minus"><i data-lucide="minus"></i>Heavy, slow screens, long rollouts. People use it because they must.</div></div>
+  <div class="leader"><header><b>Expensify</b><span>Reporting-led</span></header><p>SmartScan receipt capture made "snap and forget" a category norm. Reports, reimbursement and a chat-style interface.</p>
+    <div class="plus"><i data-lucide="plus"></i>The capture habit: a photo is the whole job for the employee.</div><div class="minus"><i data-lucide="minus"></i>Reports as the unit feels dated. Admin setup is dense.</div></div>
+  <div class="leader"><header><b>Zoho Expense, Fyle, Happay</b><span>India and mid-market</span></header><p>Strong local tax (GST), per diems, card feeds from local banks, and capture from email and chat at lower price points.</p>
+    <div class="plus"><i data-lucide="plus"></i>Local compliance done properly, and capture from where people already are.</div><div class="minus"><i data-lucide="minus"></i>Closed source and per-seat. Customisation stops at the forms.</div></div>
+</div>
+<div class="tablewrap"><table class="t">
+  <tr><th>Capability</th><th>Card-led</th><th>Travel-led</th><th>Enterprise</th><th>Reporting-led</th><th>Open source today</th><th>Bemmoly</th></tr>
+  <tr><td>Receipt capture with AI</td><td class="yes">Strong</td><td class="yes">Strong</td><td class="part">Good</td><td class="yes">Strong</td><td class="no">Basic or none</td><td class="yes">Strong, and runs on your models</td></tr>
+  <tr><td>Policy before submit</td><td class="yes">Card controls</td><td class="part">At booking</td><td class="part">Audit after</td><td class="part">Flags</td><td class="no">None</td><td class="yes">Live, in plain words</td></tr>
+  <tr><td>Works without a vendor card</td><td class="part">Second-class</td><td class="part">Partial</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes. Any card feed or none</td></tr>
+  <tr><td>Rules a company can rewrite</td><td class="part">Settings</td><td class="part">Settings</td><td class="yes">Deep but consultant-led</td><td class="part">Settings</td><td class="part">Code</td><td class="yes">Rule builder, versioned and tested</td></tr>
+  <tr><td>Risk-sorted approvals</td><td class="yes">Yes</td><td class="part">Some</td><td class="part">Audit service</td><td class="part">Some</td><td class="no">No</td><td class="yes">Yes, with reasons</td></tr>
+  <tr><td>Self-hosted, data stays with you</td><td class="no">No</td><td class="no">No</td><td class="part">Private cloud</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+  <tr><td>Price</td><td>Free tier, paid per person</td><td>Per person or bundled</td><td>Enterprise contracts</td><td>Per person</td><td>Free</td><td>Free, MIT, no tiers</td></tr>
+</table></div>
+<p class="note"><b>Open source today</b> means Odoo Expenses and Frappe HR's expense claims: capable forms inside a larger ERP, but no capture-first experience and no live policy. Nobody offers a premium, standalone, self-hosted expense product. That gap is ours.</p>
+
+<h2 id="take"><span class="n">04</span>Where Bemmoly does better</h2>
+<p class="sub">We take the leaders' best ideas (zero-touch capture, budget thinking, the trip as a unit) and add what only an open, self-hosted platform can do.</p>
+<div class="take">
+  <div><span class="ic"><i data-lucide="scan-line"></i></span><b>The expense is the unit, not the report</b><p>Each receipt is a live item that files, checks and routes itself. Reports exist only where a company wants them (a trip, a month). Nobody "builds a report" again.</p><span class="vs">Leaders: card-led tools do this; reporting-led tools still make reports the job.</span></div>
+  <div><span class="ic"><i data-lucide="shield-check"></i></span><b>Policy you can read, change and test</b><p>Rules are written as sentences ("Meals: up to ₹2,000 per person"). Each rule is versioned and can be tested against last quarter's claims before it goes live, so finance sees the impact first.</p><span class="vs">New: nobody lets you replay a policy change against history.</span></div>
+  <div><span class="ic"><i data-lucide="credit-card"></i></span><b>Any card, any bank, or no card at all</b><p>Card feeds come in through connectors (a bank file, an open banking API, a card issuer). Out-of-pocket claims get the same treatment as card spend. You keep your bank.</p><span class="vs">Leaders: the best experience needs their card.</span></div>
+  <div><span class="ic"><i data-lucide="network"></i></span><b>It already knows the context</b><p>Bemmoly already knows the org chart, the projects, time off and calendars. A claim knows who approves it, which project it belongs to, and that you were in Berlin that week.</p><span class="vs">New: standalone tools have to re-import all of this.</span></div>
+  <div><span class="ic ai"><i data-lucide="sparkles"></i></span><b>AI on your terms</b><p>Receipt reading, coding and risk notes run on the model you choose, including a local one. With AI off, capture still works through plain OCR rules and nothing lilac appears.</p><span class="vs">New: every leader sends receipts to their own cloud AI.</span></div>
+  <div><span class="ic"><i data-lucide="hand-coins"></i></span><b>No seat price, ever</b><p>Every person in the company can file claims, from interns to contractors. No "approver licence", no paid AI, no premium policy tier.</p><span class="vs">Leaders: per person per month, with premium tiers for policy and multi-entity.</span></div>
+</div>
+
+<h2 id="experience"><span class="n">05</span>The experience</h2>
+<p class="sub">Six screens, drawn in the Expenses app's own shell with Bemmoly's tokens. Click the tabs, or click the highlighted controls inside a screen to follow the flow. The appearance switch at the top right flips every screen between light and dark.</p>
+
+<div class="screens" id="ex">
+<!-- 1 ======================== Capture anywhere -->
+<figure class="screen" id="ex-cap" data-title="Capture anywhere">
+  <div class="scap"><b>Capture from wherever the receipt is</b><span>Camera, a forwarded email, a chat message or the card swipe itself. All four land in the same place.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:block">
+    <div class="cap-wrap">
+      <div class="cap-col">
+        <div class="phone"><div class="scr"><div class="notch"></div><div class="cam">
+          <div class="lbl">Hold steady, reading the receipt</div>
+          <div class="rcpt"><div class="c b">BISTRO KAVERI</div><div class="c">100 Ft Rd, Indiranagar, Bengaluru</div><div class="c">GSTIN 29ABCDE1234F1Z5</div><hr><div class="l"><span>Masala dosa x2</span><span>420.00</span></div><div class="l"><span>Paneer tikka</span><span>540.00</span></div><div class="l"><span>Thali x2</span><span>1,180.00</span></div><div class="l"><span>Filter coffee x4</span><span>360.00</span></div><hr><div class="l b"><span>TOTAL</span><span>3,860.00</span></div></div>
+          <div class="frm"></div>
+          <div class="got"><b>Bistro Kaveri · ₹3,860</b>Meals · Client: Northwind · 2 people</div>
+          <div class="shut"></div>
+        </div></div></div>
+        <h4>Snap it</h4><p>The camera finds the edges, reads it while you hold it, and you're done before you put the phone away.</p>
+      </div>
+      <div class="cap-col" style="justify-content:center">
+        <div class="mail">
+          <div class="mh"><span>From</span><b>Arjun Mehta</b><span>To</span><span style="color:var(--acc)">receipts@acmelabs.dev</span><span>Subject</span><span style="color:var(--tx)">Fwd: Your e-ticket, BLR to BOM</span></div>
+          <div class="mb">Forwarded message from the airline…<div class="att"><span class="thumb pdf"></span><div class="col"><b style="font-size:12px">eticket-6E-2041.pdf</b><span class="tx-3" style="font-size:11px">186 KB</span></div></div></div>
+        </div>
+        <div class="card pad" style="width:100%;max-width:340px;display:flex;gap:10px;align-items:center">
+          <span class="cat c-travel"><i data-lucide="plane"></i></span><div class="col grow"><b>Flight BLR to BOM · ₹6,240</b><span class="tx-3" style="font-size:12px">Added to trip "Mumbai, Northwind kickoff"</span></div><span class="st done"><i></i></span>
+        </div>
+        <h4>Forward it</h4><p>Every person gets a receipts address. Invoices from email are filed and grouped into the trip they belong to.</p>
+      </div>
+      <div class="cap-col" style="justify-content:center">
+        <div class="card" style="width:100%;max-width:340px;padding:14px">
+          <div class="row" style="margin-bottom:10px"><span class="tile" style="background:var(--m-expenses);width:24px;height:24px"><i data-lucide="credit-card"></i></span><b>Card ending 4417</b><span class="tx-3 sp" style="text-align:right;font-size:11.5px">just now</span></div>
+          <div class="h16">₹1,499.00 at Figma</div>
+          <div class="tx-2" style="font-size:12.5px;margin:4px 0 12px">We coded it as Software · Design team. No receipt needed under ₹2,000.</div>
+          <div class="row"><span class="btn sm"><i data-lucide="check"></i>Looks right</span><span class="btn sm ghost">Change</span></div>
+        </div>
+        <div class="card" style="width:100%;max-width:340px;padding:12px 14px">
+          <div class="row" style="font-size:12px"><span class="av s o">AM</span><b>Arjun</b><span class="tx-3">in #sales-west</span></div>
+          <div style="font-size:12.5px;margin:6px 0 0 28px" class="tx-2">@Bemmoly taxi to the airport, ₹740, receipt attached <span class="thumb" style="display:inline-block;vertical-align:middle;width:18px;height:22px"></span></div>
+        </div>
+        <h4>Swipe it, or say it</h4><p>A card swipe arrives with a receipt request, if one is needed at all. In chat, a sentence and a photo are enough.</p>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Four doors, one place</b>Camera, email, chat and card feed all become the same item, so people use whatever is closest to hand.</div>
+    <div><b>Read on the device</b>Edge detection and a first OCR pass run in the browser, so the feedback is instant even on a slow connection.</div>
+    <div><b>Receipt only when needed</b>Finance sets the threshold. Below it, a card swipe is enough, so people get fewer nags.</div>
+  </div>
+</figure>
+
+<!-- 2 ======================== My expenses -->
+<figure class="screen" id="ex-mine" data-title="My expenses">
+  <div class="scap"><b>My expenses</b><span>The employee's home. There are no reports to build: items file themselves and show where they are.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.mine" data-me="Arjun Mehta" data-counts='{"exp.mine":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span class="cur">My expenses</span></div>
+        <div class="htabs"><span class="htab on">Open<span class="ct">6</span></span><span class="htab">Paid<span class="ct">48</span></span><span class="htab">Trips</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="car"></i>Log mileage</span><span class="btn pri hot" data-go="ex-new"><i data-lucide="plus"></i>New expense<span class="kbd" style="background:transparent;color:inherit;border-color:rgba(255,255,255,.35)">E</span></span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:24px">
+        <div class="drop" style="margin-bottom:16px"><span class="ic"><i data-lucide="image-up"></i></span><div class="col grow"><b>Drop receipts anywhere on this page</b><span class="tx-3" style="font-size:12px">Photos, PDFs or a whole folder. Or forward them to <span class="mono" style="color:var(--tx-2)">receipts@acmelabs.dev</span></span></div><span class="btn sm">Choose files</span></div>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+          <div class="card kpi"><div class="l"><i data-lucide="hourglass"></i>Waiting on you</div><div class="v">2</div><div class="d">One missing receipt, one needs a reason</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="send"></i>With approvers</div><div class="v">₹18,420</div><div class="d">3 items · Daniel usually approves within 4h</div></div>
+          <div class="card kpi"><div class="l"><i data-lucide="banknote"></i>On its way to you</div><div class="v">₹9,860</div><div class="d">Paid Thursday 22 Oct, to HDFC ••6620</div></div>
+        </div>
+        <div class="card">
+          <div class="ghead"><i data-lucide="circle-alert" style="width:14px;height:14px;color:var(--amber)"></i>Needs you<span class="ct">2</span></div>
+          <div class="lrow"><span class="thumb"></span><span class="cat c-meal"><i data-lucide="utensils"></i></span><div class="col grow"><b>Bistro Kaveri</b><span class="tx-3" style="font-size:12px">Meals · Northwind · 2 people · Mon 19 Oct</span></div><span class="bdg warn"><i data-lucide="message-square-warning"></i>Over by ₹860, add a reason</span><b class="num" style="width:90px;text-align:right">₹3,860</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow"><span class="thumb" style="opacity:.35"></span><span class="cat c-car"><i data-lucide="car-taxi-front"></i></span><div class="col grow"><b>Uber</b><span class="tx-3" style="font-size:12px">Local travel · card ••4417 · Sat 17 Oct</span></div><span class="bdg warn"><i data-lucide="file-question"></i>Receipt missing</span><b class="num" style="width:90px;text-align:right">₹2,140</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="ghead"><i data-lucide="loader" style="width:14px;height:14px;color:var(--prog)"></i>In flight<span class="ct">4</span></div>
+          <div class="lrow"><span class="thumb pdf"></span><span class="cat c-travel"><i data-lucide="plane"></i></span><div class="col grow"><b>IndiGo 6E 2041</b><span class="tx-3" style="font-size:12px">Flights · Trip: Mumbai, Northwind kickoff</span></div><span class="st prog"><i></i>With Daniel</span><b class="num" style="width:90px;text-align:right">₹6,240</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow"><span class="thumb"></span><span class="cat c-hotel"><i data-lucide="bed-double"></i></span><div class="col grow"><b>Trident Nariman Point</b><span class="tx-3" style="font-size:12px">Hotel · 2 nights · Trip: Mumbai, Northwind kickoff</span></div><span class="st prog"><i></i>With Daniel</span><b class="num" style="width:90px;text-align:right">₹11,440</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow"><span class="thumb"></span><span class="cat c-soft"><i data-lucide="app-window"></i></span><div class="col grow"><b>Figma</b><span class="tx-3" style="font-size:12px">Software · card ••4417 · auto-approved under ₹2,000</span></div><span class="st done"><i></i>Approved</span><b class="num" style="width:90px;text-align:right">₹1,499</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+          <div class="lrow" style="border-bottom:0"><span class="thumb"></span><span class="cat c-meal"><i data-lucide="coffee"></i></span><div class="col grow"><b>Third Wave Coffee</b><span class="tx-3" style="font-size:12px">Meals · solo · Fri 16 Oct</span></div><span class="st done"><i></i>Paying Thursday</span><b class="num" style="width:90px;text-align:right">₹420</b><i data-lucide="chevron-right" class="tx-3"></i></div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Grouped by what you need to do</b>"Needs you" sits on top, with the fix in words. Everything else shows who has it and when the money lands.</div>
+    <div><b>Honest timing</b>"Daniel usually approves within 4h" and the payout date are real numbers from history, not a promise.</div>
+    <div><b>The whole page is a drop zone</b>Drag in twenty PDFs and each one becomes an expense. Duplicates of card swipes merge with the swipe automatically.</div>
+  </div>
+</figure>
+
+<!-- 3 ======================== New expense: AI scan -->
+<figure class="screen" id="ex-new" data-title="Receipt, read by AI">
+  <div class="scap"><b>The receipt, read and checked</b><span>Fields are filled in with their source highlighted on the receipt, and the policy check runs live while you look.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.mine" data-me="Arjun Mehta" data-counts='{"exp.mine":"2"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span>My expenses</span><span class="sep">/</span><span class="cur">Bistro Kaveri</span></div>
+        <div class="hact"><span class="tx-3" style="font-size:12px">Saved as draft</span><span class="btn">Save for later</span><span class="btn pri hot" data-show=".ex-toast"><i data-lucide="send"></i>Submit to Daniel</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 520px;height:100%">
+        <div style="background:var(--sunken);position:relative;display:grid;place-items:center;overflow:hidden;border-right:1px solid var(--line)">
+          <div class="rcpt" style="width:330px">
+            <div class="c b" style="font-size:14px"><mark>BISTRO KAVERI</mark></div><div class="c">100 Feet Road, Indiranagar</div><div class="c">Bengaluru 560038 · Ph 080 4123 9900</div><div class="c">GSTIN <mark>29ABCDE1234F1Z5</mark></div><hr>
+            <div class="l"><span>Bill 4471 · Table 12</span><span><mark>19/10/26</mark> 13:42</span></div><div class="l"><span>Covers: <mark>2</mark></span><span>Server: Ravi</span></div><hr>
+            <div class="l"><span>Masala dosa x2</span><span>420.00</span></div><div class="l"><span>Paneer tikka</span><span>540.00</span></div><div class="l"><span>Veg thali x2</span><span>1,180.00</span></div><div class="l"><span>Mango lassi x2</span><span>360.00</span></div><div class="l"><span>Filter coffee x4</span><span>360.00</span></div><div class="l"><span>Gulab jamun x2</span><span>816.19</span></div><hr>
+            <div class="l"><span>Subtotal</span><span>3,676.19</span></div><div class="l"><span>CGST 2.5%</span><span><mark>91.90</mark></span></div><div class="l"><span>SGST 2.5%</span><span><mark>91.91</mark></span></div><hr>
+            <div class="l b" style="font-size:14px"><span>TOTAL INR</span><span><mark>3,860.00</mark></span></div><hr><div class="c">Paid by VISA ••<mark>4417</mark></div><div class="c">Thank you, visit again</div>
+            <div class="ai-scan"></div>
+          </div>
+          <div class="row" style="position:absolute;bottom:16px;left:16px;gap:6px"><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="zoom-in"></i></span><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="rotate-cw"></i></span><span class="ib" style="background:var(--card);box-shadow:var(--e1)"><i data-lucide="replace"></i></span></div>
+          <div class="ai-line" style="position:absolute;top:16px;left:16px;background:var(--card);box-shadow:var(--e1);padding:6px 10px;border-radius:6px"><span class="aid"></span>Read by AI in 1.2s · highlighted text is what it used</div>
+        </div>
+        <div style="overflow:auto;padding:20px 24px">
+          <div class="row" style="margin-bottom:4px"><span class="cat c-meal" style="width:32px;height:32px"><i data-lucide="utensils"></i></span><div class="col grow"><div class="h20">₹3,860.00</div><span class="tx-3" style="font-size:12px">Bistro Kaveri · Mon 19 Oct 2026</span></div><span class="bdg ai"><span class="aid" style="box-shadow:none;width:6px;height:6px"></span>7 fields by AI</span></div>
+          <div style="margin-top:12px">
+            <div class="ef"><span>Merchant</span><div class="val ai-field">Bistro Kaveri<span class="conf">from receipt</span></div></div>
+            <div class="ef"><span>Date</span><div class="val ai-field">Mon 19 Oct 2026<span class="conf">from receipt</span></div></div>
+            <div class="ef"><span>Amount</span><div class="val ai-field num">₹3,860.00 <span class="tx-3">incl. ₹183.81 GST</span><span class="conf">totals match</span></div></div>
+            <div class="ef"><span>Category</span><div class="val ai-field"><span class="cat c-meal" style="width:20px;height:20px"><i data-lucide="utensils" style="width:12px;height:12px"></i></span>Meals, client entertainment<span class="conf">from your calendar</span></div></div>
+            <div class="ef"><span>Attendees</span><div class="val ai-field"><span class="faces"><span class="av s o">AM</span><span class="av s k">JW</span></span>You, Jamie Wu (Northwind)<span class="conf">from 13:00 invite</span></div></div>
+            <div class="ef"><span>Project</span><div class="val ai-field"><span class="dot" style="background:var(--m-work);border-radius:2px"></span>Northwind onboarding · NW-2026<span class="conf">from Work</span></div></div>
+            <div class="ef"><span>Paid with</span><div class="val ai-field">Company card ••4417<span class="conf">matched to swipe</span></div></div>
+            <div class="ef"><span>Tax</span><div class="val ai-field">GST input credit eligible · GSTIN valid<span class="conf">checked</span></div></div>
+          </div>
+          <div class="cap" style="margin:18px 0 8px">Policy check · Travel and meals policy v7</div>
+          <div class="col" style="gap:6px">
+            <div class="rule warn"><i data-lucide="circle-alert"></i><div><b>Over the meals limit by ₹860</b><span>Client meals are up to ₹1,500 per person. 2 people makes ₹3,000. Add a reason and Daniel will see it.</span>
+              <div class="inp focus" style="margin-top:8px;background:var(--card)">Celebrated contract signing with Northwind's new CTO<span style="width:1px;height:16px;background:var(--acc);margin-left:1px"></span></div></div></div>
+            <div class="rule ok"><i data-lucide="circle-check"></i><div><b>Not a duplicate</b><span>No other claim or swipe from Bistro Kaveri on 19 Oct.</span></div></div>
+            <div class="rule ok"><i data-lucide="circle-check"></i><div><b>Receipt has a valid GSTIN</b><span>Finance can claim ₹183.81 of input credit.</span></div></div>
+          </div>
+          <div class="ai-card" style="margin-top:14px"><div class="ai-h"><span class="aid"></span>Why these fields<span class="src">by AI · from the receipt, your calendar and Work</span></div><p>The 13:00 calendar invite "Lunch with Jamie (Northwind)" overlaps the bill time, so I set two attendees and the Northwind project.<span class="cite"><i data-lucide="calendar"></i>Invite</span><span class="cite"><i data-lucide="square-kanban"></i>NW-2026</span></p><div class="acts"><span class="btn sm">Undo all AI fields</span><span class="nu">Not useful</span></div></div>
+        </div>
+      </div>
+      <div class="toast ex-toast" hidden><i data-lucide="circle-check"></i>Sent to Daniel Okafor. Usually approved within 4h.<span class="u" data-hide=".ex-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Every AI field shows its source</b>The lilac fields are AI's, and each says where it came from ("from your calendar"). The receipt highlights exactly what was read.</div>
+    <div><b>Policy before submit</b>The rule is named, the maths is shown, and the fix is inline. The reason travels with the claim, so the approver never has to ask.</div>
+    <div><b>Context nobody typed</b>The calendar gives attendees, Work gives the project, the card feed gives the payment. It's the platform advantage, used.</div>
+  </div>
+</figure>
+
+<!-- 4 ======================== Approvals -->
+<figure class="screen" id="ex-appr" data-title="Approvals by risk">
+  <div class="scap"><b>Approvals, sorted by risk</b><span>The manager reviews the two claims that need judgement and approves the safe ones in one go, with a summary of what they're approving.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.appr" data-me="Daniel Okafor" data-counts='{"exp.appr":"!14"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span class="cur">Approvals</span></div>
+        <div class="htabs"><span class="htab on">To review<span class="ct">14</span></span><span class="htab">Approved by me</span><span class="htab">Team spend</span></div>
+        <div class="hact"><span class="fchip"><i data-lucide="users"></i>Platform team</span><span class="fchip"><i data-lucide="calendar"></i>This month</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100%">
+        <div style="overflow:auto;padding:20px 24px">
+          <div class="ai-card" style="margin-bottom:14px"><div class="ai-h"><span class="aid"></span>Review summary<span class="src">by AI · from 14 claims, the policy and 6 months of team history</span></div>
+            <p>12 claims (₹41,280) are within policy, have receipts and match card swipes.<span class="cite">12 claims</span> Two need you: a meal over the limit with a reason, and a hotel booked outside the travel tool at 38% over the city rate.<span class="cite">Bistro Kaveri</span><span class="cite">Marriott Pune</span></p>
+            <div class="acts"><span class="btn sm pri hot" data-show=".ap-toast" data-hide=".ap-safe"><i data-lucide="check-check"></i>Approve the 12 safe claims</span><span class="btn sm">Show them first</span><span class="nu">Not useful</span></div></div>
+          <div class="card">
+            <div class="ghead"><span class="risk" style="width:8px;height:8px;border-radius:50%;background:var(--amber)"></span>Needs your judgement<span class="ct">2</span></div>
+            <div class="lrow sel" style="height:56px"><span class="av o">AM</span><div class="col grow"><b>Arjun Mehta · Bistro Kaveri</b><span class="tx-2" style="font-size:12px">"Celebrated contract signing with Northwind's new CTO"</span></div><span class="bdg warn">Over by ₹860</span><b class="num" style="width:84px;text-align:right">₹3,860</b></div>
+            <div class="lrow" style="height:56px"><span class="av p">SL</span><div class="col grow"><b>Sofia Lindqvist · Marriott Pune</b><span class="tx-2" style="font-size:12px">Booked directly, 38% above the Pune hotel rate</span></div><span class="bdg warn">Out of channel</span><b class="num" style="width:84px;text-align:right">₹14,900</b></div>
+            <div class="ap-safe">
+            <div class="ghead"><span class="risk" style="width:8px;height:8px;border-radius:50%;background:var(--green)"></span>Within policy<span class="ct">12 · ₹41,280</span><span class="sp"></span><span class="tx-3" style="font-weight:400">Approve all with</span><span class="kbd">Shift</span><span class="kbd">A</span></div>
+            <div class="lrow"><span class="av k">TG</span><div class="col grow"><b>Tomás García · AWS</b><span class="tx-3" style="font-size:12px">Cloud · card ••0921 · matches the October budget line</span></div><b class="num" style="width:84px;text-align:right">₹12,600</b></div>
+            <div class="lrow"><span class="av o">AM</span><div class="col grow"><b>Arjun Mehta · IndiGo 6E 2041</b><span class="tx-3" style="font-size:12px">Flights · Trip: Mumbai, Northwind kickoff</span></div><b class="num" style="width:84px;text-align:right">₹6,240</b></div>
+            <div class="lrow"><span class="av g">AT</span><div class="col grow"><b>Aiko Tanaka · Coursera</b><span class="tx-3" style="font-size:12px">Learning · within the ₹40,000 yearly allowance</span></div><b class="num" style="width:84px;text-align:right">₹4,999</b></div>
+            <div class="lrow" style="border-bottom:0"><span class="tx-3" style="padding-left:34px;font-size:12px">and 9 more</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);overflow:auto;background:var(--canvas)">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--line-2)"><div class="row"><span class="av o">AM</span><div class="col grow"><b>Arjun Mehta</b><span class="tx-3" style="font-size:12px">Account executive · Sales West</span></div><span class="tx-3" style="font-size:12px">2 of 14</span></div></div>
+          <div style="padding:16px 20px" class="col">
+            <div class="row" style="gap:12px;align-items:flex-start"><span class="thumb" style="width:56px;height:72px"></span><div class="col grow"><div class="h20 num">₹3,860</div><span class="tx-2" style="font-size:12.5px">Bistro Kaveri · Meals, client · Mon 19 Oct</span><span class="tx-3" style="font-size:12px;margin-top:4px">With Jamie Wu (Northwind) · NW-2026</span></div></div>
+            <div class="rule warn" style="margin-top:14px"><i data-lucide="circle-alert"></i><div><b>₹860 over the client meals limit</b><span>Reason given: "Celebrated contract signing with Northwind's new CTO"</span></div></div>
+            <div class="cap" style="margin:16px 0 8px">Context</div>
+            <div class="col" style="gap:8px;font-size:12.5px">
+              <div class="row"><i data-lucide="history" class="tx-3"></i><span class="grow tx-2">Arjun's meals this quarter</span><b class="num">₹11,200 of ₹24,000</b></div>
+              <div class="row"><i data-lucide="wallet" class="tx-3"></i><span class="grow tx-2">Sales West entertainment budget</span><b class="num">62% used</b></div>
+              <div class="row"><i data-lucide="square-kanban" class="tx-3"></i><span class="grow tx-2">NW-2026 deal</span><b>Closed won · ₹48L ARR</b></div>
+              <div class="bar" style="margin-top:2px"><i style="width:62%"></i></div>
+            </div>
+            <div class="cap" style="margin:18px 0 8px">Approval path</div>
+            <div class="track" style="margin-top:4px"><div class="s done"><i><i data-lucide="check"></i></i>Submitted</div><div class="s now"><i></i>You</div><div class="s"><i></i>Finance</div><div class="s"><i></i>Paid</div></div>
+          </div>
+          <div class="peek-f" style="position:absolute;bottom:0;right:0;width:400px;background:var(--canvas)"><span class="btn ghost">Ask a question</span><span class="btn">Reject…</span><span class="btn pri"><i data-lucide="check"></i>Approve<span class="kbd" style="background:transparent;color:inherit;border-color:rgba(255,255,255,.35)">A</span></span></div>
+        </div>
+      </div>
+      <div class="toast ap-toast" hidden><i data-lucide="circle-check"></i>12 claims approved, ₹41,280. Finance has them.<span class="u" data-show=".ap-safe" data-hide=".ap-toast">Undo</span></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Exceptions first</b>The risk sort puts judgement calls on top. Each one names its reason, so a manager reads two claims, not fourteen.</div>
+    <div><b>Bulk approve, safely</b>"Approve the 12 safe claims" lists what's included and can be undone. AI suggests; the manager decides.</div>
+    <div><b>Context nobody had to collect</b>Quarter-to-date spend, the team budget and the deal it served come from Bemmoly itself.</div>
+  </div>
+</figure>
+
+<!-- 5 ======================== Trip -->
+<figure class="screen" id="ex-trip" data-title="A trip, assembled">
+  <div class="scap"><b>A trip, assembled for you</b><span>Flights, hotel, meals and taxis group themselves into the trip they belong to, with per diems worked out.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.trips" data-me="Arjun Mehta"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span>Trips</span><span class="sep">/</span><span class="cur">Mumbai, Northwind kickoff</span></div>
+        <div class="hact"><span class="faces"><span class="av s o">AM</span><span class="av s p">SL</span></span><span class="btn">Share</span><span class="btn pri"><i data-lucide="send"></i>Submit trip · ₹27,880</span></div></div>
+      <div class="bx-body"><div class="wrap" style="padding-top:22px">
+        <div class="row" style="align-items:flex-end;margin-bottom:16px"><div class="col grow"><div class="h24">Mumbai, Northwind kickoff</div><span class="tx-2" style="margin-top:4px">Tue 14 to Thu 15 Oct · Bengaluru to Mumbai · with Sofia Lindqvist · NW-2026</span></div>
+          <div class="seg"><span class="on">Timeline</span><span>Table</span></div></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px">
+          <div class="card" style="padding:4px 0">
+            <div class="ghead" style="background:transparent">Tue 13 Oct<span class="ct">Per diem ₹2,500 · Mumbai, tier 1 city</span></div>
+            <div class="lrow"><span class="tx-3 mono" style="width:44px;font-size:11.5px">06:10</span><span class="cat c-travel"><i data-lucide="plane"></i></span><div class="col grow"><b>IndiGo 6E 2041, BLR to BOM</b><span class="tx-3" style="font-size:12px">From forwarded e-ticket</span></div><b class="num">₹6,240</b></div>
+            <div class="lrow"><span class="tx-3 mono" style="width:44px;font-size:11.5px">09:05</span><span class="cat c-car"><i data-lucide="car-taxi-front"></i></span><div class="col grow"><b>Airport to Lower Parel</b><span class="tx-3" style="font-size:12px">Card ••4417 · receipt matched</span></div><b class="num">₹780</b></div>
+            <div class="lrow"><span class="tx-3 mono" style="width:44px;font-size:11.5px">14:00</span><span class="cat c-hotel"><i data-lucide="bed-double"></i></span><div class="col grow"><b>Trident Nariman Point · 2 nights</b><span class="tx-3" style="font-size:12px">₹5,720 a night · under the ₹7,500 Mumbai cap</span></div><b class="num">₹11,440</b></div>
+            <div class="ghead" style="background:transparent">Wed 14 Oct<span class="ct">Per diem ₹2,500</span></div>
+            <div class="lrow"><span class="tx-3 mono" style="width:44px;font-size:11.5px">20:30</span><span class="cat c-meal"><i data-lucide="utensils"></i></span><div class="col grow"><b>Team dinner, The Bombay Canteen</b><span class="tx-3" style="font-size:12px">Split with Sofia · your half</span></div><b class="num">₹2,160</b></div>
+            <div class="ghead" style="background:transparent">Thu 15 Oct<span class="ct">Per diem ₹1,250 · half day</span></div>
+            <div class="lrow" style="border-bottom:0"><span class="tx-3 mono" style="width:44px;font-size:11.5px">18:40</span><span class="cat c-travel"><i data-lucide="plane"></i></span><div class="col grow"><b>Air India AI 639, BOM to BLR</b><span class="tx-3" style="font-size:12px">From forwarded e-ticket</span></div><b class="num">₹7,260</b></div>
+          </div>
+          <div class="col" style="gap:12px">
+            <div class="card pad"><div class="cap">Trip total</div><div class="big num" style="margin:6px 0 10px">₹27,880</div>
+              <div class="col" style="gap:7px;font-size:12.5px"><div class="row"><span class="dot" style="background:#0e9bb0"></span><span class="grow tx-2">Flights</span><span class="num">₹13,500</span></div><div class="row"><span class="dot" style="background:#7d68d8"></span><span class="grow tx-2">Hotel</span><span class="num">₹11,440</span></div><div class="row"><span class="dot" style="background:#d46a2e"></span><span class="grow tx-2">Meals</span><span class="num">₹2,160</span></div><div class="row"><span class="dot" style="background:#2f9e6e"></span><span class="grow tx-2">Local travel</span><span class="num">₹780</span></div></div>
+              <div class="bar" style="margin-top:12px;height:8px"><i style="width:48%;background:#0e9bb0"></i><i style="width:41%;background:#7d68d8"></i><i style="width:8%;background:#d46a2e"></i><i style="width:3%;background:#2f9e6e"></i></div></div>
+            <div class="card pad"><div class="row"><i data-lucide="coins" class="tx-3"></i><b class="grow">Per diem owed to you</b><b class="num">₹6,250</b></div><div class="tx-3" style="font-size:12px;margin-top:6px">2.5 days in a tier 1 city, less the dinner already claimed. Rates from Policy v7.</div></div>
+            <div class="ai-card"><div class="ai-h"><span class="aid"></span>Possibly missing<span class="src">by AI · from your calendar</span></div><p>You had a taxi on Thursday evening to the airport, but there's no swipe or receipt.<span class="cite"><i data-lucide="calendar"></i>Flight 18:40</span></p><div class="acts"><span class="btn sm">Add a taxi</span><span class="nu">Not useful</span></div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The trip is the natural unit</b>Dates and places come from the tickets and the calendar, so items join the right trip without any dragging.</div>
+    <div><b>Per diems, worked out</b>City tiers, half days and meals already claimed are calculated by the policy, so nobody needs a spreadsheet.</div>
+    <div><b>Gaps, gently</b>AI notices what's likely missing and offers to add it. It never adds anything by itself.</div>
+  </div>
+</figure>
+
+<!-- 6 ======================== Finance -->
+<figure class="screen" id="ex-fin" data-title="Finance close">
+  <div class="scap"><b>Finance: audit by exception, close in an afternoon</b><span>Spend at a glance, anomalies worth a look, and one batch for reimbursements and export.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.rep" data-me="Meera Iyer" data-counts='{"exp.appr":"6"}'></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span class="cur">October close</span></div>
+        <div class="htabs"><span class="htab on">Overview</span><span class="htab">Audit<span class="ct">5</span></span><span class="htab">Reimburse</span><span class="htab">Export</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="download"></i>Export to ledger</span><span class="btn pri"><i data-lucide="banknote"></i>Pay 38 people · ₹4.6L</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:20px 24px;gap:14px">
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="card kpi"><div class="l">Spend this month</div><div class="v num">₹38.2L</div><div class="d"><span class="down">+12%</span> vs September</div></div>
+          <div class="card kpi"><div class="l">Within policy</div><div class="v num">96.4%</div><div class="d"><span class="up">+3.1 pts</span> since policy v7</div></div>
+          <div class="card kpi"><div class="l">Time to reimburse</div><div class="v num">2.1 days</div><div class="d">Median, submit to paid</div></div>
+          <div class="card kpi"><div class="l">GST input credit</div><div class="v num">₹1.9L</div><div class="d">412 receipts with valid GSTIN</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;flex:1;min-height:0">
+          <div class="card" style="display:flex;flex-direction:column;min-height:0">
+            <div class="card-h">Spend by category<span class="tx-3 sp">October, ₹ lakh</span><div class="seg"><span class="on">Category</span><span>Team</span><span>Project</span></div></div>
+            <div style="padding:16px 18px;flex:1;display:flex;flex-direction:column;gap:12px">
+              <div class="row"><span class="cat c-soft"><i data-lucide="app-window"></i></span><span style="width:110px">Software</span><div class="bar grow" style="height:10px"><i style="width:84%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">12.6</b></div>
+              <div class="row"><span class="cat c-travel"><i data-lucide="plane"></i></span><span style="width:110px">Flights</span><div class="bar grow" style="height:10px"><i style="width:56%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">8.4</b></div>
+              <div class="row"><span class="cat c-hotel"><i data-lucide="bed-double"></i></span><span style="width:110px">Hotels</span><div class="bar grow" style="height:10px"><i style="width:41%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">6.1</b></div>
+              <div class="row"><span class="cat c-meal"><i data-lucide="utensils"></i></span><span style="width:110px">Meals</span><div class="bar grow" style="height:10px"><i style="width:30%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">4.5</b></div>
+              <div class="row"><span class="cat c-car"><i data-lucide="car"></i></span><span style="width:110px">Local travel</span><div class="bar grow" style="height:10px"><i style="width:19%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">2.9</b></div>
+              <div class="row"><span class="cat c-gift"><i data-lucide="gift"></i></span><span style="width:110px">Gifts</span><div class="bar grow" style="height:10px"><i style="width:8%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">1.2</b></div>
+              <div class="row"><span class="cat" style="background:var(--sunken);color:var(--tx-3)"><i data-lucide="ellipsis"></i></span><span style="width:110px">Everything else</span><div class="bar grow" style="height:10px"><i style="width:17%;background:var(--acc-500)"></i></div><b class="num" style="width:56px;text-align:right">2.5</b></div>
+              <div class="sp"></div>
+              <div class="row tx-3" style="font-size:12px;border-top:1px solid var(--line-2);padding-top:10px"><i data-lucide="link"></i>Ledger mapping: 31 categories to 14 GL accounts · last export 29 Sep, 0 errors</div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;min-height:0">
+            <div class="card-h">Worth a look<span class="tx-3">5</span></div>
+            <div class="ai-card" style="margin:12px 12px 4px"><div class="ai-h"><span class="aid"></span>Anomalies<span class="src">by AI · from 1,248 claims</span></div><p style="font-size:12.5px">Five claims don't look like the rest. Everything else passed every rule.</p></div>
+            <div class="lrow" style="height:54px"><span class="bdg warn">Duplicate?</span><div class="col grow"><b style="font-size:12.5px">Same Ola ride claimed twice</b><span class="tx-3" style="font-size:11.5px">Lena Fischer · ₹640 · 2 Oct and 8 Oct</span></div></div>
+            <div class="lrow" style="height:54px"><span class="bdg warn">Split bill</span><div class="col grow"><b style="font-size:12.5px">Two ₹1,950 meals, 4 min apart</b><span class="tx-3" style="font-size:11.5px">Just under the ₹2,000 receipt line</span></div></div>
+            <div class="lrow" style="height:54px"><span class="bdg">Weekend</span><div class="col grow"><b style="font-size:12.5px">Hotel on a Saturday, no trip</b><span class="tx-3" style="font-size:11.5px">Tomás García · ₹8,200</span></div></div>
+            <div class="lrow" style="height:54px"><span class="bdg">Rate</span><div class="col grow"><b style="font-size:12.5px">Mileage 2x the usual route</b><span class="tx-3" style="font-size:11.5px">Office to Whitefield logged as 46 km</span></div></div>
+            <div class="lrow" style="height:54px;border-bottom:0"><span class="bdg">Vendor</span><div class="col grow"><b style="font-size:12.5px">New SaaS vendor, ₹74,000</b><span class="tx-3" style="font-size:11.5px">Not in Licences yet · <span style="color:var(--acc)">Add to Licences</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>The numbers finance actually asks for</b>Policy compliance, time to reimburse and reclaimable tax, each comparable across months.</div>
+    <div><b>Anomalies, not a firehose</b>Duplicates, split bills and odd mileage are found across everyone's claims. These are patterns no single approver can see.</div>
+    <div><b>Products talk</b>A new software vendor found in expenses offers to start tracking it in Licences. Spend data turns into the IT inventory.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours</h2>
+<p class="sub">Bemmoly is open source and used by companies of every shape, so nothing about expenses is hard-coded. A company changes five things, all from Expenses › Settings, without writing code. Each can also be exported as a file, so it can be reviewed like code.</p>
+<div class="cols c3">
+  <div><h3>Categories</h3><p>The company's own list, nested ("Travel › Flights"), each with a GL account, tax treatment, receipt rule and icon. Starts from a template: India, EU, US, or a blank list.</p></div>
+  <div><h3>Policy rules</h3><p>Sentences built from blocks: when, limit, then. Limits per person, day, trip, city tier or grade. Every edit is a new version with a dry run against history.</p></div>
+  <div><h3>Approval flows</h3><p>Built on Bemmoly's shared workflow engine: by amount, category, project or cost centre. Delegates during time off come from People automatically.</p></div>
+  <div><h3>Fields</h3><p>Custom fields per category (a client name for client meals, a vehicle for mileage), stored typed and filterable, usable in rules and exports.</p></div>
+  <div><h3>Money</h3><p>Base currency per entity, exchange-rate source, mileage rates per vehicle, per diem tables by city, and reimbursement methods (bank file, payroll, or a payment connector).</p></div>
+  <div><h3>Connectors</h3><p>Card feeds, the ledger (Tally, Zoho Books, QuickBooks, Xero, NetSuite or a CSV mapping), and travel bookings. Each one is a plug-in with a public interface, so the community can add more.</p></div>
+</div>
+
+<div class="screens" id="cfg">
+<figure class="screen" id="cfg-pol" data-title="Policy builder">
+  <div class="scap"><b>Policy as sentences, with a dry run</b><span>Finance edits rules in words and sees what the change would have done to last quarter before it goes live.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.set" data-me="Meera Iyer"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab">Categories</span><span class="htab on">Policies</span><span class="htab">Approvals</span><span class="htab">Fields</span><span class="htab">Money</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="bdg acc">Draft v8</span><span class="btn">Discard</span><span class="btn pri">Publish v8…</span></div></div>
+      <div class="bx-body" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%">
+        <div style="overflow:auto;padding:22px 28px" class="col">
+          <div class="row" style="margin-bottom:14px"><div class="col grow"><div class="h20">Travel and meals policy</div><span class="tx-3" style="font-size:12px">Applies to everyone in India · v7 live since 31 Aug · edited by Meera Iyer</span></div><span class="btn sm"><i data-lucide="file-code-2"></i>View as YAML</span></div>
+          <div class="col" style="gap:10px">
+            <div class="pol"><div class="row"><span class="cat c-meal"><i data-lucide="utensils"></i></span><b>Client meals</b><span class="sp"></span><span class="bdg acc">Changed</span><span class="ib sm"><i data-lucide="grip-vertical"></i></span></div>
+              <div class="sent">When the category is <span class="tok">Meals, client</span>, allow up to <span class="tok v">₹1,500</span> <span class="tok v" style="text-decoration:line-through;color:var(--tx-3)">₹1,200</span> per <span class="tok">attendee</span>. Above that, <span class="tok">ask for a reason</span> and <span class="tok">flag for the approver</span>. Above <span class="tok v">2×</span> the limit, <span class="tok">also send to Finance</span>.</div></div>
+            <div class="pol"><div class="row"><span class="cat c-hotel"><i data-lucide="bed-double"></i></span><b>Hotels by city</b><span class="sp"></span><span class="ib sm"><i data-lucide="grip-vertical"></i></span></div>
+              <div class="sent">For <span class="tok">Hotel</span>, the nightly cap follows the <span class="tok">city tier table</span>: tier 1 <span class="tok v">₹7,500</span>, tier 2 <span class="tok v">₹5,000</span>, other <span class="tok v">₹3,500</span>. Directors get <span class="tok v">+30%</span>.</div></div>
+            <div class="pol"><div class="row"><span class="cat c-soft"><i data-lucide="file-check-2"></i></span><b>Receipts</b><span class="sp"></span><span class="ib sm"><i data-lucide="grip-vertical"></i></span></div>
+              <div class="sent">Require a <span class="tok">receipt</span> when the amount is over <span class="tok v">₹2,000</span>, and an <span class="tok">itemised GST invoice</span> when over <span class="tok v">₹10,000</span>.</div></div>
+            <div class="pol" style="box-shadow:none;border:1.5px dashed var(--line);background:transparent;color:var(--tx-3);flex-direction:row;align-items:center"><i data-lucide="plus"></i>Add a rule <span class="tx-3">or start from a template: per diem, mileage, gifts, alcohol, weekend</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line);background:var(--canvas);padding:20px;overflow:auto" class="col">
+          <div class="row"><i data-lucide="flask-conical" class="tx-3"></i><b class="grow">Dry run: v8 against Jul to Sep</b></div>
+          <span class="tx-3" style="font-size:12px;margin:4px 0 14px">3,412 claims replayed in 1.8s</span>
+          <div class="kpis" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Fewer flags</div><div class="v num" style="font-size:20px">−214</div><div class="d">Client meals within the new limit</div></div>
+            <div class="well kpi" style="padding:10px 12px"><div class="l">Extra spend allowed</div><div class="v num" style="font-size:20px">₹1.1L</div><div class="d">A quarter, at last quarter's pattern</div></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Claims that change outcome</div>
+          <div class="col" style="gap:0;font-size:12.5px">
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="av s o">AM</span><span class="grow">Bistro Kaveri, 2 people</span><span class="bdg ok">Flag removed</span></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="av s p">SL</span><span class="grow">Toit, 4 people</span><span class="bdg ok">Flag removed</span></div>
+            <div class="row" style="height:34px;border-bottom:1px solid var(--line-2)"><span class="av s k">TG</span><span class="grow">Olive, 3 people</span><span class="bdg ok">Flag removed</span></div>
+            <div class="row" style="height:34px"><span class="tx-3">and 211 more</span><span class="sp"></span><span style="color:var(--acc)">Open list</span></div>
+          </div>
+          <div class="cap" style="margin:16px 0 8px">Publishing v8</div>
+          <div class="col" style="gap:6px;font-size:12.5px" class="tx-2"><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Notify everyone in India of the change</div><div class="row"><span class="cb on"><i data-lucide="check"></i></span>Apply to claims submitted from Mon 2 Nov</div><div class="row"><span class="cb"></span>Re-check open claims under v8</div></div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Readable by anyone</b>Each rule reads as a sentence, so an employee, an auditor and finance can all see what's allowed. Blocks keep it exact.</div>
+    <div><b>Versioned like code</b>Drafts, versions, the diff, who changed what, and a YAML view that can live in Git for companies that want review.</div>
+    <div><b>Know the impact before it's live</b>The dry run replays history against the draft, the feature no market leader offers.</div>
+  </div>
+</figure>
+<figure class="screen" id="cfg-flow" data-title="Categories and approvals">
+  <div class="scap"><b>Categories, with their ledger code, and approval routes</b><span>One table maps each category to the ledger, tax and receipt rule. Approval routes come from the shared workflow engine.</span></div>
+  <div class="stage"><div class="frame"><div class="bx">
+    <aside class="bx-side" data-cur="expenses" data-link="exp.set" data-me="Meera Iyer"></aside>
+    <div class="bx-main">
+      <div class="bx-head"><div class="crumbs"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><span>Expenses</span><span class="sep">/</span><span class="cur">Settings</span></div>
+        <div class="htabs"><span class="htab on">Categories</span><span class="htab">Policies</span><span class="htab">Approvals</span><span class="htab">Fields</span><span class="htab">Money</span><span class="htab">Connectors</span></div>
+        <div class="hact"><span class="btn"><i data-lucide="upload"></i>Import list</span><span class="btn pri"><i data-lucide="plus"></i>New category</span></div></div>
+      <div class="bx-body"><div class="full" style="padding:18px 24px;gap:16px">
+        <div class="card" style="overflow:hidden">
+          <table class="tbl"><thead><tr><th>Category</th><th>Ledger account</th><th>Tax</th><th>Receipt</th><th>Extra fields</th><th class="r">Last 90 days</th></tr></thead><tbody>
+            <tr><td><div class="row"><span class="cat c-travel" style="width:22px;height:22px"><i data-lucide="plane"></i></span>Travel <span class="tx-3">› Flights</span></div></td><td class="mono" style="font-size:12px">6110 · Travel, domestic</td><td>GST 5% · ITC eligible</td><td>Always</td><td><span class="tag">PNR</span> <span class="tag">Trip</span></td><td class="r num">₹21.4L</td></tr>
+            <tr class="sel"><td><div class="row"><span class="cat c-meal" style="width:22px;height:22px"><i data-lucide="utensils"></i></span>Meals <span class="tx-3">› Client</span></div></td><td class="mono" style="font-size:12px">6230 · Business entertainment</td><td>GST 5% · no ITC</td><td>Over ₹2,000</td><td><span class="tag">Attendees</span> <span class="tag">Client</span></td><td class="r num">₹6.8L</td></tr>
+            <tr><td><div class="row"><span class="cat c-hotel" style="width:22px;height:22px"><i data-lucide="bed-double"></i></span>Hotel</div></td><td class="mono" style="font-size:12px">6120 · Accommodation</td><td>GST 12–18% · ITC eligible</td><td>Always · itemised</td><td><span class="tag">Nights</span> <span class="tag">City</span></td><td class="r num">₹16.2L</td></tr>
+            <tr><td><div class="row"><span class="cat c-car" style="width:22px;height:22px"><i data-lucide="car"></i></span>Mileage</div></td><td class="mono" style="font-size:12px">6140 · Conveyance</td><td>Exempt</td><td>Route instead</td><td><span class="tag">Vehicle</span> <span class="tag">Route</span></td><td class="r num">₹2.1L</td></tr>
+            <tr><td><div class="row"><span class="cat c-soft" style="width:22px;height:22px"><i data-lucide="app-window"></i></span>Software</div></td><td class="mono" style="font-size:12px">6410 · Subscriptions</td><td>GST 18% · ITC · RCM abroad</td><td>Invoice</td><td><span class="tag">Tool</span> <span class="tag">Seats</span></td><td class="r num">₹34.9L</td></tr>
+          </tbody></table>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div class="row" style="margin-bottom:14px"><b class="grow">Approval route: Meals, client</b><span class="tx-3" style="font-size:12px">Shared workflow engine · used by Time, Assets and Access too</span></div>
+          <div class="flow">
+            <div class="node"><div class="cap">Start</div><b>Claim submitted</b></div><i data-lucide="arrow-right" class="arrow"></i>
+            <div class="node"><div class="cap">Step 1</div><b>Their manager</b><div class="tx-3" style="font-size:11.5px">From People · delegate on leave</div></div><i data-lucide="arrow-right" class="arrow"></i>
+            <div class="node" style="box-shadow:0 0 0 1px var(--acc-100),0 0 0 4px var(--acc-50)"><div class="cap">If over ₹10,000</div><b>Cost centre owner</b><div class="tx-3" style="font-size:11.5px">From the cost centre field</div></div><i data-lucide="arrow-right" class="arrow"></i>
+            <div class="node"><div class="cap">If flagged</div><b>Finance review</b><div class="tx-3" style="font-size:11.5px">Queue · Meera, Rohan</div></div><i data-lucide="arrow-right" class="arrow"></i>
+            <div class="node"><div class="cap">End</div><b>Ready to pay</b></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Ledger mapping lives with the category</b>Export is clean because the mapping is part of setup, not a monthly fix in a spreadsheet.</div>
+    <div><b>Fields where they belong</b>Attendees on meals, vehicle on mileage. Each field is typed, so it can be filtered and used in rules.</div>
+    <div><b>One workflow engine</b>The same route builder powers time approvals, asset requests and access requests, so admins learn it once.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI, with a person in charge</h2>
+<p class="sub">Every AI surface follows Bemmoly's rules: lilac marks it, it cites its sources, a person applies the result, and nothing appears while AI is off. The model is the company's choice, from the models.dev catalog or a local model.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Where</th><th>What AI does</th><th>What a person still decides</th><th>With AI off</th></tr>
+  <tr><td>Capture</td><td>Reads merchant, date, totals, tax ids and line items. Works on photos, PDFs and email bodies, in any language</td><td>Accepts or edits each field. "Undo all AI fields" is always one click</td><td>Built-in OCR with templates for common receipts, then manual entry</td></tr>
+  <tr><td>Coding</td><td>Suggests category, project and attendees from the calendar, Work and history</td><td>Every suggestion shows its source and can be changed</td><td>Rules: merchant to category maps, last-used project</td></tr>
+  <tr><td>Approvals</td><td>Writes the review summary and the risk reason for each claim</td><td>The approver approves. Bulk approve lists exactly what's included</td><td>Rule-based flags, sorted by amount and flag count</td></tr>
+  <tr><td>Audit</td><td>Finds cross-claim anomalies: duplicates, split bills, unusual routes and vendors</td><td>Finance opens and resolves each one. Nothing is rejected automatically</td><td>Exact duplicate and threshold checks only</td></tr>
+  <tr><td>Ask Expenses</td><td>Answers "can I expense a co-working day pass in Berlin?" from the policy, with the rule cited</td><td>The policy is the source; the answer links to it</td><td>The policy page, searchable</td></tr>
+  <tr><td>Policy drafting</td><td>Turns an uploaded PDF policy into draft rules on first setup</td><td>Finance reviews each rule, then the dry run, then publishes</td><td>Templates by country</td></tr>
+</table></div>
+<p class="note ai"><b>Privacy.</b> Receipts can hold personal data (names, card digits, addresses). A workspace can pick a local model for capture only, and keep a hosted model for summaries, or turn either off. Card numbers are masked before anything reaches a model.</p>
+
+<h2 id="connects"><span class="n">08</span>How it connects</h2>
+<p class="sub">Expenses is its own product with its own app, and a company can run it alone. When other Bemmoly products are installed, they share one sign-in, one person directory and one approval engine through the kernel, so each one gets better with the others.</p>
+<div class="cols">
+  <div><h3>With other Bemmoly products</h3><ul><li><b>People</b>: managers, cost centres, grades, entities, bank details, and delegates during time off. Without People, Expenses keeps its own simple approver list.</li><li><b>Work</b>: projects and clients as expense projects, and billable spend on the project</li><li><b>Time</b>: billable hours and billable expenses go into one client invoice</li><li><b>Licences</b>: recurring software spend becomes tracked applications ("Add to Licences" opens Licences)</li><li><b>Helpdesk</b>: "Where's my reimbursement?" is answered from the tracker</li></ul></div>
+  <div><h3>Core objects</h3><ul><li><code>expense</code>: amount, currency, date, merchant, category, fields, attachments, source (camera, email, chat, card), state</li><li><code>trip</code>: a grouping with dates, places and per diem results</li><li><code>card_txn</code>: from a feed, matched to an expense</li><li><code>policy</code> and <code>policy_version</code>: rules as data, with dry-run results</li><li><code>payout_batch</code>: a reimbursement run and its export</li></ul></div>
+</div>
+
+<h2 id="phases"><span class="n">09</span>Phasing</h2>
+<div class="phases">
+  <div class="phase now"><span class="ptag">First release</span><b>Capture to paid</b><ul><li>Capture from camera, upload, email</li><li>AI and non-AI reading</li><li>Categories, fields, policy rules, live checks</li><li>Manager and finance approval on the shared engine</li><li>Reimbursement batch and CSV ledger export</li></ul></div>
+  <div class="phase"><span class="ptag">Next</span><b>Cards, trips and audit</b><ul><li>Card feed connectors and matching</li><li>Trips, per diems, mileage with routes</li><li>Risk-sorted approvals and anomalies</li><li>Policy versions with dry run</li><li>Ledger connectors (Tally, Zoho Books, Xero, QuickBooks)</li></ul></div>
+  <div class="phase"><span class="ptag">Later</span><b>Spend before it happens</b><ul><li>Budgets and pre-approval requests</li><li>Advances and settlements</li><li>Chat capture</li><li>Multi-entity consolidation</li><li>VAT reclaim for travel abroad</li></ul></div>
+</div>
+
+<h2 id="questions"><span class="n">10</span>Open questions</h2>
+<ol class="qs">
+  <li><b>Do we issue cards, or only read feeds?</b><span>Recommendation: read feeds only. Issuing cards makes us a financial product, which conflicts with "no in-app purchases".</span></li>
+  <li><b>Which ledgers come first?</b><span>Recommendation: CSV mapping, then Tally and Zoho Books for India, and Xero for everyone else, from where the first users are.</span></li>
+  <li><b>Reimbursement rails?</b><span>Recommendation: a bank bulk-payment file plus a "paid through payroll" mark. Payment APIs come as community connectors.</span></li>
+  <li><b>Is the receipt address one shared inbox or one per person?</b><span>Recommendation: one shared address that matches by the sender's verified email, plus plus-addressing for delegates.</span></li>
+</ol>
+
+<h2 id="sources"><span class="n">11</span>Sources</h2>
+<ul class="sources">
+  <li><a href="https://gbta.org/how-much-do-expense-reports-really-cost-a-company/">GBTA: How much do expense reports really cost a company?</a></li>
+  <li><a href="https://www.gbta.org/new-study-reveals-pain-points-in-expense-reporting/">GBTA: New study reveals pain points in expense reporting</a></li>
+  <li><a href="https://www.pymnts.com/exclusive-series/2015/3000-hours-wasted-on-expense-reporting/">PYMNTS: 3,000 hours wasted on expense reporting</a></li>
+  <li><a href="https://bill.com/blog/best-expense-management-software">BILL: Best expense management software</a></li>
+  <li><a href="https://aspireapp.com/us/blog/best-expense-management-software">Aspire: Best expense management software for businesses in 2026</a></li>
+  <li><a href="https://www.selecthub.com/c/expense-management-software/">SelectHub: Expense management software</a></li>
+  <li>Vendor product pages for Ramp, Brex, Navan, SAP Concur, Expensify, Zoho Expense, Fyle and Happay (October 2026)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

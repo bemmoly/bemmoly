@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Bemmoly Suite</title>
+<meta name="description" content="Nine business products on one open source platform: research, the dream experience and drawn screens for People, Time, Expenses, Assets, Licences, Hiring, Access, Performance and Helpdesk.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+.ov-hero{position:relative;padding:28px 0 8px}
+.ov-hero::before{content:"";position:absolute;inset:-60px -40px auto -40px;height:420px;background:radial-gradient(600px 260px at 18% 30%,var(--acc-50),transparent 70%),radial-gradient(500px 240px at 80% 10%,var(--ai-50),transparent 70%);z-index:-1;pointer-events:none}
+.ov-hero h1{font-size:52px;max-width:18ch}
+.mods-line{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
+/* the platform diagram */
+.plat{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;margin:24px 0 8px}
+.plat .m{border-radius:10px;background:var(--card);box-shadow:var(--e1);padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12.5px;font-weight:500;text-align:center;min-width:0}
+.plat .m .tile{width:28px;height:28px;border-radius:7px}
+.plat .m .tile svg.lucide{width:15px;height:15px}
+.layer{border-radius:12px;padding:14px 16px;margin-top:8px;display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;align-items:center}
+.layer b{font-size:13.5px;font-weight:600}
+.layer small{display:block;color:var(--tx-3);font-size:11.5px;margin-top:2px}
+.layer .items{display:flex;flex-wrap:wrap;gap:6px}
+.layer .items span{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;background:var(--card);box-shadow:var(--e1);font-size:12.5px;color:var(--tx)}
+.layer .items svg.lucide{width:14px;height:14px;color:var(--tx-3)}
+.layer.l1{background:var(--sunken);border:1px solid var(--line-2)}
+.layer.l2{background:var(--acc-50);border:1px solid var(--acc-100)}
+.layer.l3{background:var(--ai-50);border:1px solid var(--ai-100)}
+.layer.l3 .items svg.lucide{color:var(--ai-600)}
+.layer.l4{background:var(--sunken);border:1px dashed var(--line)}
+/* journey */
+.journey{position:relative;margin:24px 0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.journey::before{content:"";position:absolute;left:4%;right:4%;top:19px;height:2px;background:linear-gradient(90deg,var(--m-hiring),var(--m-people),var(--m-assets),var(--m-access),var(--m-performance),var(--m-time),var(--m-helpdesk));opacity:.55;border-radius:2px}
+.jstep{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-width:0}
+.jstep .tile{width:40px;height:40px;border-radius:11px;box-shadow:0 0 0 5px var(--canvas)}
+.jstep .tile svg.lucide{width:18px;height:18px}
+.jstep .when{font:500 11px/1 var(--mono);color:var(--tx-3)}
+.jstep b{font-size:13px;font-weight:600;line-height:1.35}
+.jstep p{margin:0;font-size:12px;color:var(--tx-2);line-height:1.45}
+/* sidebars compared */
+.sides{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+.sides figure{margin:0;min-width:0}
+.sides figcaption{font-size:13px;margin-bottom:8px}
+.sides figcaption b{font-weight:600}
+.sides figcaption span{display:block;color:var(--tx-3);font-size:12px}
+.sides .stage{box-shadow:var(--e2);border-radius:12px}
+.levers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+.lever{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:14px;min-width:0}
+.lever .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--acc-50);color:var(--acc);margin-bottom:10px}
+.lever b{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+.lever p{margin:0;font-size:12.5px;color:var(--tx-2);line-height:1.5}
+.lever code{display:block;margin-top:10px;font-size:11px;padding:6px 8px;white-space:pre;overflow:hidden;line-height:1.5}
+.order{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.order .wave{border-radius:12px;border:1px solid var(--line);background:var(--card);padding:14px 16px;min-width:0}
+.order .wave .ptag{font:500 11px/1 var(--mono);color:var(--tx-3)}
+.order .wave b{display:block;margin:6px 0 10px;font-size:15px;font-weight:600}
+.order .wave .ms{display:flex;flex-direction:column;gap:6px}
+.order .wave .ms span{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500}
+.order .wave .ms .tile{width:20px;height:20px;border-radius:5px}
+.order .wave .ms .tile svg.lucide{width:12px;height:12px}
+.order .wave p{margin:10px 0 0;font-size:12.5px;color:var(--tx-2);line-height:1.5}
+/* start page */
+.st-top{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px 0 24px;border-bottom:1px solid var(--line);background:var(--canvas)}
+.st-apps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.st-app{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:10px;background:var(--card);box-shadow:var(--e1)}
+.st-app .tile{width:32px;height:32px;border-radius:8px}
+.st-app .tile svg.lucide{width:17px;height:17px}
+.st-app b{font-weight:600;font-size:13.5px}
+.st-app span:not(.tile){font-size:12px;color:var(--tx-3)}
+.st-app .pill{position:absolute;top:12px;right:12px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--acc-fill);color:var(--on-acc)!important;font-size:11px!important;font-weight:600;display:grid;place-items:center}
+
+.hub-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.hub-t{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.hub-t .hd{display:flex;align-items:center;gap:8px;font-weight:600}
+.hub-t .hd .tile{width:20px;height:20px;border-radius:5px}
+.hub-t .hd .tile svg.lucide{width:12px;height:12px}
+.hub-t .hd .more{margin-left:auto;color:var(--tx-3);font-weight:400;font-size:12px}
+.hub-li{display:flex;align-items:center;gap:8px;font-size:12.5px;min-height:24px}
+.hub-li .grow{min-width:0}
+.ask{height:48px;border-radius:10px;background:var(--card);box-shadow:var(--e1),0 0 0 4px var(--ai-50);display:flex;align-items:center;gap:10px;padding:0 14px;font-size:14px;color:var(--tx-3)}
+@media (max-width:1000px){
+  .ov-hero h1{font-size:34px}
+  .ov-hero::before{inset:-40px 0 auto 0}
+  .plat{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .layer{grid-template-columns:minmax(0,1fr);gap:8px}
+  .journey{grid-template-columns:minmax(0,1fr);gap:16px}
+  .journey::before{display:none}
+  .jstep{flex-direction:row;text-align:left;align-items:flex-start}
+  .sides,.levers,.order{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="brand.js"></script>
+<script defer src="kit.js"></script>
+</head>
+<body>
+<header class="topbar" data-page="index"></header>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <h4>Suite</h4>
+  <a href="#products">Nine products</a>
+  <a href="#platform">One platform under all</a>
+  <a href="#journey">One person, every product</a>
+  <a href="#hub">One front door</a>
+  <a href="#where">Each product, its own app</a>
+  <a href="#yours">Make it yours</a>
+  <a href="#ai">AI across the suite</a>
+  <a href="#order">Build order</a>
+  <a href="#questions">Open questions</a>
+  <h4>Products</h4>
+  <a href="people.html">People</a><a href="time.html">Time</a><a href="expenses.html">Expenses</a><a href="assets.html">Assets</a><a href="licences.html">Licences</a><a href="hiring.html">Hiring</a><a href="access.html">Access</a><a href="performance.html">Performance</a><a href="helpdesk.html">Helpdesk</a>
+</nav>
+<main>
+<section class="ov-hero">
+  <div class="eyebrow"><span class="logo" data-logo="mark" style="height:22px"></span>Bemmoly suite · product proposal · October 2026</div>
+  <h1>Run the whole company on one open platform</h1>
+  <p class="lede">Nine business products: people, time, money, things, software, hiring, access, growth and help. Each one is its own product with its own app, so a company can install one or all nine. Underneath, they share Bemmoly's kernel: one sign-in, one person record, one approval engine and one AI layer. Each is as good as the best product in its category, free forever, on your own server, and shaped by your company's rules rather than ours.</p>
+  <div class="meta">
+    <span class="chip"><i data-lucide="scale"></i>MIT, no open core</span>
+    <span class="chip"><i data-lucide="server"></i>Self-hosted, one app plus Postgres</span>
+    <span class="chip"><i data-lucide="hand-coins"></i>No seat price, no tiers</span>
+    <span class="chip ai"><i data-lucide="sparkles"></i>AI optional, bring your own model</span>
+  </div>
+</section>
+
+<h2 id="products"><span class="n">01</span>Nine products</h2>
+<p class="sub">Each page has the research (problems today, market leaders, where we do better), the dream experience by persona, drawn screens you can click through, the customisation model, and the AI design.</p>
+<div class="prods" id="prodgrid"></div>
+
+<h2 id="platform"><span class="n">02</span>One platform under all of them</h2>
+<p class="sub">Each product is separate on the surface: its own app, its own navigation, its own settings, and its own audience. The market also sells these as nine separate tools, but each of those re-imports the org chart, keeps its own approval rules and sends its own notifications. Bemmoly builds that plumbing once in the kernel, so every product starts with the context the others already have.</p>
+<div class="plat" id="platmods"></div>
+<div class="layer l2"><div><b>Shared building blocks</b><small>Built once in the kernel</small></div><div class="items">
+  <span><i data-lucide="contact-round"></i>One person record</span><span><i data-lucide="network"></i>Org, teams, cost centres, locations</span><span><i data-lucide="git-branch"></i>Workflow and approval engine</span><span><i data-lucide="list-plus"></i>Typed custom fields</span><span><i data-lucide="file-input"></i>Forms</span><span><i data-lucide="bell"></i>Notifications</span><span><i data-lucide="layout-grid"></i>Start page and switcher</span><span><i data-lucide="search"></i>Search and the palette</span><span><i data-lucide="scroll-text"></i>Audit log</span></div></div>
+<div class="layer l3"><div><b>AI layer</b><small>Optional, the workspace's model</small></div><div class="items">
+  <span><i data-lucide="scan-text"></i>Document reading</span><span><i data-lucide="messages-square"></i>Answers that cite</span><span><i data-lucide="wand-sparkles"></i>Drafts and summaries</span><span><i data-lucide="radar"></i>Anomalies</span><span><i data-lucide="mouse-pointer-click"></i>Actions a person confirms</span></div></div>
+<div class="layer l1"><div><b>Kernel</b><small>Already shipping</small></div><div class="items">
+  <span><i data-lucide="key-round"></i>Sign-in, SSO, roles</span><span><i data-lucide="shield"></i>Capabilities and permissions</span><span><i data-lucide="database-backup"></i>Backups and restore</span><span><i data-lucide="refresh-cw"></i>Signed updates</span><span><i data-lucide="plug"></i>Product surfaces</span><span><i data-lucide="palette"></i>Themes</span></div></div>
+<div class="layer l4"><div><b>Connectors</b><small>Plug-ins with a public interface</small></div><div class="items">
+  <span><i data-lucide="landmark"></i>Banks and card feeds</span><span><i data-lucide="book-open-check"></i>Ledgers</span><span><i data-lucide="calendar"></i>Calendars and mail</span><span><i data-lucide="laptop"></i>Device management</span><span><i data-lucide="fingerprint"></i>Directories and SSO apps</span><span><i data-lucide="badge-indian-rupee"></i>Payroll</span><span><i data-lucide="message-circle"></i>Chat</span></div></div>
+<div class="take" style="margin-top:20px">
+  <div><span class="ic"><i data-lucide="contact-round"></i></span><b>One person, one record</b><p>People owns the record. Every other product reads the same manager, team, location, cost centre and employment state, so a change made once (a transfer, a new manager) reaches approvals, access and assets the same minute.</p></div>
+  <div><span class="ic"><i data-lucide="git-branch"></i></span><b>One approval engine</b><p>Expense claims, timesheets, asset requests, access grants, offers and leave all run on one workflow engine. Admins learn one builder, delegates during time off work everywhere, and one notification stream tells a person what needs them across every product they use.</p></div>
+</div>
+
+<h2 id="journey"><span class="n">03</span>One person, every product</h2>
+<p class="sub">This is where a suite on one platform beats nine best-in-class tools. Follow Kavya Nair, a frontend engineer who accepts an offer on 5 October and starts on Monday 2 November. Nobody copies her details from one system to another.</p>
+<div class="journey">
+  <div class="jstep"><span class="tile" style="background:var(--m-hiring)"><i data-lucide="file-signature"></i></span><span class="when">5 Oct</span><b>Offer signed</b><p>Hiring hands the accepted offer to People. Her record exists with role, level, salary band and start date.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-people)"><i data-lucide="list-checks"></i></span><span class="when">6 Oct</span><b>Onboarding opens</b><p>People starts the onboarding journey for her role and location, and fans out tasks to every product below.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-assets)"><i data-lucide="laptop"></i></span><span class="when">23 Oct</span><b>Laptop ships</b><p>Assets reserves the standard engineering kit, records the serials, and tracks the courier to her door.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-access)"><i data-lucide="shield-check"></i></span><span class="when">2 Nov, 08:00</span><b>Access is ready</b><p>Access grants birthright apps for Frontend in Bengaluru. Licences takes a seat from the pool rather than buying one.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><span class="when">2 Nov</span><b>Goals for 30, 60, 90</b><p>Performance drafts her first goals from the onboarding plan. Her manager, Daniel, edits and agrees them.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><span class="when">First week</span><b>Time and money ready</b><p>Her timesheet knows her projects. Expenses knows her approver, her card and her grade's limits.</p></div>
+  <div class="jstep"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><span class="when">Any day</span><b>Help that knows her</b><p>When she asks "how do I get VPN access?", Helpdesk already knows her device, her apps and her team.</p></div>
+</div>
+<p class="note"><b>And in reverse.</b> When someone leaves, one exit event in People does the rest: access is revoked at the end of the last day, licences go back to the pool, Assets opens the return with a courier label, the final expense claims and timesheets are flagged for closure, and Helpdesk hands their open tickets to their manager. Each step is logged, and nothing depends on someone remembering a checklist.</p>
+
+<h2 id="hub"><span class="n">04</span>Separate products, one front door</h2>
+<p class="sub">Each product opens on its own. Most people use only two or three, though, so every person also gets a start page after sign-in. It shows the products they can use, what's waiting on them in each, and one question box that works across all of them. It isn't a tenth product. It's the doorway, and the product switcher in every app returns to it.</p>
+<div class="screens" id="ov">
+<figure class="screen" id="ov-start" data-title="Start page">
+  <div class="scap"><b>Tomás García's start page</b><span>Only the products he can use, and what each one needs from him. Click the question box to see the AI front door.</span></div>
+  <div class="stage"><div class="frame"><div class="bx" style="display:flex;flex-direction:column">
+    <div class="st-top"><span class="logo" data-logo="lockup" style="height:18px"></span><span class="tx-3" style="font-size:12px;padding-left:12px;border-left:1px solid var(--line)">Acme Labs</span><span class="sp"></span><span class="ib"><i data-lucide="bell"></i></span><span class="ib"><i data-lucide="circle-help"></i></span><span class="av k">TG</span></div>
+    <div style="flex:1;min-height:0;position:relative;overflow:hidden">
+      <div style="max-width:1040px;margin:0 auto;padding:36px 32px">
+        <div class="h24">Good morning, Tomás</div>
+        <div class="tx-2" style="margin:4px 0 18px">Monday 19 October · Austin · 3 things need you this week</div>
+        <div class="ask hot" data-show=".ov-pal,.ov-scrim" style="margin-bottom:26px;cursor:pointer"><span class="aid"></span>Ask anything, or tell Bemmoly what you need…<span class="sp"></span><span class="kbd"><i data-lucide="command"></i>J</span></div>
+        <div class="cap" style="margin-bottom:10px">Your products</div>
+        <div class="st-apps">
+          <div class="st-app"><span class="tile" style="background:var(--m-work)"><i data-lucide="square-kanban"></i></span><div class="col"><b>Work</b><span>4 issues in review</span></div></div>
+          <div class="st-app"><span class="tile" style="background:var(--m-docs)"><i data-lucide="file-text"></i></span><div class="col"><b>Docs</b><span>2 comments for you</span></div></div>
+          <div class="st-app"><span class="tile" style="background:var(--m-time)"><i data-lucide="timer"></i></span><div class="col"><b>Time</b><span>Last week drafted</span></div><span class="pill">1</span></div>
+          <div class="st-app"><span class="tile" style="background:var(--m-expenses)"><i data-lucide="receipt"></i></span><div class="col"><b>Expenses</b><span>$412.60 paying Thu</span></div><span class="pill">1</span></div>
+          <div class="st-app"><span class="tile" style="background:var(--m-performance)"><i data-lucide="target"></i></span><div class="col"><b>Performance</b><span>Check-in due Fri</span></div><span class="pill">1</span></div>
+          <div class="st-app"><span class="tile" style="background:var(--m-helpdesk)"><i data-lucide="life-buoy"></i></span><div class="col"><b>Helpdesk</b><span>1 request open</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;margin-top:22px">
+          <div class="card hub-t"><div class="hd"><i data-lucide="circle-alert" style="color:var(--amber)"></i>Needs you<span class="more">3 across 3 products</span></div>
+            <div class="hub-li"><span class="tile" style="background:var(--m-time);width:20px;height:20px"><i data-lucide="timer" style="width:12px;height:12px"></i></span><span class="grow">Last week's timesheet is drafted: 38.5 hours from your calendar and Work</span><span class="btn sm">Open in Time</span></div>
+            <div class="hub-li"><span class="tile" style="background:var(--m-expenses);width:20px;height:20px"><i data-lucide="receipt" style="width:12px;height:12px"></i></span><span class="grow">The AWS invoice for October needs a project code</span><span class="btn sm">Open in Expenses</span></div>
+            <div class="hub-li"><span class="tile" style="background:var(--m-performance);width:20px;height:20px"><i data-lucide="target" style="width:12px;height:12px"></i></span><span class="grow">Weekly check-in for Daniel, due Friday</span><span class="btn sm">Open in Performance</span></div>
+          </div>
+          <div class="card hub-t"><div class="hd"><i data-lucide="history" class="tx-3"></i>Recent</div>
+            <div class="hub-li tx-2"><span class="tile" style="background:var(--m-work);width:18px;height:18px"><i data-lucide="square-kanban" style="width:11px;height:11px"></i></span><span class="grow trunc">PLT-204 Rate limits per account</span><span class="tx-3" style="font-size:11.5px">9m</span></div>
+            <div class="hub-li tx-2"><span class="tile" style="background:var(--m-helpdesk);width:18px;height:18px"><i data-lucide="life-buoy" style="width:11px;height:11px"></i></span><span class="grow trunc">IT-2240 VPN drops on hotel Wi-Fi</span><span class="tx-3" style="font-size:11.5px">2h</span></div>
+            <div class="hub-li tx-2"><span class="tile" style="background:var(--m-docs);width:18px;height:18px"><i data-lucide="file-text" style="width:11px;height:11px"></i></span><span class="grow trunc">Austin on-call handbook</span><span class="tx-3" style="font-size:11.5px">Fri</span></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px">
+          <div class="card hub-t"><div class="hd"><span class="tile" style="background:var(--m-people)"><i data-lucide="palmtree"></i></span>Who's out<span class="more">Platform team</span></div>
+            <div class="hub-li"><span class="av s p">SL</span><span class="grow">Sofia Lindqvist</span><span class="tx-3" style="font-size:11.5px">Until Wed</span></div>
+            <div class="hub-li"><span class="av s g">AT</span><span class="grow">Aiko Tanaka</span><span class="tx-3" style="font-size:11.5px">Fri, half day</span></div></div>
+          <div class="card hub-t"><div class="hd"><span class="tile" style="background:var(--m-people)"><i data-lucide="calendar"></i></span>Coming up</div>
+            <div class="hub-li"><i data-lucide="user-round-plus" class="tx-3"></i><span class="grow">Kavya Nair joins Platform</span><span class="tx-3" style="font-size:11.5px">Mon 2 Nov</span></div>
+            <div class="hub-li"><i data-lucide="calendar-off" class="tx-3"></i><span class="grow">Thanksgiving, Austin closed</span><span class="tx-3" style="font-size:11.5px">Thu 26 Nov</span></div></div>
+          <div class="card hub-t"><div class="hd"><span class="tile" style="background:var(--m-docs)"><i data-lucide="megaphone"></i></span>From the company</div>
+            <div class="hub-li"><span class="grow">Open enrolment for 2027 health plans closes Friday</span></div>
+            <div class="hub-li tx-3" style="font-size:12px">Priya Raman · in Docs · 2h ago</div></div>
+        </div>
+      </div>
+      <div class="scrim ov-scrim" hidden data-hide=".ov-pal,.ov-scrim"></div>
+      <div class="pal ov-pal" hidden style="width:680px;top:60px">
+        <div class="pal-in"><span class="aid"></span><span style="color:var(--tx)">My laptop battery dies in 2 hours, can I get a new one?</span></div>
+        <div style="padding:14px 16px">
+          <div class="ai-card"><div class="ai-h"><span class="aid"></span>Answer<span class="src">by AI · from the hardware refresh policy, your devices and stock in Assets</span></div>
+            <p>Yes. Laptops with battery health under 80% are replaced early<span class="cite">Refresh policy §2</span>, and yours reads 71% from device management<span class="cite">ACME-L-0412</span>. Austin has two MacBook Pro 14 in stock<span class="cite">Austin stockroom</span>, so it can be ready tomorrow.</p>
+            <div class="acts"><span class="btn sm pri"><i data-lucide="laptop"></i>Request a replacement</span><span class="btn sm">Ask IT instead</span><span class="nu">Not useful</span></div></div>
+          <div class="pal-g" style="padding-left:0;margin-top:10px">This will</div>
+          <div class="col" style="gap:6px;font-size:12.5px">
+            <div class="row"><span class="tile" style="background:var(--m-assets);width:18px;height:18px"><i data-lucide="laptop" style="width:11px;height:11px"></i></span>Reserve ACME-L-0533 in Assets and open a swap with Rohan Kapoor in IT</div>
+            <div class="row"><span class="tile" style="background:var(--m-helpdesk);width:18px;height:18px"><i data-lucide="life-buoy" style="width:11px;height:11px"></i></span>Open Helpdesk request IT-2291 so you can follow it</div>
+            <div class="row"><i data-lucide="check-check" class="tx-3"></i>Needs no approval: you meet the refresh policy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="callouts">
+    <div><b>Only his products</b>Tomás can use six products, so he sees six. Assets, Licences and Access are run by IT and never appear for him.</div>
+    <div><b>Due first, from every product</b>Each item opens the product it belongs to. The start page never copies their screens; it points into them.</div>
+    <div><b>Ask once, act anywhere</b>The answer cites policy and proposes an action that spans Assets and Helpdesk. The person confirms; AI never acts alone.</div>
+  </div>
+</figure>
+</div>
+
+<h2 id="where"><span class="n">05</span>Each product, its own app</h2>
+<p class="sub">Every product has its own shell, built the way Pipelines' is: its brand block, its own places, its own search, its own settings, and a switcher (the grid button) to move between products. The pattern is the same in all nine, so moving between them feels familiar, but none of them carries another's navigation.</p>
+<div class="sides">
+  <figure><figcaption><b>Bemmoly Expenses</b><span>For Arjun, who files claims</span></figcaption>
+    <div class="stage" style="background:var(--side)"><div class="frame" style="width:240px;height:600px"><div class="bx" style="width:240px;height:600px;grid-template-columns:240px"><aside class="bx-side" data-cur="expenses" data-link="exp.mine" data-me="Arjun Mehta" data-counts='{"exp.mine":"2"}' data-hide-links="exp.appr,exp.cards,exp.rep"></aside></div></div></div></figure>
+  <figure><figcaption><b>Bemmoly Helpdesk</b><span>For Rohan, an IT agent</span></figcaption>
+    <div class="stage" style="background:var(--side)"><div class="frame" style="width:240px;height:600px"><div class="bx" style="width:240px;height:600px;grid-template-columns:240px"><aside class="bx-side" data-cur="helpdesk" data-link="hd.queue" data-me="Rohan Kapoor" data-counts='{"hd.queue":"!12"}'></aside></div></div></div></figure>
+  <figure><figcaption><b>The switcher, open</b><span>From inside Access, Rohan's products</span></figcaption>
+    <div class="stage" style="background:var(--side)"><div class="frame" style="width:240px;height:600px"><div class="bx" style="width:240px;height:600px;grid-template-columns:240px"><aside class="bx-side" data-cur="access" data-link="ac.people" data-me="Rohan Kapoor"></aside><div class="ps-launch" data-cur="access" data-only="docs,assets,licences,access,helpdesk,people" style="top:50px;left:8px;width:224px"></div></div></div></div></figure>
+</div>
+<div class="cols">
+  <div><h3>Separate where people see it</h3><ul><li>Each product is its own web app, served under its own path (<code>/expenses</code>, <code>/helpdesk</code>) on the same origin, as ADR 0037 set up for Pipelines. A product can get its own host later.</li><li>Its own shell, navigation, search, settings, notifications and phone layout</li><li>Its own grant: an admin turns a product on and says who may use it. Nobody sees a product they can't use.</li><li>Install one product, or all nine. Expenses works without People; it keeps a simple approver list until People is there.</li></ul></div>
+  <div><h3>Shared where nobody sees it</h3><ul><li>One sign-in and single sign-on across products, so the switcher never asks for a password again</li><li>One person record: People owns it when installed, and the kernel's people list otherwise</li><li>One approval and workflow engine, one custom-field system, one audit log, one backup</li><li>One AI setting: the workspace picks the model once, and every product uses it</li></ul></div>
+</div>
+
+<h2 id="yours"><span class="n">06</span>Make it yours: five levers, every product</h2>
+<p class="sub">Open source means companies of every shape, size and country will use this. Each product has its own settings, and every product's settings are built from the same five levers. An admin who has set up Expenses already knows how to set up Assets. Every lever can be exported as a file, so a company can review it, version it in Git, or share a template with others.</p>
+<div class="levers">
+  <div class="lever"><span class="ic"><i data-lucide="list-plus"></i></span><b>Fields</b><p>Typed custom fields on any object: a vehicle on a mileage claim, a T-shirt size on a new hire, a cost centre on a licence.</p><code>field: vehicle
+type: choice
+on: expense.mileage</code></div>
+  <div class="lever"><span class="ic"><i data-lucide="shapes"></i></span><b>Types and categories</b><p>The company's own lists: expense categories, asset types, ticket categories, leave types, job families. Each carries its own fields and rules.</p><code>category: IT › Laptop
+form: laptop_issue
+team: it-support</code></div>
+  <div class="lever"><span class="ic"><i data-lucide="shield-check"></i></span><b>Policies as rules</b><p>Rules written as sentences and stored as data: limits, eligibility, accrual, SLAs, reclaim rules. Versioned, with a dry run against history.</p><code>when: meals.client
+limit: 1500/attendee
+over: ask_reason</code></div>
+  <div class="lever"><span class="ic"><i data-lucide="git-branch"></i></span><b>Workflows</b><p>One engine for approvals and lifecycles: by amount, sensitivity, team or location, with delegates and escalations.</p><code>step: manager
+if: amount &gt; 10000
+then: cost_centre_owner</code></div>
+  <div class="lever"><span class="ic"><i data-lucide="plug"></i></span><b>Connectors</b><p>Banks, ledgers, payroll, device management, directories, chat. Each is a plug-in with a public interface, so the community can add more.</p><code>connector: tally
+direction: export
+map: categories</code></div>
+</div>
+<div class="cols c3">
+  <div><h3>Templates to start from</h3><p>Country packs (India with GST, PF and state holidays; Germany; the US) and company-size packs. A new workspace starts with a sane setup, not a blank form.</p></div>
+  <div><h3>Roles that make sense</h3><p>Capabilities per product (use, approve, administer, audit) and field visibility rules (who sees salary or bank details), all on Bemmoly's existing capability system.</p></div>
+  <div><h3>Extend with code when needed</h3><p>Every object has a typed API and webhooks, and connectors use the same plug-in interface as the products. A company that outgrows the levers writes a plug-in, without forking.</p></div>
+</div>
+
+<h2 id="ai"><span class="n">07</span>AI across the suite</h2>
+<p class="sub">AI shows up where it removes copying, judgement-free checking or searching. It follows the same rules everywhere: it's optional, it's lilac, it cites, a person applies, and the workspace picks the model, including a local one for sensitive data.</p>
+<div class="tablewrap"><table class="t">
+  <tr><th>Product</th><th>Where AI earns its place</th><th>Never</th></tr>
+  <tr><td>People</td><td>Letter drafting, policy answers, people analytics in plain words</td><td>Decides on hiring, pay or exits</td></tr>
+  <tr><td>Time</td><td>Drafts the week from calendar and work signals</td><td>Watches screens or keystrokes</td></tr>
+  <tr><td>Expenses</td><td>Reads receipts, codes them, writes risk notes, finds anomalies</td><td>Rejects a claim by itself</td></tr>
+  <tr><td>Assets</td><td>Turns invoices into asset records, predicts refresh, finds spare stock</td><td>Wipes or locks a device without a person</td></tr>
+  <tr><td>Licences</td><td>Spots unused seats, writes the renewal brief</td><td>Cancels a contract</td></tr>
+  <tr><td>Hiring</td><td>Drafts job ads, summarises CVs against must-haves, checks language for bias</td><td>Ranks or rejects candidates</td></tr>
+  <tr><td>Access</td><td>Pre-reviews access campaigns, explains risky grants</td><td>Grants access without the approver</td></tr>
+  <tr><td>Performance</td><td>Evidence briefs from real work, nudges about vague or biased language</td><td>Rates a person</td></tr>
+  <tr><td>Helpdesk</td><td>Answers from knowledge, takes actions a person confirms, categorises and proposes new categories</td><td>Closes a ticket the person still needs</td></tr>
+</table></div>
+
+<h2 id="order"><span class="n">08</span>Build order</h2>
+<p class="sub">Build the shared foundations first, then the products in an order where each one makes the next one better.</p>
+<div class="order">
+  <div class="wave"><span class="ptag">Wave 1</span><b>Foundations and People</b><div class="ms"><span>${p:people}</span></div><p>The person record, org and locations, the workflow engine, typed fields, forms, notifications, the start page and the switcher. People is the first product because every other one reads it.</p></div>
+  <div class="wave"><span class="ptag">Wave 2</span><b>Everyday self-service</b><div class="ms"><span>${p:helpdesk}</span><span>${p:expenses}</span><span>${p:time}</span></div><p>The products every person touches each month. They prove the AI layer (reading, answering, drafting) and the approval engine at volume.</p></div>
+  <div class="wave"><span class="ptag">Wave 3</span><b>IT operations</b><div class="ms"><span>${p:assets}</span><span>${p:access}</span><span>${p:licences}</span></div><p>Built on the joiner and leaver events from People and on the Helpdesk front door. Licences discovers apps from Expenses and Access.</p></div>
+  <div class="wave"><span class="ptag">Wave 4</span><b>Talent</b><div class="ms"><span>${p:hiring}</span><span>${p:performance}</span></div><p>They need the richest context: Work and Docs as evidence, People's levels, and candidates who become people records.</p></div>
+</div>
+
+<h2 id="questions"><span class="n">09</span>Open questions for Keerthi</h2>
+<ol class="qs">
+  <li><b>Same origin under a path, or a host per product?</b><span>Recommendation: start under paths on one origin (<code>/expenses</code>), exactly like Pipelines, so sign-in and cookies work unchanged. Offer <code>expenses.acme.dev</code> later through the same ADR step Pipelines has queued.</span></li>
+  <li><b>Payroll: build or connect?</b><span>Recommendation: connect. Payroll is regulated per country and changes every year. People exposes a payroll export and a connector interface, and the community can maintain country packs.</span></li>
+  <li><b>Names.</b><span>Proposed: People, Time, Expenses, Assets, Licences, Hiring, Access, Performance, Helpdesk. Plain words, consistent with Work and Docs.</span></li>
+  <li><b>Mobile.</b><span>Capture (receipts, clock-in, approvals, asset scan) needs a phone. Recommendation: an installable web app first, with camera and offline queue, then native shells if needed.</span></li>
+  <li><b>External use.</b><span>Helpdesk for customers and Hiring's careers page face the public. They need public pages with their own rate limits and branding rules. Confirm that's in scope for the first versions.</span></li>
+</ol>
+</main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var P = window.SUITE.PRODUCTS, T = window.SUITE.tile;
+  document.getElementById('prodgrid').innerHTML = P.map(function (p) {
+    return '<a class="prod" href="' + p.file + '">' + T(p.id, p.icon) + '<i data-lucide="arrow-right" class="go"></i><div><b>' + p.name + '</b><div style="font-size:12px;color:var(--tx-3)">' + p.long + '</div></div><p>' + p.desc + '</p></a>';
+  }).join('');
+  document.getElementById('platmods').innerHTML = P.map(function (p) { return '<div class="m">' + T(p.id, p.icon) + p.name + '</div>'; }).join('');
+  document.querySelectorAll('.order .ms span').forEach(function (s) {
+    var m = s.textContent.match(/\$\{p:(\w+)\}/); if (!m) return;
+    var p = P.filter(function (x) { return x.id === m[1]; })[0];
+    s.innerHTML = T(p.id, p.icon) + p.name;
+  });
+  window.SUITE.icons();
+}, { once: true });
+</script>
+</body>
+</html>
