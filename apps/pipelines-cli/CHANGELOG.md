@@ -1,5 +1,11 @@
 # @bemmoly/pipelines-cli
 
+## 1.5.0
+
+### Patch Changes
+
+- @bemmoly/module-pipelines@1.5.0
+
 ## 1.4.0
 
 ### Patch Changes

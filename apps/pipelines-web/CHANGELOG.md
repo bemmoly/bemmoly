@@ -1,5 +1,16 @@
 # @bemmoly/pipelines-web
 
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [05e2355]
+  - @bemmoly/ui@1.5.0
+  - @bemmoly/core-web@1.5.0
+  - @bemmoly/module-pipelines@1.5.0
+  - @bemmoly/api-client@1.5.0
+  - @bemmoly/shared@1.5.0
+
 ## 1.4.0
 
 ### Patch Changes
