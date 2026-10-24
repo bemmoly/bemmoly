@@ -28,7 +28,7 @@
     "@bemmoly/shared": "workspace:*",
     "@fastify/static": "10.1.5",
     "fastify": "5.12.5",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.0",

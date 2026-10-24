@@ -81,7 +81,7 @@
     "y-protocols": "1.0.7",
     "yaml": "2.8.3",
     "yjs": "13.6.32",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@hocuspocus/provider": "4.7.0",
