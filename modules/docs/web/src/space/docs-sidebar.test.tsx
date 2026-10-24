@@ -137,6 +137,35 @@ describe('the Docs sidebar', () => {
     expect(calls[0]).toMatchObject({ method: 'POST', body: { parentId: null, title: '' } });
   });
 
+  it("opens a + menu on a page's row: a page, a folder or a file inside it", async () => {
+    const made = pageDetail({
+      id: id(7301),
+      parentId: RUNBOOKS!.id,
+      kind: 'folder',
+      title: 'New folder',
+    });
+    server.use(http.post('*/api/v1/docs/pages', () => HttpResponse.json(made, { status: 201 })));
+    renderSidebar();
+    await tree();
+    fireEvent.click(screen.getByRole('button', { name: 'Add inside Runbooks' }));
+    const items = await screen.findAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual(['Page', 'Folder', 'Upload file']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Folder' }));
+    await waitFor(() => expect(window.location.pathname).toBe(`/docs/p/${made.id}`));
+    expect(calls.at(-1)).toMatchObject({
+      method: 'POST',
+      body: { parentId: RUNBOOKS!.id, kind: 'folder', title: 'New folder' },
+    });
+  });
+
+  it('offers the same three on the space row', async () => {
+    renderSidebar();
+    await tree();
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Engineering' }));
+    const items = await screen.findAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual(['Page', 'Folder', 'Upload file']);
+  });
+
   it('gives a space the sidebar in focus mode, with a filter, until Esc', async () => {
     renderSidebar();
     await tree();

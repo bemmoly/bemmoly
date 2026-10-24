@@ -6,6 +6,7 @@ import type { KeyboardEvent } from 'react';
 import { docsPaths } from '../shared/navigation.ts';
 import { SidebarTree } from './sidebar-tree.tsx';
 import { SpaceTile } from './space-tile.tsx';
+import { AddMenuItems, useAddActions } from '../create/add-menu-items.tsx';
 import { useCreateFolder } from '../create/use-create-folder.ts';
 import { useCreatePage } from '../create/use-create-page.ts';
 
@@ -92,7 +93,7 @@ export function SpaceMenu({ space, onFocus }: { space: Space; onFocus?: () => vo
  */
 export function SidebarSpace({ space, open, here, activePageId, onFocus }: SidebarSpaceProps) {
   const { mode } = useFrame();
-  const add = useCreatePage();
+  const addAny = useAddActions();
   const rail = mode === 'rail';
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'f' || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -138,15 +139,18 @@ export function SidebarSpace({ space, open, here, activePageId, onFocus }: Sideb
         />
         {rail ? null : (
           <span className={`absolute top-1 right-1 flex items-center gap-px ${TOOL}`}>
-            <IconButton
-              label={`New page in ${space.name}`}
-              icon="plus"
-              size="tool"
-              disabled={add.isPending}
-              onClick={() =>
-                add.create({ spaceId: space.id, parentId: null, placeName: space.name })
-              }
-            />
+            <Menu
+              align="start"
+              widthClassName="w-44"
+              trigger={(props) => (
+                <IconButton {...props} label={`Add to ${space.name}`} icon="plus" size="tool" />
+              )}
+            >
+              <AddMenuItems
+                add={addAny}
+                place={{ spaceId: space.id, parentId: null, placeName: space.name }}
+              />
+            </Menu>
             <SpaceMenu space={space} onFocus={onFocus} />
           </span>
         )}

@@ -12,6 +12,7 @@ import {
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useEffect, useState } from 'react';
+import { AddMenuItems, useAddActions } from '../create/add-menu-items.tsx';
 import { useCreateFolder } from '../create/use-create-folder.ts';
 import { useDuplicatePage } from '../create/use-duplicate-page.ts';
 import { useStarredIds } from '../hooks/home-queries.ts';
@@ -73,6 +74,7 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
   const starred = useStarredIds();
   const add = useCreatePage();
   const addFolder = useCreateFolder();
+  const addAny = useAddActions();
   const copy = useDuplicatePage();
   const [moving, setMoving] = useState<PageTreeItem | null>(null);
   const trash = useTrashFromTree(space.key, (pageId) => {
@@ -133,7 +135,7 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
         }}
         onToggle={(item, open) => setOpen(space.key, item.id, open)}
         onMove={(change) => move.mutate(change)}
-        onAddChild={addInside}
+        addMenu={(item) => <AddMenuItems add={addAny} place={inside(item)} />}
         renamingId={renaming}
         onRenameStart={(item) => setRenaming(item.id)}
         onRename={(item, title) => {

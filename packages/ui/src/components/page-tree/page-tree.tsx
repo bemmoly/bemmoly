@@ -39,6 +39,11 @@ export interface PageTreeProps {
   onMove?: (move: PageTreeMove) => void;
   /** The + on a hovered row. */
   onAddChild?: (item: PageTreeItem) => void;
+  /**
+   * The items of a menu the + opens instead (MenuItem elements), when more than one kind of
+   * thing can be added inside a row.
+   */
+  addMenu?: (item: PageTreeItem) => ReactNode;
   /** The items of a row's ··· menu (MenuItem elements). */
   menu?: (item: PageTreeItem) => ReactNode;
   renamingId?: string | null;
@@ -78,6 +83,7 @@ export function PageTree({
   onToggle,
   onMove,
   onAddChild,
+  addMenu,
   menu,
   renamingId = null,
   onRenameStart,
@@ -158,18 +164,38 @@ export function PageTree({
   };
 
   const actionsFor = (item: PageTreeItem, inTabOrder: boolean) =>
-    onAddChild || menu ? (
+    onAddChild || addMenu || menu ? (
       <>
-        {onAddChild && (
-          <IconButton
-            label={`Add a page inside ${item.title || 'Untitled'}`}
-            icon="plus"
-            size="xs"
-            variant="ghost"
-            className="size-5.5"
-            tabIndex={inTabOrder ? 0 : -1}
-            onClick={() => onAddChild(item)}
-          />
+        {addMenu ? (
+          <Menu
+            align="start"
+            widthClassName="w-44"
+            trigger={(props) => (
+              <IconButton
+                {...props}
+                label={`Add inside ${item.title || 'Untitled'}`}
+                icon="plus"
+                size="xs"
+                variant="ghost"
+                className="size-5.5"
+                tabIndex={inTabOrder ? 0 : -1}
+              />
+            )}
+          >
+            {addMenu(item)}
+          </Menu>
+        ) : (
+          onAddChild && (
+            <IconButton
+              label={`Add a page inside ${item.title || 'Untitled'}`}
+              icon="plus"
+              size="xs"
+              variant="ghost"
+              className="size-5.5"
+              tabIndex={inTabOrder ? 0 : -1}
+              onClick={() => onAddChild(item)}
+            />
+          )
         )}
         {menu && (
           <Menu

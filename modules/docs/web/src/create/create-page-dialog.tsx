@@ -73,7 +73,7 @@ function CreatePageForm({
             disabled={form.isSubmitting}
             onClick={() => picker.current?.click()}
           >
-            Upload HTML or PDF
+            Upload file
           </Button>
           {form.error && (
             <span role="alert" className="mr-auto text-13 text-red">
