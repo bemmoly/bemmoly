@@ -32,6 +32,11 @@ export interface FileEmbedProps {
   kind: FileEmbedKind;
   /** Who added it ("Added by Mira"), shown beside the kind so a framed form never passes for the app. */
   byline?: string;
+  /**
+   * Fill the space it is given, edge to edge, in place of the 360px box: a page that is this
+   * one file (ADR 0049).
+   */
+  fill?: boolean;
   className?: string;
 }
 
@@ -42,7 +47,7 @@ function FileBar({
   byline,
   onExpand,
   onClose,
-}: Omit<FileEmbedProps, 'className'> & { onExpand?: () => void; onClose?: () => void }) {
+}: Omit<FileEmbedProps, 'className' | 'fill'> & { onExpand?: () => void; onClose?: () => void }) {
   const look = LOOK[kind];
   return (
     <div className="flex min-h-10 shrink-0 items-center gap-2 border-b border-line bg-sunken px-3 py-1.5">
@@ -119,7 +124,7 @@ function FileBody({
   );
 }
 
-export interface FileViewerProps extends Omit<FileEmbedProps, 'className'> {
+export interface FileViewerProps extends Omit<FileEmbedProps, 'className' | 'fill'> {
   open: boolean;
   onClose: () => void;
 }
@@ -146,21 +151,27 @@ export function FileViewer({ open, onClose, ...file }: FileViewerProps) {
 }
 
 /**
- * A file shown in place: a bar naming it and what it is, then the file in a fixed-height box,
- * with Expand to see it full screen and a way to open or download it alone. HTML runs
- * sandboxed.
+ * A file shown in place: a bar naming it and what it is, then the file in a fixed-height box
+ * (or filling its space), with Expand to see it full screen and a way to open or download it
+ * alone. HTML runs sandboxed.
  */
-export function FileEmbed({ className, ...file }: FileEmbedProps) {
+export function FileEmbed({ className, fill = false, ...file }: FileEmbedProps) {
   const [full, setFull] = useState(false);
   return (
     <div
       className={cx(
-        'flex flex-col overflow-hidden rounded-card border border-line bg-card',
+        'flex flex-col overflow-hidden bg-card',
+        fill ? 'min-h-0 flex-1' : 'rounded-card border border-line',
         className,
       )}
     >
       <FileBar {...file} onExpand={() => setFull(true)} />
-      <div className={cx('flex', file.kind === 'image' ? 'max-h-120' : 'h-90')}>
+      <div
+        className={cx(
+          'flex',
+          fill ? 'min-h-0 flex-1' : file.kind === 'image' ? 'max-h-120' : 'h-90',
+        )}
+      >
         <FileBody src={file.src} name={file.name} kind={file.kind} full={false} />
       </div>
       <FileViewer {...file} open={full} onClose={() => setFull(false)} />
