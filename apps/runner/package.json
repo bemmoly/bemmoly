@@ -19,7 +19,7 @@
     "@bemmoly/shared": "workspace:*",
     "@xmldom/xmldom": "0.8.15",
     "pino": "10.4.0",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@types/node": "26.6.4",

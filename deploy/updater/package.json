@@ -14,7 +14,7 @@
   "dependencies": {
     "@bemmoly/shared": "workspace:*",
     "dockerode": "5.0.1",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@types/dockerode": "4.0.1",
