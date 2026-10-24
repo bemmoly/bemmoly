@@ -8,6 +8,7 @@ export * from './home.ts';
 export * from './lexorank.ts';
 export * from './links.ts';
 export * from './members.ts';
+export * from './page-kind.ts';
 export * from './pages.ts';
 export * from './pdf-export.ts';
 export * from './realtime.ts';

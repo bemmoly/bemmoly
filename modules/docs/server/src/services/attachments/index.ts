@@ -8,6 +8,7 @@ import {
   type UploadLink,
 } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
+import { fileBody } from '../../../../shared/page-kind.ts';
 import { DOCS_PAGE_KIND } from '../collab/index.ts';
 import type { DocsServiceDeps } from '../common.ts';
 import type { PagesService } from '../pages/index.ts';
@@ -64,7 +65,8 @@ export function createAttachmentsService(deps: DocsServiceDeps, pages: PagesServ
 
     /**
      * Adds a stored file at the end of the page's body, through the same edit path as any
-     * other change. Returns the body as it was before, for an undo.
+     * other change; on a file page the PDF or HTML file takes the place of the one it shows
+     * (ADR 0049). Returns the body as it was before, for an undo.
      */
     async append(
       ctx: RequestContext,
@@ -73,6 +75,20 @@ export function createAttachmentsService(deps: DocsServiceDeps, pages: PagesServ
     ): Promise<{ before: RichText }> {
       const page = await pages.get(ctx, pageId);
       const before = page.snapshot ?? EMPTY_DOCUMENT;
+      if (page.kind === 'folder') {
+        throw new ValidationError('A folder has no body; add the file to a page inside it');
+      }
+      if (page.kind === 'file') {
+        if (file.mime !== 'text/html' && file.mime !== 'application/pdf') {
+          throw new ValidationError(
+            'A file page shows one PDF or HTML file; turn it into a page first',
+          );
+        }
+        await pages.update(ctx, pageId, {
+          snapshot: fileBody({ src: file.url, name: file.name, mime: file.mime }),
+        });
+        return { before };
+      }
       const content = (before as { content?: unknown[] }).content ?? [];
       await pages.update(ctx, pageId, {
         snapshot: { ...before, content: [...content, blockOf(file)] } as RichText,

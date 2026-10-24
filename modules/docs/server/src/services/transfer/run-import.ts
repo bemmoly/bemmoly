@@ -50,10 +50,11 @@ async function insertPage(
     parentId: parent?.id ?? null,
   });
   const [row] = await tx<{ id: string; path: string }[]>`
-    insert into pages (id, space_id, parent_id, position, path, title, owner_id, created_by,
-      updated_by)
+    insert into pages (id, space_id, parent_id, position, path, kind, title, owner_id,
+      created_by, updated_by)
     select g.id, ${run.spaceId}, ${parent?.id ?? null}::uuid, ${position},
-      ${parent?.path ?? '/'} || g.id::text || '/', ${page.title.slice(0, 500)},
+      ${parent?.path ?? '/'} || g.id::text || '/', ${page.content === null ? 'folder' : 'page'},
+      ${page.title.slice(0, 500)},
       ${run.userId}::uuid, ${run.userId}::uuid, ${run.userId}::uuid
     from (select uuidv7() as id) g
     returning id, path`;

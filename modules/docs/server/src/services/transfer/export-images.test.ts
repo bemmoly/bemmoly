@@ -26,6 +26,7 @@ const withImages = (...ids: string[]) =>
 const page = (id: string, parent: string | null, snapshot: RichText) => ({
   id,
   parent_id: parent,
+  kind: 'page' as const,
   title: id,
   snapshot,
 });

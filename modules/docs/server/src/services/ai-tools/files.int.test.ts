@@ -156,6 +156,30 @@ describe('docs_upload_file', () => {
     ).rejects.toThrow('The file was not found');
   });
 
+  it('replaces the one file of a file page rather than adding a second', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const member = h.as(h.users.member);
+    const space = await h.space('FIL');
+    const page = await h.services.pages.create(member, {
+      spaceId: space.id,
+      title: 'Q4 report',
+      kind: 'file',
+    });
+    const upload = (name: string) =>
+      fakeFiles.upload(
+        member,
+        { target: 'docs.page', targetId: page.id, name },
+        Buffer.from('<!doctype html>'),
+      );
+    const first = await upload('q4.html');
+    await h.services.attachments.attach(member, page.id, first.id);
+    const second = await upload('q4-final.html');
+    const detail = await h.services.attachments.attach(member, page.id, second.id);
+    expect(detail.kind).toBe('file');
+    const files = (await blocks(member, page.id)).filter((block) => block.type === 'file');
+    expect(files.map((block) => block.attrs?.['src'])).toEqual([second.url]);
+  });
+
   it('refuses people who may only read the page', async (ctx) => {
     if (!h) return ctx.skip(skipped);
     const page = await write('docs_create_page', h.as(h.users.member), {

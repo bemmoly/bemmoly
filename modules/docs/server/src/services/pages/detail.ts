@@ -4,6 +4,7 @@ import {
   type Breadcrumb,
   type PageCover,
   type PageDetail,
+  type PageKind,
 } from '../../../../shared/pages.ts';
 import { iso, isoOrNull } from '../common.ts';
 import { toSummary, type PageRow } from './rows.ts';
@@ -29,13 +30,13 @@ export async function loadDetail(
 ): Promise<PageDetail> {
   const ancestors = ancestorIds(row);
   const crumbs = ancestors.length
-    ? await sql<{ id: string; title: string; icon: string | null }[]>`
-        select id, title, icon from pages where id = any(${ancestors}::uuid[])`
+    ? await sql<{ id: string; title: string; icon: string | null; kind: PageKind }[]>`
+        select id, title, icon, kind from pages where id = any(${ancestors}::uuid[])`
     : [];
   const byId = new Map(crumbs.map((crumb) => [crumb.id, crumb]));
   const breadcrumbs: Breadcrumb[] = ancestors.flatMap((id) => {
     const crumb = byId.get(id);
-    return crumb ? [{ id: crumb.id, title: crumb.title, icon: crumb.icon }] : [];
+    return crumb ? [{ id: crumb.id, title: crumb.title, icon: crumb.icon, kind: crumb.kind }] : [];
   });
   const labels = await sql<{ name: string }[]>`
     select name from page_labels where page_id = ${row.id} order by lower(name)`;

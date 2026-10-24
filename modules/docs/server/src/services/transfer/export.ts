@@ -2,6 +2,7 @@ import { posix } from 'node:path';
 import type { EntitySummary, RequestContext, SqlExecutor } from '@bemmoly/core';
 import { collectReferences, slugify, toHtmlDocument, toMarkdown } from '@bemmoly/editor/convert';
 import type { RichText } from '../../../../shared/common.ts';
+import type { PageKind } from '../../../../shared/pages.ts';
 import type { ExportQuery } from '../../../../shared/transfer.ts';
 import type { DocsServiceDeps } from '../common.ts';
 import { pagePath } from '../palette/index.ts';
@@ -10,7 +11,8 @@ import { collectImages, dataUri } from './export-images.ts';
 
 /*
  * Turning pages into files. Each page is one file named after its title; a page with
- * children also gets a folder of the same name holding theirs. Links between exported pages
+ * children also gets a folder of the same name holding theirs, and a folder (ADR 0049) is
+ * only that folder. Links between exported pages
  * point at each other's files, relatively, so the export reads offline; links to anything
  * else point into the app. Issue keys link to the issue when a module that serves issues
  * resolves them for the person.
@@ -25,6 +27,7 @@ export interface ExportedFile {
 export interface ExportPage {
   id: string;
   parent_id: string | null;
+  kind: PageKind;
   title: string;
   snapshot: RichText | null;
 }
@@ -79,10 +82,10 @@ export async function pagesToExport(
 ): Promise<ExportPage[]> {
   if (scope === 'page') {
     return sql<ExportPage[]>`
-      select id, parent_id, title, snapshot from pages where id = ${root.id}`;
+      select id, parent_id, kind, title, snapshot from pages where id = ${root.id}`;
   }
   return sql<ExportPage[]>`
-    select id, parent_id, title, snapshot from pages
+    select id, parent_id, kind, title, snapshot from pages
     where path like ${`${root.path}%`} and deleted_at is null
     order by length(path), position, id`;
 }
@@ -137,7 +140,9 @@ export async function renderExport(
     fileName: `${slugify(root.title || 'untitled')}.zip`,
     contentType: 'application/zip',
     body: createZip([
-      ...pages.map((page) => ({ name: paths.get(page.id)!, data: render(page) })),
+      ...pages
+        .filter((page) => page.kind !== 'folder')
+        .map((page) => ({ name: paths.get(page.id)!, data: render(page) })),
       ...[...images.values()].map((image) => ({ name: image.path, data: image.data })),
     ]),
   };

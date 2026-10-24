@@ -34,6 +34,7 @@ describe('docs shared schemas', () => {
       spaceId: id,
       parentId: null,
       title: '',
+      kind: 'page',
     });
     expect(
       createTemplateBodySchema.parse({ spaceId: id, name: 'ADR', snapshot: { type: 'doc' } }),
@@ -83,6 +84,7 @@ describe('docs shared schemas', () => {
       parentId: null,
       position: 'n',
       depth: 0,
+      kind: 'page',
       title: 'Auth migration',
       icon: null,
       status: 'draft',
@@ -95,5 +97,6 @@ describe('docs shared schemas', () => {
     };
     expect(pageSummarySchema.parse(summary)).toEqual(summary);
     expect(pageSummarySchema.safeParse({ ...summary, position: 'na' }).success).toBe(false);
+    expect(pageSummarySchema.safeParse({ ...summary, kind: 'board' }).success).toBe(false);
   });
 });

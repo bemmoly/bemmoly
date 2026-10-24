@@ -1,8 +1,9 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { plainText, wordCount } from '@bemmoly/editor/convert';
-import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
+import { ConflictError, NotFoundError, ProviderError, ValidationError } from '@bemmoly/shared';
 import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { RichText } from '../../../../shared/common.ts';
+import { isEmptyBody, kindAllowed } from '../../../../shared/page-kind.ts';
 import type { CreatePageBody, PageDetail, UpdatePageBody } from '../../../../shared/pages.ts';
 import {
   DOCS_REALTIME_KINDS,
@@ -18,7 +19,7 @@ import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
 import { loadDetail } from './detail.ts';
 import { publishPageEvent } from './events.ts';
 import { rankAmongSiblings } from './rank.ts';
-import { pageById, toSummary } from './rows.ts';
+import { pageById, toSummary, type PageRow } from './rows.ts';
 import { createPurgeService } from './purge.ts';
 import { createTrashService } from './trash.ts';
 
@@ -32,6 +33,36 @@ async function startingSnapshot(sql: SqlExecutor, body: CreatePageBody): Promise
       and (space_id is null or space_id = ${body.spaceId})`;
   if (!template) throw new NotFoundError('The template was not found in this space');
   return template.snapshot;
+}
+
+/**
+ * A folder starts with no body; a file page with none (its file follows) or with its one file
+ * (ADR 0049). A written page may start from anything.
+ */
+function checkStartingBody(body: CreatePageBody, snapshot: RichText | null) {
+  const kind = body.kind ?? 'page';
+  if (kind === 'folder' && (body.templateId || !isEmptyBody(snapshot))) {
+    throw new ValidationError('A folder has no body; create it without a template or content');
+  }
+  if (kind === 'file' && !isEmptyBody(snapshot) && !kindAllowed('file', snapshot)) {
+    throw new ValidationError('A file page holds one PDF or HTML file and nothing else');
+  }
+}
+
+/**
+ * A kind the body allows, and a body the kind allows: a folder takes no body, and a file
+ * page only ever its one file (ADR 0049).
+ */
+function checkKindChange(before: PageRow, patch: UpdatePageBody) {
+  const kind = patch.kind ?? before.kind;
+  const body = patch.snapshot ?? before.snapshot;
+  if (kind === before.kind && !patch.snapshot) return;
+  if (kindAllowed(kind, body)) return;
+  throw new ValidationError(
+    kind === 'folder'
+      ? 'Only a page with nothing written in it can become a folder'
+      : 'A file page holds one PDF or HTML file and nothing else',
+  );
 }
 
 /** Pages: create, open, rename and edit, and the trash (in trash.ts). */
@@ -62,13 +93,15 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
           beforeId: body.beforeId,
         });
         const snapshot = await startingSnapshot(tx, body);
+        checkStartingBody(body, snapshot);
         const readable = snapshot as Parameters<typeof plainText>[0];
         const text = plainText(readable);
         const [created] = await tx<{ id: string }[]>`
-          insert into pages (id, space_id, parent_id, position, path, title, icon, owner_id,
+          insert into pages (id, space_id, parent_id, position, path, kind, title, icon, owner_id,
             template_id, snapshot, text, word_count, created_by, updated_by)
           select g.id, ${body.spaceId}, ${body.parentId ?? null}::uuid, ${position},
-            ${parentPath} || g.id::text || '/', ${body.title ?? ''}, ${body.icon ?? null},
+            ${parentPath} || g.id::text || '/', ${body.kind ?? 'page'}, ${body.title ?? ''},
+            ${body.icon ?? null},
             ${userId}::uuid, ${body.templateId ?? null}::uuid,
             ${snapshot ? JSON.stringify(snapshot) : null}::jsonb, ${text}, ${wordCount(readable)},
             ${userId}::uuid, ${userId}::uuid
@@ -101,7 +134,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
     },
 
     /**
-     * Title, icon, cover and owner. A version that no longer matches is a conflict, so
+     * Title, icon, cover, owner and kind. A version that no longer matches is a conflict, so
      * two tabs never overwrite each other's rename silently. The body belongs to
      * the collab server now; a snapshot sent here (the 0.2 shape, accepted until
      * 0.4) is applied through it as one edit, so open editors see it.
@@ -112,6 +145,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
       const before = await pageById(sql, id);
       await ctx.authz.authorize(ctx.actor, 'docs.page.edit', spaceResource(before.space_id));
       const has = (field: keyof UpdatePageBody) => patch[field] !== undefined;
+      checkKindChange(before, patch);
       if (patch.snapshot) {
         if (patch.version !== undefined && patch.version !== before.version) {
           throw new ConflictError('The page changed since you opened it; reload it');
@@ -124,6 +158,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
           icon = case when ${has('icon')} then ${patch.icon ?? null} else icon end,
           cover = case when ${has('cover')} then ${patch.cover ?? null} else cover end,
           owner_id = case when ${has('ownerId')} then ${patch.ownerId ?? null}::uuid else owner_id end,
+          kind = coalesce(${patch.kind ?? null}, kind),
           version = version + 1,
           updated_by = ${userId}::uuid,
           updated_at = now()
@@ -143,7 +178,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
       await sql.begin((tx) =>
         publishPageEvent(deps, tx, DOMAIN_EVENT_KINDS.pageUpdated, id, ctx.actor),
       );
-      if (patch.title !== undefined || has('icon')) {
+      if (patch.title !== undefined || has('icon') || has('kind')) {
         await publishChange(deps, DOCS_REALTIME_KINDS.tree, row.space_id, [id]);
       }
       return loadDetail(sql, row, userId);
