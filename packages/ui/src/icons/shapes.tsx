@@ -7,7 +7,9 @@ import {
   Circle,
   CircleAlert,
   Download,
+  File,
   FileText,
+  Folder,
   FolderKanban,
   Import,
   Inbox,
@@ -47,6 +49,10 @@ export const SHAPES = {
   reports: ChartColumn,
   /** A doc page. */
   doc: FileText,
+  /** Docs: a page that is one HTML or PDF file, drawn full bleed. */
+  'file-page': File,
+  /** Docs: a folder, a page that only groups the pages under it. */
+  folder: Folder,
   /** "Linked pages" and "Members": an outlined circle. */
   circle: Circle,
   /** "Releases": a shipped package. */

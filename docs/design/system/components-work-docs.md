@@ -159,6 +159,26 @@ Spaces are rows in the sidebar, never a space switcher (`SpaceSwitcher` is remov
 - Keys: ↑↓ move, → ← open and close, Enter opens, F2 renames, Alt with arrows reorders and nests,
   a letter jumps.
 - States: four skeleton rows; an empty space's one New page row; "Pages did not load" with Retry.
+- Kinds (ADR 0049): a folder without an icon of its own draws `folder`, a file page
+  `file-page`, through the row's icon value (`iconOfPage` in Docs). New folder (the space's ···)
+  and New folder inside (a row's ···) open the new folder with its row already renaming.
+
+### File page and folder
+
+A page's kind (ADR 0049) decides what sits under the one header. Both keep the trail, star,
+Share and ··· (Copy link, Turn into a page, Move to…, Move to trash); neither has an editor,
+outline, comments margin or version history.
+
+- **File page**: one HTML or PDF file, drawn by `FileEmbed` with `fill`, edge to edge under the
+  header: the 40px file bar, then the file filling the rest, no card box or radius. The status
+  menu stays beside the trail. ··· adds Replace file…; a body that no longer holds one file shows
+  an `EmptyState` saying how to fix it.
+- **Folder**: the `contained` measure (`max-w-260`) inside the full layout's pane: the folder
+  icon and title at `text-20`, the item count, New page (primary, N) and New folder, then its
+  children as `PageRow`s in tree order on a `Card`. Empty: an `EmptyState` with the same two
+  buttons. No status menu: a folder is never reviewed.
+- A written page offers Turn into a folder in ··· while its body is empty, and Show as a file
+  page while its body is exactly one PDF or HTML file.
 
 ### Page identity and status
 
@@ -202,6 +222,8 @@ The Docs writing surfaces live inside `packages/editor/src/doc/` and are reached
 - HTML always runs in its sandboxed frame (`allow-scripts`, never `allow-same-origin`); PDF in
   the browser's viewer. The bar is never hidden, so a form inside a file never passes for the
   app.
+- `fill`: no box; the embed takes the space it is given (`flex-1`) and the file fills it under
+  the bar. Only for a page that is the file (File page above). Story: Docs/File embed › Fill.
 - Not: for files the page links to without showing (use a link); never a frame of an outside
   site.
 

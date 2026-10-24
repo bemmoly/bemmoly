@@ -37,3 +37,13 @@ export const Image: Story = {
     kind: 'image',
   },
 };
+
+/** A file page (ADR 0049): no box, the file filling the space under the bar. */
+export const Fill: Story = {
+  args: { fill: true },
+  render: (args) => (
+    <div className="flex h-140 w-240 flex-col border border-line">
+      <FileEmbed {...args} />
+    </div>
+  ),
+};

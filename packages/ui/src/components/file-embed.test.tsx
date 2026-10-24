@@ -31,6 +31,16 @@ describe('FileEmbed', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
   });
 
+  it('fills its space with no box when it is the whole page, and still expands', async () => {
+    const { container } = render(<FileEmbed src={SRC} name="q3.html" kind="html" fill />);
+    const root = container.firstElementChild!;
+    expect(root.className).toContain('flex-1');
+    expect(root.className).not.toContain('rounded-card');
+    expect(screen.getByTitle('q3.html').getAttribute('sandbox')).toContain('allow-scripts');
+    expect(screen.getByRole('button', { name: 'Expand q3.html' })).toBeTruthy();
+    await expectAccessible(container);
+  });
+
   it('reads the kind from the sniffed type', () => {
     expect(fileEmbedKind('text/html')).toBe('html');
     expect(fileEmbedKind('application/pdf')).toBe('pdf');
