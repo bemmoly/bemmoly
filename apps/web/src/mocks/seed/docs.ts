@@ -34,6 +34,8 @@ export interface MockPage {
   path: string;
   title: string;
   icon: string | null;
+  /** Written, one file, or a folder (ADR 0049); absent for a written page. */
+  kind?: 'page' | 'file' | 'folder';
   /** The drawn cover pattern's id; absent or null for none. */
   cover?: string | null;
   status: 'draft' | 'in_review' | 'published' | 'archived';

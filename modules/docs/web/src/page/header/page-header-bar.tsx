@@ -11,6 +11,7 @@ import { PageIcon } from '@bemmoly/ui/icons';
 import { useMemo } from 'react';
 import { useStarPage } from '../../hooks/mutations.ts';
 import { docsPaths } from '../../shared/navigation.ts';
+import { iconOfPage } from '../../shared/page-kind.ts';
 import { SpaceTile } from '../../space/space-tile.tsx';
 import { useSpaceActions } from '../../space/space-layout.tsx';
 import { MarginToggles } from '../panel/margin-toggles.tsx';
@@ -65,7 +66,7 @@ function PageFaces() {
   );
 }
 
-function StarButton() {
+export function StarButton() {
   const { page, readOnly } = usePageScreen();
   const star = useStarPage(page.id);
   if (readOnly === 'trashed') return null;
@@ -98,12 +99,12 @@ export function usePageTrail() {
     ...page.breadcrumbs.map((crumb) => ({
       label: crumb.title || 'Untitled',
       path: docsPaths.page(crumb.id),
-      icon: <PageIcon value={crumb.icon} size={14} className="text-tx-3" />,
+      icon: <PageIcon value={iconOfPage(crumb)} size={14} className="text-tx-3" />,
     })),
     {
       label: page.title || 'Untitled',
       path: docsPaths.page(page.id),
-      icon: <PageIcon value={page.icon} size={14} className="text-tx-3" />,
+      icon: <PageIcon value={iconOfPage(page)} size={14} className="text-tx-3" />,
     },
   ];
   useHeaderTrail(crumbs);

@@ -82,6 +82,7 @@ export function pageDetail(overrides: Record<string, unknown> = {}) {
     parentId: PARENT_ID,
     position: 'n',
     depth: 1,
+    kind: 'page',
     title: 'Auth service RFC',
     icon: null,
     status: 'draft',
