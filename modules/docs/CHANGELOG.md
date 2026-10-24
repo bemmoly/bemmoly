@@ -1,5 +1,50 @@
 # @bemmoly/module-docs
 
+## 1.4.0
+
+### Minor Changes
+
+- 76b0690: New page can now be a file: Upload HTML or PDF in the New page dialog makes a page named after
+  the file (or the title typed) whose body is that file, previewed and expandable to full screen.
+  A file the server refuses removes the new page again. Adds `POST /api/v1/docs/pages/:pageId/files`,
+  which adds a stored file at the end of a page's body.
+- 7e9b170: Docs has folders, and a page that is one HTML or PDF file now fills the screen.
+
+  A page uploaded with Upload HTML or PDF opens as a file page: the file fills everything under
+  the header, edge to edge, with its bar kept above it. Its ··· offers Replace file… and Turn into
+  a page; a written page whose body is one file can go back with Show as a file page.
+
+  New folder in a space's ··· and New folder inside on a tree row make a folder and open it with
+  its name ready to type. A folder has no body: it lists what is in it, with New page (N) and New
+  folder, and draws a folder icon in the tree and the trail. An empty page can be turned into a
+  folder from its ···. A Markdown import's directories without an index file now arrive as
+  folders, and agents can create folders with `docs_create_page` (`kind: "folder"`).
+
+  Schema: one changeset (0022) adds `pages.kind`, defaulting to `page`, and marks existing
+  uploaded pages as file pages. It is fast and reversible.
+
+- 50337e9: Agents can attach files up to `BEMMOLY_UPLOAD_MAX_BYTES` (10 MiB by default) to Docs pages
+  over MCP, not only the roughly 700 KB that fits inside one tool call. The new MCP tool
+  `docs.create_upload_link` hands out a single-use upload address, valid for 15 minutes, for one
+  file in one page; the agent sends the bytes to it with HTTP `PUT` (`curl -T`), then places the
+  file with `docs.upload_file` and the returned `fileId`. The link acts only as the person and
+  connection that asked for it, with the same checks as other uploads, and revoking the token or
+  disconnecting the app ends it (ADR 0048). Schema: changeset `0505-file-upload-links` adds the
+  `file_upload_links` table, fast and reversible. No configuration change.
+
+### Patch Changes
+
+- Updated dependencies [cfe109d]
+- Updated dependencies [7e9b170]
+- Updated dependencies [b72b9e0]
+- Updated dependencies [50337e9]
+  - @bemmoly/core@1.4.0
+  - @bemmoly/shared@1.4.0
+  - @bemmoly/ui@1.4.0
+  - @bemmoly/api-client@1.4.0
+  - @bemmoly/core-web@1.4.0
+  - @bemmoly/editor@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

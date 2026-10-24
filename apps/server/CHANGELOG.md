@@ -1,5 +1,32 @@
 # @bemmoly/server
 
+## 1.4.0
+
+### Patch Changes
+
+- cfe109d: The server ships with patched releases of three libraries that had high severity denial of
+  service advisories: zod 4.6.6 (validation of oversized collections could exhaust memory),
+  body-parser 2.4.0 under the MCP endpoint (trailing bytes after a compressed body) and undici
+  7.30.1 under the AI providers (excessive content encodings). No schema or configuration change.
+- Updated dependencies [2ad8011]
+- Updated dependencies [cfe109d]
+- Updated dependencies [a28c0cc]
+- Updated dependencies [bc80b3a]
+- Updated dependencies [76b0690]
+- Updated dependencies [7e9b170]
+- Updated dependencies [b72b9e0]
+- Updated dependencies [50337e9]
+- Updated dependencies [42e5e99]
+- Updated dependencies [8e8b0be]
+- Updated dependencies [741ded5]
+- Updated dependencies [ae5576a]
+- Updated dependencies [24ba06a]
+  - @bemmoly/module-work@1.4.0
+  - @bemmoly/core@1.4.0
+  - @bemmoly/shared@1.4.0
+  - @bemmoly/module-docs@1.4.0
+  - @bemmoly/module-pipelines@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes
