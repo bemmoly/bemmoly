@@ -1,5 +1,29 @@
 # @bemmoly/ui
 
+## 1.4.0
+
+### Minor Changes
+
+- 7e9b170: Docs has folders, and a page that is one HTML or PDF file now fills the screen.
+
+  A page uploaded with Upload HTML or PDF opens as a file page: the file fills everything under
+  the header, edge to edge, with its bar kept above it. Its ··· offers Replace file… and Turn into
+  a page; a written page whose body is one file can go back with Show as a file page.
+
+  New folder in a space's ··· and New folder inside on a tree row make a folder and open it with
+  its name ready to type. A folder has no body: it lists what is in it, with New page (N) and New
+  folder, and draws a folder icon in the tree and the trail. An empty page can be turned into a
+  folder from its ···. A Markdown import's directories without an index file now arrive as
+  folders, and agents can create folders with `docs_create_page` (`kind: "folder"`).
+
+  Schema: one changeset (0022) adds `pages.kind`, defaulting to `page`, and marks existing
+  uploaded pages as file pages. It is fast and reversible.
+
+- b72b9e0: A story whose dates run past its epic's target now shows an amber "After <epic>" warning on the
+  roadmap's issue rows and on its board card. The warning offers two fixes: extend the epic's target
+  to the story's last day, or move the story's dates back so it ends with the epic. No schema
+  or configuration change.
+
 ## 1.3.0
 
 ### Minor Changes

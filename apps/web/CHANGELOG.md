@@ -1,5 +1,119 @@
 # @bemmoly/web
 
+## 1.4.0
+
+### Minor Changes
+
+- 2ad8011: Reports can be asked for in words. With AI on, the Reports view has an "Ask for a report" box:
+  ask "How loaded is each person?" or "Which epics are in the current sprint and how far along is
+  each?" and get back a chart, a table or a single number built from the project's issues, with a
+  line saying how the question was read. AI only picks from a fixed set of measures, groupings and
+  filters; the server builds the report with your own permissions and never runs a query the model
+  wrote. Pin a report to keep it at the top of your Reports view, where it is rebuilt from live
+  data on every visit, even with AI off. Any asked or pinned report exports as CSV or JSON, and a
+  chart also as PNG.
+
+  The model is sent the question and the project's status and type names, never issue text, and
+  asking is refused for projects excluded from AI in Settings › AI › Privacy.
+
+  Schema: one changeset (0035) adds the `pinned_reports` table with its indexes. It is fast and
+  reversible.
+
+- a28c0cc: Automation rules have a new Time in status trigger: "when an issue has been in a status for more
+  than N hours or days". Pick the status and the span in the rule builder, add conditions and
+  actions as for any rule (for example, move stories that sat in Verification for more than five
+  days and match a filter to Done). The scheduler checks every minute and a rule fires once per
+  stay: an issue that leaves the status and comes back starts a new stay. A stay whose conditions
+  do not match yet is checked again until they do or the issue moves on.
+
+  An epic's Owner field now assigns its issues: an issue created in the epic, or moved into it,
+  with nobody assigned is assigned to the epic's owner. An assignee named in the same change wins,
+  and an issue somebody is already on keeps its assignees.
+
+  Schema: one changeset (0035) adds `automation_stays`, the stays a time-in-status rule has fired
+  for, with its unique key and an issue index. It is fast and reversible.
+
+- bc80b3a: The backlog takes LQL queries, the same language as the board's query bar, and Board settings
+  gain a Backlog tab: ordered sort rules (put what a query matches first, such as support
+  requests, or sort by a field) and named backlog filters, saved with the board. Custom fields
+  (`cf.<key>`) now check and complete in both query bars, and a query's ORDER BY sorts board cards
+  within their columns. No schema change: the rules live in the board's config.
+- 7e9b170: Docs has folders, and a page that is one HTML or PDF file now fills the screen.
+
+  A page uploaded with Upload HTML or PDF opens as a file page: the file fills everything under
+  the header, edge to edge, with its bar kept above it. Its ··· offers Replace file… and Turn into
+  a page; a written page whose body is one file can go back with Show as a file page.
+
+  New folder in a space's ··· and New folder inside on a tree row make a folder and open it with
+  its name ready to type. A folder has no body: it lists what is in it, with New page (N) and New
+  folder, and draws a folder icon in the tree and the trail. An empty page can be turned into a
+  folder from its ···. A Markdown import's directories without an index file now arrive as
+  folders, and agents can create folders with `docs_create_page` (`kind: "folder"`).
+
+  Schema: one changeset (0022) adds `pages.kind`, defaulting to `page`, and marks existing
+  uploaded pages as file pages. It is fast and reversible.
+
+- 8e8b0be: Admins can grant or deny specific Work actions per role, for example letting only a Scrum
+  Master create, start and complete sprints. Settings › Work › Permissions shows every Work action
+  by role; the same rows appear in Settings › Roles, and a project role still decides inside its
+  project. New actions: Create sprints, Start sprints, Complete sprints, Manage epics, Configure
+  workflows and Edit automation. "Start and complete sprints" is now "Edit and delete sprints".
+  The server enforces each action, and the board, backlog, issue menus, workflow editor and
+  automation settings hide or disable what a person's role does not allow.
+
+  Nothing changes until an admin edits the matrix: each new action starts with the cells of the
+  action it was split from, for every role and every project override.
+
+  Schema: one changeset (0035) copies stored role cells onto the new actions. It is fast and
+  reversible.
+
+- 741ded5: Projects have Dashboards (`G D`): your own grids of the project's reports. A new dashboard
+  starts with the project's usual reports (burndown, burnup, velocity, cumulative flow and the
+  quarter for Scrum; flow, control chart and time in status for Kanban). Add a report from Add
+  report, drag a report by its grip (or press the arrow keys on it) to reorder, and use its menu
+  to make it full width or remove it. Dashboards are private to the person who made them and
+  are saved on the server.
+
+  Projects also have a Quarter view (`G Q`) for teams that plan by the quarter: completed work
+  against the share of the quarter gone, a weekly burnup, the quarter's sprints and its epics'
+  progress. It is also a dashboard report.
+
+  A dashboard can hold a pinned report: a saved report spec that other features (the assistant,
+  next) add through `POST /api/v1/work/dashboards/:id/widgets`.
+
+  Schema: one changeset (0035) creates `dashboards` with its indexes. It is fast and reversible.
+
+- ae5576a: Work has initiatives: programs of epics that span projects and teams. The API creates, edits,
+  archives and unarchives them, links and unlinks epics, and reports each one's rolled-up
+  progress (epics done, issues and points done) over the projects the reader can open. The
+  roadmap reads one initiative with `?initiative=<id>`, showing only its epics across teams.
+
+  Roadmap dependencies now include "blocks" links between issues under different epics, in the
+  same project or across projects, drawn as a dependency between their epics. Each dependency
+  says whether it is an epic link or rolled up from issues, how many links it stands for, and
+  whether its dates conflict (the waiting epic starts before its blocker ends). Forecasts wait on
+  these too.
+
+  A new role capability, "Manage initiatives", is on for org admins, project admins and members.
+
+  Schema: one changeset (0035) adds `initiatives` and `initiative_epics` with their indexes. It is
+  fast and reversible.
+
+### Patch Changes
+
+- b72b9e0: A story whose dates run past its epic's target now shows an amber "After <epic>" warning on the
+  roadmap's issue rows and on its board card. The warning offers two fixes: extend the epic's target
+  to the story's last day, or move the story's dates back so it ends with the epic. No schema
+  or configuration change.
+- Updated dependencies [cfe109d]
+- Updated dependencies [7e9b170]
+- Updated dependencies [b72b9e0]
+- Updated dependencies [50337e9]
+  - @bemmoly/shared@1.4.0
+  - @bemmoly/ui@1.4.0
+  - @bemmoly/api-client@1.4.0
+  - @bemmoly/core-web@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @bemmoly/editor
 
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [7e9b170]
+- Updated dependencies [b72b9e0]
+  - @bemmoly/ui@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @bemmoly/core-web
 
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [cfe109d]
+- Updated dependencies [7e9b170]
+- Updated dependencies [b72b9e0]
+- Updated dependencies [50337e9]
+  - @bemmoly/shared@1.4.0
+  - @bemmoly/ui@1.4.0
+  - @bemmoly/api-client@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

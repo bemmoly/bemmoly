@@ -1,5 +1,14 @@
 # @bemmoly/site
 
+## 1.4.0
+
+### Minor Changes
+
+- c7a4069: The Jira alternative page has a savings calculator: enter your team size and pick a Jira plan
+  (Standard or Premium) to see the subscription you would stop paying each month and each year.
+  It uses Atlassian's public per-user list prices, dated on the page, and states the one cost that
+  remains with Bemmoly, the server you run it on. No configuration or schema change.
+
 ## 1.3.0
 
 No changes in this release.
