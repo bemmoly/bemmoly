@@ -7,6 +7,8 @@ import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths, navigateTo } from '../shared/navigation.ts';
 import { PageSkeleton } from '../skeletons/docs-skeletons.tsx';
 import { SpaceLayout } from '../space/space-layout.tsx';
+import { FilePageFrame } from './kind/file-page-frame.tsx';
+import { FolderFrame } from './kind/folder-frame.tsx';
 import { PageFrame } from './page-frame.tsx';
 import { usePageLoad } from './use-page-load.ts';
 
@@ -84,7 +86,8 @@ function Problem({
 }
 
 /**
- * The doc editor at /docs/p/:pageId, inside its space; the sidebar marks its row and opens its
+ * The doc editor at /docs/p/:pageId, inside its space (or the file or folder the page is,
+ * ADR 0049); the sidebar marks its row and opens its
  * ancestors. The skeleton holds the screen's shape until both the page and its space have
  * answered, so the frame paints once.
  */
@@ -105,7 +108,13 @@ export default function PageScreen({ segment }: DocsScreenProps) {
   }
   return (
     <SpaceLayout spaceRef={page.spaceKey} layout="full">
-      <PageFrame key={page.id} page={page} />
+      {page.kind === 'folder' ? (
+        <FolderFrame key={page.id} page={page} />
+      ) : page.kind === 'file' ? (
+        <FilePageFrame key={page.id} page={page} />
+      ) : (
+        <PageFrame key={page.id} page={page} />
+      )}
     </SpaceLayout>
   );
 }

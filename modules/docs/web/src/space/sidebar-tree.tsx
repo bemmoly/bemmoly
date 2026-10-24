@@ -12,11 +12,13 @@ import {
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useEffect, useState } from 'react';
+import { useCreateFolder } from '../create/use-create-folder.ts';
 import { useDuplicatePage } from '../create/use-duplicate-page.ts';
 import { useStarredIds } from '../hooks/home-queries.ts';
 import { MoveDialog } from '../page/header/move-dialog.tsx';
 import { docsPaths } from '../shared/navigation.ts';
 import { useTreeOpen } from './tree-store.ts';
+import { useTreeRename } from './tree-rename.ts';
 import { useSpaceTree } from './use-space-tree.ts';
 import { useCreatePage } from '../create/use-create-page.ts';
 import {
@@ -62,19 +64,26 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
   const { navigate } = useFrame();
   const { show } = useToast();
   const setOpen = useTreeOpen((state) => state.set);
-  const [renaming, setRenaming] = useState<string | null>(null);
+  const renaming = useTreeRename((state) => state.id);
+  const setRenaming = (id: string | null) =>
+    id ? useTreeRename.getState().start(id) : useTreeRename.getState().stop();
   const move = useMoveInTree(space.key);
   const rename = useRenameInTree(space.key);
   const star = useStarFromTree();
   const starred = useStarredIds();
   const add = useCreatePage();
+  const addFolder = useCreateFolder();
   const copy = useDuplicatePage();
   const [moving, setMoving] = useState<PageTreeItem | null>(null);
   const trash = useTrashFromTree(space.key, (pageId) => {
     if (pageId === activePageId) navigate(docsPaths.space(space.key));
   });
-  const addInside = (item: PageTreeItem) =>
-    add.create({ spaceId: space.id, parentId: item.id, placeName: item.title || 'Untitled' });
+  const inside = (item: PageTreeItem) => ({
+    spaceId: space.id,
+    parentId: item.id,
+    placeName: item.title || 'Untitled',
+  });
+  const addInside = (item: PageTreeItem) => add.create(inside(item));
   const shown = tree.items.some((item) => item.id === activePageId);
 
   useEffect(() => {
@@ -139,6 +148,12 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
             <>
               <MenuItem onSelect={() => addInside(item)} icon={<Icon name="plus" />}>
                 Add a page inside
+              </MenuItem>
+              <MenuItem
+                onSelect={() => addFolder.create(inside(item))}
+                icon={<Icon name="folder" />}
+              >
+                New folder inside
               </MenuItem>
               <MenuItem onSelect={() => setRenaming(item.id)} icon={<Icon name="edit" />} hint="F2">
                 Rename

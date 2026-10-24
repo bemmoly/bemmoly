@@ -99,6 +99,7 @@ export const docsRoutes: MockRoute[] = [
         icon?: string;
         snapshot?: object;
         afterId?: string;
+        kind?: MockPage['kind'];
       }>(request);
       const state = docsState(db);
       const space = state.spaces.find((row) => row.id === body.spaceId);
@@ -117,6 +118,7 @@ export const docsRoutes: MockRoute[] = [
         path: `${parent?.path ?? '/'}${id}/`,
         title: body.title ?? '',
         icon: body.icon ?? null,
+        kind: body.kind ?? 'page',
         status: 'draft',
         ownerId: db.signedInAs,
         reviewers: [],
@@ -148,6 +150,7 @@ export const docsRoutes: MockRoute[] = [
         icon: string | null;
         cover: string | null;
         ownerId: string | null;
+        kind: MockPage['kind'];
         snapshot: object;
         version: number;
       }>(request);
@@ -161,6 +164,7 @@ export const docsRoutes: MockRoute[] = [
       if (body.icon !== undefined) row.icon = body.icon;
       if (body.cover !== undefined) row.cover = body.cover;
       if (body.ownerId !== undefined) row.ownerId = body.ownerId;
+      if (body.kind !== undefined) row.kind = body.kind;
       row.version += 1;
       row.updatedAt = now();
       emit(db, 'docs.page', [row.id]);
@@ -197,7 +201,9 @@ export const docsRoutes: MockRoute[] = [
       const block = file.mime.startsWith('image/')
         ? { type: 'image', attrs: { src: file.url, alt: file.name } }
         : { type: 'file', attrs: { src: file.url, name: file.name, mime: file.mime } };
-      writeBody(row, { type: 'doc', content: [...(before.content ?? []), block] });
+      // A file page shows one file: a new one takes the old one's place (ADR 0049).
+      const content = row.kind === 'file' ? [block] : [...(before.content ?? []), block];
+      writeBody(row, { type: 'doc', content });
       emit(db, 'docs.page', [row.id]);
       return ok(detail(db, row));
     },

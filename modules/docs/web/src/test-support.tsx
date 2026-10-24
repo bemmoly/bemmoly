@@ -103,6 +103,7 @@ export function summary(title: string, overrides: Record<string, unknown> = {}) 
     parentId: null,
     position: 'n',
     depth: 0,
+    kind: 'page',
     title,
     icon: null,
     status: 'draft',

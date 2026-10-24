@@ -3,6 +3,7 @@ import type { PageTreeItem } from '@bemmoly/ui';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { api } from '../shared/api.ts';
+import { iconOfPage } from '../shared/page-kind.ts';
 import { docsKeys } from '../shared/keys.ts';
 import { useOpenIds } from './tree-store.ts';
 
@@ -64,7 +65,7 @@ export function useSpaceTree(spaceKey: string) {
           // From the walk, not the row: a moved page's subtree is re-indented before the refetch.
           depth,
           title: page.title,
-          icon: page.icon,
+          icon: iconOfPage(page),
           hasChildren: page.hasChildren,
           expanded,
           loading: expanded && (level?.isPending ?? true),

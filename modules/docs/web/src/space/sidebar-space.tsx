@@ -6,6 +6,7 @@ import type { KeyboardEvent } from 'react';
 import { docsPaths } from '../shared/navigation.ts';
 import { SidebarTree } from './sidebar-tree.tsx';
 import { SpaceTile } from './space-tile.tsx';
+import { useCreateFolder } from '../create/use-create-folder.ts';
 import { useCreatePage } from '../create/use-create-page.ts';
 
 export interface SidebarSpaceProps {
@@ -25,6 +26,7 @@ const TOOL =
 /** A space's ··· menu: the same on hover, on focus and on a right-click of the row. */
 export function SpaceMenu({ space, onFocus }: { space: Space; onFocus?: () => void }) {
   const add = useCreatePage();
+  const addFolder = useCreateFolder();
   const { navigate } = useFrame();
   const { show } = useToast();
   return (
@@ -47,6 +49,14 @@ export function SpaceMenu({ space, onFocus }: { space: Space; onFocus?: () => vo
         onSelect={() => add.create({ spaceId: space.id, parentId: null, placeName: space.name })}
       >
         New page
+      </MenuItem>
+      <MenuItem
+        icon={<Icon name="folder" />}
+        onSelect={() =>
+          addFolder.create({ spaceId: space.id, parentId: null, placeName: space.name })
+        }
+      >
+        New folder
       </MenuItem>
       {onFocus ? (
         <MenuItem icon={<Icon name="filter" />} hint="F" onSelect={onFocus}>

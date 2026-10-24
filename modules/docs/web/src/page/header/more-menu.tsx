@@ -9,6 +9,9 @@ import { HISTORY_SLOT, MENU_SLOTS } from '../slots.ts';
 import { useDuplicatePage } from '../../create/use-duplicate-page.ts';
 import { useTrashPage } from '../use-page-actions.ts';
 import { MoveDialog } from './move-dialog.tsx';
+import { kindAllowed } from '../../../../shared/page-kind.ts';
+import type { RichText } from '../../../../shared/common.ts';
+import { useTurnInto } from '../kind/use-kind-actions.ts';
 
 /** The page's address on this workspace, for the clipboard. */
 export function pageUrl(pageId: string): string {
@@ -30,7 +33,8 @@ export function useCopyLink(pageId: string) {
 }
 
 /**
- * ···: copy link, duplicate, move, version history, the actions other folders add (Export),
+ * ···: copy link, duplicate, move, turn into a folder or a file page when the body allows,
+ * version history, the actions other folders add (Export),
  * and Move to trash with Undo.
  */
 export function MoreMenu() {
@@ -45,6 +49,9 @@ export function MoreMenu() {
   const { phone } = useFrame();
   const star = useStarPage(page.id);
   const openMargin = usePageChrome((state) => state.openMargin);
+  const { turnInto } = useTurnInto(page);
+  // The live body decides, not the stored one: the stored snapshot trails the last keystroke.
+  const body = screen.editor?.getJSON() as RichText | undefined;
   const trashed = readOnly === 'trashed';
   const canChange = !trashed && readOnly !== 'viewer';
   const name = page.title || 'Untitled';
@@ -116,6 +123,19 @@ export function MoreMenu() {
             <MenuItem icon={<Icon name="arrow" size={14} />} onSelect={() => setMoving(true)}>
               Move to…
             </MenuItem>
+            {body && kindAllowed('folder', body) && (
+              <MenuItem icon={<Icon name="folder" size={14} />} onSelect={() => turnInto('folder')}>
+                Turn into a folder
+              </MenuItem>
+            )}
+            {body && kindAllowed('file', body) && (
+              <MenuItem
+                icon={<Icon name="file-page" size={14} />}
+                onSelect={() => turnInto('file', body)}
+              >
+                Show as a file page
+              </MenuItem>
+            )}
           </>
         )}
         {!trashed && (

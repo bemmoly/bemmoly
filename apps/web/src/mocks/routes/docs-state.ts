@@ -55,6 +55,7 @@ export function presentSummary(state: DocsState, page: MockPage) {
     parentId: page.parentId,
     position: page.position,
     depth: page.path.split('/').length - 3,
+    kind: page.kind ?? 'page',
     title: page.title,
     icon: page.icon,
     status: page.status,
@@ -93,7 +94,9 @@ export function presentDetail(
     version: page.version,
     breadcrumbs: ancestors.flatMap((id) => {
       const row = state.pages.find((item) => item.id === id);
-      return row ? [{ id: row.id, title: row.title, icon: row.icon }] : [];
+      return row
+        ? [{ id: row.id, title: row.title, icon: row.icon, kind: row.kind ?? 'page' }]
+        : [];
     }),
     owner: page.ownerId && ownerName ? { id: page.ownerId, name: ownerName } : null,
     createdBy: page.ownerId,
