@@ -60,7 +60,8 @@ test('the issue page saves a rich description with a mention, a comment and a re
   await expect(page.getByRole('textbox', { name: 'Comment' })).toBeFocused();
   await page.keyboard.type('Throttling at 10 a minute should do.');
   await page.getByRole('button', { name: 'Comment', exact: true }).click();
-  const comment = page.getByRole('article').filter({ hasText: 'Throttling at 10 a minute' });
+  // The issue itself is an article around its comments: the comment is the innermost match.
+  const comment = page.getByRole('article').filter({ hasText: 'Throttling at 10 a minute' }).last();
   await expect(comment).toBeVisible();
   await comment.getByRole('button', { name: 'React' }).click();
   await page.getByRole('menuitem', { name: 'React with 👍' }).click();
