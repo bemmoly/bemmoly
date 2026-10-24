@@ -14,7 +14,7 @@ import {
 
 /*
  * Writing pages from Markdown, so an agent can file a service's docs into a space: one page
- * per document, a parent page per service as its folder. The body goes through the same
+ * per document, a folder (or a parent page) per service. The body goes through the same
  * create and collab paths the editor uses, so search text, links and open editors follow.
  */
 
@@ -23,9 +23,14 @@ const createInput = z
     ...spaceRefShape,
     parentId: z.uuid().optional(),
     title: pageTitleSchema.pipe(z.string().min(1)),
+    /** A folder groups the pages under it and takes no body (ADR 0049). */
+    kind: z.enum(['page', 'folder']).default('page'),
     body: markdownSchema.optional(),
   })
-  .refine(hasSpaceRef, { message: SPACE_REF_MESSAGE });
+  .refine(hasSpaceRef, { message: SPACE_REF_MESSAGE })
+  .refine((input) => input.kind === 'page' || input.body === undefined, {
+    message: 'A folder has no body; leave body out',
+  });
 
 const updateInput = pageIdParamsSchema
   .extend({
@@ -53,8 +58,9 @@ export function authoringTools(services: DocsServices): AiToolDefinition[] {
     kind: 'write',
     description:
       'Create a page in a space (by spaceId or spaceKey) from a title and a Markdown body. ' +
-      'Put it under parentId to nest it; a page with children is a folder, so create one ' +
-      'parent page per service and its documents under it. Returns id, title, spaceKey, ' +
+      'Put it under parentId to nest it. kind "folder" makes a folder, which only groups ' +
+      'the pages under it and has no body: create one folder per service and its documents ' +
+      'under it. Returns id, title, spaceKey, ' +
       'parentId and href; find spaces with docs_list_spaces and parents with docs_list_tree.',
     input: createInput,
     idempotent: false,
@@ -83,6 +89,7 @@ export function authoringTools(services: DocsServices): AiToolDefinition[] {
         spaceId: space.id,
         parentId: input.parentId ?? null,
         title: input.title,
+        kind: input.kind,
         ...(input.body
           ? {
               snapshot: await services.attachments.withFileBlocks(

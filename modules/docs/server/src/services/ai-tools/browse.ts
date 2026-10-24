@@ -39,6 +39,7 @@ const getPageInput = pageIdParamsSchema.extend({
 interface TreeEntry {
   id: string;
   parentId: string | null;
+  kind: string;
   title: string;
   status: string;
   depth: number;
@@ -48,6 +49,7 @@ interface TreeEntry {
 const toEntry = (page: PageSummary): TreeEntry => ({
   id: page.id,
   parentId: page.parentId,
+  kind: page.kind,
   title: page.title,
   status: page.status,
   depth: page.depth,
@@ -127,8 +129,9 @@ export function browseTools(services: DocsServices): AiToolDefinition[] {
       kind: 'read',
       description:
         'The page tree of a space (spaceId or spaceKey), or under parentId: every live page ' +
-        'with id, parentId, title, status, depth and hasChildren, in order. A page with ' +
-        `children is a folder. Walks the whole subtree unless recursive is false; stops at ` +
+        'with id, parentId, kind, title, status, depth and hasChildren, in order. kind is ' +
+        '"page", "file" (one HTML or PDF file) or "folder" (groups pages, no body). ' +
+        `Walks the whole subtree unless recursive is false; stops at ` +
         `${TREE_PAGE_CAP} pages and says truncated.`,
       input: treeInput,
       execute: async (ctx, input) => {

@@ -19,6 +19,14 @@ export const PAGE_COVERS = ['tiles', 'steps', 'orbit', 'grid', 'dots', 'bands'] 
 export const pageCoverSchema = z.enum(PAGE_COVERS);
 export type PageCover = z.infer<typeof pageCoverSchema>;
 
+/**
+ * What a page is (ADR 0049): written (`page`), one HTML or PDF file drawn full bleed (`file`),
+ * or a folder that only groups the pages under it and has no body (`folder`).
+ */
+export const PAGE_KINDS = ['page', 'file', 'folder'] as const;
+export const pageKindSchema = z.enum(PAGE_KINDS);
+export type PageKind = z.infer<typeof pageKindSchema>;
+
 /*
  * Pages: POST /api/v1/docs/pages, GET/PATCH/DELETE /api/v1/docs/pages/:pageId,
  * POST /api/v1/docs/pages/:pageId/restore, GET /api/v1/docs/spaces/:spaceKey/trash.
@@ -34,6 +42,7 @@ export const pageSummarySchema = z.object({
   position: lexorankSchema,
   /** 0 for a root page. */
   depth: z.number().int().nonnegative(),
+  kind: pageKindSchema,
   title: z.string(),
   icon: z.string().nullable(),
   status: pageStatusSchema,
@@ -49,6 +58,8 @@ export const breadcrumbSchema = z.object({
   id: z.uuid(),
   title: z.string(),
   icon: z.string().nullable(),
+  /** So a folder on the way draws as one; absent from older servers, read as a page. */
+  kind: pageKindSchema.optional(),
 });
 
 export const pageDetailSchema = pageSummarySchema.extend({
@@ -75,6 +86,8 @@ export const createPageBodySchema = z.object({
   parentId: z.uuid().nullable().default(null),
   title: pageTitleSchema.default(''),
   icon: iconSchema.optional(),
+  /** A page when absent. A folder takes no template or snapshot. */
+  kind: pageKindSchema.default('page'),
   /** Without one the page starts empty; with one it starts from the template's snapshot. */
   templateId: z.uuid().optional(),
   snapshot: richTextSchema.optional(),
@@ -84,7 +97,7 @@ export const createPageBodySchema = z.object({
 });
 
 /**
- * Title, icon, cover and owner; status goes through /status and the body through /collab.
+ * Title, icon, cover, owner and kind (refused when the body does not allow it); status goes through /status and the body through /collab.
  * `snapshot` is the 0.2 way to write a body: still accepted, applied through the collab
  * server as one edit, and removed in 0.4.
  */
@@ -94,6 +107,7 @@ export const updatePageBodySchema = z
     icon: iconSchema.nullable(),
     cover: pageCoverSchema.nullable(),
     ownerId: z.uuid().nullable(),
+    kind: pageKindSchema,
     /** @deprecated Edit the body through /collab; accepted until 0.4. */
     snapshot: richTextSchema,
     version: z.number().int().positive(),
