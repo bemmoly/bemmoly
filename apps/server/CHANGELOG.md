@@ -1,5 +1,16 @@
 # @bemmoly/server
 
+## 1.5.0
+
+### Patch Changes
+
+- Updated dependencies [05e2355]
+  - @bemmoly/module-docs@1.5.0
+  - @bemmoly/module-work@1.5.0
+  - @bemmoly/core@1.5.0
+  - @bemmoly/module-pipelines@1.5.0
+  - @bemmoly/shared@1.5.0
+
 ## 1.4.0
 
 ### Patch Changes

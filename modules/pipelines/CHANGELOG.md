@@ -1,5 +1,12 @@
 # @bemmoly/module-pipelines
 
+## 1.5.0
+
+### Patch Changes
+
+- @bemmoly/core@1.5.0
+  - @bemmoly/shared@1.5.0
+
 ## 1.4.0
 
 ### Patch Changes

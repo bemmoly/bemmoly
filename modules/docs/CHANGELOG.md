@@ -1,5 +1,24 @@
 # @bemmoly/module-docs
 
+## 1.5.0
+
+### Minor Changes
+
+- 05e2355: The + on a space and on every page in the Docs sidebar now opens a small menu: Page, Folder or
+  Upload file. Upload file turns the file you pick into a full-screen file page right there,
+  named after the file, with Undo in the toast. The New page dialog's upload button now reads
+  Upload file too.
+
+### Patch Changes
+
+- Updated dependencies [05e2355]
+  - @bemmoly/ui@1.5.0
+  - @bemmoly/core@1.5.0
+  - @bemmoly/core-web@1.5.0
+  - @bemmoly/editor@1.5.0
+  - @bemmoly/api-client@1.5.0
+  - @bemmoly/shared@1.5.0
+
 ## 1.4.0
 
 ### Minor Changes
