@@ -162,6 +162,10 @@ Spaces are rows in the sidebar, never a space switcher (`SpaceSwitcher` is remov
 - Kinds (ADR 0049): a folder without an icon of its own draws `folder`, a file page
   `file-page`, through the row's icon value (`iconOfPage` in Docs). New folder (the space's ···)
   and New folder inside (a row's ···) open the new folder with its row already renaming.
+- `addMenu`: when more than one kind of thing can be added, the row's + opens a menu instead
+  of acting at once. In Docs the space row's + and every page row's + offer Page, Folder and
+  Upload file (`AddMenuItems`); Upload file makes the picked file a file page right there.
+  N still makes a page at once.
 
 ### File page and folder
 

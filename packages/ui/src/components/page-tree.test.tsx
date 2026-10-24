@@ -50,6 +50,23 @@ function Harness(props: {
 }
 
 describe('PageTree', () => {
+  it("opens a menu from a row's + when there is more than one thing to add", async () => {
+    const chosen = vi.fn();
+    render(
+      <PageTree
+        label="Pages in Engineering"
+        items={base}
+        hrefOf={(item) => `/docs/p/${item.id}`}
+        onOpen={() => undefined}
+        onToggle={() => undefined}
+        addMenu={(item) => <MenuItem onSelect={() => chosen(item.id)}>Folder</MenuItem>}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add inside Onboarding' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Folder' }));
+    expect(chosen).toHaveBeenCalledWith('a');
+  });
+
   it('is an accessible tree with the open page current', async () => {
     render(<Harness />);
     const tree = screen.getByRole('tree', { name: 'Pages in Engineering' });

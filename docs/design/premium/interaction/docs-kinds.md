@@ -37,7 +37,11 @@ are not the editor. Decisions recorded here can be overruled by Keerthi.
   1. Open something inside: click a row, or ↑↓ (J K) and Enter.
   2. New page inside: the New page button or N.
   3. New folder inside: the New folder button, or a tree row's ··· › New folder inside.
-- **Creating one:** New folder in the space's ··· or New folder inside on a row's ··· makes
+- **The + menu:** the + on a space row and on every page row opens a menu: Page, Folder,
+  Upload file. Upload file opens the file picker and makes the file a file page in that place,
+  named after the file, and opens it; the toast says where it went and offers Undo. The menu
+  says "file", not "HTML or PDF": the picker offers only those, and a refused file says so.
+- **Creating one:** Folder in a + menu, New folder in the space's ··· or New folder inside on a row's ··· makes
   "New folder" there, opens it and puts its tree row into rename. Enter keeps the name typed,
   Escape keeps "New folder". The toast's Undo takes it back out.
 - **Keyboard:**
