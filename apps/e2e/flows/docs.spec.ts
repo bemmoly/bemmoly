@@ -84,7 +84,8 @@ test('a space is created, a page made from a template, reordered, starred, trash
   // A blank page beside it from the space row's +, made in place and named on the page.
   const runbookUrl = page.url();
   await spaceRow(page, name).hover();
-  await page.getByRole('button', { name: `New page in ${name}` }).click();
+  await page.getByRole('button', { name: `Add to ${name}` }).click();
+  await page.getByRole('menuitem', { name: 'Page' }).click();
   await expect(page).not.toHaveURL(runbookUrl);
   const title = page.getByRole('textbox', { name: 'Page title' });
   await title.fill('Failover drill');
