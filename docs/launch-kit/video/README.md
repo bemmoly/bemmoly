@@ -38,6 +38,9 @@ To make the 1080p copy:
 ffmpeg -i out/bemmoly-launch.mp4 -vf scale=1920:1080:flags=lanczos -c:v libx264 -crf 20 -c:a copy out/bemmoly-launch-1080p.mp4
 ```
 
+The YouTube thumbnail is its own page, `thumbnail.html`. Render it with
+`node tools/thumbnail.mjs`, which writes `out/thumbnail.jpg` (1280 × 720) and a 2× PNG.
+
 Other options:
 
 - `--from 25 --to 42` renders a range.

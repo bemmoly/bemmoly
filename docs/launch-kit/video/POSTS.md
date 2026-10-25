@@ -14,7 +14,7 @@ Files, in `out/` (not committed; render them with the README's commands):
 | `bemmoly-launch-4k.mp4`      | 3840 × 2160, 60 fps, 724 MB | YouTube, the master                         |
 | `bemmoly-launch-1080p.mp4`   | 1920 × 1080, 60 fps, 57 MB  | LinkedIn, X, the website, Product Hunt      |
 | `bemmoly-launch-phone.mp4`   | 1920 × 1080, 27 MB          | Messaging apps and anywhere with a 30 MB cap |
-| `thumbnail.jpg`              | 1280 × 720                  | YouTube thumbnail                            |
+| `thumbnail.jpg`              | 1280 × 720 (from `thumbnail.html`, `node tools/thumbnail.mjs`) | YouTube thumbnail |
 
 ---
 
