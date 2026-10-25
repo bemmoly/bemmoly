@@ -1,5 +1,14 @@
 # @bemmoly/module-pipelines
 
+## 1.6.0
+
+### Patch Changes
+
+- Updated dependencies [229ccb1]
+- Updated dependencies [d793d2c]
+  - @bemmoly/core@1.6.0
+  - @bemmoly/shared@1.6.0
+
 ## 1.5.0
 
 ### Patch Changes
