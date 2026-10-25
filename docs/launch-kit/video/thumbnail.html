@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bemmoly launch film thumbnail</title>
+<link rel="stylesheet" href="src/style.css">
+<style>
+  /* YouTube thumbnail, 1280 × 720. Rendered at 2× by tools/thumbnail.mjs. */
+  html, body { background: #05070a; }
+  #thumb { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; overflow: hidden; color: #fff;
+    background:
+      radial-gradient(ellipse 620px 520px at 975px 380px, rgba(35, 86, 201, .55), transparent 70%),
+      radial-gradient(ellipse 420px 360px at 1120px 120px, rgba(154, 133, 234, .35), transparent 70%),
+      radial-gradient(ellipse 520px 420px at 120px 760px, rgba(35, 86, 201, .25), transparent 70%),
+      #05070a; }
+  .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.07) 1.2px, transparent 1.4px); background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse 700px 500px at 975px 360px, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 700px 500px at 975px 360px, #000 20%, transparent 75%); }
+  .lockup { position: absolute; left: 64px; top: 56px; }
+  .head { position: absolute; left: 60px; top: 196px; font-weight: 700; font-size: 98px; line-height: .98; letter-spacing: -0.045em; }
+  .head .l2 { background: linear-gradient(90deg, #7b95ec, #b3a4f2); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .promises { position: absolute; left: 64px; top: 452px; display: flex; flex-direction: column; gap: 14px; font-size: 30px; font-weight: 600; color: #e3e8f4; letter-spacing: -0.01em; }
+  .promises div { display: flex; align-items: center; gap: 14px; }
+  .chk { width: 34px; height: 34px; border-radius: 50%; background: #2356c9; display: grid; place-items: center; flex: none; box-shadow: 0 0 0 4px rgba(35,86,201,.25); }
+  .badge { position: absolute; right: 40px; bottom: 36px; display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px 0 16px; border-radius: 26px;
+    background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22); font-size: 24px; font-weight: 600; }
+  .play { width: 30px; height: 30px; border-radius: 50%; background: #fff; display: grid; place-items: center; }
+  /* The ring: the mark in the middle, products around it. */
+  .ring { position: absolute; left: 975px; top: 360px; }
+  .orbit { position: absolute; border-radius: 50%; border: 1.5px solid rgba(143, 166, 242, .22); transform: translate(-50%, -50%); }
+  .core { position: absolute; width: 230px; height: 230px; left: -115px; top: -115px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 40%, #1a2233, #0b0f17 70%);
+    box-shadow: 0 0 0 2px rgba(123,149,236,.55), 0 0 0 14px rgba(35,86,201,.16), 0 0 90px 20px rgba(35,86,201,.55); }
+  .pt { position: absolute; transform: translate(-50%, -50%); border-radius: 24%; display: grid; place-items: center; color: #fff;
+    box-shadow: 0 14px 30px -10px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.18); }
+  .line { position: absolute; height: 2px; transform-origin: 0 50%; background: linear-gradient(90deg, rgba(123,149,236,.55), rgba(123,149,236,0)); }
+</style>
+</head>
+<body>
+<div id="thumb">
+  <div class="dots"></div>
+  <div class="ring" id="ring"></div>
+  <div class="lockup" id="lockup"></div>
+  <div class="head"><div>Open source.</div><div class="l2">Nothing to buy.</div></div>
+  <div class="promises" id="promises"></div>
+  <div class="badge"><span class="play"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M4 2.5v9l7.5-4.5z" fill="#05070a"/></svg></span>Launch film</div>
+</div>
+<script type="module">
+  import { icon, lockupSvg, markSvg } from './src/components.js';
+
+  document.getElementById('lockup').innerHTML = lockupSvg(54, '#ffffff');
+
+  const check = '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M4 9.4 7.4 12.6 14 5.6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  document.getElementById('promises').innerHTML = ['100% open source, MIT', 'No subscription, no seat limits', 'On your own server']
+    .map((s) => `<div><span class="chk">${check}</span>${s}</div>`).join('');
+
+  // Shipping today sit close and bright; the suite sits on the outer orbit.
+  const ring = document.getElementById('ring');
+  // [rx, ry] per orbit: today's products close in, the suite on the outer ring.
+  const orbit = (rx, ry) => { const o = document.createElement('div'); o.className = 'orbit'; o.style.width = rx * 2 + 'px'; o.style.height = ry * 2 + 'px'; ring.append(o); };
+  const IN = [190, 178], OUT = [268, 262];
+  orbit(...IN); orbit(...OUT);
+  const P = [
+    // [icon, colour, orbit, angle°, size]
+    ['square-kanban', '#2356c9', IN, 215, 84], ['file-text', '#5b7be5', IN, 330, 84], ['sparkles', '#9a85ea', IN, 92, 84],
+    ['git-branch', '#27272a', OUT, 160, 62], ['contact-round', '#c2536a', OUT, 252, 62], ['timer', '#0e9bb0', OUT, 292, 62],
+    ['receipt', '#2f9e6e', OUT, 18, 62], ['life-buoy', '#0e9bb0', OUT, 52, 62], ['user-round-plus', '#d46a2e', OUT, 128, 62],
+    ['key-round', '#9b4f96', OUT, 338, 62], ['shield-check', '#6e56cf', OUT, 202, 62],
+  ];
+  const pos = ([, , [rx, ry], a]) => [Math.cos((a * Math.PI) / 180) * rx, Math.sin((a * Math.PI) / 180) * ry];
+  // Lines first, so every tile sits above every line.
+  for (const p of P) {
+    const [x, y] = pos(p);
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.style.width = Math.hypot(x, y) + 'px';
+    line.style.transform = `rotate(${Math.atan2(y, x)}rad)`;
+    ring.append(line);
+  }
+  for (const p of P) {
+    const [ic, c, o, , s] = p;
+    const [x, y] = pos(p);
+    const t = document.createElement('div');
+    t.className = 'pt';
+    Object.assign(t.style, { left: x + 'px', top: y + 'px', width: s + 'px', height: s + 'px', background: c, opacity: o === OUT ? 0.92 : 1 });
+    t.innerHTML = icon(ic, Math.round(s * 0.5), 2);
+    ring.append(t);
+  }
+  const core = document.createElement('div');
+  core.className = 'core';
+  core.innerHTML = markSvg(128);
+  ring.append(core);
+  window.__ready = document.fonts.ready.then(() => true);
+</script>
+</body>
+</html>
