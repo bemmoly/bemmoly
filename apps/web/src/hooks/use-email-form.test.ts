@@ -1,7 +1,14 @@
 import type { EmailTestResult, OutboxSummary } from '@bemmoly/shared';
 import { describe, expect, it } from 'vitest';
 import { validateForm } from '../lib/errors.ts';
-import { emailFormSchema, emailWrites, type EmailForm } from './use-email-form.ts';
+import {
+  deliverySchema,
+  deliveryWrites,
+  emailFormSchema,
+  emailWrites,
+  linkPortAndSecurity,
+  type EmailForm,
+} from './use-email-form.ts';
 import {
   dnsCheck,
   outboxCounts,
@@ -65,6 +72,43 @@ describe('email form', () => {
     expect(errors?.['from']).toMatch(/address mail comes from/);
     expect(errors?.['replyTo']).toMatch(/valid email/);
     expect(errors?.['digestMinutes']).toMatch(/1 to 1440/);
+  });
+});
+
+describe('email sections', () => {
+  it('saves Delivery while the From address is still unset', () => {
+    const result = validateForm(deliverySchema, { ...FORM, from: '' });
+    expect(result.errors).toBeNull();
+    const writes = deliveryWrites(result.data!);
+    expect(writes).not.toHaveProperty('email.from');
+    expect(writes['email.smtp.port']).toBe(587);
+  });
+});
+
+describe('port and security', () => {
+  const current = { port: '587', security: 'starttls' as const };
+
+  it('picks the security a usual port implies', () => {
+    expect(linkPortAndSecurity(current, { port: '465' })).toEqual({ port: '465', security: 'tls' });
+    expect(linkPortAndSecurity(current, { port: '25' })).toEqual({
+      port: '25',
+      security: 'starttls',
+    });
+  });
+
+  it('moves a usual port to the security picked', () => {
+    expect(linkPortAndSecurity(current, { security: 'tls' })).toEqual({
+      security: 'tls',
+      port: '465',
+    });
+  });
+
+  it('leaves a custom port, and None, alone', () => {
+    expect(linkPortAndSecurity(current, { port: '2525' })).toEqual({ port: '2525' });
+    expect(linkPortAndSecurity({ ...current, port: '2525' }, { security: 'tls' })).toEqual({
+      security: 'tls',
+    });
+    expect(linkPortAndSecurity(current, { security: 'none' })).toEqual({ security: 'none' });
   });
 });
 
