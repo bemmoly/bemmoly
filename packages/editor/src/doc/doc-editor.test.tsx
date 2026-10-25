@@ -94,7 +94,10 @@ describe('the / menu', () => {
     fireEvent.click(await within(pages).findByRole('option', { name: /Runbook/ }));
     const line = (editor.getJSON() as RichTextDoc).content?.[0]?.content;
     expect(line?.[0]).toEqual(
-      expect.objectContaining({ type: 'pageLink', attrs: expect.objectContaining({ pageId: 'p1' }) }),
+      expect.objectContaining({
+        type: 'pageLink',
+        attrs: expect.objectContaining({ pageId: 'p1' }),
+      }),
     );
   });
 
