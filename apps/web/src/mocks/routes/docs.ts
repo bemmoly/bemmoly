@@ -64,6 +64,27 @@ export const docsRoutes: MockRoute[] = [
     },
   },
   {
+    method: 'PATCH',
+    pattern: `${BASE}/spaces/:spaceKey`,
+    handle: (request, db) => {
+      const state = docsState(db);
+      const space = spaceByRef(state, request.params['spaceKey'] ?? '');
+      if (!space) return notFound(`Space ${request.params['spaceKey']}`);
+      if (!can(db, 'docs.space.configure')) return denied();
+      const body = bodyOf<{ name: string; description: string | null; color: string | null }>(
+        request,
+      );
+      const homePageId = bodyOf<{ homePageId: string | null }>(request).homePageId;
+      if (body.name !== undefined) space.name = body.name;
+      if (body.description !== undefined) space.description = body.description;
+      if (body.color !== undefined) space.color = body.color;
+      if (homePageId !== undefined) space.homePageId = homePageId;
+      space.updatedAt = now();
+      emit(db, 'docs.space', [space.id]);
+      return ok(presentSpace(state, space));
+    },
+  },
+  {
     method: 'GET',
     pattern: `${BASE}/spaces/:spaceKey/tree`,
     handle: (request, db) => {

@@ -40,6 +40,22 @@ describe('the Docs mock backend', () => {
     });
   });
 
+  it('renames a space for someone who may configure it, and refuses a member', () => {
+    const api = createMockApi('ready');
+    const renamed = api.dispatch('PATCH', '/api/v1/docs/spaces/ENG', {
+      name: 'Platform engineering',
+      description: 'Runbooks',
+    });
+    expect(renamed?.body).toMatchObject({
+      key: 'ENG',
+      name: 'Platform engineering',
+      description: 'Runbooks',
+    });
+    const member = api.db.roles.find((role) => role.key === 'member');
+    api.db.signedInAs = api.db.users.find((user) => user.roleId === member?.id)!.id;
+    expect(api.dispatch('PATCH', '/api/v1/docs/spaces/ENG', { name: 'Nope' })?.status).toBe(403);
+  });
+
   it('creates, stars, deletes and restores a page', () => {
     const api = createMockApi('ready');
     const created = api.dispatch('POST', '/api/v1/docs/pages', {

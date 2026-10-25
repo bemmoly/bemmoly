@@ -2,8 +2,9 @@ import { SidebarRow, useFrame } from '@bemmoly/core-web';
 import type { Space } from '@bemmoly/module-docs/shared';
 import { IconButton, Menu, MenuItem, MenuSeparator, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import type { KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { docsPaths } from '../shared/navigation.ts';
+import { EditSpaceDialog, useCanEditSpace } from './edit-space-dialog.tsx';
 import { SidebarTree } from './sidebar-tree.tsx';
 import { SpaceTile } from './space-tile.tsx';
 import { AddMenuItems, useAddActions } from '../create/add-menu-items.tsx';
@@ -30,59 +31,80 @@ export function SpaceMenu({ space, onFocus }: { space: Space; onFocus?: () => vo
   const addFolder = useCreateFolder();
   const { navigate } = useFrame();
   const { show } = useToast();
+  const [editing, setEditing] = useState(false);
   return (
-    <Menu
-      align="start"
-      widthClassName="w-52"
-      trigger={(props) => (
-        <IconButton
-          {...props}
-          data-space-menu=""
-          label={`Actions for ${space.name}`}
-          icon="more"
-          size="tool"
-        />
-      )}
-    >
-      <MenuItem
-        icon={<Icon name="plus" />}
-        hint="N"
-        onSelect={() => add.create({ spaceId: space.id, parentId: null, placeName: space.name })}
+    <>
+      <Menu
+        align="start"
+        widthClassName="w-52"
+        trigger={(props) => (
+          <IconButton
+            {...props}
+            data-space-menu=""
+            label={`Actions for ${space.name}`}
+            icon="more"
+            size="tool"
+          />
+        )}
       >
-        New page
-      </MenuItem>
-      <MenuItem
-        icon={<Icon name="folder" />}
-        onSelect={() =>
-          addFolder.create({ spaceId: space.id, parentId: null, placeName: space.name })
-        }
-      >
-        New folder
-      </MenuItem>
-      {onFocus ? (
-        <MenuItem icon={<Icon name="filter" />} hint="F" onSelect={onFocus}>
-          Focus on this space
+        <MenuItem
+          icon={<Icon name="plus" />}
+          hint="N"
+          onSelect={() => add.create({ spaceId: space.id, parentId: null, placeName: space.name })}
+        >
+          New page
         </MenuItem>
-      ) : null}
-      <MenuItem icon={<Icon name="layers" />} onSelect={() => navigate(docsPaths.space(space.key))}>
-        Space overview
-      </MenuItem>
-      <MenuItem
-        icon={<Icon name="link" />}
-        onSelect={() => {
-          void navigator.clipboard?.writeText(
-            new URL(docsPaths.space(space.key), window.location.origin).href,
-          );
-          show({ tone: 'ok', title: 'Link copied' });
-        }}
-      >
-        Copy link
-      </MenuItem>
-      <MenuSeparator />
-      <MenuItem icon={<Icon name="trash" />} onSelect={() => navigate(docsPaths.trash(space.key))}>
-        Trash
-      </MenuItem>
-    </Menu>
+        <MenuItem
+          icon={<Icon name="folder" />}
+          onSelect={() =>
+            addFolder.create({ spaceId: space.id, parentId: null, placeName: space.name })
+          }
+        >
+          New folder
+        </MenuItem>
+        {onFocus ? (
+          <MenuItem icon={<Icon name="filter" />} hint="F" onSelect={onFocus}>
+            Focus on this space
+          </MenuItem>
+        ) : null}
+        <MenuItem
+          icon={<Icon name="layers" />}
+          onSelect={() => navigate(docsPaths.space(space.key))}
+        >
+          Space overview
+        </MenuItem>
+        <MenuItem
+          icon={<Icon name="link" />}
+          onSelect={() => {
+            void navigator.clipboard?.writeText(
+              new URL(docsPaths.space(space.key), window.location.origin).href,
+            );
+            show({ tone: 'ok', title: 'Link copied' });
+          }}
+        >
+          Copy link
+        </MenuItem>
+        <MenuSeparator />
+        <EditSpaceItem spaceKey={space.key} onSelect={() => setEditing(true)} />
+        <MenuItem
+          icon={<Icon name="trash" />}
+          onSelect={() => navigate(docsPaths.trash(space.key))}
+        >
+          Trash
+        </MenuItem>
+      </Menu>
+      <EditSpaceDialog space={space} open={editing} onClose={() => setEditing(false)} />
+    </>
+  );
+}
+
+/** Asks whether the person may edit the space only once its menu opens, not for every row. */
+function EditSpaceItem({ spaceKey, onSelect }: { spaceKey: string; onSelect: () => void }) {
+  if (!useCanEditSpace(spaceKey)) return null;
+  return (
+    <MenuItem icon={<Icon name="edit" />} onSelect={onSelect}>
+      Edit space
+    </MenuItem>
   );
 }
 
