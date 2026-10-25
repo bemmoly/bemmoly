@@ -2,21 +2,25 @@ import {
   Field,
   Input,
   Select,
+  SettingsRow,
   SettingsSection,
   SettingsValue,
   SettingsValues,
+  Switch,
   UnsavedChangesBar,
 } from '@bemmoly/ui';
 import { timezoneOptions } from '../../lib/timezones.ts';
 import { UrlHint } from '../../components/settings/change-url-dialog.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { useSectionEdits } from '../../components/settings/use-section-edits.ts';
+import { useLinkPreviews } from '../../hooks/use-link-previews.ts';
 import { LOCALES, useWorkspaceSettings } from '../../hooks/use-workspace-settings.ts';
 
 const TIMEZONE_HINT = 'Backups and digests run on this clock.';
 
 export function WorkspacePage() {
   const { settings, draft, errors, save, discard } = useWorkspaceSettings();
+  const previews = useLinkPreviews();
   const edits = useSectionEdits({
     workspace: { title: 'Workspace', dirty: draft.dirty, discard },
   });
@@ -25,7 +29,7 @@ export function WorkspacePage() {
   return (
     <SettingsPage
       title="General"
-      description="The name and address everyone sees, and the defaults for dates and times."
+      description="The name and address everyone sees, the defaults for dates and times, and what shared links show."
       loading={settings.isPending}
       error={settings.error}
     >
@@ -82,6 +86,20 @@ export function WorkspacePage() {
                 </Field>
               </div>
             )}
+          </SettingsSection>
+          <SettingsSection title="Sharing" layout="rows">
+            <SettingsRow
+              title="Show titles in link previews"
+              description="When someone pastes a link to a page or issue into a chat app, the preview shows its title and this workspace’s name. Anyone who has the link sees them, without signing in. Turn this off to show only “Bemmoly”."
+              control={
+                <Switch
+                  aria-label="Show titles in link previews"
+                  checked={previews.enabled}
+                  disabled={previews.loading || previews.pending}
+                  onCheckedChange={previews.setEnabled}
+                />
+              }
+            />
           </SettingsSection>
           <UnsavedChangesBar {...edits.bar} />
         </>

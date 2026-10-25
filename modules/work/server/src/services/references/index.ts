@@ -8,6 +8,7 @@ import type {
 } from '@bemmoly/core';
 import { accessibleProjectIds, projectResource } from '../issues/deps.ts';
 import { issuePath } from '../issues/notify.ts';
+import { ISSUE_KEY_PATTERN } from '../../../../shared/common.ts';
 
 /*
  * Work in the kernel's reference registries, so other modules can name issues
@@ -16,6 +17,9 @@ import { issuePath } from '../issues/notify.ts';
  * description links a record, for a page's "Referenced in"). Every answer
  * given for a person keeps to the projects where they may view issues.
  */
+
+/** An issue and anything under it ("/work/issue/PLT-204"), as issuePath writes it. */
+const ISSUE_PATH = /^\/work\/issue\/([^/?#]+)(?:\/|$)/;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -146,6 +150,10 @@ export function registerWorkReferences(
     kind: 'issue',
     renderer: 'work.issue',
     resolve: (ref) => references.resolve(ref),
+    fromPath(path) {
+      const key = ISSUE_PATH.exec(path)?.[1];
+      return key && ISSUE_KEY_PATTERN.test(key) ? { key } : null;
+    },
     resolveMany: (refs, requestCtx) => references.resolveMany(refs, requestCtx),
     canView: (requestCtx, id) => references.canView(requestCtx, id),
   });

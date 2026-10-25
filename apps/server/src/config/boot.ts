@@ -33,6 +33,7 @@ import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
 import { wireImporters } from './imports.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
+import { wireLinkPreview } from './link-preview.ts';
 import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
@@ -250,6 +251,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     maintenance: createMaintenanceReader(env.BEMMOLY_DATA_DIR),
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
     ...(options.productWebs ? { productWebs: options.productWebs } : {}),
+    ...(kernel ? { linkPreview: wireLinkPreview(modules, kernel) } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel

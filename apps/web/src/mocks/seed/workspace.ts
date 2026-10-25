@@ -31,6 +31,7 @@ export function seedSettings(complete: boolean): Partial<Record<SettingKey, unkn
     'workspace.url': 'https://bemmoly.acmelabs.internal',
     'workspace.locale': 'en',
     'workspace.timezone': 'UTC',
+    'workspace.linkPreviews': true,
     'email.provider': 'log',
     'email.smtp.port': 587,
     'email.smtp.security': 'starttls',
