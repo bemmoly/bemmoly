@@ -1,5 +1,14 @@
 # @bemmoly/web
 
+## 1.6.1
+
+### Patch Changes
+
+- @bemmoly/api-client@1.6.1
+  - @bemmoly/core-web@1.6.1
+  - @bemmoly/shared@1.6.1
+  - @bemmoly/ui@1.6.1
+
 ## 1.6.0
 
 ### Minor Changes

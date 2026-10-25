@@ -1,5 +1,14 @@
 # @bemmoly/editor
 
+## 1.6.1
+
+### Patch Changes
+
+- f3294a2: In Docs, choosing "Link to page" from the / menu now opens the page search, so you can pick
+  the page to link. Before, it left two square brackets in the text and no list to choose from.
+  The same fix applies to "Mention a person" and "Issue" in the / menu.
+- @bemmoly/ui@1.6.1
+
 ## 1.6.0
 
 ### Patch Changes
