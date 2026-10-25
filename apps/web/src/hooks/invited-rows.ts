@@ -5,6 +5,11 @@ export function isPending(invitation: Invitation): boolean {
   return !invitation.acceptedAt && !invitation.revokedAt;
 }
 
+/** Past its expiry the link no longer works; resending or copying a new link restarts it. */
+export function isExpired(invitation: Pick<Invitation, 'expiresAt'>, now = Date.now()): boolean {
+  return Date.parse(invitation.expiresAt) <= now;
+}
+
 /**
  * An invited person has an invitation and no account until they accept, so /users never
  * lists them. Each pending invitation becomes a row shaped like a user with status

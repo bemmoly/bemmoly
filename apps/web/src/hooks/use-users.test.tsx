@@ -102,6 +102,16 @@ describe('useUsers', () => {
     expect(result.current.users.summary).toMatch(/^7 active · 2 invited/);
   });
 
+  it('marks an invitation whose link has expired, and only that one', async () => {
+    const past = new Date(Date.now() - 86_400_000).toISOString();
+    mockApi.db.invitations[0]!.expiresAt = past;
+    const { result } = await renderQueryHook(() => useUsers());
+    await waitFor(() => expect(result.current.rows).toHaveLength(8));
+    const [sam, account] = result.current.rows;
+    expect(result.current.expiredAt(sam!)).toBe(past);
+    expect(result.current.expiredAt(account!)).toBeNull();
+  });
+
   it('searches on the server by name or email', async () => {
     const { result } = await renderQueryHook(() => useUsers());
     await waitFor(() => expect(result.current.rows).toHaveLength(8));
