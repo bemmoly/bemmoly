@@ -26,6 +26,8 @@ export interface HarnessBootOptions {
   available?: readonly BemmolyModule[];
   /** Receives the process's log lines at LOG_LEVEL (`fatal` unless `env` sets it). */
   logs?: NodeJS.WritableStream;
+  /** A web build to serve, for tests of the shell itself. */
+  webRoot?: string;
 }
 
 export interface BootHarness {
@@ -80,6 +82,7 @@ export async function startBootHarness(
           env,
           available: options.available ?? (await importAvailableModules()),
           logger: options.logs ? { stream: options.logs } : false,
+          ...(options.webRoot ? { webRoot: options.webRoot } : {}),
           ...(options.fetchClientMetadata
             ? { fetchClientMetadata: options.fetchClientMetadata }
             : {}),

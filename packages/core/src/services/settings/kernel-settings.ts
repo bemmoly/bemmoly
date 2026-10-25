@@ -19,6 +19,7 @@ declare module '../../contracts/settings.ts' {
     'appearance.personalThemes': boolean;
     'workspace.locale': string;
     'workspace.timezone': string;
+    'workspace.linkPreviews': boolean;
     'ai.providerId': string | null;
     'ai.shareContent': boolean;
     'ai.allowActions': boolean;
@@ -75,6 +76,12 @@ export const KERNEL_SETTINGS: readonly SettingDefinition[] = [
   { key: 'appearance.personalThemes', schema: z.boolean(), default: false },
   { key: 'workspace.locale', schema: SETTING_SCHEMAS['workspace.locale'], default: 'en' },
   { key: 'workspace.timezone', schema: SETTING_SCHEMAS['workspace.timezone'], default: 'UTC' },
+  // Chat apps fetch a shared link signed out; this lets the preview name what it points at.
+  {
+    key: 'workspace.linkPreviews',
+    schema: SETTING_SCHEMAS['workspace.linkPreviews'],
+    default: true,
+  },
   // The setup wizard's AI step, until the AI runtime owns its provider records.
   { key: 'ai.providerId', schema: z.string().min(1).nullable(), default: null },
   { key: 'ai.shareContent', schema: z.boolean(), default: false },

@@ -46,6 +46,11 @@ export interface EntityDefinition {
   renderer: string;
   resolve(ref: EntityLookup): Promise<EntitySummary | null>;
   /**
+   * The record a web path opens ("/work/issue/PLT-204" → { key: "PLT-204" }), or null when
+   * the path is not one of this kind's. Lets a shared link's preview name the record.
+   */
+  fromPath?(path: string): EntityLookup | null;
+  /**
    * Many records by id or key in one round trip, for lists. With a context,
    * only those the person may open. Without it the registry falls back to
    * resolve and canView per record.

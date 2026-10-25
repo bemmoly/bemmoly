@@ -1,8 +1,11 @@
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { LinkPreview } from '@bemmoly/core';
 import fastifyStatic from '@fastify/static';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { apiNotFoundHandler } from './error-handler.ts';
+import { withLinkPreview } from './link-preview-html.ts';
 
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 const REVALIDATE = 'no-cache';
@@ -55,6 +58,30 @@ async function sendProductIndex(reply: FastifyReply, product: ProductWeb, url: s
   return reply.sendFile('index.html', product.root);
 }
 
+/** The preview a shared link shows for a web path; null leaves the shell's own tags. */
+export type LinkPreviewLookup = (path: string) => Promise<LinkPreview | null>;
+
+/**
+ * index.html naming the record the path opens, for chat apps that fetch a shared link signed
+ * out. Null when there is nothing to name; a failed lookup is logged and serves the plain shell,
+ * so a preview can never stop the app from loading.
+ */
+async function previewedIndex(
+  request: FastifyRequest,
+  root: string,
+  preview: LinkPreviewLookup,
+  path: string,
+): Promise<string | null> {
+  try {
+    const found = await preview(path);
+    if (!found) return null;
+    return withLinkPreview(await readFile(join(root, 'index.html'), 'utf8'), found);
+  } catch (error) {
+    request.log.warn({ err: error, path }, 'link preview failed; serving the plain shell');
+    return null;
+  }
+}
+
 /**
  * Serves the web build under `/`. Unknown non-API GETs fall back to index.html
  * so client-side routes such as /work/board load the shell.
@@ -63,6 +90,7 @@ export async function registerWebApp(
   app: FastifyInstance,
   root: string,
   products: readonly ProductWeb[] = [],
+  preview?: LinkPreviewLookup,
 ): Promise<void> {
   const served = products.filter((product) => hasWebBuild(product.root));
   await registerProductApps(app, served);
@@ -78,9 +106,12 @@ export async function registerWebApp(
   });
   app.setNotFoundHandler(async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.method !== 'GET' || isApiPath(request.url)) return apiNotFoundHandler(request);
-    const product = productOf(request.url.split('?')[0] ?? '', served);
-    if (product) return sendProductIndex(reply, product, request.url.split('?')[0] ?? '');
+    const path = request.url.split('?')[0] ?? '';
+    const product = productOf(path, served);
+    if (product) return sendProductIndex(reply, product, path);
     reply.header('cache-control', REVALIDATE);
+    const html = preview ? await previewedIndex(request, root, preview, path) : null;
+    if (html) return reply.type('text/html; charset=utf-8').send(html);
     return reply.sendFile('index.html');
   });
 }

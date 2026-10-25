@@ -58,6 +58,8 @@ export const SETTING_SCHEMAS = {
   'workspace.url': z.union([z.literal(''), z.url()]),
   'workspace.locale': z.string().min(2),
   'workspace.timezone': z.string().min(1),
+  /** Whether a shared link's preview names the page or issue; on unless an admin turns it off. */
+  'workspace.linkPreviews': z.boolean(),
   /** Assumed: the wizard's AI step until the AI runtime owns its tables. */
   'ai.providerId': z.string().nullable(),
   'ai.shareContent': z.boolean(),
