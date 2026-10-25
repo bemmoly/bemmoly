@@ -1,5 +1,6 @@
 import type { Space } from '@bemmoly/module-docs/shared';
-import { Button, Field, Input, Modal, SPACE_TONES, SpaceTile, Textarea } from '@bemmoly/ui';
+import { Button, Field, Input, Modal, Textarea } from '@bemmoly/ui';
+import { SpaceTonePicker } from './space-tone-picker.tsx';
 import { useCreateSpace } from './use-create-space.ts';
 
 export interface CreateSpaceDialogProps {
@@ -7,16 +8,6 @@ export interface CreateSpaceDialogProps {
   onClose: () => void;
   onCreated: (space: Space) => void;
 }
-
-const TONE_NAMES: Record<(typeof SPACE_TONES)[number], string> = {
-  accent: 'Blue',
-  violet: 'Violet',
-  green: 'Green',
-  orange: 'Orange',
-  red: 'Red',
-  amber: 'Amber',
-  slate: 'Slate',
-};
 
 /**
  * Create space: a name, the key that prefixes its links ("ENG"), an optional line on what it
@@ -87,33 +78,12 @@ function CreateSpaceForm({ open, onClose, onCreated }: CreateSpaceDialogProps) {
             onChange={(event) => form.setDescription(event.target.value)}
           />
         </Field>
-        <div className="flex flex-col gap-1.5">
-          <span id="space-colour" className="font-medium text-tx">
-            Colour
-          </span>
-          <div role="radiogroup" aria-labelledby="space-colour" className="flex gap-2">
-            {SPACE_TONES.map((tone) => (
-              <button
-                key={tone}
-                type="button"
-                role="radio"
-                aria-checked={draft.tone === tone}
-                aria-label={TONE_NAMES[tone]}
-                onClick={() => form.setTone(tone)}
-                className={`cursor-pointer rounded-card border-0 bg-transparent p-0.5 outline-offset-1 focus-ring ${
-                  draft.tone === tone ? 'shadow-ring-ac' : 'hover:shadow-ring'
-                }`}
-              >
-                <SpaceTile
-                  name={draft.name}
-                  {...(draft.key ? { spaceKey: draft.key } : {})}
-                  tone={tone}
-                  size="sm"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+        <SpaceTonePicker
+          name={draft.name}
+          spaceKey={draft.key}
+          value={draft.tone}
+          onChange={form.setTone}
+        />
         <button type="submit" hidden aria-hidden tabIndex={-1} />
       </form>
     </Modal>

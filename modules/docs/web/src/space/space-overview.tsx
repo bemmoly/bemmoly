@@ -1,5 +1,13 @@
 import { HeaderActions } from '@bemmoly/core-web';
-import { AvatarStack, Button, Card, DocListRowSkeleton, Kbd, Skeleton } from '@bemmoly/ui';
+import {
+  AvatarStack,
+  Button,
+  Card,
+  DocListRowSkeleton,
+  IconButton,
+  Kbd,
+  Skeleton,
+} from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { CreatePageDialog } from '../create/create-page-dialog.tsx';
@@ -9,6 +17,7 @@ import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths, navigateTo } from '../shared/navigation.ts';
 import { usePeople, useSession } from '../shared/people.ts';
 import { ImportDialog } from '../transfer/import-dialog.tsx';
+import { EditSpaceDialog } from './edit-space-dialog.tsx';
 import { EmptySpace } from './overview/empty-space.tsx';
 import { InReview, RecentlyUpdated, TopPages } from './overview/overview-parts.tsx';
 import { StartHere } from './overview/start-here.tsx';
@@ -30,7 +39,7 @@ export function SpaceOverview() {
   const members = useSpaceMembers(space.key);
   const { person } = usePeople();
   const { can, user } = useSession();
-  const [dialog, setDialog] = useState<'template' | 'import' | null>(null);
+  const [dialog, setDialog] = useState<'template' | 'import' | 'edit' | null>(null);
   const roots = tree.items.filter((item) => item.depth === 0);
   const canWrite = can('docs.page.edit');
   const canChange = members.data?.canManage ?? false;
@@ -84,6 +93,14 @@ export function SpaceOverview() {
               }))}
             />
           )}
+          {canChange && (
+            <IconButton
+              className="mt-0.5"
+              label="Edit space"
+              icon="edit"
+              onClick={() => setDialog('edit')}
+            />
+          )}
         </header>
 
         {tree.isPending ? (
@@ -134,6 +151,7 @@ export function SpaceOverview() {
         onClose={() => setDialog(null)}
         onCreated={(page) => navigateTo(docsPaths.page(page.id))}
       />
+      <EditSpaceDialog space={space} open={dialog === 'edit'} onClose={() => setDialog(null)} />
       <ImportDialog open={dialog === 'import'} onClose={() => setDialog(null)} space={space} />
     </DocsLayout>
   );
