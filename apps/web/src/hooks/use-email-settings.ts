@@ -5,12 +5,17 @@ import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import {
+  deliverySchema,
+  deliveryWrites,
   EMAIL_KEYS,
   emailFormFrom,
-  emailFormSchema,
-  emailWrites,
+  linkPortAndSecurity,
+  senderSchema,
+  senderWrites,
   type EmailForm,
+  type EmailKey,
 } from './use-email-form.ts';
+import type { SettingValues } from './use-setting.ts';
 import { outboxCounts, outboxStatus, testResultView } from './use-email-results.ts';
 import { useMe } from './use-session.ts';
 import { useDraft, useSettings } from './use-setting.ts';
@@ -76,6 +81,19 @@ type SenderForm = Pick<EmailForm, (typeof SENDER)[number]>;
 const pick = <K extends keyof EmailForm>(form: EmailForm, keys: readonly K[]) =>
   Object.fromEntries(keys.map((key) => [key, form[key]])) as Pick<EmailForm, K>;
 
+/** One section's writes, or its field messages. */
+function sectionWrites(
+  section: EmailSection,
+  form: EmailForm,
+): { data: SettingValues<EmailKey>; errors: null } | { data: null; errors: FieldErrors } {
+  if (section === 'delivery') {
+    const result = validateForm(deliverySchema, form);
+    return result.errors ? result : { data: deliveryWrites(result.data), errors: null };
+  }
+  const result = validateForm(senderSchema, form);
+  return result.errors ? result : { data: senderWrites(result.data), errors: null };
+}
+
 /** Switching from a relay to the dev mailbox stops real delivery, so it asks first. */
 export function deliveryRisk(stored: EmailForm, next: EmailForm): ChangeConfirm | null {
   if (!(stored.provider === 'smtp' && next.provider === 'log')) return null;
@@ -118,24 +136,23 @@ export function useEmailSettings() {
     );
   };
 
-  /** The stored form with one section's edits; validated, or its field messages shown. */
+  /**
+   * The stored form with one section's edits, checked against that section alone:
+   * an unset field in the other, closed section must not block this save.
+   */
   const prepare = (section: EmailSection) => {
     if (!canManage || !stored || !value) return null;
     const form = { ...stored, ...pick(value, keysOf(section) as Array<keyof EmailForm>) };
-    const result = validateForm(emailFormSchema, form);
-    if (result.errors) {
-      setErrors(result.errors);
+    const writes = sectionWrites(section, form);
+    if (writes.errors) {
+      setErrors(writes.errors);
       return null;
     }
     setErrors({});
-    return { form, writes: emailWrites(result.data) };
+    return { form, writes: writes.data };
   };
 
-  const save = (
-    section: EmailSection,
-    writes: ReturnType<typeof emailWrites>,
-    onSaved = () => {},
-  ) => {
+  const save = (section: EmailSection, writes: SettingValues<EmailKey>, onSaved = () => {}) => {
     setSaving(section);
     settings.save.mutate(writes, {
       onSuccess: () => {
@@ -155,7 +172,8 @@ export function useEmailSettings() {
       const ofDelivery = Object.keys(patch).some((key) =>
         (DELIVERY as readonly string[]).includes(key),
       );
-      if (ofDelivery && delivery.value) delivery.update(patch as Partial<DeliveryForm>);
+      if (ofDelivery && delivery.value)
+        delivery.update(linkPortAndSecurity(delivery.value, patch) as Partial<DeliveryForm>);
       else if (sender.value) sender.update(patch as Partial<SenderForm>);
     },
     dirty: { delivery: delivery.dirty, sender: sender.dirty } satisfies Record<
