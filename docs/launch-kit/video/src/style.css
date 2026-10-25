@@ -1,0 +1,82 @@
+@font-face { font-family: 'Plex'; src: url(../assets/fonts/ibm-plex-sans-latin-400-normal.woff2) format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Plex'; src: url(../assets/fonts/ibm-plex-sans-latin-500-normal.woff2) format('woff2'); font-weight: 500; }
+@font-face { font-family: 'Plex'; src: url(../assets/fonts/ibm-plex-sans-latin-600-normal.woff2) format('woff2'); font-weight: 600; }
+@font-face { font-family: 'Plex'; src: url(../assets/fonts/ibm-plex-sans-latin-700-normal.woff2) format('woff2'); font-weight: 700; }
+@font-face { font-family: 'PlexMono'; src: url(../assets/fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2'); font-weight: 400; }
+@font-face { font-family: 'PlexMono'; src: url(../assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2'); font-weight: 500; }
+
+/* Design-system tokens (docs/design/system/tokens.md), Bemmoly light and dark. */
+:root {
+  --brand-1: #2356c9; --brand-2: #5b7be5; --brand-3: #9a85ea;
+  --ai: #9a85ea; --ai-600: #6d55c9; --ai-100: #e4ddfb; --ai-50: #f4f1fe;
+  --red: #e5484d; --red-tx: #c8333a; --red-50: #fdecec;
+  --amber: #e5a00d; --amber-tx: #9a6400; --amber-50: #fdf4dd;
+  --green: #1f9d55; --green-tx: #17804a; --green-50: #e6f6ec;
+  --todo: #888f9c; --prog: #2356c9; --done: #1f9d55;
+  --type-epic: #6e56cf; --type-story: #1f9d55; --type-task: #2356c9; --type-bug: #e5484d;
+  --ink: #05070a;
+  --m-work: #2356c9; --m-docs: #5b7be5; --m-people: #c2536a; --m-time: #0e9bb0; --m-expenses: #2f9e6e;
+  --m-assets: #b7791f; --m-licences: #9b4f96; --m-hiring: #d46a2e; --m-access: #6e56cf;
+  --m-performance: #2356c9; --m-helpdesk: #0e9bb0; --m-pipelines: #27272a;
+}
+.ui-light {
+  --canvas: #ffffff; --side: #f7f8fa; --sunken: #f5f6f8; --card: #ffffff;
+  --hover: rgba(22,27,38,.045); --press: rgba(22,27,38,.07);
+  --line: #e3e6ec; --line-2: #eef0f3;
+  --tx: #161b26; --tx-2: #4b5264; --tx-3: #697181;
+  --acc: #2356c9; --acc-fill: #2356c9; --on-acc: #fff; --acc-500: #5b7be5; --acc-100: #dfe7fb; --acc-50: #eef2fd;
+  --e1: 0 0 0 1px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.06);
+  --e2: 0 0 0 1px rgba(16,24,40,.06), 0 8px 24px -6px rgba(16,24,40,.16);
+  --e3: 0 0 0 1px rgba(16,24,40,.06), 0 24px 60px -12px rgba(16,24,40,.28);
+}
+.ui-dark {
+  --canvas: #111418; --side: #0c0f13; --sunken: #0e1115; --card: #181c22;
+  --hover: rgba(255,255,255,.05); --press: rgba(255,255,255,.08);
+  --line: #2a2f38; --line-2: #20242b;
+  --tx: #e8ebf1; --tx-2: #a8b0be; --tx-3: #858c9a;
+  --acc: #7b95ec; --acc-fill: #4a68d0; --on-acc: #fff; --acc-500: #7b95ec; --acc-100: rgba(91,123,229,.24); --acc-50: rgba(91,123,229,.14);
+  --e1: 0 0 0 1px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.4);
+  --e2: 0 0 0 1px rgba(255,255,255,.08), 0 8px 24px -6px rgba(0,0,0,.6);
+  --e3: 0 0 0 1px rgba(255,255,255,.08), 0 24px 60px -12px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+body { font-family: 'Plex', system-ui, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+
+#viewport { position: absolute; inset: 0; display: grid; place-items: center; }
+#stage {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden;
+  background: var(--ink); color: #fff; transform-origin: 0 0;
+  perspective: 2200px; perspective-origin: 50% 50%;
+}
+.layer, .scene { position: absolute; inset: 0; transform-style: preserve-3d; }
+.abs { position: absolute; }
+.center { position: absolute; left: 50%; top: 50%; }
+.mono { font-family: 'PlexMono', ui-monospace, monospace; }
+.ico { display: inline-block; flex: none; vertical-align: middle; }
+.will { will-change: transform, opacity; }
+
+/* Kinetic headline type (marketing display sizes). */
+.display { font-weight: 600; letter-spacing: -0.035em; line-height: 1.04; }
+.word { display: inline-block; white-space: pre; will-change: transform, opacity, filter; }
+.eyebrow { font-size: 22px; font-weight: 500; letter-spacing: 0; color: #8fa6f2; }
+
+/* Product tiles: the logo's ~24% corner ratio. */
+.tile { display: grid; place-items: center; color: #fff; border-radius: 24%; flex: none; }
+
+/* Window chrome. */
+.win { position: absolute; background: var(--canvas); color: var(--tx); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 40px 120px -20px rgba(0,0,0,.65), 0 18px 40px -18px rgba(0,0,0,.5); }
+.win .bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; background: var(--side); border-bottom: 1px solid var(--line); }
+.win .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+
+/* Capture mode hides the player chrome. */
+#controls { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 12px; align-items: center; padding: 10px 16px;
+  background: rgba(10,12,16,.85); color: #cfd6e4; font: 13px 'Plex', sans-serif; z-index: 10; backdrop-filter: blur(8px); }
+#controls button { background: #2356c9; color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+#controls input[type=range] { flex: 1; accent-color: #5b7be5; }
+.capture #controls { display: none; }
+/* While capturing, let Chrome re-rasterize every layer at its current scale each frame, so
+   vectors and text that the camera zooms into stay sharp (will-change freezes the raster size). */
+.capture *, .capture *::before, .capture *::after { will-change: auto !important; }

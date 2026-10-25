@@ -1,0 +1,16 @@
+{
+  "name": "bemmoly-launch-film",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Bemmoly launch film: a hand-built JS motion engine, captured frame by frame",
+  "type": "module",
+  "scripts": {
+    "icons": "node tools/icons.mjs",
+    "render": "node tools/capture.mjs",
+    "score": "node tools/score.mjs"
+  },
+  "devDependencies": {
+    "lucide-static": "1.47.0",
+    "playwright-core": "1.63.0"
+  }
+}
