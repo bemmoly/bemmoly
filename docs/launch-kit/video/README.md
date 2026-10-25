@@ -29,8 +29,8 @@ node tools/capture.mjs --audio out/score.wav
   Playwright already keeps in `~/Library/Caches/ms-playwright`.
 - `npm run score` writes `out/score.wav`.
 - `node tools/capture.mjs --audio out/score.wav` writes `out/bemmoly-launch.mp4`. Frames are
-  supersampled at 2× (3840 × 2160), so the file is a 4K master. A full render takes about 20
-  minutes on 10 workers.
+  supersampled at 2× (3840 × 2160), so the file is a 4K master. A full render takes about 18
+  minutes on the default 4 workers and stays under the 10 GB memory cap (`--max-ram`).
 
 To make the 1080p copy:
 
@@ -46,7 +46,9 @@ Other options:
 - `--from 25 --to 42` renders a range.
 - `--stills 9.5,30,97.25 --dir out/stills` writes PNG stills.
 - `--scale 1` renders fast 1080p drafts.
-- `--workers 10` sets how many headless browsers render in parallel, one browser each.
+- `--workers 4` sets how many headless browsers render in parallel, one each. Each 4K worker
+  needs about 1.75 GB.
+- `--max-ram 10` caps the render's total memory in GB; workers pause while it's over.
 - `--fps 60` sets the frame rate.
 
 ## How it's put together
