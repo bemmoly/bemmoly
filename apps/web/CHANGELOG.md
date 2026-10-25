@@ -1,5 +1,32 @@
 # @bemmoly/web
 
+## 1.6.0
+
+### Minor Changes
+
+- d793d2c: A link to a page or an issue pasted into WhatsApp, Slack or any other chat app now previews with
+  its title ("PLT-204 Fix login", "Cache plan") and the workspace's name, instead of a generic
+  "Bemmoly". Chat apps fetch the link signed out, so anyone holding it sees the title, never the
+  content. It is on by default; admins can turn it off under Settings › General › Sharing (the new
+  `workspace.linkPreviews` setting). No schema change.
+
+### Patch Changes
+
+- 229ccb1: Expired invitations are now visible. On Settings › Members an invitation whose link has run
+  out shows "Invite expired" and when it expired, so admins know to resend it or copy a new link.
+  Someone who opens an expired link is told the invitation has expired and to ask for a new one,
+  instead of a message that could mean the link was mistyped or already used.
+- be5d210: Saving Delivery on Settings › Email delivery works again before a From address is set. Each
+  section is now checked on its own, so a field left unset in the closed Sender section no longer
+  stops Delivery from saving without a word. Port and Security also follow each other: a usual
+  port (465, 587 or 25) picks its security, and picking TLS or STARTTLS moves a usual port to its
+  own. A custom port, like 2525, is left as typed.
+- Updated dependencies [d793d2c]
+  - @bemmoly/shared@1.6.0
+  - @bemmoly/api-client@1.6.0
+  - @bemmoly/core-web@1.6.0
+  - @bemmoly/ui@1.6.0
+
 ## 1.5.0
 
 ### Patch Changes
