@@ -16,11 +16,13 @@
   .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.07) 1.2px, transparent 1.4px); background-size: 28px 28px;
     mask-image: radial-gradient(ellipse 700px 500px at 975px 360px, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse 700px 500px at 975px 360px, #000 20%, transparent 75%); }
   .lockup { position: absolute; left: 64px; top: 56px; }
-  .head { position: absolute; left: 60px; top: 196px; font-weight: 700; font-size: 98px; line-height: .98; letter-spacing: -0.045em; }
-  .head .l2 { background: linear-gradient(90deg, #7b95ec, #b3a4f2); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .promises { position: absolute; left: 64px; top: 452px; display: flex; flex-direction: column; gap: 14px; font-size: 30px; font-weight: 600; color: #e3e8f4; letter-spacing: -0.01em; }
-  .promises div { display: flex; align-items: center; gap: 14px; }
-  .chk { width: 34px; height: 34px; border-radius: 50%; background: #2356c9; display: grid; place-items: center; flex: none; box-shadow: 0 0 0 4px rgba(35,86,201,.25); }
+  .head { position: absolute; left: 60px; top: 150px; font-weight: 700; font-size: 92px; line-height: 1.0; letter-spacing: -0.045em; }
+  .head .ai { background: linear-gradient(90deg, #9a85ea, #c4b6f6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .sub { position: absolute; left: 64px; top: 446px; width: 600px; font-size: 32px; line-height: 1.3; font-weight: 500; color: #dfe5f2; letter-spacing: -0.015em; }
+  .sub b { color: #fff; font-weight: 700; }
+  .promises { position: absolute; left: 64px; top: 566px; display: flex; gap: 22px; font-size: 22px; font-weight: 600; color: #c9d3ea; }
+  .promises div { display: flex; align-items: center; gap: 8px; }
+  .chk { width: 26px; height: 26px; border-radius: 50%; background: #2356c9; display: grid; place-items: center; flex: none; box-shadow: 0 0 0 3px rgba(35,86,201,.25); }
   .badge { position: absolute; right: 40px; bottom: 36px; display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px 0 16px; border-radius: 26px;
     background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22); font-size: 24px; font-weight: 600; }
   .play { width: 30px; height: 30px; border-radius: 50%; background: #fff; display: grid; place-items: center; }
@@ -40,7 +42,8 @@
   <div class="dots"></div>
   <div class="ring" id="ring"></div>
   <div class="lockup" id="lockup"></div>
-  <div class="head"><div>Open source.</div><div class="l2">Nothing to buy.</div></div>
+  <div class="head"><div>Projects.</div><div>Docs.</div><div class="ai">AI.</div></div>
+  <div class="sub"><b>One open source platform</b> for your team, running on your own server.</div>
   <div class="promises" id="promises"></div>
   <div class="badge"><span class="play"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M4 2.5v9l7.5-4.5z" fill="#05070a"/></svg></span>Launch film</div>
 </div>
@@ -49,8 +52,8 @@
 
   document.getElementById('lockup').innerHTML = lockupSvg(54, '#ffffff');
 
-  const check = '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M4 9.4 7.4 12.6 14 5.6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  document.getElementById('promises').innerHTML = ['100% open source, MIT', 'No subscription, no seat limits', 'On your own server']
+  const check = '<svg width="14" height="14" viewBox="0 0 18 18"><path d="M4 9.4 7.4 12.6 14 5.6" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  document.getElementById('promises').innerHTML = ['MIT licence', 'No subscription', 'No seat limits']
     .map((s) => `<div><span class="chk">${check}</span>${s}</div>`).join('');
 
   // Shipping today sit close and bright; the suite sits on the outer orbit.
