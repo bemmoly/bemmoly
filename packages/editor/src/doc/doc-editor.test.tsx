@@ -84,6 +84,20 @@ describe('the / menu', () => {
     expect(await screen.findByText(/No block called “zzz”/)).toBeTruthy();
   });
 
+  it('opens the page list from Link to page and links the chosen page', async () => {
+    const searchPages = vi.fn().mockResolvedValue([{ id: 'p1', label: 'Runbook' }]);
+    const { box, editor } = await setup({ services: { searchPages } });
+    type(editor, '/link');
+    await waitFor(() => expect(optionNames()[0]).toBe('Link to page'));
+    fireEvent.keyDown(box, { key: 'Enter' });
+    const pages = await screen.findByRole('listbox', { name: 'Pages' });
+    fireEvent.click(await within(pages).findByRole('option', { name: /Runbook/ }));
+    const line = (editor.getJSON() as RichTextDoc).content?.[0]?.content;
+    expect(line?.[0]).toEqual(
+      expect.objectContaining({ type: 'pageLink', attrs: expect.objectContaining({ pageId: 'p1' }) }),
+    );
+  });
+
   it('inserts a table with a header row and shows its tools', async () => {
     const { box, editor } = await setup();
     type(editor, '/table');

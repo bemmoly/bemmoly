@@ -106,10 +106,16 @@ export class SuggestionStore {
     return false;
   }
 
-  /** The render hooks for one trigger. */
+  /**
+   * The render hooks for one trigger. A trigger only ever updates or closes its own list: when
+   * a / row types [[ or @, the next list can start before the / list exits, and that exit must
+   * not take the new list with it.
+   */
   renderer(kind: SuggestionKind, label: string): Render {
     return () => {
       let unmount: (() => void) | null = null;
+      let own: HTMLElement | null = null;
+      const owns = () => own !== null && this.open?.element === own;
       const update = (props: SuggestionProps<SuggestionRow>, element: HTMLElement) => {
         this.command = props.command;
         const same = this.open?.query === props.query;
@@ -130,16 +136,19 @@ export class SuggestionStore {
           element.className = 'z-50';
           layerFor(props.editor.view.dom).appendChild(element);
           unmount = props.mount(element);
+          own = element;
           update(props, element);
         },
         onUpdate: (props) => {
-          if (this.open) update(props, this.open.element);
+          if (own && owns()) update(props, own);
         },
         onExit: () => {
-          const element = this.open?.element;
+          const mine = owns();
           unmount?.();
           unmount = null;
-          element?.remove();
+          own?.remove();
+          own = null;
+          if (!mine) return;
           this.command = null;
           this.set(null);
         },
