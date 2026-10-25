@@ -21,6 +21,8 @@ interface UsersTableProps {
   canManage: boolean;
   teamsOf: (user: User) => string[];
   modulesOf: (user: User) => string[];
+  /** When an invitation row's link stopped working, or null while it still works. */
+  expiredAt: (user: User) => string | null;
   onRoleChange: (user: User, roleId: string) => void;
   actions: UserMenuActions;
   footer: TableFooter;
@@ -72,6 +74,7 @@ export function UsersTable({
   canManage,
   teamsOf,
   modulesOf,
+  expiredAt,
   onRoleChange,
   actions,
   footer,
@@ -93,7 +96,9 @@ export function UsersTable({
               </span>
               <span className="flex shrink-0 items-center gap-1.5">
                 {user.id === actions.selfId && <Chip tone="neutral">You</Chip>}
-                {user.status === 'invited' && <Chip tone="amber">Invited</Chip>}
+                {user.status === 'invited' && (
+                  <Chip tone="amber">{expiredAt(user) ? 'Invite expired' : 'Invited'}</Chip>
+                )}
                 {user.status === 'deactivated' && <Chip tone="neutral">Deactivated</Chip>}
               </span>
             </span>
@@ -145,8 +150,13 @@ export function UsersTable({
       header: 'Last active',
       width: WIDTHS.last,
       hideOnPhone: true,
-      render: (user) =>
-        user.status === 'invited' ? (
+      render: (user) => {
+        const expired = expiredAt(user);
+        return expired ? (
+          <span className="text-amber-tx">
+            Expired <RelativeTime iso={expired} />
+          </span>
+        ) : user.status === 'invited' ? (
           <span className="text-tx-3">
             Invited <RelativeTime iso={user.createdAt} />
           </span>
@@ -157,7 +167,8 @@ export function UsersTable({
           />
         ) : (
           <span className="text-amber-tx">Never</span>
-        ),
+        );
+      },
     },
     {
       key: 'menu',

@@ -161,7 +161,8 @@ export async function revokeInvitation(db: Database, ctx: RequestContext, id: st
   });
 }
 
-const INVALID = 'This invitation is invalid or has expired';
+const INVALID = 'This invitation is invalid or was already used.';
+const EXPIRED = 'This invitation has expired.';
 
 function validByToken(token: string, now: Date) {
   return and(
@@ -171,11 +172,25 @@ function validByToken(token: string, now: Date) {
   );
 }
 
+/**
+ * The error for a token that is not valid now. A link that is still pending but past its
+ * expiry says so, since the person's next step differs: ask for a new one, not check the link.
+ */
+async function unusable(db: Database, token: string, now: Date): Promise<NotFoundError> {
+  const [row] = await db
+    .select({ expiresAt: invitations.expiresAt })
+    .from(invitations)
+    .where(and(eq(invitations.tokenHash, digestToken(token)), pending))
+    .limit(1);
+  return new NotFoundError(row && row.expiresAt <= now ? EXPIRED : INVALID);
+}
+
 /** What the accept page shows. Anonymous: the token is the credential. */
 export async function previewInvitation(
   deps: Pick<IdentityDependencies, 'db' | 'settings' | 'now'>,
   token: string,
 ): Promise<InvitationPreview> {
+  const now = nowOf(deps);
   const [row] = await deps.db
     .select({
       invitation: invitations,
@@ -187,9 +202,9 @@ export async function previewInvitation(
     .innerJoin(roles, eq(roles.id, invitations.roleId))
     .leftJoin(teams, eq(teams.id, invitations.teamId))
     .leftJoin(users, eq(users.id, invitations.invitedBy))
-    .where(validByToken(token, nowOf(deps)))
+    .where(validByToken(token, now))
     .limit(1);
-  if (!row) throw new NotFoundError(INVALID);
+  if (!row) throw await unusable(deps.db, token, now);
   return {
     email: row.invitation.email,
     workspaceName: await deps.settings.get('workspace.name'),
@@ -216,7 +231,7 @@ export async function acceptInvitation(
       .where(validByToken(token, now))
       .for('update')
       .limit(1);
-    if (!invitation) throw new NotFoundError(INVALID);
+    if (!invitation) throw await unusable(tx, token, now);
     const user = await createAccount(tx, {
       email: invitation.email,
       name: input.name,

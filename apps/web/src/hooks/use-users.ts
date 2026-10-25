@@ -4,7 +4,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api.ts';
 import { useUiStore } from '../store/ui.ts';
-import { invitationRows, matchesServerFilters } from './invited-rows.ts';
+import { invitationRows, isExpired, matchesServerFilters } from './invited-rows.ts';
 import { useDirectory } from './use-directory.ts';
 import { moduleLabel, modulesForUser } from './use-module-access.ts';
 import { useModules } from './use-modules.ts';
@@ -136,6 +136,9 @@ export function useUsers(initialTeamId = '') {
     [invited, list.data, q, status, roleId, teamId],
   );
   const invitationIds = new Set(invited.map((row) => row.id));
+  const expired = new Map(
+    (invitations ?? []).filter((item) => isExpired(item)).map((item) => [item.id, item.expiresAt]),
+  );
   const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
   const counts = { ...directory.counts, invited: directory.counts.invited + invited.length };
@@ -145,6 +148,8 @@ export function useUsers(initialTeamId = '') {
     summary: directorySummary(counts),
     /** True for a row that is a pending invitation rather than an account. */
     isInvitation: (user: User) => invitationIds.has(user.id),
+    /** When an invitation row's link stopped working, or null while it still works. */
+    expiredAt: (user: User) => expired.get(user.id) ?? null,
     list,
     rows,
     roles,

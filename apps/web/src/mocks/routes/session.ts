@@ -6,6 +6,13 @@ import { bodyOf, fail, invalid, ok, type MockRoute } from '../types.ts';
 import { completedAtOf, workspaceLookOf } from '../workspace-look.ts';
 import { preferenceOf } from './appearance.ts';
 
+const INVALID_INVITATION = 'This invitation is invalid or was already used.';
+const EXPIRED_INVITATION = 'This invitation has expired.';
+
+function isExpired(invitation: { expiresAt: string }) {
+  return Date.parse(invitation.expiresAt) <= Date.now();
+}
+
 function signIn(db: MockDb, userId: string, status = 200) {
   db.signedInAs = userId;
   const user = db.users.find((entry) => entry.id === userId);
@@ -105,8 +112,8 @@ export const sessionRoutes: MockRoute[] = [
       const invitation = db.invitations.find(
         (entry) => entry.id === db.invitationTokens[request.params['token'] ?? ''],
       );
-      if (!invitation)
-        return fail(404, 'not_found', 'This invitation has expired or was already used.');
+      if (!invitation) return fail(404, 'not_found', INVALID_INVITATION);
+      if (isExpired(invitation)) return fail(404, 'not_found', EXPIRED_INVITATION);
       return ok({
         email: invitation.email,
         workspaceName: String(db.settings['workspace.name'] ?? 'Bemmoly'),
@@ -124,8 +131,8 @@ export const sessionRoutes: MockRoute[] = [
     handle: (request, db) => {
       const token = request.params['token'] ?? '';
       const invitation = db.invitations.find((entry) => entry.id === db.invitationTokens[token]);
-      if (!invitation)
-        return fail(404, 'not_found', 'This invitation has expired or was already used.');
+      if (!invitation) return fail(404, 'not_found', INVALID_INVITATION);
+      if (isExpired(invitation)) return fail(404, 'not_found', EXPIRED_INVITATION);
       const body = bodyOf<AcceptInvitationInput>(request);
       let user = db.users.find((entry) => entry.email === invitation.email);
       if (!user) {

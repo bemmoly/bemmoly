@@ -117,6 +117,7 @@ export function UsersPage() {
           canManage={users.canManage}
           teamsOf={users.teamsOf}
           modulesOf={users.modulesOf}
+          expiredAt={users.expiredAt}
           onRoleChange={(user, roleId) =>
             users.isInvitation(user)
               ? actions.resend.mutate({ user, roleId })

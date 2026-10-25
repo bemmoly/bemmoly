@@ -145,6 +145,28 @@ describe('API tokens, invitations and password reset against a real database', (
     expect(pending.map((item: { email: string }) => item.email)).toEqual(['lena@acmelabs.dev']);
   });
 
+  it('says an invitation has expired, and keeps listing it for the admin', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const { app, events } = harness;
+    const { cookie } = await createFirstAdmin(app);
+    await call(app, 'POST', '/invitations', { cookie, body: { emails: ['sam@acmelabs.dev'] } });
+    const token = linkToken((events[0]?.payload as Record<string, string>)['acceptUrl'] ?? '');
+    await harness.sql`update invitations set expires_at = now() - interval '1 day'`;
+
+    const preview = await call(app, 'GET', `/auth/invitations/${token}`);
+    expect(preview.statusCode).toBe(404);
+    expect(preview.json().message).toBe('This invitation has expired.');
+    const accept = await call(app, 'POST', `/auth/invitations/${token}/accept`, {
+      body: { name: 'Sam R.', password: 'twelve chars ok' },
+    });
+    expect(accept.json().message).toBe('This invitation has expired.');
+    const unknown = await call(app, 'GET', `/auth/invitations/${'x'.repeat(43)}`);
+    expect(unknown.json().message).toBe('This invitation is invalid or was already used.');
+
+    const pending = (await call(app, 'GET', '/invitations', { cookie })).json().items;
+    expect(pending.map((item: { email: string }) => item.email)).toEqual(['sam@acmelabs.dev']);
+  });
+
   it('lets only org admins invite another org admin', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const { app } = harness;
