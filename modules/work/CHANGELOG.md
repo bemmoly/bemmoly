@@ -1,5 +1,16 @@
 # @bemmoly/module-work
 
+## 1.6.2
+
+### Patch Changes
+
+- @bemmoly/api-client@1.6.2
+  - @bemmoly/core@1.6.2
+  - @bemmoly/core-web@1.6.2
+  - @bemmoly/editor@1.6.2
+  - @bemmoly/shared@1.6.2
+  - @bemmoly/ui@1.6.2
+
 ## 1.6.1
 
 ### Patch Changes

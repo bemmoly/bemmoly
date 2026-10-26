@@ -1,5 +1,15 @@
 # @bemmoly/pipelines-web
 
+## 1.6.2
+
+### Patch Changes
+
+- @bemmoly/module-pipelines@1.6.2
+  - @bemmoly/api-client@1.6.2
+  - @bemmoly/core-web@1.6.2
+  - @bemmoly/shared@1.6.2
+  - @bemmoly/ui@1.6.2
+
 ## 1.6.1
 
 ### Patch Changes

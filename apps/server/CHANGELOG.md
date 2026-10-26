@@ -1,5 +1,15 @@
 # @bemmoly/server
 
+## 1.6.2
+
+### Patch Changes
+
+- @bemmoly/module-docs@1.6.2
+  - @bemmoly/module-pipelines@1.6.2
+  - @bemmoly/module-work@1.6.2
+  - @bemmoly/core@1.6.2
+  - @bemmoly/shared@1.6.2
+
 ## 1.6.1
 
 ### Patch Changes
