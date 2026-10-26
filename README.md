@@ -12,7 +12,8 @@
   <a href="https://bemmoly.com">Website</a> ·
   <a href="https://bemmoly.com/self-hosting#install">Install guide</a> ·
   <a href="https://bemmoly.com/changelog">Changelog</a> ·
-  <a href="https://github.com/bemmoly/bemmoly/discussions">Discussions</a>
+  <a href="https://github.com/bemmoly/bemmoly/discussions">Discussions</a> ·
+  <a href="https://discord.gg/qT7zsDeRwz">Discord</a>
 </p>
 
 <p align="center">
@@ -123,7 +124,7 @@ Open http://localhost:5173. A devcontainer (and Codespaces) has all of it ready.
 
 - Questions and ideas: [Discussions](https://github.com/bemmoly/bemmoly/discussions); bugs:
   [issues](https://github.com/bemmoly/bemmoly/issues/new/choose). [SUPPORT.md](SUPPORT.md)
-  says what goes where.
+  says what goes where. Chat: [Discord](https://discord.gg/qT7zsDeRwz).
 - Security problems: privately, through
   [GitHub's private vulnerability reporting](https://github.com/bemmoly/bemmoly/security/advisories/new),
   as [SECURITY.md](SECURITY.md) describes. Please do not open a public issue.

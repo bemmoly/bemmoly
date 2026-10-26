@@ -9,6 +9,9 @@ contact_links:
   - name: Share an idea
     url: https://github.com/bemmoly/bemmoly/discussions/categories/ideas
     about: An idea that is not yet a concrete change.
+  - name: Chat on Discord
+    url: https://discord.gg/qT7zsDeRwz
+    about: Talk with the maintainers and other people running Bemmoly.
   - name: Try the live demo
     url: https://bemmoly.com/demo
     about: The app in your browser on sample data, no install and no sign-up.

@@ -13,6 +13,7 @@ contract; help comes from the maintainers and the community on GitHub, as time a
 | Ask for a concrete change                      | [A feature request](https://github.com/bemmoly/bemmoly/issues/new?template=feature.yml)                |
 | Report a security problem                      | Privately, as [SECURITY.md](SECURITY.md) describes; never in public                                    |
 | Show what you built or how you run it          | [Discussions › Show and tell](https://github.com/bemmoly/bemmoly/discussions/categories/show-and-tell) |
+| Chat with the maintainers and other users      | [Discord](https://discord.gg/qT7zsDeRwz)                                                               |
 
 Search [open and closed issues](https://github.com/bemmoly/bemmoly/issues?q=is%3Aissue) and
 [Discussions](https://github.com/bemmoly/bemmoly/discussions) first; someone may have hit it

@@ -2,7 +2,13 @@
 import Section from '../components/site/Section.astro';
 import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
-import { CODE_OF_CONDUCT_URL, CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../lib/links.ts';
+import {
+  CODE_OF_CONDUCT_URL,
+  CONTRIBUTING_URL,
+  DISCORD_URL,
+  ISSUES_URL,
+  REPO_URL,
+} from '../lib/links.ts';
 ---
 
 <Page
@@ -14,6 +20,13 @@ import { CODE_OF_CONDUCT_URL, CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../
       The code, the plans and the design live in <a href={REPO_URL}>github.com/bemmoly/bemmoly</a>.
       Report bugs and ask for features in <a href={ISSUES_URL}>issues</a>. Security problems go
       privately, as described on the <a href="/security">security page</a>.
+    </p>
+  </Section>
+  <Section title="Discord" id="discord">
+    <p>
+      For chat with the people building Bemmoly and running it, join the
+      <a href={DISCORD_URL}>Bemmoly Discord</a>. Bugs and feature requests still belong in GitHub
+      issues, so they are not lost in chat.
     </p>
   </Section>
   <Section title="Contributing" id="contributing">

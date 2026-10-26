@@ -11,6 +11,8 @@ export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
 export const CODE_OF_CONDUCT_URL = `${REPO_URL}/blob/main/CODE_OF_CONDUCT.md`;
 export const ISSUES_URL = `${REPO_URL}/issues`;
+/** The community Discord server's invite. */
+export const DISCORD_URL = 'https://discord.gg/qT7zsDeRwz';
 export const TECH_DESIGN_URL = `${REPO_URL}/blob/main/docs/tech-design.html`;
 export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 export const COMPOSE_URL = `${REPO_URL}/tree/main/deploy/compose`;
@@ -48,7 +50,7 @@ export interface FooterColumn {
   links: readonly NavLink[];
 }
 
-/** The footer's columns. Discord joins Open source once its invite exists. */
+/** The footer's columns. */
 export const FOOTER_COLUMNS: readonly FooterColumn[] = [
   {
     title: 'Product',
@@ -79,6 +81,7 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
       { label: 'Contributing', href: CONTRIBUTING_URL },
       { label: 'Code of conduct', href: CODE_OF_CONDUCT_URL },
       { label: 'Community', href: '/community' },
+      { label: 'Discord', href: DISCORD_URL },
     ],
   },
 ];
