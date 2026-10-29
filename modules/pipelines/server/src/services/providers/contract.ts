@@ -179,6 +179,27 @@ export interface OrgPart {
   ): Promise<{ externalId: string }>;
   /** Problems (quota, billing links) that stop `count` new accounts; empty when fine. */
   checkQuota(connection: ConnectionRecord, count: number): Promise<string[]>;
+  /**
+   * How many accounts the billing account pays for now, and the limit to compare against.
+   * Clouds that publish no limit answer their usual default with `recorded` false.
+   */
+  billing?(connection: ConnectionRecord): Promise<BillingHeadroom>;
+}
+
+export interface BillingHeadroom {
+  account: string;
+  linked: number;
+  limit: number;
+  /** True when an admin recorded the limit on the connection. */
+  recorded: boolean;
+}
+
+/**
+ * Thrown by a provider when going on cannot help, such as a billing account out of projects:
+ * the apply stops there, says `message`, and a retry starts where it stopped.
+ */
+export class ApplyStopped extends Error {
+  override readonly name = 'ApplyStopped';
 }
 
 /** One neutral resource of the landing zone as declared, before any provider maps it. */

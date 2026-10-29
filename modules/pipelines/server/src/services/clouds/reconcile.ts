@@ -1,7 +1,12 @@
 import type { SqlClient } from '@bemmoly/core';
 import { ProviderError, ValidationError } from '@bemmoly/shared';
 import type { CloudResourceKind, Layout } from '../../../../shared/clouds.ts';
-import type { CloudProvider, DesiredResource, LandingZonePart } from '../providers/contract.ts';
+import {
+  ApplyStopped,
+  type CloudProvider,
+  type DesiredResource,
+  type LandingZonePart,
+} from '../providers/contract.ts';
 import type { ProviderRegistry } from '../providers/registry.ts';
 import { resourceHash, type DesiredAccount } from './layout.ts';
 import { inDependencyOrder, keyOf } from './order.ts';
@@ -20,6 +25,7 @@ import {
   recordBoundary,
   requireConnection,
   setPlanStatus,
+  setRegistry,
   toRecord,
 } from './store.ts';
 
@@ -27,7 +33,9 @@ import {
  * The read, diff, apply, verify loop (architecture §14). Resources go in dependency order;
  * one whose recorded hash matches and is ready is skipped, so a retried job only redoes what
  * failed. Something already matching in the cloud is adopted without an apply. A failure
- * stops only what depends on it, and the job fails at the end so the queue retries it.
+ * stops only what depends on it, and the job fails at the end so the queue retries it. A
+ * provider that says going on cannot help (ApplyStopped: the billing account is full) stops
+ * the whole apply there; what was not reached waits, and Retry starts from it.
  */
 
 export interface ReconcileDeps {
@@ -84,17 +92,19 @@ export async function applyPlan(deps: ReconcileDeps, planId: string): Promise<Ap
 
   const outcome: ApplyOutcome = { applied: 0, skipped: 0, failed: [] };
   const unfinished = new Set<string>();
+  let stopped: string | null = null;
   for (const resource of inDependencyOrder(stored.resources)) {
     const key = keyOf(resource);
     const accountId = accountIds.get(resource.account);
     if (!accountId) throw new Error(`${key} names an account the plan does not declare`);
     const recorded = await upsertResource(sql, accountId, resource);
     const waitingOn = resource.dependsOn.find((dependency) => unfinished.has(dependency));
-    if (waitingOn) {
+    if (stopped || waitingOn) {
       unfinished.add(key);
+      if (recorded.status === 'ready' && recorded.specHash === resourceHash(resource)) continue;
       await markResource(sql, recorded.id, {
         status: 'pending',
-        error: `Waiting for ${waitingOn}`,
+        error: stopped ? `Stopped: ${stopped}` : `Waiting for ${waitingOn}`,
       });
       continue;
     }
@@ -116,21 +126,41 @@ export async function applyPlan(deps: ReconcileDeps, planId: string): Promise<Ap
         const account = stored.accounts.find((entry) => entry.externalId === resource.account);
         if (account) await mapEnvironment(sql, stored.layout, account, accountId);
       }
+      await nameRegistry(sql, row, resource, observed);
       outcome.applied += 1;
     } catch (error) {
       unfinished.add(key);
       outcome.failed.push(key);
+      if (error instanceof ApplyStopped) stopped = error.message;
       await markResource(sql, recorded.id, { status: 'failed', error: message(error) });
     }
   }
   await rollUpAccounts(sql, row.id);
   if (outcome.failed.length > 0) {
-    const summary = `${outcome.failed.length} resources failed, first ${outcome.failed[0]}`;
+    const summary =
+      stopped ?? `${outcome.failed.length} resources failed, first ${outcome.failed[0]}`;
     await setPlanStatus(sql, plan.id, 'failed', summary);
     throw new ProviderError(summary, { details: { failed: outcome.failed } });
   }
   await setPlanStatus(sql, plan.id, 'applied');
   return outcome;
+}
+
+/**
+ * Once the shared registry exists, runners push there: the connection names it unless a
+ * person already chose a registry.
+ */
+async function nameRegistry(
+  sql: SqlClient,
+  row: { id: string; config: Record<string, unknown> },
+  resource: DesiredResource,
+  observed: Record<string, unknown>,
+): Promise<void> {
+  const location = observed['location'];
+  if (resource.kind !== 'registry_access' || resource.spec['access'] !== 'push') return;
+  if (typeof location !== 'string' || row.config['registry']) return;
+  await setRegistry(sql, row.id, location);
+  row.config = { ...row.config, registry: location };
 }
 
 export interface DriftOutcome {

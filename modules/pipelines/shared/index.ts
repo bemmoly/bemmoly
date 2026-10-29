@@ -24,6 +24,7 @@ export * from './access.ts';
 export * from './capacity.ts';
 export * from './insights.ts';
 export * from './clouds.ts';
+export * from './landing-zones.ts';
 export * from './cloud-accounts.ts';
 export * from './environment-writes.ts';
 export * from './streams.ts';
