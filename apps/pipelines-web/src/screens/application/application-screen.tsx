@@ -21,6 +21,7 @@ import { RecentRuns } from './recent-runs.tsx';
 import { VariablesTab } from './variables/variables-tab.tsx';
 import { RuntimeCard } from './runtime-card.tsx';
 import { FrontDoorCard } from './front-door-card.tsx';
+import { ExportButton } from './export-button.tsx';
 
 type Tab = 'overview' | 'runs' | 'variables';
 
@@ -149,6 +150,7 @@ export default function ApplicationScreen() {
       }
       actions={
         <>
+          <ExportButton application={key} ready={Boolean(app)} />
           <Button variant="ghost" onClick={() => setDialog('run')} disabled={!app}>
             <Icon name="play" size={14} />
             {t('pipelines.application.run')}
