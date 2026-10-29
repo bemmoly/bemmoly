@@ -138,3 +138,27 @@ such as a certificate waiting for DNS. Phone: each row stacks.
 **Choices recorded.** A panel under the environments rather than a column in their table: a
 front door has an address, a domain and problems of its own. The dialog says what each choice
 means for DNS and certificates beside the field.
+
+## Export
+
+**Primary job.** Take everything Pipelines made away as Terraform and Helm, and see what the
+bundle holds and leaves out before downloading it. One card per connection: its files, the
+values to fill in before a plan, and what was left out and why.
+
+| Action | Mouse | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Download the whole export | Download export, the area's primary button | Tab, Enter | Tap |
+| Download one connection | Download on its card | Tab, Enter | Tap |
+| Export one application | Export on the application's page | Tab, Enter | Tap |
+
+**States.** Loading: row skeletons. Empty: nothing exported yet, with what to do first. Error:
+Try again; a refusal names the platform admin rule. Download shows a toast with the file's
+name; a failure shows one amber line above the cards (on the application's page, a toast).
+Phone: each card stacks its files above what to fill in and what was left out.
+
+**URL state.** None.
+
+**Choices recorded.** The page previews the bundle and downloads with the browser, so a large
+zip never passes through page memory. Before you plan and Left out are neutral, not amber:
+neither stops a download. The application's Export asks for the preview first, so a refusal
+or nothing to export reads as a sentence instead of a failed browser download.
