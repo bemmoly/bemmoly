@@ -148,6 +148,47 @@ const SHIPPED: Shipped[] = [
     },
     enabledMinutesAgo: 60 * 24 * 2,
   },
+  {
+    admin: {
+      id: 'people',
+      name: 'People',
+      version: '0.1.0',
+      pendingChangesets: 3,
+      dependsOn: [],
+      defaultAccess: 'everyone',
+      restartRequired: false,
+    },
+    manifest: {
+      id: 'people',
+      name: 'People',
+      version: '0.1.0',
+      navigation: [
+        { id: 'people.home', label: 'People', path: '/people', placement: 'top', icon: 'people' },
+        {
+          id: 'people.request-time-off',
+          label: 'Time off',
+          path: '/people/time-off/new',
+          placement: 'create',
+          icon: 'calendar',
+        },
+      ],
+      icon: 'people',
+      color: 'brand-3',
+      order: 30,
+      sidebar: {
+        path: '/people',
+        links: [
+          { id: 'people.directory', label: 'Directory', path: '/people', icon: 'list' },
+          { id: 'people.org', label: 'Org chart', path: '/people/org', icon: 'layers' },
+          { id: 'people.time-off', label: 'Time off', path: '/people/time-off', icon: 'calendar' },
+          { id: 'people.journeys', label: 'Journeys', path: '/people/journeys', icon: 'checklist' },
+        ],
+        primary: [],
+      },
+      settings: { path: '/settings/people', requires: 'people.settings.manage' },
+    },
+    enabledMinutesAgo: 60 * 24,
+  },
 ];
 
 /** The manifest a module serves once enabled, or null when this install does not ship it. */
@@ -191,6 +232,14 @@ export function seedGrants(): ModuleGrant[] {
       subjectId: null,
       grantedBy: USER_IDS.rohan,
       createdAt: ago(60 * 24 * 2),
+    },
+    {
+      id: uid(63),
+      moduleId: 'people',
+      subjectKind: 'everyone',
+      subjectId: null,
+      grantedBy: USER_IDS.rohan,
+      createdAt: ago(60 * 24),
     },
   ];
 }

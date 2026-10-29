@@ -133,6 +133,36 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
     ],
   },
   {
+    group: 'People',
+    moduleId: 'people',
+    rows: [
+      [
+        'people.settings.manage',
+        'Manage People settings',
+        'Levels, leave policies, journey templates',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.journeys.manage',
+        'Run journeys',
+        'Start onboarding and offboarding, hand tasks on',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.leave.manage',
+        'Manage time off',
+        'See everyone’s time off and balances',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.profiles.edit',
+        'Edit profiles',
+        'Company fields on anyone’s profile',
+        [1, 0, 0, 0, 0],
+      ],
+    ],
+  },
+  {
     group: 'AI',
     moduleId: null,
     rows: [

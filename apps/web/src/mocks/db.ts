@@ -23,6 +23,7 @@ import type {
 } from '@bemmoly/shared';
 import type { MockSso } from './routes/sso.ts';
 import type { MockCodeHosts } from './seed/code-hosts.ts';
+import type { MockPeople } from './seed/people-hr.ts';
 import type { MockUpdateJob } from './routes/update-job.ts';
 import { seedAiOff, seedAiOn, type MockAi } from './seed/ai.ts';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
@@ -91,6 +92,8 @@ export interface MockDb {
   oauthGrants?: OAuthGrant[];
   /** Settings › Integrations › Code hosts and Work's code links; created on first use. */
   codeHosts?: MockCodeHosts;
+  /** The person record, org data and People's time off and journeys; created on first use. */
+  peopleHr?: MockPeople;
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
   /** Custom themes; ownerId null is a workspace theme (ADR 0021). */
