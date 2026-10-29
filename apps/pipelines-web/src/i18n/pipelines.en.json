@@ -393,7 +393,6 @@
   "pipelines.forYou.onCallUntil": "You, until {time}",
   "pipelines.forYou.open": "Open",
   "pipelines.forYou.prodDeploys": "{count, plural, one {deploy} other {deploys}} to Prod",
-  "pipelines.forYou.remind": "Remind approvers",
   "pipelines.forYou.rerunMine": "Re-run what failed in {title}",
   "pipelines.forYou.review": "Review",
   "pipelines.forYou.reviewFirst": "Review {title}",
