@@ -21,6 +21,10 @@ export interface AccountRow {
   name: string;
   purpose: string;
   status: string;
+  origin: string;
+  config: Record<string, unknown>;
+  problems: string[];
+  last_checked_at: Date | null;
   environment_class: string | null;
   domain_id: string | null;
   domain_key: string | null;

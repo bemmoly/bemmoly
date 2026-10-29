@@ -43,13 +43,32 @@ export async function requireConnection(sql: SqlClient, id: string): Promise<Con
   return row;
 }
 
+/** How a sign-in choice is stored: the credential kinds the Google Cloud clients read. */
+function credentialsOf(body: Extract<ConnectCloud, { provider: 'gcp' }>) {
+  switch (body.signIn) {
+    case 'vm':
+      return { kind: 'metadata' };
+    case 'application_default':
+      return { kind: 'application_default' };
+    case 'workload_identity_file':
+      return { kind: 'external_account', config: body.credentialFile ?? {} };
+  }
+}
+
 /** Config is everything the body says except its name and layout; never a secret. */
+export function configOf(body: ConnectCloud): Record<string, unknown> {
+  const config: Record<string, unknown> = { ...body };
+  for (const key of ['provider', 'name', 'layout', 'signIn', 'credentialFile']) delete config[key];
+  return body.provider === 'gcp' ? { ...config, credentials: credentialsOf(body) } : config;
+}
+
 export async function insertConnection(
   sql: SqlClient,
   body: ConnectCloud,
   createdBy: string | null,
 ): Promise<ConnectionRow> {
-  const { provider, name, layout, ...config } = body;
+  const { provider, name, layout } = body;
+  const config = configOf(body);
   const [row] = await sql<ConnectionRow[]>`
     insert into cloud_connections (provider, name, layout, config, created_by)
     values (${provider}, ${name}, ${layout}, ${JSON.stringify(config)}::jsonb, ${createdBy})
@@ -69,6 +88,23 @@ export async function recordCheck(
       principal = coalesce(${check.principal}, principal),
       last_error = ${check.ok ? null : check.problems.join(' ')},
       last_checked_at = now(), updated_at = now()
+    where id = ${id}
+    returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
+  if (!row) throw new NotFoundError('No cloud connection has that id');
+  return row;
+}
+
+/** Sets or clears where runners push images, keeping the rest of the config. */
+export async function setRegistry(
+  sql: SqlClient,
+  id: string,
+  registry: string | null,
+): Promise<ConnectionRow> {
+  const [row] = await sql<ConnectionRow[]>`
+    update cloud_connections
+    set config = case when ${registry}::text is null then config - 'registry'
+        else config || jsonb_build_object('registry', ${registry}::text) end,
+      updated_at = now()
     where id = ${id}
     returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
   if (!row) throw new NotFoundError('No cloud connection has that id');

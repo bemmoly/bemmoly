@@ -40,8 +40,11 @@ export interface ConnectionRecord {
 export interface DeployTarget {
   connection: ConnectionRecord;
   environment: { id: string; key: string; class: EnvironmentClass; region: string | null };
-  /** The project, account or namespace; null for providers that have none (local). */
-  account: { externalId: string; name: string } | null;
+  /**
+   * The project, account or namespace; null for providers that have none (local). Its config
+   * says who to act as there, for projects attached as they already were.
+   */
+  account: { externalId: string; name: string; config?: Readonly<Record<string, unknown>> } | null;
   application: { id: string; key: string; runtime: Runtime };
 }
 
@@ -119,8 +122,21 @@ export interface ConnectionCheck {
   problems: string[];
 }
 
+/** What attaching a project found: its name, and what to grant before deploys can work. */
+export interface AccountCheck {
+  ok: boolean;
+  /** The account's own name in the cloud; null when it could not be read. */
+  name: string | null;
+  problems: string[];
+}
+
 export interface ConnectionPart {
   verify(connection: ConnectionRecord): Promise<ConnectionCheck>;
+  /** Checks an account that already exists before Pipelines deploys into it. */
+  verifyAccount?(
+    connection: ConnectionRecord,
+    account: { externalId: string; config: Readonly<Record<string, unknown>> },
+  ): Promise<AccountCheck>;
 }
 
 /** Boundaries and accounts: a folder and projects, an organizational unit and accounts. */

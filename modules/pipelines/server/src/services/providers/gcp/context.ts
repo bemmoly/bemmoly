@@ -20,8 +20,11 @@ import type { ConnectionRecord, DeployTarget } from '../contract.ts';
  */
 
 export const gcpConnectionConfigSchema = z.object({
-  organizationId: z.string().min(1),
-  billingAccountId: z.string().min(1),
+  /** Attached connections deploy into projects that exist and create nothing. */
+  mode: z.enum(['managed', 'attached']).default('managed'),
+  /** Empty on attached connections, which never create folders or projects. */
+  organizationId: z.string().default(''),
+  billingAccountId: z.string().default(''),
   folderName: z.string().min(1).default('Bemmoly'),
   /** Used where an environment names no region. */
   region: z.string().min(1).default('us-central1'),
@@ -47,18 +50,41 @@ export interface GcpProviderOptions {
   subjectToken?: () => Promise<string>;
 }
 
+/** Who Pipelines acts as inside one attached project, from that account's config. */
+export const accountConfigSchema = z.object({
+  deployerServiceAccount: z.string().min(1).nullable().default(null),
+  runtimeServiceAccount: z.string().min(1).nullable().default(null),
+});
+
+export type GcpAccountConfig = z.infer<typeof accountConfigSchema>;
+
+export const accountConfigOf = (config: unknown): GcpAccountConfig =>
+  accountConfigSchema
+    .catch({ deployerServiceAccount: null, runtimeServiceAccount: null })
+    .parse(config ?? {});
+
 export interface GcpContext {
   config: GcpConnectionConfig;
   control: GcpClients;
   /** The control identity's email; null when federation has no service account behind it. */
   principal(): Promise<string | null>;
-  /** Clients acting as `deployer@<project>` for every deploy call in that project. */
-  deployer(projectId: string): GcpClients;
+  /**
+   * Clients for deploy calls in one project. A managed project's deployer is
+   * `deployer@<project>`; an attached one uses the deployer its account names, or the
+   * connection's own identity when it names none.
+   */
+  deployer(projectId: string, account?: GcpAccountConfig): GcpClients;
+  /** Who services run as there; null leaves Cloud Run's default. */
+  runtimeAccount(projectId: string, account?: GcpAccountConfig): string | null;
 }
 
 export function parseGcpConfig(connection: ConnectionRecord): GcpConnectionConfig {
   const parsed = gcpConnectionConfigSchema.safeParse(connection.config);
-  if (!parsed.success) {
+  const managedWithout =
+    parsed.success &&
+    parsed.data.mode === 'managed' &&
+    (!parsed.data.organizationId || !parsed.data.billingAccountId);
+  if (!parsed.success || managedWithout) {
     throw new ValidationError(
       `${connection.name} is missing its organization or billing account; reconnect it`,
     );
@@ -95,17 +121,24 @@ export function createGcpContexts(options: GcpProviderOptions) {
         });
         return principal;
       },
-      deployer(projectId) {
-        let clients = deployers.get(projectId);
+      deployer(projectId, account) {
+        const email =
+          account?.deployerServiceAccount ??
+          (config.mode === 'managed' ? serviceAccountEmail('deployer', projectId) : null);
+        if (!email) return control;
+        let clients = deployers.get(email);
         if (!clients) {
-          const email = serviceAccountEmail('deployer', projectId);
           clients = createGcpClients({
             tokens: impersonatedTokens(control.iamCredentials, email),
             ...clientOptions,
           });
-          deployers.set(projectId, clients);
+          deployers.set(email, clients);
         }
         return clients;
+      },
+      runtimeAccount(projectId, account) {
+        if (account?.runtimeServiceAccount) return account.runtimeServiceAccount;
+        return config.mode === 'managed' ? serviceAccountEmail('runtime', projectId) : null;
       },
     };
   }
@@ -134,5 +167,6 @@ export function placeOf(target: DeployTarget, config: GcpConnectionConfig) {
     projectId: target.account.externalId,
     region: target.environment.region ?? config.region,
     service: target.application.key,
+    account: accountConfigOf(target.account.config),
   };
 }

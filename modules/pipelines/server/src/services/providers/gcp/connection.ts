@@ -1,5 +1,6 @@
 import { GcpApiError } from '../../../clients/gcp/index.ts';
 import type { ConnectionCheck, ConnectionPart, ConnectionRecord } from '../contract.ts';
+import { createAttachCheck } from './attach.ts';
 import type { GcpContexts } from './context.ts';
 
 /*
@@ -83,10 +84,15 @@ export function createGcpConnection(contexts: GcpContexts): ConnectionPart {
           ok: false,
           principal: null,
           problems: [
-            'Bemmoly could not get a Google Cloud token. On Google Cloud, attach a service account to the VM; elsewhere, upload Bemmoly’s keys to a workload identity pool. ' +
+            'Bemmoly could not get a Google Cloud token. On Google Cloud, attach a service account to the VM; on a laptop, run gcloud auth application-default login; elsewhere, upload Bemmoly’s keys to a workload identity pool. ' +
               reasonOf(error),
           ],
         };
+      }
+      // An attached connection creates nothing, so folders and billing are not its concern;
+      // each project it deploys into is checked when it is attached.
+      if (contexts(connection).config.mode === 'attached') {
+        return { ok: true, principal, problems: [] };
       }
       const who = principal ?? 'The workload identity pool principal';
       const problems = [
@@ -95,5 +101,6 @@ export function createGcpConnection(contexts: GcpContexts): ConnectionPart {
       ];
       return { ok: problems.length === 0, principal, problems };
     },
+    verifyAccount: createAttachCheck(contexts),
   };
 }

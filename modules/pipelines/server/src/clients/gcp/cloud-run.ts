@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { GcpHttp } from './http.ts';
 import { operationSchema, waitForOperation, type PollOptions } from './operations.ts';
+import { policySchema, withBinding } from './policy.ts';
 
 /* Cloud Run Admin v2: services, their revisions and the traffic split between them. */
 
@@ -89,6 +90,19 @@ export function createCloudRunClient(http: GcpHttp, poll: PollOptions) {
         schema: operationSchema,
       });
       return finish(operation);
+    },
+
+    /** Lets anyone call the service; a no-op when it is public already. */
+    async allowPublicInvoker(name: string): Promise<void> {
+      const policy = await http.send({ url: `${BASE}/${name}:getIamPolicy`, schema: policySchema });
+      const changed = withBinding(policy, 'roles/run.invoker', 'allUsers');
+      if (!changed) return;
+      await http.send({
+        method: 'POST',
+        url: `${BASE}/${name}:setIamPolicy`,
+        body: { policy: changed },
+        schema: policySchema,
+      });
     },
 
     getRevision(name: string): Promise<RunRevision | null> {

@@ -61,6 +61,11 @@ async function blockersFor(
   recorded: ReadonlyMap<string, RecordedResource>,
 ): Promise<string[]> {
   if (!provider.landingZone) return [`${provider.name} landing zones are coming soon`];
+  if (row.config['mode'] === 'attached') {
+    return [
+      `${row.name} uses projects you already have, so it creates none. Attach projects to it instead, or connect Google Cloud again to let Pipelines create them`,
+    ];
+  }
   const blockers: string[] = [];
   if (row.status !== 'connected') {
     blockers.push(

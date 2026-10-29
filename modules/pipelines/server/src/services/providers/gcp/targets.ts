@@ -1,14 +1,15 @@
-import { ConflictError, ValidationError } from '@bemmoly/shared';
+import { ConflictError, ProviderError, ValidationError } from '@bemmoly/shared';
 import type { Health } from '../../../../../shared/common.ts';
 import {
+  GcpApiError,
   LATEST_TARGET,
   REVISION_TARGET,
   runServiceName,
-  serviceAccountEmail,
   type RunService,
 } from '../../../clients/gcp/index.ts';
 import type { RunTrafficTarget } from '../../../clients/gcp/cloud-run.ts';
 import type { DeployTarget, ReleaseArtifact, TargetsPart } from '../contract.ts';
+import { containerOf, deploySettingsOf } from './container.ts';
 import { placeOf, type GcpContexts } from './context.ts';
 
 /*
@@ -35,12 +36,18 @@ export function revisionIdOf(service: string, release: ReleaseArtifact): string 
 const tagOf = (release: ReleaseArtifact) =>
   `r-${slug(release.version, 12)}-${slug(release.commitSha, 7)}`;
 
-function imageOf(release: ReleaseArtifact): string {
-  const digest = release.imageDigests['linux/amd64'] ?? Object.values(release.imageDigests)[0];
-  if (!release.imageRepository || !digest) {
-    throw new ValidationError(`Release ${release.version} has no image to deploy`);
+/** An organization policy that limits who may be granted roles stops a public service. */
+async function makePublic(run: { allowPublicInvoker(name: string): Promise<void> }, name: string) {
+  try {
+    await run.allowPublicInvoker(name);
+  } catch (error) {
+    if (error instanceof GcpApiError && (error.status === 400 || error.status === 403)) {
+      throw new ProviderError(
+        `The service deployed, but it could not be made public: ${error.message}. Grant Cloud Run Admin to Pipelines, or remove public from the deploy settings and call it with an identity token`,
+      );
+    }
+    throw error;
   }
-  return `${release.imageRepository}@${digest}`;
 }
 
 /** The split as explicit revisions: "latest" would move to every new revision on its own. */
@@ -72,9 +79,10 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
   const open = (target: DeployTarget) => {
     const context = contexts(target.connection);
     const place = placeOf(target, context.config);
-    const run = context.deployer(place.projectId).run;
+    const run = context.deployer(place.projectId, place.account).run;
     const name = runServiceName(place.projectId, place.region, place.service);
-    return { place, run, name };
+    const runtime = context.runtimeAccount(place.projectId, place.account);
+    return { place, run, name, runtime };
   };
 
   async function service(
@@ -93,9 +101,8 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
     kinds: ['container-service'],
 
     async deploy(target, release) {
-      const { place, run, name } = open(target);
+      const { place, run, name, runtime } = open(target);
       const revision = revisionIdOf(place.service, release);
-      const image = imageOf(release);
       const existing = await run.getService(name);
       const tagged = { type: REVISION_TARGET, revision, tag: tagOf(release) };
       if (!existing) {
@@ -107,26 +114,28 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
           {
             template: {
               revision,
-              serviceAccount: serviceAccountEmail('runtime', place.projectId),
-              containers: [{ image }],
+              ...(runtime ? { serviceAccount: runtime } : {}),
+              containers: [containerOf(release)],
             },
             traffic: [{ ...tagged, percent: 100 }],
           },
         );
-        return { revision };
+      } else {
+        const containers = (existing.template['containers'] as
+          Array<Record<string, unknown>> | undefined) ?? [{}];
+        await run.updateService({
+          name,
+          etag: existing.etag,
+          template: {
+            ...existing.template,
+            revision,
+            ...(runtime ? { serviceAccount: runtime } : {}),
+            containers: [containerOf(release, containers[0]), ...containers.slice(1)],
+          },
+          traffic: [...pinned(existing), { ...tagged, percent: 0 }],
+        });
       }
-      const containers = (existing.template['containers'] as
-        Array<Record<string, unknown>> | undefined) ?? [{}];
-      await run.updateService({
-        name,
-        etag: existing.etag,
-        template: {
-          ...existing.template,
-          revision,
-          containers: [{ ...containers[0], image }, ...containers.slice(1)],
-        },
-        traffic: [...pinned(existing), { ...tagged, percent: 0 }],
-      });
+      if (deploySettingsOf(release).public) await makePublic(run, name);
       return { revision };
     },
 
