@@ -5,8 +5,9 @@ import { iso } from '../../utils/time.ts';
 import { poolConfigOf } from '../machines/index.ts';
 
 /**
- * Runner pools with how busy each is, how a Cloud Build pool starts its builds and the
- * machines it has up now: one query for the whole Capacity page, one more for the machines.
+ * Runner pools with how busy each is, how a Cloud Build or GKE Autopilot pool starts its
+ * machines and the machines it has up now: one query for the whole Capacity page, one more
+ * for the machines.
  */
 
 interface PoolRow {
@@ -53,6 +54,28 @@ function cloudBuildOf(row: PoolRow): RunnerPool['cloudBuild'] {
   };
 }
 
+function autopilotOf(row: PoolRow, machines: readonly PoolMachine[]): RunnerPool['autopilot'] {
+  const config = poolConfigOf(row.config);
+  const settings = config.autopilot;
+  if (row.hosting !== 'gke-autopilot' || !settings || !row.account_id) return null;
+  const pods = config.pods;
+  return {
+    account: {
+      id: row.account_id,
+      externalId: row.account_external_id ?? '',
+      name: row.account_name ?? '',
+    },
+    ...settings,
+    status: pods?.status ?? 'preparing',
+    statusDetail: pods?.detail ?? null,
+    runners: {
+      running: machines.filter((machine) => machine.state === 'running').length,
+      starting: machines.filter((machine) => machine.state === 'starting').length,
+      warm: pods?.ready ?? 0,
+    },
+  };
+}
+
 export function toPool(row: PoolRow, machines: readonly PoolMachine[] = []): RunnerPool {
   // A pool whose machines Pipelines starts is busy with every machine it has up.
   const busy = Math.max(row.busy, machines.length);
@@ -75,6 +98,7 @@ export function toPool(row: PoolRow, machines: readonly PoolMachine[] = []): Run
     cloudBuild: cloudBuildOf(row),
     machines: [...machines],
     lastError: row.last_error,
+    autopilot: autopilotOf(row, machines),
   };
 }
 
