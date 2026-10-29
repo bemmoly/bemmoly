@@ -44,10 +44,17 @@ export function useCloudAccounts(connection: string | null, creating = false) {
   });
 }
 
-/** The landing zone preview: what would be created for a layout. Nothing is written. */
-export function useLandingZonePlan(connection: string | null, body: LandingZonePlanBody) {
+/**
+ * The landing zone preview: what would be created for a layout. Nothing is written. A plan
+ * says what the last check found, so a new check (`checkedAt`) asks for a new plan.
+ */
+export function useLandingZonePlan(
+  connection: string | null,
+  body: LandingZonePlanBody,
+  checkedAt: string | null = null,
+) {
   return useQuery({
-    queryKey: platformKeys.plan(connection ?? '', body),
+    queryKey: [...platformKeys.plan(connection ?? '', body), checkedAt],
     queryFn: () => api.platform.plan(connection ?? '', body),
     enabled: Boolean(connection),
     placeholderData: keepPreviousData,
