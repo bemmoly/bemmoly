@@ -11,7 +11,7 @@ import { publishStreamEvent } from '../streams/publish.ts';
  * its runner hears "cancel" at its next heartbeat. Runs on every replica, every few seconds,
  * with SKIP LOCKED so replicas never fight over the same rows. Only jobs handed out through
  * the runner protocol (they hold a job token) are watched: anything else was never a
- * runner's to lose.
+ * runner's to lose. A requeued job lets go of the machine started for it, so it gets a new one.
  */
 
 export const MISSED_BEATS = 3;
@@ -36,8 +36,8 @@ async function requeue(tx: SqlExecutor, job: LostJob) {
   await tx`
     update pipeline_jobs set
       state = 'ready', attempt = attempt + 1, runner_id = null, token_hash = null,
-      token_expires_at = null, claimed_at = null, heartbeat_at = null, started_at = null,
-      ready_at = now(), updated_at = now(),
+      launch_id = null, token_expires_at = null, claimed_at = null, heartbeat_at = null,
+      started_at = null, ready_at = now(), updated_at = now(),
       failure_summary = ${`The runner stopped answering, so attempt ${job.attempt + 1} of ${job.max_attempts} started`}
     where id = ${job.id}`;
   await tx`
