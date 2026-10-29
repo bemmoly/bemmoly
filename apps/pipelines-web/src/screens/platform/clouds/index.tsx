@@ -1,20 +1,25 @@
 import { useT } from '@bemmoly/core-web';
 import { Button, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useConnections } from '../../../hooks/use-clouds.ts';
+import { useArrivalCheck, useConnections } from '../../../hooks/use-clouds.ts';
 import { useGo } from '../../../hooks/use-go.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { Area } from '../../../parts/area.tsx';
 import { LoadFailed } from '../../../parts/load-failed.tsx';
 import { RowsSkeleton } from '../../../parts/rows-skeleton.tsx';
 import { AccountsTable } from './accounts-table.tsx';
+import { AttachedCard } from './attached-card.tsx';
 import { ConnectionCard } from './connection-card.tsx';
 
-/** Platform › Clouds: the clouds Pipelines deploys to and the accounts it made in each. */
+/**
+ * Platform › Clouds: the clouds Pipelines deploys to and the accounts it made or was given in
+ * each. ?connection= names one just connected: it is checked once on arrival.
+ */
 export default function CloudsArea() {
   const t = useT(pipelinesText);
   const go = useGo();
   const connections = useConnections();
+  const arrival = useArrivalCheck();
   const connect = (
     <Button variant="primary" onClick={() => go({ to: '/platform/clouds/connect' })}>
       <Icon name="plus" size={14} />
@@ -43,12 +48,21 @@ export default function CloudsArea() {
           />
         </div>
       ) : (
-        items.map((connection) => (
-          <div key={connection.id} className="flex flex-col gap-3">
-            <ConnectionCard connection={connection} />
-            <AccountsTable connection={connection} />
-          </div>
-        ))
+        items.map((connection) =>
+          connection.mode === 'attached' ? (
+            <AttachedCard
+              key={connection.id}
+              connection={connection}
+              arrived={arrival.connectionId === connection.id}
+              checking={arrival.connectionId === connection.id && arrival.checking}
+            />
+          ) : (
+            <div key={connection.id} className="flex flex-col gap-3">
+              <ConnectionCard connection={connection} />
+              <AccountsTable connection={connection} />
+            </div>
+          ),
+        )
       )}
     </Area>
   );

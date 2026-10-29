@@ -7,7 +7,7 @@ import { useGo } from '../../../hooks/use-go.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { LAYOUT_LABEL } from './layout-words.ts';
 
-const GLYPH: Record<CloudConnection['status'], RunGlyphState> = {
+export const CONNECTION_GLYPH: Record<CloudConnection['status'], RunGlyphState> = {
   pending: 'running',
   connected: 'passed',
   failed: 'waiting',
@@ -15,6 +15,32 @@ const GLYPH: Record<CloudConnection['status'], RunGlyphState> = {
 };
 
 export const unitOf = (provider: string) => (provider === 'gcp' ? 'project' : 'other');
+
+/** The last check failed: one amber band across the card's top, with Reconnect. */
+export function FailedBand({
+  connection,
+  busy,
+  onReconnect,
+}: {
+  connection: CloudConnection;
+  busy: boolean;
+  onReconnect: () => void;
+}) {
+  const t = useT(pipelinesText);
+  return (
+    <div className="-mx-4 -mt-4 flex flex-wrap items-center gap-3 rounded-t-card bg-amber-50 px-4 py-2.5">
+      <p className="min-w-0 flex-1 text-12 text-amber-tx">
+        {t('pipelines.clouds.failedBand', {
+          name: connection.name,
+          error: connection.lastError ?? '',
+        })}
+      </p>
+      <Button size="xs" variant="secondary" loading={busy} onClick={onReconnect}>
+        {t('pipelines.clouds.reconnect')}
+      </Button>
+    </div>
+  );
+}
 
 /**
  * One connected cloud: who Pipelines acts as there, the boundary it works inside and its
@@ -29,28 +55,17 @@ export function ConnectionCard({ connection }: { connection: CloudConnection }) 
   return (
     <section className="flex flex-col gap-3 rounded-card border border-line bg-card p-4 shadow-e1">
       {connection.status === 'failed' && (
-        <div className="-mx-4 -mt-4 flex flex-wrap items-center gap-3 rounded-t-card bg-amber-50 px-4 py-2.5">
-          <p className="min-w-0 flex-1 text-12 text-amber-tx">
-            {t('pipelines.clouds.failedBand', {
-              name: connection.name,
-              error: connection.lastError ?? '',
-            })}
-          </p>
-          <Button
-            size="xs"
-            variant="secondary"
-            loading={check.isPending}
-            onClick={() => check.mutate(connection.id)}
-          >
-            {t('pipelines.clouds.reconnect')}
-          </Button>
-        </div>
+        <FailedBand
+          connection={connection}
+          busy={check.isPending}
+          onReconnect={() => check.mutate(connection.id)}
+        />
       )}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Icon name="cloud" size={18} className="text-tx-2" />
         <h2 className="text-16 font-semibold text-tx">{connection.name}</h2>
         <span className="flex items-center gap-1.5 text-12 text-tx-2">
-          <RunGlyph state={GLYPH[connection.status]} size={14} />
+          <RunGlyph state={CONNECTION_GLYPH[connection.status]} size={14} />
           {t(`pipelines.clouds.status.${connection.status}`)}
         </span>
         {connection.lastCheckedAt && (
