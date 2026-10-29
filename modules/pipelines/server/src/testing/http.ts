@@ -6,6 +6,7 @@ import {
   UnauthenticatedError,
   ValidationError,
 } from '@bemmoly/shared';
+import { createLoggerOptions } from '@bemmoly/core/config';
 import Fastify, { type FastifyInstance, type LightMyRequestResponse } from 'fastify';
 import { createPipelinesControllers } from '../controllers/index.ts';
 import { pipelinesRoutes } from '../routes/index.ts';
@@ -36,8 +37,21 @@ export interface PipelinesHttp {
   ): Promise<LightMyRequestResponse>;
 }
 
-export async function startPipelinesHttp(harness: PipelinesHarness): Promise<PipelinesHttp> {
-  const app = Fastify();
+export async function startPipelinesHttp(
+  harness: PipelinesHarness,
+  options: { logTo?: NodeJS.WritableStream } = {},
+): Promise<PipelinesHttp> {
+  // With a stream, the server's own logger options at debug: what a request would write.
+  const app = Fastify(
+    options.logTo
+      ? {
+          logger: {
+            ...createLoggerOptions({ LOG_LEVEL: 'debug', LOG_FORMAT: 'json' }),
+            stream: options.logTo,
+          },
+        }
+      : {},
+  );
   app.setErrorHandler((error, _request, reply) => {
     const status = isBemmolyError(error)
       ? (STATUS.find(([type]) => error instanceof type)?.[1] ?? 500)
