@@ -29,9 +29,12 @@ import { NEG_ANNOTATION } from './helm-templates.ts';
  */
 
 const TESTDATA = fileURLToPath(new URL('./testdata', import.meta.url));
+/** A tool's first run on a fresh CI machine can take far longer than a test's default 5 s. */
+const TOOL_MS = 120_000;
+
 const has = (tool: string) => spawnSync('sh', ['-c', `command -v ${tool}`]).status === 0;
 const run = (tool: string, args: string[], cwd = TESTDATA) => {
-  const result = spawnSync(tool, args, { cwd, encoding: 'utf8', timeout: 120_000 });
+  const result = spawnSync(tool, args, { cwd, encoding: 'utf8', timeout: TOOL_MS });
   return { ok: result.status === 0, output: `${result.stdout}${result.stderr}` };
 };
 
@@ -42,7 +45,7 @@ function asHelm(manifest: KubernetesManifest): Record<string, unknown> {
   return { apiVersion: KINDS[kind].apiVersion, ...(JSON.parse(text) as object) };
 }
 
-describe.runIf(has('terraform'))('the Terraform, with terraform', () => {
+describe.runIf(has('terraform'))('the Terraform, with terraform', { timeout: TOOL_MS }, () => {
   it('is formatted and valid', () => {
     const work = mkdtempSync(join(tmpdir(), 'bemmoly-export-'));
     try {
@@ -58,7 +61,7 @@ describe.runIf(has('terraform'))('the Terraform, with terraform', () => {
   }, 180_000);
 });
 
-describe.runIf(has('helm'))('the Helm chart, with helm', () => {
+describe.runIf(has('helm'))('the Helm chart, with helm', { timeout: TOOL_MS }, () => {
   const chart = join('helm', 'checkout');
 
   it('lints clean', () => {
