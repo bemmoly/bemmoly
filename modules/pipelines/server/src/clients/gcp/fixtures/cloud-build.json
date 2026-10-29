@@ -1,0 +1,99 @@
+{
+  "recorded": "Hand-recorded from the Cloud Build v1 REST reference (builds.create, builds.get, builds.cancel; shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds",
+      "body": {
+        "substitutions": { "_BEMMOLY_LAUNCH_TOKEN": "bpl_recorded-launch-token-for-tests" },
+        "serviceAccount": "projects/nila-ci/serviceAccounts/builder@nila-ci.iam.gserviceaccount.com",
+        "timeout": "4500s",
+        "options": { "logging": "CLOUD_LOGGING_ONLY", "machineType": "E2_HIGHCPU_8" }
+      },
+      "response": {
+        "name": "projects/829301/locations/europe-west1/operations/b2NvbXBsZXRlLWJ1aWxk",
+        "metadata": {
+          "@type": "type.googleapis.com/google.devtools.cloudbuild.v1.BuildOperationMetadata",
+          "build": {
+            "id": "6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10",
+            "status": "QUEUED",
+            "projectId": "nila-ci",
+            "createTime": "2026-10-28T09:12:03.412Z",
+            "logUrl": "https://console.cloud.google.com/cloud-build/builds;region=europe-west1/6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10?project=829301"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds/6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10",
+      "response": {
+        "id": "6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10",
+        "status": "WORKING",
+        "projectId": "nila-ci",
+        "startTime": "2026-10-28T09:12:19.880Z",
+        "logUrl": "https://console.cloud.google.com/cloud-build/builds;region=europe-west1/6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10?project=829301"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds/0b9e7d34-51aa-4c02-8f6e-a3c2d1e0f9b8",
+      "response": {
+        "id": "0b9e7d34-51aa-4c02-8f6e-a3c2d1e0f9b8",
+        "status": "FAILURE",
+        "statusDetail": "Build step failure: build step 0 failed: exit status 1",
+        "failureInfo": {
+          "type": "USER_BUILD_STEP",
+          "detail": "Build step failure: build step 0 \"europe-west1-docker.pkg.dev/nila-ci/bemmoly/runner:1.7.0\" failed: step exited with non-zero status: 1"
+        },
+        "projectId": "nila-ci"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds/1d2e3f40-0000-4000-8000-00000000dead",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Requested entity was not found.",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds/6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10:cancel",
+      "body": { "projectId": "nila-ci", "id": "6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10" },
+      "response": {
+        "id": "6c1f0b52-3e0d-4a7c-9d41-2f8a7e5b9c10",
+        "status": "CANCELLED",
+        "projectId": "nila-ci"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-ci/locations/europe-west1/builds/0b9e7d34-51aa-4c02-8f6e-a3c2d1e0f9b8:cancel",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": 400,
+          "message": "Build 0b9e7d34-51aa-4c02-8f6e-a3c2d1e0f9b8 is not in a cancellable state",
+          "status": "FAILED_PRECONDITION"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/nila-locked/locations/europe-west1/builds",
+      "status": 403,
+      "response": {
+        "error": {
+          "code": 403,
+          "message": "The caller does not have permission to act as service account builder@nila-locked.iam.gserviceaccount.com",
+          "status": "PERMISSION_DENIED"
+        }
+      }
+    }
+  ]
+}
