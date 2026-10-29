@@ -1,0 +1,3 @@
+# The gke-runners pool: install into bemmoly-runners-gke-runners on bemmoly-runners.
+pool: gke-runners
+serviceAccount: builder@acme-ci-7f3a.iam.gserviceaccount.com
