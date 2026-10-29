@@ -44,8 +44,9 @@ export function ValueCell({
           <Icon name="lock" size={12} />
           {t('pipelines.variables.writeOnly')}
         </span>
+        {/* On a phone the row's menu replaces it; the cell keeps room for the words. */}
         {canChange && !row.inherited && (
-          <Button size="xs" variant="ghost" onClick={onReplace}>
+          <Button size="xs" variant="ghost" className="max-sm:hidden" onClick={onReplace}>
             {t('pipelines.variables.replaceShort')}
           </Button>
         )}

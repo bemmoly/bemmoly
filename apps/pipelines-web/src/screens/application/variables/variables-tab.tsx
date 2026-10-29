@@ -91,7 +91,7 @@ export function VariablesTab({
           onChange={(event) => onEnvironment(event.value === EVERY ? null : event.value)}
           className="min-w-52"
         />
-        <p className="min-w-0 flex-1 text-12 text-tx-3">
+        <p className="order-last min-w-0 basis-full text-12 text-tx-3 sm:order-none sm:basis-0 sm:flex-1">
           {shown
             ? t('pipelines.variables.oneHint', { environment: shown.name })
             : t('pipelines.variables.everyHint')}
