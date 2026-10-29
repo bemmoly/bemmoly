@@ -16,6 +16,7 @@ import { historyRoutes } from './history.routes.ts';
 import { releasesRoutes } from './releases.routes.ts';
 import { shippingRoutes } from './shipping.routes.ts';
 import { streamsRoutes } from './streams.routes.ts';
+import { variablesRoutes } from './variables.routes.ts';
 
 export { runnerRoutes } from './runner.routes.ts';
 
@@ -41,5 +42,6 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(runsRoutes(controllers.runs));
     await app.register(jobsRoutes(controllers.jobs));
     await app.register(capacityRoutes(controllers.capacity));
+    await app.register(variablesRoutes(controllers.variables));
   };
 }

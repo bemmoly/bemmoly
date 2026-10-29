@@ -66,6 +66,8 @@ export const cloudConnectionSchema = z.object({
   region: z.string().nullable(),
   /** Where runners push images they build; null keeps images on the runner's machine. */
   registry: z.string().nullable(),
+  /** The attached project chosen to hold CI secrets and secrets for every environment. */
+  ciAccountId: idSchema.nullable(),
   status: connectionStatusSchema,
   /** "bemmoly-control@acme-bemmoly". */
   principal: z.string().nullable(),

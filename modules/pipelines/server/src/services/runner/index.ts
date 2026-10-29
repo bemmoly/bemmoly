@@ -38,7 +38,7 @@ import { claimedJobPayload } from './payload.ts';
 import { secretNames, secretsForRunner, type SecretResolver } from './secrets.ts';
 import { uploadArtifact } from './artifacts.ts';
 
-export { variableSecrets, type SecretResolver } from './secrets.ts';
+export { createVariableSecrets, type SecretResolver } from './secrets.ts';
 
 /*
  * The runner protocol's server side (architecture §6). Every call authenticates with a
