@@ -56,7 +56,7 @@ async function landingZone(sql: SqlClient, connectionId: string, leftOut: string
   }
   for (const [kind, accounts] of incomplete) {
     leftOut.push(
-      `${accounts.length === 1 ? `A ${kind}` : `${accounts.length} ${kind}`} in ${few(accounts)}: the recorded settings are incomplete, so there is nothing to declare.`,
+      `${accounts.length === 1 ? `A ${kind} resource` : `${accounts.length} ${kind} resources`} in ${few(accounts)}: the recorded settings are incomplete, so there is nothing to declare.`,
     );
   }
   if (unapplied > 0) {
