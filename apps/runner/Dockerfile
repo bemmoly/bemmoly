@@ -14,6 +14,11 @@
 # as root, because a build step cannot join the socket's group, keeps its data in /workspace and
 # lets step containers share its volumes, since a host path means nothing inside a build:
 #   docker build -f apps/runner/Dockerfile --target cloud-build -t <registry>/runner:<version> .
+#
+# The gke target is the runner for a pod on a GKE Autopilot pool, one job per pod. Autopilot
+# allows no Docker daemon, so Pipelines puts a container per step image beside the runner in
+# the pod, and they run steps through agent/step-agent.sh, which the pod copies from this image:
+#   docker build -f apps/runner/Dockerfile --target gke -t <registry>/runner-gke:<version> .
 
 ARG NODE_IMAGE=node:24-slim
 
@@ -86,6 +91,12 @@ FROM base AS cloud-build
 # names the runner by its full path.
 ENV BEMMOLY_RUNNER_DATA_DIR=/workspace/.bemmoly-runner \
     BEMMOLY_RUNNER_VOLUMES_FROM=self
+ENTRYPOINT ["tini", "--", "node", "/app/apps/runner/src/main.ts"]
+
+FROM base AS gke
+# Root, like the cloud-build target: step images that run as root share the workspace it checks
+# out. Pipelines sets the data folder on the shared volume, so steps see the job's workspace.
+ENV BEMMOLY_RUNNER_DATA_DIR=/bemmoly/work/runner
 ENTRYPOINT ["tini", "--", "node", "/app/apps/runner/src/main.ts"]
 
 FROM base AS runtime
