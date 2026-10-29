@@ -17,7 +17,8 @@
     "demo:runner": "node --env-file-if-exists=../../apps/server/.env scripts/runner-demo.ts",
     "demo:live": "node --env-file-if-exists=../../apps/server/.env scripts/demo-live.ts",
     "bench:dispatch": "node --env-file-if-exists=../../apps/server/.env scripts/dispatch-benchmark.ts",
-    "demo:local": "node --env-file-if-exists=../../apps/server/.env scripts/local-demo.ts"
+    "demo:local": "node --env-file-if-exists=../../apps/server/.env scripts/local-demo.ts",
+    "capture:gcp": "node scripts/capture-gcp-fixtures.ts"
   },
   "dependencies": {
     "@bemmoly/core": "workspace:*",
