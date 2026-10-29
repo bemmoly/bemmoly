@@ -1,0 +1,64 @@
+{{- if .Values.application }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+  annotations:
+    pipelines.bemmoly.dev/release: {{ .Values.release | quote }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      pipelines.bemmoly.dev/revision: {{ .Values.revision }}
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.serviceAccount }}
+      serviceAccountName: {{ .Values.serviceAccount }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.application }}
+          image: {{ .Values.image | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.secrets }}
+          volumeMounts:
+            - name: bemmoly-secrets
+              mountPath: /var/run/secrets/bemmoly
+              readOnly: true
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            requests:
+              {{- toYaml . | nindent 14 }}
+            limits:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+          {{- with .Values.healthcheck }}
+          readinessProbe:
+            httpGet:
+              path: {{ .path }}
+              port: {{ $.Values.port }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            periodSeconds: {{ max 10 .timeoutSeconds }}
+          {{- end }}
+      {{- if .Values.secrets }}
+      volumes:
+        - name: bemmoly-secrets
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.revision }}
+      {{- end }}
+{{- end }}
