@@ -40,9 +40,12 @@ export const FEATURE_APIS: Readonly<Record<Feature, readonly string[]>> = {
   network: ['compute.googleapis.com'],
 };
 
-/** Deploy roles only, scoped to the one project (architecture §15). */
+/**
+ * Deploy roles only, scoped to the one project (architecture §15). Cloud Run Admin rather than
+ * Developer: a service marked public needs its invoker policy set, which Developer cannot do.
+ */
 export const DEPLOYER_ROLES = [
-  'roles/run.developer',
+  'roles/run.admin',
   'roles/iam.serviceAccountUser',
   'roles/monitoring.viewer',
 ] as const;
