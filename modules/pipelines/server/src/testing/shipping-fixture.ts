@@ -11,6 +11,7 @@ import {
   createShippingService,
   type ShippingService,
 } from '../services/shipping/index.ts';
+import type { ShippingEngineDeps } from '../services/shipping/engine-deps.ts';
 import { createWebhookCaller } from '../services/shipping/gates/index.ts';
 import type { PipelinesHarness } from './harness.ts';
 
@@ -38,10 +39,13 @@ async function one(query: Promise<{ id: string }[]>): Promise<string> {
   return row.id;
 }
 
-/** `world` shares the simulated cloud with the harness's own services, for tests using both. */
+/**
+ * `world` shares the simulated cloud with the harness's own services, for tests using both;
+ * `variables` is what each deploy runs with.
+ */
 export async function seedShippingFixture(
   harness: PipelinesHarness,
-  options: { world?: FakeWorld } = {},
+  options: { world?: FakeWorld; variables?: ShippingEngineDeps['variables'] } = {},
 ): Promise<ShippingFixture> {
   const { sql, users } = harness;
   const ravi = await one(sql`insert into users (email, name, role_id)
@@ -101,6 +105,7 @@ export async function seedShippingFixture(
     webhook: createWebhookCaller(async () => null),
     now: () => clock.now,
     wake: async () => undefined,
+    ...(options.variables ? { variables: options.variables } : {}),
   });
   return {
     service,
