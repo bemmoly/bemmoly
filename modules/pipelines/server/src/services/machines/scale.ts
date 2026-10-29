@@ -9,7 +9,9 @@ import type { MachinesDeps } from './types.ts';
  * idle pool with no fewest goes to zero. The size is only sent when it changes.
  */
 
-export function fleetSize(pool: Pick<MachinePoolRow, 'busy' | 'queued' | 'min_runners' | 'max_runners'>) {
+export function fleetSize(
+  pool: Pick<MachinePoolRow, 'busy' | 'queued' | 'min_runners' | 'max_runners'>,
+) {
   return Math.min(pool.max_runners, Math.max(pool.min_runners, pool.busy + pool.queued));
 }
 

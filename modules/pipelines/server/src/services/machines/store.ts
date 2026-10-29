@@ -102,7 +102,11 @@ export async function setPoolError(sql: SqlExecutor, poolId: string, error: stri
     where id = ${poolId} and last_error is distinct from ${error}
     returning id`;
   if (changed.length > 0) {
-    await publishStreamEvent(sql, { topic: topicOf.capacity(), kind: 'capacity.updated', data: {} });
+    await publishStreamEvent(sql, {
+      topic: topicOf.capacity(),
+      kind: 'capacity.updated',
+      data: {},
+    });
   }
 }
 
