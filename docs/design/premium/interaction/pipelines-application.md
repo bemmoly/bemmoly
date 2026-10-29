@@ -71,3 +71,22 @@ move into Secret Manager and why. A note says values reach a service at its next
 phone, and one view answers "what does a deploy here get". A secret's value shows while it is
 typed, in a monospaced box, so a pasted key can be checked; it is never shown again. Deleting
 asks first, since a secret cannot be brought back from here; saving a plain value offers Undo.
+
+## Where it runs
+
+**Primary job.** See and switch the runtime the application's next deploy uses in each
+environment, without a commit.
+
+**Top three actions.** Choose a runtime for one environment (the line's select, by mouse, Tab
+and Enter, or tap); go back to the default (the select's first option, "Default: …"); read why
+a deploy would fail (the amber sentence under the line).
+
+**States.** Loading: one skeleton line. Error: the card's own Try again. Refused: the server's
+sentence under the card. Many environments: one line each, in path order. Phone: the card
+stacks with the others.
+
+**URL state.** None; the choice is stored in Pipelines.
+
+**Choices recorded.** A select per environment rather than a dialog, since the choice is one
+value and takes effect on the next deploy, not now. The default option names what it follows
+(application.yaml, then the environment), so nobody has to guess.
