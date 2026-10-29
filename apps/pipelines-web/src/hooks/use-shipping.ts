@@ -93,14 +93,6 @@ export function useCompare(query: CompareQuery | null) {
   });
 }
 
-export function useTrains() {
-  return useQuery({
-    queryKey: shippingKeys.trains(),
-    queryFn: () => api.shipping.trains(),
-    staleTime: 5 * 60_000,
-  });
-}
-
 export function useChanges(query: ChangesQuery) {
   return useQuery({
     queryKey: shippingKeys.changes(query),
