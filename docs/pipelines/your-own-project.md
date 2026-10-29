@@ -146,7 +146,7 @@ Steps run as containers in Docker. The build runs Docker on your laptop and push
 Docker credentials.
 
 Once a push reaches Dev in step 8, [Build machines](build-machines.md) moves this pool to Google
-Cloud Build, so jobs run with no laptop runner.
+Cloud Build or to GKE Autopilot, so jobs run with no laptop runner.
 
 ## 8. Push, and watch it reach Dev
 
