@@ -35,3 +35,4 @@ export * from './image-reference.ts';
 export * from './variables.ts';
 export * from './clusters.ts';
 export * from './runtimes.ts';
+export * from './machines.ts';

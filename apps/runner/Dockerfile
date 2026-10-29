@@ -9,6 +9,11 @@
 #   docker run -v /var/run/docker.sock:/var/run/docker.sock \
 #     -v /srv/bemmoly-runner:/srv/bemmoly-runner ghcr.io/bemmoly/runner:dev \
 #     --url https://bemmoly.example.com --pool-token <token> --data-dir /srv/bemmoly-runner
+#
+# The cloud-build target is the same runner for Google Cloud Build, one job per build. It runs
+# as root, because a build step cannot join the socket's group, keeps its data in /workspace and
+# lets step containers share its volumes, since a host path means nothing inside a build:
+#   docker build -f apps/runner/Dockerfile --target cloud-build -t <registry>/runner:<version> .
 
 ARG NODE_IMAGE=node:24-slim
 
@@ -57,7 +62,7 @@ RUN set -eu; \
     tar -xzf /tmp/docker.tgz -C /tmp docker/docker; \
     install -m 0755 /tmp/docker/docker /usr/local/bin/docker
 
-FROM ${NODE_IMAGE} AS runtime
+FROM ${NODE_IMAGE} AS base
 RUN apt-get update \
  && apt-get install --yes --no-install-recommends ca-certificates git tini \
  && rm -rf /var/lib/apt/lists/*
@@ -75,6 +80,15 @@ COPY --from=build --chown=node:node /src/node_modules ./node_modules
 COPY --from=build --chown=node:node /src/packages/shared ./packages/shared
 COPY --from=build --chown=node:node /src/modules/pipelines ./modules/pipelines
 COPY --from=build --chown=node:node /src/apps/runner ./apps/runner
+
+FROM base AS cloud-build
+# Cloud Build starts every step in /workspace, whatever the image's WORKDIR, so the entry point
+# names the runner by its full path.
+ENV BEMMOLY_RUNNER_DATA_DIR=/workspace/.bemmoly-runner \
+    BEMMOLY_RUNNER_VOLUMES_FROM=self
+ENTRYPOINT ["tini", "--", "node", "/app/apps/runner/src/main.ts"]
+
+FROM base AS runtime
 # The node user owns its home, where the registration and job folders live by default. Reaching
 # the Docker socket needs its group: run with --group-add <the socket's gid>.
 USER node

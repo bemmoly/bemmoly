@@ -7,6 +7,7 @@ import type {
   Provider,
   Runtime,
 } from '../../../../shared/common.ts';
+import type { RunnersPart } from './runners-contract.ts';
 
 /*
  * The provider model (architecture §14). Everything cloud-specific sits behind these
@@ -29,6 +30,8 @@ export const PROVIDER_PARTS = [
   'access',
   'cost',
 ] as const;
+
+export type { MachineLaunch, MachineRef, MachineStatus, RunnersPart } from './runners-contract.ts';
 
 export type ProviderPart = (typeof PROVIDER_PARTS)[number];
 export type PartAvailability = 'available' | 'coming_soon' | 'unsupported';
@@ -234,14 +237,6 @@ export interface SecretsPart {
     connection: ConnectionRecord,
     input: { account: string; name: string; version: string },
   ): Promise<string>;
-}
-
-export interface RunnersPart {
-  ensurePool(
-    connection: ConnectionRecord,
-    input: { account: string; name: string; machine: string; min: number; max: number },
-  ): Promise<{ ref: string }>;
-  scale(connection: ConnectionRecord, input: { ref: string; size: number }): Promise<void>;
 }
 
 export interface AccessPart {

@@ -32,13 +32,22 @@ export const JOB_TOKEN_HEADER = 'x-bemmoly-job-token';
 /** How often a runner heartbeats; three missed beats and its job goes back to the queue. */
 export const HEARTBEAT_SECONDS = 10;
 
-export const registerRunnerBodySchema = z.object({
-  /** The pool's registration token; hashed at rest and rotatable. */
-  poolToken: z.string().min(16).max(200),
-  name: z.string().min(1).max(120),
-  version: z.string().min(1).max(40),
-  labels: z.array(z.string().max(60)).max(50).default([]),
-});
+export const registerRunnerBodySchema = z
+  .object({
+    /** The pool's registration token; hashed at rest and rotatable. */
+    poolToken: z.string().min(16).max(200).optional(),
+    /**
+     * A one-time token for one job, which Pipelines hands to a machine it starts for that job.
+     * It registers once; the runner it makes claims that job alone and ends with it.
+     */
+    launchToken: z.string().min(16).max(200).optional(),
+    name: z.string().min(1).max(120),
+    version: z.string().min(1).max(40),
+    labels: z.array(z.string().max(60)).max(50).default([]),
+  })
+  .refine((body) => (body.poolToken === undefined) !== (body.launchToken === undefined), {
+    message: 'Send a pool token or a launch token',
+  });
 
 export const registerRunnerResponseSchema = z.object({
   runnerId: idSchema,

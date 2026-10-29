@@ -9,6 +9,9 @@ import type { JobRow } from './present.ts';
  * the jobs that wait, so a finished run costs nothing here.
  */
 
+/** Hostings where Pipelines starts one machine per job. */
+const MACHINE_PER_JOB = new Set(['cloud-build', 'codebuild']);
+
 export function ordinal(n: number): string {
   const tens = n % 100;
   if (tens >= 11 && tens <= 13) return `${n}th`;
@@ -70,6 +73,16 @@ async function inQueue(sql: SqlExecutor, row: JobRow): Promise<WaitReason> {
   if (!facts) return { kind: 'runner', text: `Waiting for a runner in ${pool}` };
   if (facts.blocked_key) {
     return { kind: 'concurrency', text: `Waits for ${facts.blocked_key} to finish` };
+  }
+  if (row.machine?.state === 'starting' || row.machine?.state === 'running') {
+    return { kind: 'runner', text: `A build machine is starting for it in ${pool}` };
+  }
+  if (row.pool_hosting && MACHINE_PER_JOB.has(row.pool_hosting)) {
+    return {
+      kind: 'runner',
+      text: `Waits for a build machine in ${pool}`,
+      position: facts.position,
+    };
   }
   if (facts.online === 0) {
     return {

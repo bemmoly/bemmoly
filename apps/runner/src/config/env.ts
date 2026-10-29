@@ -20,6 +20,11 @@ export const runnerConfigSchema = z.object({
     .transform((value) => value.replace(/\/+$/, '')),
   /** Only needed until the first registration is saved. */
   poolToken: z.string().min(16).max(200).optional(),
+  /**
+   * One-job mode: a token Pipelines minted for one job on a machine it started. The runner
+   * registers with it, runs that job and exits; nothing is saved.
+   */
+  launchToken: z.string().min(16).max(200).optional(),
   name: z.string().min(1).max(120),
   labels: z.array(z.string().min(1).max(60)).max(50),
   local: z.boolean(),
@@ -29,6 +34,11 @@ export const runnerConfigSchema = z.object({
   allowBuildPaths: z.array(z.string().min(1)),
   once: z.boolean(),
   dockerSocket: z.string().min(1),
+  /**
+   * The container whose volumes step containers mount, instead of a host path, when the
+   * runner itself runs in a container beside its steps (a Cloud Build step).
+   */
+  volumesFrom: z.string().min(1).optional(),
   logLevel: logLevelSchema,
   /** The only parts of the runner's own environment a local step inherits. */
   hostEnv: z.record(z.string(), z.string()),
@@ -48,6 +58,7 @@ export type SplitConfig = z.infer<typeof splitConfigSchema>;
 const RUN_OPTIONS = {
   url: { type: 'string' },
   'pool-token': { type: 'string' },
+  'launch-token': { type: 'string' },
   name: { type: 'string' },
   labels: { type: 'string' },
   local: { type: 'boolean' },
@@ -56,6 +67,7 @@ const RUN_OPTIONS = {
   'allow-build-path': { type: 'string', multiple: true },
   once: { type: 'boolean' },
   'docker-socket': { type: 'string' },
+  'volumes-from': { type: 'string' },
   'log-level': { type: 'string' },
 } as const;
 
@@ -112,9 +124,12 @@ export function loadRunnerConfig(
     throw new ValidationError((error as Error).message, { cause: error });
   }
   const workspace = values.workspace ?? env['BEMMOLY_RUNNER_WORKSPACE'];
+  const launchToken = values['launch-token'] ?? env['BEMMOLY_LAUNCH_TOKEN'];
+  const volumesFrom = values['volumes-from'] ?? env['BEMMOLY_RUNNER_VOLUMES_FROM'];
   const parsed = runnerConfigSchema.safeParse({
     url: values.url ?? env['BEMMOLY_URL'],
     poolToken: values['pool-token'] ?? env['BEMMOLY_POOL_TOKEN'],
+    launchToken,
     name: values.name ?? env['BEMMOLY_RUNNER_NAME'] ?? hostname(),
     labels: splitLabels(values.labels ?? env['BEMMOLY_RUNNER_LABELS']),
     local: values.local ?? env['BEMMOLY_RUNNER_LOCAL'] === 'true',
@@ -126,14 +141,22 @@ export function loadRunnerConfig(
       values['allow-build-path'] ??
       (env['BEMMOLY_RUNNER_ALLOW_BUILD_PATHS'] ?? '').split(path.delimiter).filter(Boolean)
     ).map((dir) => path.resolve(expandHome(dir))),
-    once: values.once ?? env['BEMMOLY_RUNNER_ONCE'] === 'true',
+    once: launchToken !== undefined || (values.once ?? env['BEMMOLY_RUNNER_ONCE'] === 'true'),
     dockerSocket: expandHome(values['docker-socket'] ?? defaultDockerSocket(env, exists)),
+    // "self" is this container: Docker names a container's host after its id.
+    volumesFrom: volumesFrom === 'self' ? hostname() : volumesFrom,
     logLevel: values['log-level'] ?? env['LOG_LEVEL'],
     hostEnv: pickHostEnv(env),
   });
   if (!parsed.success) throw new ValidationError(describeIssues(parsed.error));
   if (parsed.data.workspace !== undefined && !parsed.data.local) {
     throw new ValidationError('--workspace works only with --local');
+  }
+  if (parsed.data.launchToken !== undefined && parsed.data.poolToken !== undefined) {
+    throw new ValidationError('Pass --pool-token or --launch-token, not both');
+  }
+  if (parsed.data.volumesFrom !== undefined && parsed.data.local) {
+    throw new ValidationError('--volumes-from is for steps in containers; leave out --local');
   }
   return parsed.data;
 }

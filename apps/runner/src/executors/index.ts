@@ -9,6 +9,8 @@ export interface ExecutorSettings {
   /** Steps run as processes on this machine instead of containers. */
   local: boolean;
   dockerSocket: string;
+  /** Step containers mount this container's volumes rather than the workspace's host path. */
+  volumesFrom?: string;
   hostEnv: Record<string, string>;
   /** Holds the bemmoly-runner shim local steps find on PATH. */
   binDir?: string;
@@ -28,7 +30,7 @@ export function createExecutors(settings: ExecutorSettings): Executors {
     step: () =>
       settings.local
         ? new ProcessExecutor({ hostEnv: settings.hostEnv, binDir: settings.binDir })
-        : new DockerExecutor(engine),
+        : new DockerExecutor(engine, settings.volumesFrom),
     host: () => new ProcessExecutor({ hostEnv, binDir: settings.binDir, quiet: true }),
   };
 }
