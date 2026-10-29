@@ -24,7 +24,8 @@ const cells = [
 // as its version and the first sentence of its first note, so a release never falls off.
 const firstSentence = (text: string) => (text.split(/(?<=\.)\s/)[0] ?? text).slice(0, 120);
 const recent = RELEASES.filter(
-  (release) => RELEASE_TITLES[release.version] ?? release.version.endsWith('.0'),
+  (release) =>
+    release === LATEST || (RELEASE_TITLES[release.version] ?? release.version.endsWith('.0')),
 )
   .slice(0, 3)
   .map((release) => ({
