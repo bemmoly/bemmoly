@@ -10,6 +10,7 @@ import { pipelinesRoutes, runnerRoutes } from './server/src/routes/index.ts';
 import { registerCodeHostWork } from './server/src/config/code-hosts.ts';
 import { registerExecutionWork } from './server/src/config/execution.ts';
 import { createPipelinesServices } from './server/src/services/index.ts';
+import { moveSecretsJob } from './server/src/config/variables-jobs.ts';
 
 /**
  * Bemmoly Pipelines, the server side. A product with its own web app (apps/pipelines-web) and
@@ -45,6 +46,7 @@ export default defineModule({
     ctx.jobs.add(landingZoneApplyJob(services.clouds));
     ctx.jobs.add(landingZoneDriftJob(services.clouds));
     ctx.jobs.add(discoveryJob(services.discovery));
+    ctx.jobs.add(moveSecretsJob(services.variables));
     const snapshot = async () => {
       const days = await ctx.settings.get('pipelines.history.rewindDays');
       return services.history.snapshot(typeof days === 'number' ? days : 90);

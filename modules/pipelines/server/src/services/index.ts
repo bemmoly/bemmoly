@@ -9,7 +9,7 @@ import { createAccessService } from './access/index.ts';
 import { createArtifactsService } from './artifacts/index.ts';
 import { createDispatchWakeups } from './dispatcher/wakeup.ts';
 import { createLogsService } from './logs/index.ts';
-import { createRunnerService, variableSecrets } from './runner/index.ts';
+import { createRunnerService, createVariableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
@@ -42,6 +42,7 @@ import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index
 import { providersFromSettings } from './providers/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
+import { createVariablesService } from './variables/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -118,6 +119,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     } else await releaseFrom(runId);
   });
   const providers = input.providers ?? providersFromSettings(input.settings);
+  const variables = createVariablesService({ ...deps, providers });
   const triggers = createTriggersService(execution);
   // Runs start from code host events in arrival order per repository (the inbox's promise).
   inbox.handlers.on('push', async (event) => void (await triggers.push(event)));
@@ -132,6 +134,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
         webhook: createWebhookCaller(input.webhookSecrets ?? (async () => null)),
         now: input.now ?? (() => new Date()),
         wake: input.wake ?? (async () => undefined),
+        variables: variables.forDeploy,
       })
     : undefined;
   return {
@@ -155,7 +158,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       wakeups,
       logs,
       tests,
-      secrets: variableSecrets,
+      secrets: createVariableSecrets(variables.ciValues),
       ...(code ? { code } : {}),
     }),
     catalog: createCatalogService(deps),
@@ -163,6 +166,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     discovery: createDiscoveryService(deps, catalogWrites),
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),
+    variables,
     overview: createOverviewService(deps),
     releases,
     history: createHistoryService({ ...deps, providers, ...(input.now ? { now: input.now } : {}) }),

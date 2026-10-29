@@ -94,16 +94,17 @@ export async function recordCheck(
   return row;
 }
 
-/** Sets or clears where runners push images, keeping the rest of the config. */
-export async function setRegistry(
+/** Sets or clears one key of a connection's config, keeping the rest. */
+export async function setConfigValue(
   sql: SqlClient,
   id: string,
-  registry: string | null,
+  key: 'registry' | 'ciAccountId',
+  value: string | null,
 ): Promise<ConnectionRow> {
   const [row] = await sql<ConnectionRow[]>`
     update cloud_connections
-    set config = case when ${registry}::text is null then config - 'registry'
-        else config || jsonb_build_object('registry', ${registry}::text) end,
+    set config = case when ${value}::text is null then config - ${key}::text
+        else config || jsonb_build_object(${key}::text, ${value}::text) end,
       updated_at = now()
     where id = ${id}
     returning ${sql.unsafe(CONNECTION_COLUMNS)}`;

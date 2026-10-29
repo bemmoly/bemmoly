@@ -66,6 +66,13 @@ export async function environmentsUsing(sql: SqlClient, accountId: string): Prom
   return rows.map((row) => row.key);
 }
 
+/** Secrets whose values live in an account; detaching it would strand them. */
+export async function secretsIn(sql: SqlClient, accountId: string): Promise<number> {
+  const [row] = await sql<{ count: number }[]>`
+    select count(*)::int as count from pipeline_variables where secret_account_id = ${accountId}`;
+  return row?.count ?? 0;
+}
+
 export async function deleteAccount(sql: SqlClient, accountId: string): Promise<void> {
   await sql`delete from cloud_accounts where id = ${accountId}`;
 }
