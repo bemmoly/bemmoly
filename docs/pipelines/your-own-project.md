@@ -271,6 +271,12 @@ Deleting a variable on the Variables tab leaves the secret in Secret Manager, be
 revisions and roll backs may still read it. Delete it there once nothing runs with it:
 `gcloud secrets delete bemmoly-shop-API_KEY-dev --project "$PROJECT"`.
 
+## Next: run it on GKE
+
+[Run an application on GKE](gke.md) moves this application to GKE Autopilot clusters you
+create, first in Dev, then in Prod, with a canary and a roll back there, while everything else
+stays on Cloud Run.
+
 ## What to send back
 
 For each step, whether it did what "You should see" says. When it did not, send the sentence

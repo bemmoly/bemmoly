@@ -1,7 +1,7 @@
 # Pipelines: Platform
 
 Platform (`/pipelines/platform`, `G P`) is one title with link tabs: Access, Capacity, Clouds,
-Environments. `/platform` opens Access.
+Environments, Clusters. `/platform` opens Access.
 
 ## Access
 
@@ -44,3 +44,29 @@ project.
 Paths by tier (stages in order, parallel environments stacked, what moves a release on and
 how long it bakes) and every environment with its cloud, region and protection. Read only:
 the contract has no environment writes yet.
+
+## Clusters
+
+**Primary job.** Give an environment the one cluster its applications on GKE deploy into, and
+see whether deploys there can go.
+
+| Action | Mouse | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Create or attach a cluster | Create a cluster… or Attach a cluster… on the row | Tab, Enter | Tap |
+| Check it again | Check again on the row | Tab, Enter | Tap |
+| Forget an attached cluster | Forget, then confirm | Tab, Enter | Tap |
+
+The button follows the environment's connection: a managed connection creates (Autopilot or
+Standard, a name), an attached one attaches (project, location, name, optionally the owners'
+Gateway). The dialog answers with the cluster as its check left it, problems included.
+
+**States.** Loading: row skeletons. Empty: no environments yet. Error: Try again. An
+environment with no project says to choose one first. Creating: polled every ten seconds
+until GKE says it runs. Failed: the problems, each a sentence saying what to grant or turn on.
+Phone: each row stacks the environment above its cluster.
+
+**URL state.** None.
+
+**Choices recorded.** Rows are environments, not clusters, because the rule is one cluster per
+environment and the empty rows are where the action is. Forget is offered for attached clusters
+and failed created ones only; Pipelines keeps running the clusters it created.
