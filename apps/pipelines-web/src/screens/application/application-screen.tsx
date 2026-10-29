@@ -19,6 +19,7 @@ import { useApplicationActions } from './use-application-actions.ts';
 import { WhatDiffers } from './what-differs.tsx';
 import { RecentRuns } from './recent-runs.tsx';
 import { VariablesTab } from './variables/variables-tab.tsx';
+import { RuntimeCard } from './runtime-card.tsx';
 
 type Tab = 'overview' | 'runs' | 'variables';
 
@@ -249,6 +250,7 @@ export default function ApplicationScreen() {
                   <Skeleton width="40%" height={14} />
                 </div>
               )}
+              <RuntimeCard application={key} />
             </div>
           </div>
         </>
