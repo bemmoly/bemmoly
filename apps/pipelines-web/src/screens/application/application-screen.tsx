@@ -20,6 +20,7 @@ import { WhatDiffers } from './what-differs.tsx';
 import { RecentRuns } from './recent-runs.tsx';
 import { VariablesTab } from './variables/variables-tab.tsx';
 import { RuntimeCard } from './runtime-card.tsx';
+import { FrontDoorCard } from './front-door-card.tsx';
 
 type Tab = 'overview' | 'runs' | 'variables';
 
@@ -251,6 +252,7 @@ export default function ApplicationScreen() {
                 </div>
               )}
               <RuntimeCard application={key} />
+              <FrontDoorCard application={key} />
             </div>
           </div>
         </>

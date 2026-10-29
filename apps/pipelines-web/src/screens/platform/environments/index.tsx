@@ -16,12 +16,14 @@ import { groupReadyAccounts } from './draft.ts';
 import { EnvironmentDialog } from './environment-dialog.tsx';
 import { Paths } from './paths.tsx';
 import { EnvironmentsTable } from './table.tsx';
+import { FrontDoors } from './front-doors.tsx';
 
 /**
  * Platform › Environments: the path each tier takes through the environments, and what each
  * environment asks of a deploy. Prod is marked with the shield and the word Protected.
  * Environments are created here, each in a ready project, and edited or archived from their
- * row; a fresh install starts on the empty state, which says why they are needed.
+ * row; a fresh install starts on the empty state, which says why they are needed. Each
+ * environment's front door is turned on and given a domain below them.
  */
 export default function EnvironmentsArea() {
   const t = useT(pipelinesText);
@@ -96,6 +98,7 @@ export default function EnvironmentsArea() {
               <EnvironmentsTable items={items} onEdit={setEditing} onArchive={setArchiving} />
             )}
           </Panel>
+          {environments.data && <FrontDoors environments={items} />}
         </>
       )}
       {editing && (
