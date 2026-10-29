@@ -176,11 +176,56 @@ export const EXPORT_RECORDS: ExportRecords = {
   pools: [
     {
       key: 'cloud-build',
+      kind: 'cloud-build',
       account: CI,
       region: 'us-central1',
       image: 'us-docker.pkg.dev/acme-ci-7f3a/bemmoly/runner:1',
       machine: 'e2-highcpu-8',
       serviceAccount: `builder@${CI}.iam.gserviceaccount.com`,
+    },
+    {
+      key: 'gke-runners',
+      kind: 'gke-autopilot',
+      account: CI,
+      location: 'us-central1',
+      cluster: { name: 'bemmoly-runners', create: true },
+      namespace: 'bemmoly-runners-gke-runners',
+      image: 'us-docker.pkg.dev/acme-ci-7f3a/bemmoly/runner-gke:1',
+      builderImage: 'gcr.io/kaniko-project/executor:v1.23.2-debug',
+      cpu: 2,
+      memoryGb: 8,
+      spot: true,
+      serviceAccount: `builder@${CI}.iam.gserviceaccount.com`,
+    },
+  ],
+  frontDoors: [
+    {
+      environment: 'prod',
+      account: PROD,
+      region: null,
+      domain: 'prod.acme.example',
+      hosts: [
+        {
+          application: 'checkout-api',
+          namespace: 'checkout',
+          host: 'checkout-api.prod.acme.example',
+          // Moving from Cloud Run to GKE: the export keeps Cloud Run, which takes most.
+          backends: [
+            { runtime: 'cloud-run', revision: null, percent: 70 },
+            { runtime: 'gke-autopilot', revision: 'checkout-api-v1-43-0-a1c9e3f', percent: 30 },
+          ],
+          moving: true,
+        },
+        {
+          application: 'payments-worker',
+          namespace: 'checkout',
+          host: 'payments-worker.prod.acme.example',
+          backends: [
+            { runtime: 'gke-autopilot', revision: 'payments-worker-v2-1-0-a1c9e3f', percent: 100 },
+          ],
+          moving: false,
+        },
+      ],
     },
   ],
   leftOut: [
@@ -196,6 +241,12 @@ export const EXPORT_FACTS: ExportFacts = {
   },
   budgets: {
     [PROD]: 'billingAccounts/01A2B3-C4D5E6-F7A8B9/budgets/6f1e2d3c-4b5a-4f6e-8d7c-9b0a1f2e3d4c',
+  },
+  groups: {
+    'fd-checkout-payments-worker-v2-1-0-a1c9e3f-80': [
+      `https://www.googleapis.com/compute/v1/projects/${PROD}/zones/us-central1-a/networkEndpointGroups/fd-checkout-payments-worker-v2-1-0-a1c9e3f-80`,
+      `https://www.googleapis.com/compute/v1/projects/${PROD}/zones/us-central1-b/networkEndpointGroups/fd-checkout-payments-worker-v2-1-0-a1c9e3f-80`,
+    ],
   },
   problems: [],
 };

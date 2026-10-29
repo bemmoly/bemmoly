@@ -170,3 +170,63 @@ import {
   to = google_container_cluster.bemmoly_prod
   id = "projects/${var.projects.acme_prod_7f3a}/locations/us-central1/clusters/bemmoly-prod"
 }
+
+import {
+  to = google_container_cluster.bemmoly_runners
+  id = "projects/${var.projects.acme_ci_7f3a}/locations/us-central1/clusters/bemmoly-runners"
+}
+
+import {
+  to = google_service_account_iam_member.gke_runners_pods
+  id = "projects/acme-ci-7f3a/serviceAccounts/builder@acme-ci-7f3a.iam.gserviceaccount.com roles/iam.workloadIdentityUser serviceAccount:${var.projects.acme_ci_7f3a}.svc.id.goog[bemmoly-runners-gke-runners/bemmoly-runner]"
+}
+
+import {
+  to = google_compute_global_address.prod_acme_prod_7f3a
+  id = "projects/${var.projects.acme_prod_7f3a}/global/addresses/bm-fd-prod"
+}
+
+import {
+  to = google_compute_region_network_endpoint_group.bm_run_checkout_api
+  id = "projects/${var.projects.acme_prod_7f3a}/regions/us-central1/networkEndpointGroups/bm-run-checkout-api"
+}
+
+import {
+  to = google_compute_backend_service.bm_prod_checkout_api_run
+  id = "projects/${var.projects.acme_prod_7f3a}/global/backendServices/bm-prod-checkout-api-run"
+}
+
+import {
+  to = google_compute_health_check.bm_fd_prod_neg
+  id = "projects/${var.projects.acme_prod_7f3a}/global/healthChecks/bm-fd-prod-neg"
+}
+
+import {
+  to = google_compute_backend_service.fd_checkout_payments_worker_v2_1_0_a1c9e3f_80
+  id = "projects/${var.projects.acme_prod_7f3a}/global/backendServices/fd-checkout-payments-worker-v2-1-0-a1c9e3f-80"
+}
+
+import {
+  to = google_compute_url_map.prod_acme_prod_7f3a
+  id = "projects/${var.projects.acme_prod_7f3a}/global/urlMaps/bm-fd-prod"
+}
+
+import {
+  to = google_compute_managed_ssl_certificate.prod_acme_prod_7f3a_checkout_api_prod_acme_example
+  id = "projects/${var.projects.acme_prod_7f3a}/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example"
+}
+
+import {
+  to = google_compute_managed_ssl_certificate.prod_acme_prod_7f3a_payments_worker_prod_acme_example
+  id = "projects/${var.projects.acme_prod_7f3a}/global/sslCertificates/bm-fd-8fb387c0-payments-worker-prod-acme-example"
+}
+
+import {
+  to = google_compute_target_https_proxy.prod_acme_prod_7f3a
+  id = "projects/${var.projects.acme_prod_7f3a}/global/targetHttpsProxies/bm-fd-prod"
+}
+
+import {
+  to = google_compute_global_forwarding_rule.prod_acme_prod_7f3a
+  id = "projects/${var.projects.acme_prod_7f3a}/global/forwardingRules/bm-fd-prod"
+}

@@ -39,6 +39,11 @@ describe('the Google Cloud export', () => {
       'helm/checkout/templates/gateway.yaml',
       'helm/checkout/values/prod/payments-worker.yaml',
       'helm/checkout/values/prod/gateway.yaml',
+      'helm/runner-pools/Chart.yaml',
+      'helm/runner-pools/values.yaml',
+      'helm/runner-pools/templates/namespace.yaml',
+      'helm/runner-pools/templates/serviceaccount.yaml',
+      'helm/runner-pools/values/gke-runners.yaml',
     ]);
   });
 
@@ -71,9 +76,43 @@ describe('the Google Cloud export', () => {
     expect(file('README.md')).toContain("The canary's weights");
     expect(bundle.toFill).toEqual([
       expect.stringMatching(
+        /^Traffic is still shifting on checkout-api\.prod\.acme\.example in prod,/,
+      ),
+      expect.stringMatching(
         /^A deploy did not finish since the exported release of payments-worker in prod,/,
       ),
     ]);
+  });
+
+  it("declares each front door, with a moving host's traffic on its heaviest backend", () => {
+    const door = file('terraform/front-door.tf');
+    for (const type of [
+      'google_compute_global_address',
+      'google_compute_global_forwarding_rule',
+      'google_compute_target_https_proxy',
+      'google_compute_url_map',
+      'google_compute_backend_service',
+      'google_compute_region_network_endpoint_group',
+      'google_compute_health_check',
+      'google_compute_managed_ssl_certificate',
+    ]) {
+      expect(door).toContain(`resource "${type}"`);
+      expect(file('terraform/imports.tf')).toContain(`to = ${type}.`);
+    }
+    expect(door).not.toContain('weight          = 70');
+    expect(door).not.toContain('checkout-api-v1-43-0-a1c9e3f');
+    expect(door.match(/data "google_compute_network_endpoint_group"/g)).toHaveLength(2);
+    expect(file('helm/checkout/values/prod/payments-worker.yaml')).toContain(
+      'neg: fd-checkout-payments-worker-v2-1-0-a1c9e3f-80',
+    );
+  });
+
+  it('keeps an Autopilot pool: its cluster, the pods binding and its namespace chart', () => {
+    const pools = file('terraform/build-pools.tf');
+    expect(pools).toContain('resource "google_container_cluster" "bemmoly_runners"');
+    expect(pools).toContain('roles/iam.workloadIdentityUser');
+    expect(pools).toContain('[bemmoly-runners-gke-runners/bemmoly-runner]');
+    expect(file('README.md')).toContain('-n bemmoly-runners-gke-runners');
   });
 
   it('asks a person for what the cloud could not tell', () => {
@@ -83,6 +122,7 @@ describe('the Google Cloud export', () => {
         expect.stringContaining('Fill project_numbers.acme_prod_7f3a in terraform.tfvars'),
         expect.stringContaining('Fill folders.commerce in terraform.tfvars'),
         expect.stringContaining('The budget for acme-prod-7f3a is declared without an import'),
+        expect.stringContaining('Add a backend to fd-checkout-payments-worker-v2-1-0-a1c9e3f-80'),
       ]),
     );
     const tfvars = blind.files.find((entry) => entry.path === 'terraform/terraform.tfvars');
