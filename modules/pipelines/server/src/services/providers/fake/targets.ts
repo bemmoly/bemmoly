@@ -15,15 +15,17 @@ import type {
  * `fake.latencyMs`, optionally per environment, so a test makes a canary fail by building a release that says so.
  */
 
-interface FakeRevision {
+export interface FakeRevision {
   release: ReleaseArtifact;
   /** What the revision runs with; a secret appears by version, never by value. */
   variables: readonly DeployVariable[];
   errorRate: number;
   latencyMs: number;
+  /** Health reads left before it reports healthy and takes requests: a pod starting. */
+  warming: number;
 }
 
-interface FakeTarget {
+export interface FakeTarget {
   revisions: Map<string, FakeRevision>;
   traffic: RevisionWeight[];
   calls: string[];
@@ -33,12 +35,15 @@ export interface FakeTargetsWorld {
   targets: Map<string, FakeTarget>;
   /** Every call in order, "deploy checkout-api@dev v1", for assertions. */
   log: string[];
+  /** How many health reads a new revision answers "unknown" before it is up. */
+  revisionWarmup: number;
 }
 
-const keyOf = (target: DeployTarget) => `${target.application.key}@${target.environment.key}`;
+export const keyOf = (target: DeployTarget) =>
+  `${target.application.key}@${target.environment.key}`;
 
 /** "bemmoly-dev/checkout/checkout-api@dev": a revision on a cluster lives in its namespace. */
-const kubernetesKeyOf = (target: DeployTarget) => {
+export const kubernetesKeyOf = (target: DeployTarget) => {
   const cluster = target.placement?.cluster;
   if (!cluster) throw new Error(`${keyOf(target)} has no cluster to deploy into`);
   return `${cluster.name}/${target.placement?.namespace ?? 'default'}/${keyOf(target)}`;
@@ -80,18 +85,23 @@ export function createFakeTargets(
     async deploy(target, release, variables = []) {
       const state = targetOf(target);
       const revision = `${target.application.key}-${release.version}-${state.revisions.size + 1}`;
-      // `fake.errorRate@prod-us` wins over `fake.errorRate`, so one release can pass Staging
-      // and fail its Prod canary, the way real regressions often do.
+      // `fake.errorRate@prod-us` wins over `fake.errorRate@kubernetes`, then `fake.errorRate`,
+      // so one release can pass Staging and fail its Prod canary, or fail only on GKE.
+      const runtime = options.kubernetes ? 'kubernetes' : 'cloud-run';
       const config = (name: string, fallback: number) =>
         numberOr(
           release.resolvedConfig[`${name}@${target.environment.key}`],
-          numberOr(release.resolvedConfig[name], fallback),
+          numberOr(
+            release.resolvedConfig[`${name}@${runtime}`],
+            numberOr(release.resolvedConfig[name], fallback),
+          ),
         );
       state.revisions.set(revision, {
         release,
         variables,
         errorRate: config('fake.errorRate', 0.002),
         latencyMs: config('fake.latencyMs', 120),
+        warming: world.revisionWarmup,
       });
       record(target, `deploy ${release.version}`);
       return { revision };
@@ -110,6 +120,10 @@ export function createFakeTargets(
     },
     async health(target, revision): Promise<Health> {
       const found = known(target, revision);
+      if (found.warming > 0) {
+        found.warming -= 1;
+        return 'unknown';
+      }
       if (found.errorRate >= 0.05) return 'failing';
       return found.errorRate >= 0.01 ? 'degraded' : 'healthy';
     },

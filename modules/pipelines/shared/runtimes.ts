@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { clusterRefSchema } from './clusters.ts';
 import { deployRuntimeSchema, slugSchema } from './common.ts';
 import { environmentRefSchema } from './environments.ts';
+import { moveRefSchema } from './moves.ts';
 
 /*
  * Where an application runs in one environment (journeys proposal, "Each service picks its
@@ -13,7 +14,8 @@ import { environmentRefSchema } from './environments.ts';
  * application's .bemmoly/application.yaml, then the environment's default, which is Cloud
  * Run unless an admin changed it. Pipelines wins so a switch never needs a commit; the file
  * still lets a team that keeps everything in Git say it there. A switch takes effect on the
- * next deploy; a canary already running finishes where it started.
+ * next deploy; a canary already running finishes where it started. Where the environment
+ * has a front door for the application, a switch plans a runtime move instead (moves.ts).
  */
 
 /** Where the runtime in force came from. */
@@ -33,6 +35,13 @@ export const applicationRuntimeSchema = z.object({
   cluster: clusterRefSchema.nullable(),
   /** Why the next deploy would fail, in one sentence saying what to do; null when it can go. */
   problem: z.string().nullable(),
+  /**
+   * The front door's host here, when there is one: a switch is then a traffic move with no
+   * downtime. Without one the switch waits for the next deploy and the address changes.
+   */
+  frontDoor: z.object({ host: z.string(), url: z.string().nullable() }).nullable().default(null),
+  /** The move planned or under way here, if any. */
+  move: moveRefSchema.nullable().default(null),
 });
 
 export const applicationRuntimesResponseSchema = z.object({

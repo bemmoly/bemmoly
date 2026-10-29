@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Provider } from '../../../../../shared/common.ts';
 import type { CloudProvider, DesiredResource } from '../contract.ts';
 import { createFakeClusters, type FakeClustersWorld } from './clusters.ts';
+import { createFakeFrontDoor, type FakeFrontDoorsWorld } from './front-door.ts';
 import { createFakeMachines, type FakeMachinesWorld } from './machines.ts';
 import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
 
@@ -11,7 +12,8 @@ import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
  * kit runs against it first so the kit itself is known to be right.
  */
 
-export interface FakeWorld extends FakeTargetsWorld, FakeClustersWorld, FakeMachinesWorld {
+export interface FakeWorld
+  extends FakeTargetsWorld, FakeClustersWorld, FakeMachinesWorld, FakeFrontDoorsWorld {
   boundaries: Set<string>;
   accounts: Map<string, { name: string; labels: Readonly<Record<string, string>> }>;
   resources: Map<string, Record<string, unknown>>;
@@ -35,6 +37,9 @@ export function createFakeWorld(): FakeWorld {
   return {
     targets: new Map(),
     log: [],
+    revisionWarmup: 0,
+    frontDoors: new Map(),
+    frontDoorRequests: { sent: 0, failed: 0 },
     boundaries: new Set(),
     accounts: new Map(),
     resources: new Map(),
@@ -72,6 +77,7 @@ export function createFakeProvider(
     targets,
     metrics,
     clusters: createFakeClusters(world),
+    frontDoor: createFakeFrontDoor(world),
     runtimes: {
       'gke-autopilot': kubernetes,
       'gke-standard': kubernetes,

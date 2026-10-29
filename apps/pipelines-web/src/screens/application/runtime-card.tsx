@@ -1,6 +1,7 @@
 import { useT } from '@bemmoly/core-web';
 import { deployRuntimeSchema, type ApplicationRuntime } from '@bemmoly/module-pipelines/shared';
 import { Select, Skeleton } from '@bemmoly/ui';
+import { Link } from '@tanstack/react-router';
 import { useApplicationRuntimes, useSetRuntime } from '../../hooks/use-runtimes.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { RUNTIME_NAME } from '../../parts/runtime-words.ts';
@@ -10,10 +11,34 @@ import { SIDE_CARD } from './side-cards.tsx';
 
 const FOLLOW = 'follow';
 
+/** The move a switch planned or started here, linked to its plan screen. */
+function MoveLink({ application, item }: { application: string; item: ApplicationRuntime }) {
+  const t = useT(pipelinesText);
+  const move = item.move;
+  if (!move) return null;
+  const runtime = t(RUNTIME_NAME[move.to]);
+  const words =
+    move.state === 'planned'
+      ? t('pipelines.runtimes.movePlanned', { runtime })
+      : move.state === 'paused'
+        ? t('pipelines.runtimes.movePaused', { runtime, percent: move.percent })
+        : t('pipelines.runtimes.moving', { runtime, percent: move.percent });
+  return (
+    <Link
+      to="/applications/$key/moves/$id"
+      params={{ key: application, id: move.id }}
+      className="ps-23 text-12 text-acc hover:underline"
+    >
+      {words}
+    </Link>
+  );
+}
+
 /**
  * Where it runs: the runtime in each environment, switched here without a commit. "Default"
  * follows application.yaml, then the environment. A switch takes effect on the next deploy;
- * when that deploy would fail (no cluster, the wrong kind) the reason shows under it.
+ * when that deploy would fail (no cluster, the wrong kind) the reason shows under it. Where a
+ * front door serves the application, a switch plans a move instead, linked under the line.
  */
 export function RuntimeCard({ application }: { application: string }) {
   const t = useT(pipelinesText);
@@ -46,7 +71,7 @@ export function RuntimeCard({ application }: { application: string }) {
                       aria-label={t('pipelines.runtimes.selectLabel', {
                         env: item.environment.name,
                       })}
-                      value={item.chosen ?? FOLLOW}
+                      value={item.move?.to ?? item.chosen ?? FOLLOW}
                       options={[
                         { value: FOLLOW, label: followLabel(item) },
                         ...deployRuntimeSchema.options.map((value) => ({
@@ -67,10 +92,15 @@ export function RuntimeCard({ application }: { application: string }) {
                 {item.problem && (
                   <p className="ps-23 text-12 leading-body text-amber-tx">{item.problem}</p>
                 )}
+                {item.move && <MoveLink application={application} item={item} />}
               </div>
             ))}
           </dl>
-          <p className="text-12 text-tx-3">{t('pipelines.runtimes.nextDeploy')}</p>
+          <p className="text-12 text-tx-3">
+            {runtimes.data.items.some((item) => item.frontDoor)
+              ? t('pipelines.runtimes.frontDoorMove')
+              : t('pipelines.runtimes.nextDeploy')}
+          </p>
           <ActionError error={set.error} />
         </>
       )}

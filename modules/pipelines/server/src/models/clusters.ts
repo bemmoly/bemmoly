@@ -42,4 +42,13 @@ export interface RuntimeRow {
   cluster_mode: string | null;
   cluster_origin: string | null;
   cluster_status: string | null;
+  /** The front door's host for the application here, when one serves it. */
+  route_host: string | null;
+  route_backends: Array<{ runtime: string; percent: number }> | null;
+  route_domain: string | null;
+  route_address: string | null;
+  move_id: string | null;
+  move_state: string | null;
+  move_to: string | null;
+  move_percent: number | null;
 }

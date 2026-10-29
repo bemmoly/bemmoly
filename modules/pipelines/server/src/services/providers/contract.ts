@@ -8,6 +8,7 @@ import type {
   Runtime,
 } from '../../../../shared/common.ts';
 import type { BillingHeadroom } from './org-contract.ts';
+import type { FrontDoorPart } from './front-door-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
 
 /*
@@ -282,6 +283,7 @@ export interface CloudProvider {
   access?: AccessPart;
   cost?: CostPart;
   clusters?: ClustersPart;
+  frontDoor?: FrontDoorPart;
   /**
    * Runtimes beyond the default one `targets` and `metrics` serve, such as GKE beside Cloud
    * Run. Target resolution swaps these in for the application's runtime in an environment.

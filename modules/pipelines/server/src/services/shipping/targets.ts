@@ -15,6 +15,7 @@ import type {
   Placement,
   ReleaseArtifact,
 } from '../providers/contract.ts';
+import { withFrontDoor } from '../front-doors/wrap.ts';
 import { runtimeProblem } from '../runtimes/fit.ts';
 import type { ProviderSourceOrRegistry } from './engine-deps.ts';
 
@@ -25,7 +26,8 @@ import type { ProviderSourceOrRegistry } from './engine-deps.ts';
  * accounts (the local Docker provider). The runtime is the one chosen in Pipelines, then the
  * application file's, then the environment's default; a runtime other than the provider's
  * default swaps in that runtime's targets and metrics, deploying into the environment's
- * cluster in the namespace of the application's catalog group.
+ * cluster in the namespace of the application's catalog group. Behind a front door, shifts
+ * and roll backs move the front door's weights too (front-doors/wrap.ts).
  */
 
 interface TargetRow {
@@ -66,6 +68,8 @@ export interface ResolvedTarget {
 export interface ResolveOptions {
   /** The runtime a deployment started on, so a switch mid-canary waits for the next deploy. */
   runtime?: DeployRuntime | undefined;
+  /** False leaves the front door out: a runtime move drives it itself. */
+  frontDoor?: boolean;
 }
 
 function placementOf(row: TargetRow, runtime: DeployRuntime): Placement {
@@ -170,7 +174,7 @@ export async function resolveTarget(
       { provider: row.provider },
     );
   }
-  return {
+  const resolved: ResolvedTarget = {
     provider,
     target: {
       connection: {
@@ -202,6 +206,7 @@ export async function resolveTarget(
       placement,
     },
   };
+  return options.frontDoor === false ? resolved : withFrontDoor(sql, resolved);
 }
 
 export function artifactOf(release: ReleaseRow): ReleaseArtifact {

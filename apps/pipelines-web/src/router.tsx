@@ -49,6 +49,7 @@ const routeTree = root.addChildren([
   screen('/map', () => import('./screens/map/map-screen.tsx')),
   screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
+  screen('/applications/$key/moves/$id', () => import('./screens/move/index.tsx')),
   screen('/runs', () => import('./screens/runs/runs-screen.tsx')),
   screen('/runs/$id', () => import('./screens/run/run-screen.tsx')),
   screen('/releases', () => import('./screens/releases/index.tsx')),
