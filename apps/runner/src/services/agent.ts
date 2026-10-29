@@ -174,6 +174,14 @@ export class Agent {
   }
 
   private async reregister(): Promise<Registration> {
+    if (this.deps.registration.launchToken) {
+      // A launch token registers once: a runner for one job that lost its registration is done.
+      this.stopping = true;
+      this.claimAbort.abort();
+      throw new ProviderError('This one-job runner was retired by the control plane', {
+        provider: 'bemmoly',
+      });
+    }
     this.deps.logger.warn('the control plane no longer knows this runner; registering again');
     await forgetRegistration(this.deps.registration.dataDir);
     this.registration = await register(this.deps.registration);

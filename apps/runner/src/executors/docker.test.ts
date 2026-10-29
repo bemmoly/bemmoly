@@ -65,4 +65,17 @@ describe('a step image', () => {
     expect(host['Privileged']).toBeUndefined();
     expect(host['NetworkMode']).toBeUndefined();
   });
+
+  it("shares the runner's volumes instead of a host path when the runner runs in a container", async () => {
+    const { calls, engine } = recordingEngine();
+    await new DockerExecutor(engine, 'runner-container').run(
+      makeStep('test', 'true', { image: 'alpine:3.20' }),
+      { ...options([]), workspace: '/workspace/.bemmoly-runner/work/job-1' },
+    );
+    const create = calls.find((call) => call.path.startsWith('/containers/create'));
+    const body = create?.body as { WorkingDir: string; HostConfig: Record<string, unknown> };
+    expect(body.HostConfig['VolumesFrom']).toEqual(['runner-container']);
+    expect(body.HostConfig['Binds']).toBeUndefined();
+    expect(body.WorkingDir).toBe('/workspace/.bemmoly-runner/work/job-1');
+  });
 });
