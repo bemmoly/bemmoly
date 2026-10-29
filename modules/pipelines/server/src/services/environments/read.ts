@@ -1,5 +1,5 @@
 import type { SqlExecutor } from '@bemmoly/core';
-import type { EnvironmentClass, Provider } from '../../../../shared/common.ts';
+import type { DeployRuntime, EnvironmentClass, Provider } from '../../../../shared/common.ts';
 import { environmentProtectionSchema, type Environment } from '../../../../shared/environments.ts';
 import type { EnvironmentRow } from '../../models/environments.ts';
 
@@ -17,12 +17,14 @@ const toEnvironment = (row: EnvironmentRow): Environment => ({
       : null,
   // Stored jsonb may predate a field; parsing fills its default rather than sending undefined.
   protection: environmentProtectionSchema.parse(row.protection),
+  defaultRuntime: row.default_runtime as DeployRuntime,
 });
 
 /** Live environments left to right, or the one with `key`. */
 export async function selectEnvironments(sql: SqlExecutor, key?: string): Promise<Environment[]> {
   const rows = await sql<EnvironmentRow[]>`
     select e.id, e.key, e.name, e.class, e.provider, e.region, e.position, e.protection,
+      e.default_runtime,
       c.id as account_id, c.external_id as account_external_id, c.name as account_name
     from pipeline_environments e
     left join cloud_accounts c on c.id = e.cloud_account_id

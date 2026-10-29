@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { lifecycleSchema, runtimeSchema, slugSchema, tierSchema } from './common.ts';
+import {
+  deployRuntimeSchema,
+  lifecycleSchema,
+  runtimeSchema,
+  slugSchema,
+  tierSchema,
+} from './common.ts';
 import { pipelineDefinitionSchema } from './pipeline-spec.ts';
 
 /*
@@ -15,6 +21,7 @@ import { pipelineDefinitionSchema } from './pipeline-spec.ts';
  *   pipeline:
  *     extends: acme/node-service@3
  *     with: { port: 8081 }
+ *   runtimes: { dev: gke-autopilot }
  */
 
 export const APPLICATION_FILE_PATH = '.bemmoly/application.yaml';
@@ -41,6 +48,11 @@ export const applicationFileSchema = z.object({
   /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
   paths: z.array(z.string().min(1).max(300)).max(100).default([]),
   pipeline: pipelineDefinitionSchema.optional(),
+  /**
+   * Where it runs, by environment key. A choice made in Pipelines wins over this, and this
+   * wins over the environment's default (shared/runtimes.ts).
+   */
+  runtimes: z.record(slugSchema, deployRuntimeSchema).optional(),
 });
 
 export type OwnerRef = z.infer<typeof ownerRefSchema>;
