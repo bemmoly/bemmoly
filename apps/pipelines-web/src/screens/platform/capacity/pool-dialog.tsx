@@ -8,6 +8,7 @@ import { usePoolWrites } from '../../../hooks/use-capacity.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { slugOf } from '../../../lib/slug.ts';
 import { ActionError } from '../../../parts/action-error.tsx';
+import { AutopilotFields } from './autopilot-fields.tsx';
 import { CloudBuildFields } from './cloud-build-fields.tsx';
 import {
   buildProjects,
@@ -35,6 +36,11 @@ const KIND_WORDS = {
     title: 'pipelines.capacity.kindCloudBuild',
     hint: 'pipelines.capacity.kindCloudBuildHint',
   },
+  'gke-autopilot': {
+    icon: 'layers',
+    title: 'pipelines.capacity.kindAutopilot',
+    hint: 'pipelines.capacity.kindAutopilotHint',
+  },
 } as const satisfies Record<PoolKind, { icon: IconName; title: string; hint: string }>;
 
 const HOSTING = {
@@ -45,8 +51,9 @@ const HOSTING = {
 
 /**
  * Add runner pool, or Change where it runs for one pool: machines people start with the pool's
- * token, or Google Cloud Build starting one build per job. A new pool of machines you start
- * shows its token once after; a Cloud Build pool needs none. Mounted per opening.
+ * token, Google Cloud Build starting one build per job, or GKE Autopilot starting one pod per
+ * job. A new pool of machines you start shows its token once after; the others need none.
+ * Mounted per opening.
  */
 export function PoolDialog({ pool, onClose }: { pool: RunnerPool | null; onClose: () => void }) {
   const t = useT(pipelinesText);
@@ -59,8 +66,10 @@ export function PoolDialog({ pool, onClose }: { pool: RunnerPool | null; onClose
   const key = slugOf(draft.name);
   const changes = pool ? updatePoolBodyOf(pool, draft, projects) : null;
   const ready = poolReady(draft, projects) && (!changes || Object.keys(changes).length > 0);
+  const startsOwn = (hosting: PoolHosting) =>
+    hosting === 'cloud-build' || hosting === 'gke-autopilot';
   const token =
-    create.data && create.data.pool.hosting !== 'cloud-build' ? create.data.token.token : null;
+    create.data && !startsOwn(create.data.pool.hosting) ? create.data.token.token : null;
   const added = create.data?.pool ?? null;
   const submit = () => {
     if (!ready || write.isPending) return;
@@ -88,7 +97,11 @@ export function PoolDialog({ pool, onClose }: { pool: RunnerPool | null; onClose
         {token ? (
           <TokenReveal token={token} />
         ) : (
-          <p className="text-13 text-tx">{t('pipelines.capacity.cloudBuildAdded')}</p>
+          <p className="text-13 text-tx">
+            {added.hosting === 'gke-autopilot'
+              ? t('pipelines.capacity.autopilotAdded')
+              : t('pipelines.capacity.cloudBuildAdded')}
+          </p>
         )}
       </Modal>
     );
@@ -128,7 +141,7 @@ export function PoolDialog({ pool, onClose }: { pool: RunnerPool | null; onClose
         <div
           role="radiogroup"
           aria-label={t('pipelines.capacity.hosting')}
-          className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+          className="grid grid-cols-1 gap-2.5 sm:grid-cols-3"
         >
           {POOL_KINDS.map((kind) => (
             <SelectableCard
@@ -147,6 +160,8 @@ export function PoolDialog({ pool, onClose }: { pool: RunnerPool | null; onClose
         </div>
         {draft.kind === 'cloud-build' ? (
           <CloudBuildFields draft={draft} projects={projects} set={set} />
+        ) : draft.kind === 'gke-autopilot' ? (
+          <AutopilotFields draft={draft} projects={projects} set={set} />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label={t('pipelines.capacity.startedOn')}>

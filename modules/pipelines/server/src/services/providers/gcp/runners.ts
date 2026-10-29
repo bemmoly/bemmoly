@@ -1,14 +1,17 @@
 import { ProviderError } from '@bemmoly/shared';
 import { GcpApiError, type GcpClients } from '../../../clients/gcp/index.ts';
 import type { MachineRef, MachineStatus, RunnersPart } from '../contract.ts';
+import { createPodAccess, parsePodRef, type PodAccessOptions } from './autopilot-access.ts';
+import { createAutopilotPods } from './autopilot-pods.ts';
+import { createAutopilotPools } from './autopilot-pools.ts';
 import { accountConfigOf, type GcpContexts } from './context.ts';
 
 /*
- * Cloud Build as a build machine for one job (journeys proposal: the first day, no cluster).
- * Each job is one build with one step: the runner image in one-job mode. The launch token
- * goes in as a substitution read into the step's env, so it never appears in the step's
- * args; it registers once and the runner it makes ends with its job. Fleet pools on GKE
- * Autopilot (ensurePool, scale) arrive with the GKE clients.
+ * Build machines for one job each. On Cloud Build (journeys proposal: the first day, no
+ * cluster) each job is one build with one step: the runner image in one-job mode. The launch
+ * token goes in as a substitution read into the step's env, so it never appears in the
+ * step's args; it registers once and the runner it makes ends with its job. On a GKE
+ * Autopilot pool each job is one pod instead (autopilot-pods.ts), and its ref says so.
  */
 
 const MACHINE_TYPES: Readonly<Record<string, string>> = {
@@ -46,7 +49,14 @@ export const LAUNCH_TOKEN_SUBSTITUTION = '_BEMMOLY_LAUNCH_TOKEN';
 /** Tags allow letters, digits, dots, dashes and underscores. */
 const tag = (value: string) => value.replace(/[^\w.-]/g, '-').slice(0, 120);
 
-export function createGcpRunners(contexts: GcpContexts): RunnersPart {
+export function createGcpRunners(
+  contexts: GcpContexts,
+  options: PodAccessOptions = {},
+): RunnersPart {
+  const access = createPodAccess(contexts, options);
+  const pools = createAutopilotPools(contexts, access);
+  const pods = createAutopilotPods(access);
+
   /** Created projects start builds as the control identity; attached ones as their deployer. */
   function clientsFor(
     connection: Parameters<GcpContexts>[0],
@@ -58,7 +68,10 @@ export function createGcpRunners(contexts: GcpContexts): RunnersPart {
   }
 
   return {
+    ...pools,
+
     async launch(connection, input) {
+      if (input.pod) return pods.launch(connection, input);
       const project = input.account.externalId;
       const machineType = input.machineType ? MACHINE_TYPES[input.machineType] : undefined;
       try {
@@ -99,6 +112,7 @@ export function createGcpRunners(contexts: GcpContexts): RunnersPart {
     },
 
     async status(connection, input) {
+      if (parsePodRef(input.ref)) return pods.status(connection, input);
       const build = await clientsFor(connection, input.account).cloudBuild.findBuild(
         input.account.externalId,
         input.region,
@@ -120,6 +134,7 @@ export function createGcpRunners(contexts: GcpContexts): RunnersPart {
     },
 
     async cancel(connection, input) {
+      if (parsePodRef(input.ref)) return pods.cancel(connection, input);
       try {
         await clientsFor(connection, input.account).cloudBuild.cancelBuild(
           input.account.externalId,

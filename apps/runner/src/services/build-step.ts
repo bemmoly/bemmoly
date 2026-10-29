@@ -4,12 +4,7 @@ import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared'
 import type { StepExecutor, StepResult, StepRunOptions } from '../executors/types.ts';
 import { isInside } from '../utils/glob.ts';
 
-export const BUILD_ACTION = 'bemmoly/build';
-
-/** `bemmoly/build` or a pinned form such as `bemmoly/build@v1`. */
-export function isBuildAction(uses: string): boolean {
-  return uses === BUILD_ACTION || uses.startsWith(`${BUILD_ACTION}@`);
-}
+export { BUILD_ACTION, isBuildAction } from '@bemmoly/module-pipelines/shared';
 
 const quote = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'`;
 

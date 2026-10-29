@@ -53,6 +53,7 @@ async function runAgent(args: string[]): Promise<void> {
         local: config.local,
         dockerSocket: config.dockerSocket,
         ...(config.volumesFrom ? { volumesFrom: config.volumesFrom } : {}),
+        ...(config.pod ? { pod: config.pod } : {}),
         hostEnv: config.hostEnv,
         binDir,
       }),
@@ -70,7 +71,11 @@ async function runAgent(args: string[]): Promise<void> {
   process.on('SIGINT', onSignal);
   process.on('SIGTERM', onSignal);
   logger.info(
-    { version: VERSION, runner: config.name, mode: config.local ? 'local' : 'docker' },
+    {
+      version: VERSION,
+      runner: config.name,
+      mode: config.pod ? 'pod' : config.local ? 'local' : 'docker',
+    },
     'runner started',
   );
   await agent.run();

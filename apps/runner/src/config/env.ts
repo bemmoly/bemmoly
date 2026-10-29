@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { homedir, hostname } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { RUNNER_POD_ENV, runnerPodSchema } from '@bemmoly/module-pipelines/shared';
 import { ValidationError } from '@bemmoly/shared';
 import { z } from 'zod';
 
@@ -40,6 +41,11 @@ export const runnerConfigSchema = z.object({
    */
   volumesFrom: z.string().min(1).optional(),
   logLevel: logLevelSchema,
+  /**
+   * Set by Pipelines on a pod it started (GKE Autopilot): steps run in the containers beside
+   * the runner, one per image, instead of on a Docker daemon.
+   */
+  pod: runnerPodSchema.optional(),
   /** The only parts of the runner's own environment a local step inherits. */
   hostEnv: z.record(z.string(), z.string()),
 });
@@ -126,6 +132,18 @@ export function loadRunnerConfig(
   const workspace = values.workspace ?? env['BEMMOLY_RUNNER_WORKSPACE'];
   const launchToken = values['launch-token'] ?? env['BEMMOLY_LAUNCH_TOKEN'];
   const volumesFrom = values['volumes-from'] ?? env['BEMMOLY_RUNNER_VOLUMES_FROM'];
+  const pod = env[RUNNER_POD_ENV];
+  let podLayout: unknown;
+  try {
+    podLayout = pod === undefined ? undefined : JSON.parse(pod);
+  } catch (error) {
+    throw new ValidationError(
+      `${RUNNER_POD_ENV} is not JSON; Pipelines sets it on pods it starts`,
+      {
+        cause: error,
+      },
+    );
+  }
   const parsed = runnerConfigSchema.safeParse({
     url: values.url ?? env['BEMMOLY_URL'],
     poolToken: values['pool-token'] ?? env['BEMMOLY_POOL_TOKEN'],
@@ -146,6 +164,7 @@ export function loadRunnerConfig(
     // "self" is this container: Docker names a container's host after its id.
     volumesFrom: volumesFrom === 'self' ? hostname() : volumesFrom,
     logLevel: values['log-level'] ?? env['LOG_LEVEL'],
+    pod: podLayout,
     hostEnv: pickHostEnv(env),
   });
   if (!parsed.success) throw new ValidationError(describeIssues(parsed.error));
@@ -157,6 +176,11 @@ export function loadRunnerConfig(
   }
   if (parsed.data.volumesFrom !== undefined && parsed.data.local) {
     throw new ValidationError('--volumes-from is for steps in containers; leave out --local');
+  }
+  if (parsed.data.pod !== undefined && parsed.data.local) {
+    throw new ValidationError(
+      `${RUNNER_POD_ENV} runs steps in the pod's containers; leave out --local`,
+    );
   }
   return parsed.data;
 }

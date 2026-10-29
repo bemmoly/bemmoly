@@ -54,7 +54,8 @@ export function createFakeWorld(): FakeWorld {
     clusters: new Map(),
     clusterProblems: new Map(),
     machines: new Map(),
-    fleets: new Map(),
+    podClusters: new Map(),
+    podPools: new Map(),
   };
 }
 

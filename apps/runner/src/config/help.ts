@@ -25,7 +25,8 @@ How it works
   The runner only makes outgoing requests. It long-polls for a job, heartbeats while it works,
   checks out the commit, and runs each step as a container with the workspace at /workspace.
   Logs go out in ordered chunks and wait on disk when Bemmoly cannot be reached, so a job never
-  fails because the server was down.
+  fails because the server was down. In a pod Pipelines started on GKE Autopilot, it sets
+  BEMMOLY_RUNNER_POD, and steps run in the containers beside the runner, one per step image.
 
   Press Ctrl+C once to stop taking jobs and let the running one finish; press it again to
   cancel the running job.
