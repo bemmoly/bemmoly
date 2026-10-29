@@ -41,6 +41,7 @@ export const toConnection = (row: ConnectionRow): CloudConnection => ({
   signIn: signInOf(row),
   region: textOf(row.config['region']),
   registry: textOf(row.config['registry']),
+  ciAccountId: textOf(row.config['ciAccountId']),
   status: row.status as CloudConnection['status'],
   principal: row.principal,
   boundary: boundaryOf(row),

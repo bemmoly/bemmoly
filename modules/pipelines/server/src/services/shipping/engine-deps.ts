@@ -1,4 +1,5 @@
 import type { SqlClient } from '@bemmoly/core';
+import type { DeployVariable } from '../providers/contract.ts';
 import type { ProviderRegistry } from '../providers/registry.ts';
 
 /** A fixed registry, or one read per call so the simulate setting takes effect live. */
@@ -30,6 +31,8 @@ export interface ShippingEngineDeps {
   webhook: WebhookCaller;
   now: () => Date;
   wake: Waker;
+  /** The variables a deploy runs with; absent, revisions keep whatever they had. */
+  variables?: (applicationId: string, environmentId: string) => Promise<DeployVariable[]>;
   /** Told after a roll back commits, so other modules (an incident in Work) can react. */
   onRolledBack?: (event: RolledBackEvent) => Promise<void>;
 }

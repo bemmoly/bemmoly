@@ -13,11 +13,12 @@ import {
   environmentsUsing,
   recordAccountCheck,
   requireAccount,
+  secretsIn,
   upsertAttached,
 } from './accounts.ts';
 import { providerFor, type ConnectionsDeps } from './connections.ts';
 import { toAccount, toConnection } from './present.ts';
-import { requireConnection, setRegistry, toRecord } from './store.ts';
+import { requireConnection, setConfigValue, toRecord } from './store.ts';
 
 /*
  * Attached mode (journeys proposal): projects that exist already are attached to a connection,
@@ -82,6 +83,12 @@ export function createAttachedAccounts(deps: ConnectionsDeps) {
           'Pipelines created this project; it stays until its landing zone is changed',
         );
       }
+      const secrets = await secretsIn(sql, accountId);
+      if (secrets > 0) {
+        throw new ConflictError(
+          `${secrets} ${secrets === 1 ? 'secret lives' : 'secrets live'} in ${account.external_id}. Delete ${secrets === 1 ? 'it' : 'them'} on the applications' Variables tab first`,
+        );
+      }
       const using = await environmentsUsing(sql, accountId);
       if (using.length > 0) {
         throw new ConflictError(
@@ -97,7 +104,15 @@ export function createAttachedAccounts(deps: ConnectionsDeps) {
       body: UpdateConnectionBody,
     ): Promise<CloudConnection> {
       await deps.authorizeAdmin(ctx);
-      return toConnection(await setRegistry(deps.sql(), id, body.registry));
+      const sql = deps.sql();
+      let row = await requireConnection(sql, id);
+      if (body.ciAccountId) await requireAccount(sql, id, body.ciAccountId);
+      if (body.registry !== undefined)
+        row = await setConfigValue(sql, id, 'registry', body.registry);
+      if (body.ciAccountId !== undefined) {
+        row = await setConfigValue(sql, id, 'ciAccountId', body.ciAccountId);
+      }
+      return toConnection(row);
     },
   };
 }

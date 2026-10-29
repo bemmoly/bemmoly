@@ -35,6 +35,10 @@ for clouds not ready), what Google Cloud needs (no key file), then the layout ch
 preview tree of every folder and project; blockers keep Create off. Applying shows the accounts
 being made (ProvisionChecklist). `?connection=` opens step two.
 
+An attached connection also says which of its projects holds CI secrets and secrets set for
+every environment, chosen in place from its ready projects. A managed connection uses its CI
+project.
+
 ## Environments
 
 Paths by tier (stages in order, parallel environments stacked, what moves a release on and

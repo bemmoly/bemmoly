@@ -1,6 +1,7 @@
 import type { Health } from '../../../../../shared/common.ts';
 import type {
   DeployTarget,
+  DeployVariable,
   MetricName,
   MetricsPart,
   ReleaseArtifact,
@@ -16,6 +17,8 @@ import type {
 
 interface FakeRevision {
   release: ReleaseArtifact;
+  /** What the revision runs with; a secret appears by version, never by value. */
+  variables: readonly DeployVariable[];
   errorRate: number;
   latencyMs: number;
 }
@@ -62,7 +65,7 @@ export function createFakeTargets(world: FakeTargetsWorld): {
 
   const targets: TargetsPart = {
     kinds: ['container-service', 'kubernetes', 'function', 'static-site'],
-    async deploy(target, release) {
+    async deploy(target, release, variables = []) {
       const state = targetOf(target);
       const revision = `${target.application.key}-${release.version}-${state.revisions.size + 1}`;
       // `fake.errorRate@prod-us` wins over `fake.errorRate`, so one release can pass Staging
@@ -74,6 +77,7 @@ export function createFakeTargets(world: FakeTargetsWorld): {
         );
       state.revisions.set(revision, {
         release,
+        variables,
         errorRate: config('fake.errorRate', 0.002),
         latencyMs: config('fake.latencyMs', 120),
       });
