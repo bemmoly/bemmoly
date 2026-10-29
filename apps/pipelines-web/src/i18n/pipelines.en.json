@@ -1281,6 +1281,7 @@
   "pipelines.frontDoor.status.failed": "Failed",
   "pipelines.frontDoor.status.off": "Off",
   "pipelines.frontDoor.off": "Off. A switch of runtime here waits for the next deploy, and the address changes.",
+  "pipelines.frontDoor.addresses": "{count} addresses, one in each project. Each application's page shows its own",
   "pipelines.frontDoor.addressLater": "The address is reserved when the first application is released here",
   "pipelines.frontDoor.edit": "Edit…",
   "pipelines.frontDoor.turnOn": "Turn on…",
@@ -1299,7 +1300,7 @@
   "pipelines.frontDoor.domainInvalid": "Name a domain such as prod.example.com",
   "pipelines.frontDoor.domainExample": "prod.example.com",
   "pipelines.frontDoor.offMeans": "Turning it off takes the load balancer down. Applications keep running where they are, at their own addresses.",
-  "pipelines.runtimes.frontDoorMove": "Where a front door serves it, a switch plans a move with no downtime. Elsewhere a switch takes effect on the next deploy, and the address changes.",
+  "pipelines.runtimes.frontDoorMove": "A switch takes effect on the next deploy. Where a front door serves it, a switch plans a move with no downtime instead.",
   "pipelines.runtimes.movePlanned": "Move to {runtime} planned. Review the plan",
   "pipelines.runtimes.movePaused": "Move to {runtime} paused at {percent}%",
   "pipelines.runtimes.moving": "Moving to {runtime}: {percent}%"
