@@ -4,11 +4,11 @@ import { Field, Input, Select } from '@bemmoly/ui';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import {
   cloudBuildProblems,
-  regionOfDraft,
   serviceAccountOfDraft,
   type BuildProject,
   type PoolDraft,
 } from './pool-draft.ts';
+import { ProjectAndRegion } from './project-field.tsx';
 
 /**
  * A Cloud Build pool's settings: the project builds run in, its region, the runner image,
@@ -26,45 +26,15 @@ export function CloudBuildFields({
 }) {
   const t = useT(pipelinesText);
   const problems = new Set(cloudBuildProblems(draft, projects));
-  const region = regionOfDraft(draft, projects);
   const serviceAccount = serviceAccountOfDraft(draft, projects);
-  const groups = [...new Set(projects.map((project) => project.connection))].map((connection) => ({
-    label: connection,
-    options: projects
-      .filter((project) => project.connection === connection)
-      .map((project) => ({
-        value: project.id,
-        label: project.externalId,
-        ...(project.name !== project.externalId ? { description: project.name } : {}),
-      })),
-  }));
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field
-          label={t('pipelines.capacity.buildProject')}
-          hint={projects.length === 0 ? t('pipelines.capacity.noBuildProjects') : undefined}
-        >
-          <Select
-            searchable
-            value={draft.accountId ?? ''}
-            placeholder={t('pipelines.capacity.buildProjectPick')}
-            groups={groups}
-            onChange={(event) => set({ accountId: event.value })}
-          />
-        </Field>
-        <Field
-          label={t('pipelines.capacity.buildRegion')}
-          error={region && problems.has('region') ? t('pipelines.clouds.regionInvalid') : null}
-        >
-          <Input
-            mono
-            value={region}
-            placeholder={t('pipelines.environments.regionExample')}
-            onChange={(event) => set({ region: event.target.value.trim() })}
-          />
-        </Field>
-      </div>
+      <ProjectAndRegion
+        draft={draft}
+        projects={projects}
+        set={set}
+        regionInvalid={problems.has('region')}
+      />
       <Field
         label={t('pipelines.capacity.buildImage')}
         hint={t('pipelines.capacity.buildImageHint')}

@@ -5,9 +5,10 @@ import { Link } from '@tanstack/react-router';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 
 /**
- * Builds now: every machine Pipelines started that is still starting or running, with its
- * pool, the job it is for and Google's log. A pool's builds end with their jobs, so an idle
- * pool lists nothing here and costs nothing.
+ * Builds now: every machine Pipelines started that is still starting or running (a Cloud
+ * Build build or a GKE Autopilot pod), with its pool, the job it is for and where Google shows
+ * it. A pool's machines end with their jobs, so an idle pool lists nothing here and costs
+ * nothing.
  */
 export function Builds({ pools }: { pools: readonly RunnerPool[] }) {
   const t = useT(pipelinesText);
@@ -49,7 +50,9 @@ export function Builds({ pools }: { pools: readonly RunnerPool[] }) {
               rel="noreferrer"
               className="shrink-0 text-tx-2 hover:text-acc"
             >
-              {t('pipelines.capacity.buildLog')}
+              {pool.hosting === 'gke-autopilot'
+                ? t('pipelines.capacity.podLink')
+                : t('pipelines.capacity.buildLog')}
             </a>
           ) : (
             <span className="shrink-0 text-tx-3">{t('pipelines.capacity.machine.starting')}</span>

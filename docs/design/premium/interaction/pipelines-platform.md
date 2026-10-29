@@ -37,6 +37,17 @@ not start in amber under its name. Builds now, shown once any pool runs on Cloud
 each build still starting or running: the job (to its run), the pool, when it started and
 Google's log in a new tab; empty, it says builds start when a job waits and end with it.
 
+GKE Autopilot is the third card. Its fields: project and region as for Cloud Build, the
+cluster (bemmoly-runners by default; in a CI project Pipelines made, a ticked "Create the
+cluster if it is missing", and in an attached project a hint that it must exist), the runner's
+gke image, vCPU and memory per runner (the memory must be 1 to 6.5 GiB per vCPU), Use Spot
+capacity, the pod service account, fewest runners (room kept warm; 0 scales to zero), most
+runners at once, and the image builder (empty keeps Kaniko). No token. Its row says "GKE
+Autopilot · region · cluster" and "n of m pods", with the pods now under the scaling ("1
+running · 0 starting · 2 warm"); while Pipelines prepares the cluster a spinner and GKE's
+words sit under its name, and a preparation that failed shows its reason in amber. Its pods
+join Builds now, each linking to its page in GKE.
+
 ## Clouds and Connect a cloud
 
 **Primary job.** Connect a cloud and see what Pipelines made there. Each connection shows who
