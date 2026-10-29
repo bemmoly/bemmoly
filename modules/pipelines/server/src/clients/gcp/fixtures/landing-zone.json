@@ -175,7 +175,7 @@
               "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
             },
             {
-              "role": "roles/run.developer"
+              "role": "roles/run.admin"
             },
             {
               "role": "roles/iam.serviceAccountUser"
@@ -203,7 +203,7 @@
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           },
           {
-            "role": "roles/run.developer",
+            "role": "roles/run.admin",
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           }
         ]
@@ -276,7 +276,7 @@
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           },
           {
-            "role": "roles/run.developer",
+            "role": "roles/run.admin",
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           }
         ]
