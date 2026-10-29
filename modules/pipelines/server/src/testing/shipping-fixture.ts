@@ -38,7 +38,11 @@ async function one(query: Promise<{ id: string }[]>): Promise<string> {
   return row.id;
 }
 
-export async function seedShippingFixture(harness: PipelinesHarness): Promise<ShippingFixture> {
+/** `world` shares the simulated cloud with the harness's own services, for tests using both. */
+export async function seedShippingFixture(
+  harness: PipelinesHarness,
+  options: { world?: FakeWorld } = {},
+): Promise<ShippingFixture> {
   const { sql, users } = harness;
   const ravi = await one(sql`insert into users (email, name, role_id)
     select 'ravi@example.test', 'Ravi Kumar', id from roles where key = 'member' returning id`);
@@ -82,7 +86,7 @@ export async function seedShippingFixture(harness: PipelinesHarness): Promise<Sh
       (${path}, ${environments.prodAsia}, 2, 0), (${path}, ${environments.prodUs}, 3, 30)`;
   await sql`insert into cloud_connections (provider, name, status) values ('gcp', 'Simulated', 'connected')`;
 
-  const world = createFakeWorld();
+  const world = options.world ?? createFakeWorld();
   const clock = {
     now: new Date('2026-10-13T06:00:00Z'),
     advance(ms: number) {
