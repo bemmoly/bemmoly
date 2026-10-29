@@ -28,11 +28,11 @@ export const splitterMetricsSchema = z.object({
 export type SplitterRoute = z.infer<typeof splitterRouteSchema>;
 export type SplitterMetrics = z.infer<typeof splitterMetricsSchema>;
 
-/** `token` is the splitter's admin token; splitters made before it existed have none. */
-export function createSplitterClient(baseUrl: string, token?: string) {
+/** `token` is the splitter's admin token, sent on every call. */
+export function createSplitterClient(baseUrl: string, token: string) {
   async function call(path: string, init: RequestInit = {}): Promise<Response> {
     const headers = new Headers(init.headers);
-    if (token) headers.set('authorization', `Bearer ${token}`);
+    headers.set('authorization', `Bearer ${token}`);
     return fetch(`${baseUrl}${path}`, {
       ...init,
       headers,

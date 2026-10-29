@@ -6,8 +6,9 @@
  * request to a revision by weight, counts requests, 5xx answers and latency per revision in
  * five-second buckets, and serves those counts to the control plane on an admin port, which
  * asks for a token: every revision on the network could reach it, and set another
- * application's routes. That
- * is where canary metrics come from, so a canary is judged on real requests. A small load
+ * application's routes. Started without a token it refuses every admin request rather than
+ * run open. That is where canary metrics come from, so a canary is judged on real requests. A
+ * small load
  * generator calls it a few times a second so there is traffic to judge on an idle laptop.
  *
  * The demo application answers with its version and fails a share of requests when its
@@ -60,7 +61,7 @@ function answer(res, status, body) { res.writeHead(status, { 'content-type': 'ap
 const crypto = require('crypto');
 const ADMIN = Buffer.from('Bearer ' + (process.env.ADMIN_TOKEN || ''));
 function allowed(req) {
-  if (!process.env.ADMIN_TOKEN) return true;
+  if (!process.env.ADMIN_TOKEN) return false;
   const sent = Buffer.from(String(req.headers['authorization'] || ''));
   return sent.length === ADMIN.length && crypto.timingSafeEqual(sent, ADMIN);
 }
