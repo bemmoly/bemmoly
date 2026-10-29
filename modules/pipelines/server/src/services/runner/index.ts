@@ -1,5 +1,4 @@
 import type { ModuleObjects } from '@bemmoly/core';
-import { UnauthenticatedError } from '@bemmoly/shared';
 import type {
   ClaimBody,
   ClaimedJob,
@@ -18,7 +17,6 @@ import {
   claimBodySchema,
   heartbeatBodySchema,
   HEARTBEAT_SECONDS,
-  registerRunnerBodySchema,
 } from '../../../../shared/runner.ts';
 import { topicOf } from '../../../../shared/streams.ts';
 import { requireDatabase } from '../deps.ts';
@@ -32,6 +30,7 @@ import { publishStreamEvent } from '../streams/publish.ts';
 import { ingestReport, type TestsService } from '../tests/index.ts';
 import { hashToken, newToken } from '../../utils/tokens.ts';
 import { jobFromToken, LIVE_JOB, runnerFromToken } from './auth.ts';
+import { launchedJobWaits, registerRunner, retireLaunched } from './register.ts';
 import { finishJob, type FinishInput } from './finish.ts';
 import type { PipelinesCodeHosts } from '../code/hosts.ts';
 import { claimedJobPayload } from './payload.ts';
@@ -44,7 +43,8 @@ export { createVariableSecrets, type SecretResolver } from './secrets.ts';
  * The runner protocol's server side (architecture §6). Every call authenticates with a
  * runner or job token, never a person; the claim is a long poll that answers as soon as a
  * job is ready in the runner's pool. Sweeps for lost runners piggyback on claims, so a
- * replica with runners attached keeps the queue honest without a separate timer.
+ * replica with runners attached keeps the queue honest without a separate timer. A runner on
+ * a machine Pipelines started for one job claims that job alone and is retired with it.
  */
 
 export interface RunnerDeps extends ExecutionDeps {
@@ -83,22 +83,8 @@ export function createRunnerService(deps: RunnerDeps) {
   }
 
   return {
-    async register(input: RegisterRunnerBody): Promise<RegisterRunnerResponse> {
-      const body = registerRunnerBodySchema.parse(input);
-      const sql = requireDatabase(deps);
-      const [pool] = await sql<{ id: string; key: string }[]>`
-        select id, key from pipeline_runner_pools where token_hash = ${hashToken(body.poolToken)}`;
-      if (!pool)
-        throw new UnauthenticatedError('That pool token is not valid; copy it again from Capacity');
-      const runnerToken = newToken('runner');
-      const [runner] = await sql<{ id: string }[]>`
-        insert into pipeline_runners (pool_id, name, version, labels, state, last_heartbeat_at,
-          token_hash)
-        values (${pool.id}, ${body.name}, ${body.version}, ${body.labels}::text[], 'idle', now(),
-          ${hashToken(runnerToken)})
-        returning id`;
-      if (!runner) throw new UnauthenticatedError('The runner could not be registered');
-      return { runnerId: runner.id, runnerToken, pool, heartbeatSeconds: HEARTBEAT_SECONDS };
+    register(input: RegisterRunnerBody): Promise<RegisterRunnerResponse> {
+      return registerRunner(requireDatabase(deps), input);
     },
 
     async heartbeat(token: string | undefined, input: HeartbeatBody): Promise<HeartbeatResponse> {
@@ -140,8 +126,10 @@ export function createRunnerService(deps: RunnerDeps) {
           poolId: runner.pool_id,
           runnerId: runner.id,
           tokenHash: hashToken(jobToken),
+          launchId: runner.launch_id,
         });
         if (claimed) return claimedJobPayload(sql, claimed.id, jobToken, deps.code);
+        if (runner.launch_id && !(await launchedJobWaits(sql, runner.launch_id))) return null;
         const left = deadline - Date.now();
         if (left <= 0 || signal?.aborted) return null;
         await deps.wakeups.wait(runner.pool_id, Math.min(left, SWEEP_EVERY_MS), signal);
@@ -273,6 +261,7 @@ export function createRunnerService(deps: RunnerDeps) {
       const summary =
         body.failureSummary === undefined ? {} : { failureSummary: mask(body.failureSummary) };
       const outcome = await finishJob(sql, deps.logs, job, { ...body, ...summary });
+      await retireLaunched(sql, job.runner_id);
       if (!outcome) return;
       await queueCheck(deps, job, body.state);
       await announce(deps, [outcome]);

@@ -12,6 +12,8 @@ export interface RunnerIdentity {
   id: string;
   pool_id: string;
   state: string;
+  /** Set for a runner on a machine started for one job. */
+  launch_id: string | null;
 }
 
 export interface JobIdentity {
@@ -32,7 +34,7 @@ export async function runnerFromToken(
 ): Promise<RunnerIdentity> {
   if (!token) throw new UnauthenticatedError('Send the runner token in x-bemmoly-runner-token');
   const [runner] = await sql<RunnerIdentity[]>`
-    select id, pool_id, state from pipeline_runners
+    select id, pool_id, state, launch_id from pipeline_runners
     where token_hash = ${hashToken(token)} and state <> 'gone'`;
   if (!runner) throw new UnauthenticatedError('This runner is not registered; register again');
   return runner;
