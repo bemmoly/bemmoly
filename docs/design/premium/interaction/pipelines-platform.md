@@ -50,6 +50,30 @@ An attached connection also says which of its projects holds CI secrets and secr
 every environment, chosen in place from its ready projects. A managed connection uses its CI
 project.
 
+### Create projects for me
+
+**Primary job.** Turn what `deploy/gcp/bootstrap.sh` printed into projects Pipelines made, and
+see each one before it exists. **Top three actions**: Connect and check (the form's submit,
+Enter in any field); choose Starter, Standard or Enterprise (radio cards, arrow keys within the
+group, tap); Create N projects (the footer's primary button). Retry on a stopped apply is the
+fourth, on its band. No screen keys beyond the global map.
+
+**States.** The form waits for a valid folder, billing account and control project, and says
+what is wrong only once something was typed. The grant check shows Checking, then either
+"Bemmoly holds what it needs" or one amber line per role to grant, with Check again. The plan
+loads as a skeleton; blockers (amber) keep Create off, warnings (neutral: moves, kept projects,
+billing headroom) do not. The apply shows every project's state, then "The landing zone is
+ready" with Open environments, or one amber sentence with Retry. Phone: the chooser and the
+plan stack.
+
+**URL state.** `?mode=` (managed or attached), `?connection=` (the grant check and plan),
+`?plan=` (the apply being followed, so a reload keeps it).
+
+**Choices recorded.** The layout cards are SelectableCards, as the mode choice above them, so
+each can say what it creates; a connection made with another layout keeps it as a fourth card.
+Kept projects use the neutral chip, since nothing happens to them. Warnings are neutral, not
+amber, because they never stop Create.
+
 ## Environments
 
 Paths by tier (stages in order, parallel environments stacked, what moves a release on and
