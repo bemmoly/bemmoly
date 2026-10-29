@@ -124,6 +124,7 @@ export function createGkeClusters(contexts: GcpContexts, access: GkeAccess): Clu
       }
       const rights = await clusterRightsProblems(access, connection, cluster, account, who, {
         gatewayOn: gatewayApiOn(found),
+        found,
       });
       critical.push(...rights.critical);
       return {

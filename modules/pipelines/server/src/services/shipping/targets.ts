@@ -105,8 +105,11 @@ function forRuntime(provider: CloudProvider, row: TargetRow, placement: Placemen
   });
   if (problem) throw new ProviderError(problem, { provider: row.provider });
   if (!parts) return provider;
-  const { metrics: _defaultMetrics, ...rest } = provider;
-  return { ...rest, targets: parts.targets, ...(parts.metrics ? { metrics: parts.metrics } : {}) };
+  // The default runtime's metrics would measure the wrong thing, so none beats those.
+  const swapped: CloudProvider = { ...provider, targets: parts.targets };
+  if (parts.metrics) swapped.metrics = parts.metrics;
+  else delete swapped.metrics;
+  return swapped;
 }
 
 export async function resolveTarget(
