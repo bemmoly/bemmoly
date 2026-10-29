@@ -11,6 +11,7 @@ import {
   type GcpTransport,
   type PollOptions,
 } from '../../../clients/gcp/index.ts';
+import type { KubernetesTransport } from '../../../clients/kubernetes/index.ts';
 import type { ConnectionRecord, DeployTarget } from '../contract.ts';
 
 /*
@@ -48,6 +49,8 @@ export interface GcpProviderOptions {
   tokensFor?: (connection: ConnectionRecord, config: GcpConnectionConfig) => GcpTokenSource;
   /** Bemmoly's signed token, for connections that federate without a credential file. */
   subjectToken?: () => Promise<string>;
+  /** How to reach a cluster's API server given its CA; tests replay recorded answers. */
+  kubernetesTransport?: (caPem: string) => KubernetesTransport;
 }
 
 /** Who Pipelines acts as inside one attached project, from that account's config. */
