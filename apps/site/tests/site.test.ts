@@ -10,7 +10,14 @@ import { ATLASSIAN } from '../src/data/alternatives.ts';
 import { ALTERNATIVES, DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { PRICES } from '../src/data/prices.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
-import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL, SPONSOR_URL } from '../src/lib/links.ts';
+import {
+  DEMO_URL,
+  DISCORD_URL,
+  INSTALL_HREF,
+  NAV,
+  REPO_URL,
+  SPONSOR_URL,
+} from '../src/lib/links.ts';
 import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
 import { fetchFresh, startPreview, type Preview } from './serve.ts';
 
@@ -99,7 +106,7 @@ describe('links', () => {
     if (hash) expect(ids(response.text)).toContain(hash);
   });
 
-  it('points outside the site only at the repository or a mail address', () => {
+  it('points outside the site only at the repository, a mail address or the community', () => {
     // The comparison pages also cite their sources: exactly the pages in ATLASSIAN, there only.
     const comparisons = new Set(ALTERNATIVES.map((path) => `${path.slice(1)}.html`));
     const sources = new Set<string>(Object.values(ATLASSIAN).map((source) => source.href));
@@ -108,11 +115,12 @@ describe('links', () => {
     const priceSources = new Set(PRICES.providers.map((provider) => provider.url));
     for (const page of pages) {
       for (const href of hrefs(html(page)).filter((link) => !link.startsWith('/'))) {
-        // The footer's optional sponsor link is the one other address, exactly.
+        // The footer's sponsor and community links are the other addresses, exactly.
         const allowed =
           href.startsWith(REPO_URL) ||
           href.startsWith('mailto:') ||
           href === SPONSOR_URL ||
+          href === DISCORD_URL ||
           (comparisons.has(page) && sources.has(href)) ||
           (sizing.has(page) && priceSources.has(href));
         expect(allowed, `${page}: ${href}`).toBe(true);
