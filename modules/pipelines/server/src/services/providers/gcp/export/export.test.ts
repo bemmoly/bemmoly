@@ -66,10 +66,13 @@ describe('the Google Cloud export', () => {
     expect(file('terraform/secrets.tf')).not.toMatch(
       /secret_data|google_secret_manager_secret_version/,
     );
-    expect(bundle.leftOut).toEqual(EXPORT_RECORDS.leftOut);
+    expect(bundle.leftOut.slice(-1)).toEqual(EXPORT_RECORDS.leftOut);
+    expect(bundle.leftOut[0]).toMatch(/^Revision history\./);
     expect(file('README.md')).toContain("The canary's weights");
     expect(bundle.toFill).toEqual([
-      expect.stringMatching(/^payments-worker in prod: a deploy after v2\.1\.0 did not finish/),
+      expect.stringMatching(
+        /^A deploy did not finish since the exported release of payments-worker in prod,/,
+      ),
     ]);
   });
 
