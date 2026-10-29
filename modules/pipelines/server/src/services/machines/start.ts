@@ -6,6 +6,7 @@ import type { RunOutcome } from '../orchestrator/advance.ts';
 import type { RunnersPart } from '../providers/contract.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { hashToken, newToken } from '../../utils/tokens.ts';
+import { launchInput, settingsMissing, type ReservedJob } from './launch-input.ts';
 import {
   connectionOf,
   endLaunch,
@@ -29,18 +30,12 @@ import type { MachinesDeps } from './types.ts';
 export const STARTS_PER_SWEEP = 20;
 /** How long a launch token waits for its machine to register. */
 const TOKEN_MINUTES = 30;
-/** Time for a machine to start, on top of the job's own timeout. */
-const START_MINUTES = 15;
 
 const FORK_REFUSED =
   "Pools whose machines Pipelines starts do not run pull requests from forks, because the fork's code could reach the machine's cloud identity. Send fork pull requests to a pool of machines you start";
 
-interface Reserved {
+interface Reserved extends ReservedJob {
   launchId: string;
-  jobId: string;
-  runId: string;
-  timeoutMinutes: number;
-  token: string;
 }
 
 type Reservation = Reserved | { refused: string; jobId: string } | null;
@@ -54,8 +49,10 @@ async function reserve(sql: SqlClient, pool: MachinePoolRow): Promise<Reservatio
     if ((live?.count ?? 0) >= pool.max_runners) return null;
     const jobId = await pickNextJob(tx, pool.id);
     if (!jobId) return null;
-    const [job] = await tx<{ run_id: string; timeout_minutes: number; from_fork: boolean }[]>`
-      select j.run_id, j.timeout_minutes, coalesce(r.from_fork, false) as from_fork
+    const [job] = await tx<
+      { run_id: string; timeout_minutes: number; from_fork: boolean; steps_spec: unknown }[]
+    >`
+      select j.run_id, j.timeout_minutes, coalesce(r.from_fork, false) as from_fork, j.steps_spec
       from pipeline_jobs j join pipeline_runs r on r.id = j.run_id where j.id = ${jobId}`;
     if (!job) return null;
     if (job.from_fork) return { refused: FORK_REFUSED, jobId };
@@ -79,6 +76,7 @@ async function reserve(sql: SqlClient, pool: MachinePoolRow): Promise<Reservatio
       runId: job.run_id,
       timeoutMinutes: job.timeout_minutes,
       token,
+      steps: job.steps_spec,
     };
   });
 }
@@ -92,11 +90,12 @@ function blocker(deps: MachinesDeps, pool: MachinePoolRow, runners: RunnersPart 
     return 'This pool names no project Pipelines is connected to; choose one in Capacity';
   }
   if (!runners?.launch) return 'This cloud cannot start build machines yet';
-  if (!poolConfigOf(pool.config).cloudBuild) {
-    return 'This pool has no Cloud Build settings; set its region, image and service account';
-  }
-  return null;
+  return settingsMissing(pool);
 }
+
+/** A GKE Autopilot pool starts pods only once its cluster and namespace are in place. */
+const preparing = (pool: MachinePoolRow) =>
+  pool.hosting === 'gke-autopilot' && poolConfigOf(pool.config).pods?.status !== 'ready';
 
 async function startOne(
   deps: MachinesDeps,
@@ -112,21 +111,20 @@ async function startOne(
     if (outcome) outcomes.push(outcome);
     return true;
   }
-  const settings = poolConfigOf(pool.config).cloudBuild;
+  const input = launchInput(pool, reserved, deps.publicUrl ?? '');
   const connection = connectionOf(pool);
-  if (!settings || !connection || !runners.launch) return false;
+  if (input && 'refused' in input) {
+    await endLaunch(sql, reserved.launchId, { state: 'failed', error: input.refused });
+    const outcome = await failJob(sql, reserved.jobId, input.refused);
+    if (outcome) outcomes.push(outcome);
+    return true;
+  }
+  if (!input || !connection || !runners.launch) {
+    await endLaunch(sql, reserved.launchId, { state: 'failed', release: true });
+    return false;
+  }
   try {
-    const started = await runners.launch(connection, {
-      account: { externalId: pool.account_external_id ?? '', config: pool.account_config ?? {} },
-      region: settings.region,
-      image: settings.image,
-      machineType: settings.machine === 'default' ? null : settings.machine,
-      serviceAccount: settings.serviceAccount,
-      controlPlaneUrl: deps.publicUrl ?? '',
-      launchToken: reserved.token,
-      timeoutMinutes: reserved.timeoutMinutes + START_MINUTES,
-      labels: { pool: pool.key, job: reserved.jobId, run: reserved.runId },
-    });
+    const started = await runners.launch(connection, input);
     await recordStarted(sql, reserved.launchId, started);
     await setPoolError(sql, pool.id, null);
     return true;
@@ -161,7 +159,7 @@ export async function startMachines(
       : undefined;
     const why = blocker(deps, pool, runners);
     if (why) await setPoolError(deps.sql, pool.id, why);
-    else if (runners) turns.push({ pool, runners });
+    else if (runners && !preparing(pool)) turns.push({ pool, runners });
   }
   let started = 0;
   while (turns.length > 0 && started < budget) {

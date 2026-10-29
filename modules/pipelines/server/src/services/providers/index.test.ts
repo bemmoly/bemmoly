@@ -17,7 +17,7 @@ describe('the default providers', () => {
     expect(gcp?.id).toBe('gcp');
     expect(gcp?.comingSoon).toEqual(['access', 'cost']);
     expect(gcp?.runners?.launch).toBeDefined();
-    expect(gcp?.runners?.scale).toBeUndefined();
+    expect(gcp?.runners?.ensurePool).toBeDefined();
     expect(gcp?.targets?.kinds).toEqual(['container-service']);
     expect(rest.map((provider) => provider.id)).toEqual(['aws', 'kubernetes', 'azure']);
   });
@@ -39,9 +39,9 @@ describe('the default providers', () => {
     expect(gcp.runners).toBeDefined();
     const same = providersFromSettings(settings({ simulate: true }));
     expect(await same()).toBe(await same());
-    expect(gcp.runners?.scale).toBeDefined();
+    expect(gcp.runners?.ensurePool).toBeDefined();
     expect(
-      (await providersFromSettings(settings({ simulate: false }))()).get('gcp').runners?.scale,
-    ).toBeUndefined();
+      (await providersFromSettings(settings({ simulate: false }))()).get('gcp').description,
+    ).not.toMatch(/^Simulated/);
   });
 });

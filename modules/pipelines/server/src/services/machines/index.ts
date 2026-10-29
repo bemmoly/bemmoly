@@ -5,18 +5,19 @@ import type { RunOutcome } from '../orchestrator/advance.ts';
 import type { ProviderSource } from '../providers/index.ts';
 import type { ProviderRegistry } from '../providers/registry.ts';
 import { followMachines } from './follow.ts';
-import { scaleFleets } from './scale.ts';
+import { preparePools } from './scale.ts';
 import { startMachines } from './start.ts';
-import { FLEET_HOSTINGS, machinePools, ONE_JOB_HOSTINGS } from './store.ts';
+import { machinePools, ONE_JOB_HOSTINGS, POD_HOSTINGS } from './store.ts';
 
 export { poolConfigOf, ONE_JOB_HOSTINGS } from './store.ts';
 
 /*
  * The autoscaler (Platform › Capacity, journeys proposal "who gives the infra"): reads each
  * pool's queue and starts what it needs. One-job pools get a machine per waiting job, up to
- * their most; fleet pools are scaled to the queue within their fewest and most. A minute
- * sweep covers every pool; a job becoming ready in a one-job pool starts its machine within
- * seconds through a short-lived start job. Every step is safe with several servers sweeping.
+ * their most: a Cloud Build build, or a pod on a GKE Autopilot pool, whose cluster and
+ * namespace are prepared first and whose warm room follows its fewest. A minute sweep covers
+ * every pool; a job becoming ready in a one-job pool starts its machine within seconds
+ * through a short-lived start job. Every step is safe with several servers sweeping.
  */
 
 export const MACHINES_SWEEP_JOB = 'pipelines.machines-sweep';
@@ -54,26 +55,27 @@ export function createMachinesService(deps: MachinesServiceDeps) {
   });
 
   return {
-    /** Every pool, or only the pools named, which skips following and fleets. */
+    /** Every pool, or only the pools named, which skips following and preparing pools. */
     async sweep(options: { pools?: readonly string[] } = {}): Promise<MachinesSweep> {
       const ctx = context();
       const followed = options.pools
         ? { followed: 0, outcomes: [], errors: [] }
         : await followMachines(ctx);
+      // Before starting: a pool prepared now starts its first pod in the same sweep.
+      const prepared = options.pools
+        ? { scaled: 0 }
+        : await preparePools(ctx, await machinePools(ctx.sql, POD_HOSTINGS));
       const started = await startMachines(
         ctx,
         await machinePools(ctx.sql, ONE_JOB_HOSTINGS, options.pools),
       );
-      const fleets = options.pools
-        ? { scaled: 0 }
-        : await scaleFleets(ctx, await machinePools(ctx.sql, FLEET_HOSTINGS));
       await deps.announce([...followed.outcomes, ...started.outcomes]);
       if (followed.errors.length > 0) {
         throw new ProviderError(
           `${followed.errors.length} build machines could not be checked and wait for the next sweep: ${followed.errors[0]}`,
         );
       }
-      return { followed: followed.followed, started: started.started, scaled: fleets.scaled };
+      return { followed: followed.followed, started: started.started, scaled: prepared.scaled };
     },
 
     /** A job became ready in a pool: if Pipelines starts that pool's machines, start one soon. */
