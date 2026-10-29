@@ -42,7 +42,7 @@ export function imageOf(release: ReleaseArtifact): string {
   return `${release.imageRepository}@${digest}`;
 }
 
-const portOf = (port: DeploySettings['port']) => {
+export const portOf = (port: DeploySettings['port']) => {
   const value = typeof port === 'string' ? Number(port) : port;
   return value && Number.isInteger(value) && value > 0 && value < 65536 ? value : null;
 };
