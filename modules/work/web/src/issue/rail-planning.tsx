@@ -203,7 +203,8 @@ export function RailPeople({ issue }: { issue: IssueDetail }) {
       : `${issue.watchersCount} watching`;
 
   return (
-    <PropertyGroup title="People">
+    // Named apart from the sidebar's People product section, so the page's landmarks stay unique.
+    <PropertyGroup title="People" aria-label="People on this issue">
       <PropertyRow label="Reporter">
         {issue.reporter ? (
           <span className="inline-flex min-w-0 items-center gap-1.75 text-13 text-tx">
