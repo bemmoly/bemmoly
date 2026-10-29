@@ -49,19 +49,21 @@ export function createGkeAccess(contexts: GcpContexts, options: GkeAccessOptions
   const now = options.now ?? Date.now;
   const cache = new Map<string, { at: number; cluster: GkeCluster; kube: KubernetesClient }>();
 
+  /** `known` is the cluster as GKE just described it, when the caller read it already. */
   async function open(
     connection: ConnectionRecord,
     record: ClusterRecord,
     account: Readonly<Record<string, unknown>> | null,
+    known?: GkeCluster,
   ): Promise<GkeHandle> {
     const google = identityFor(contexts, connection, record, account);
     const name = clusterPath(record);
     const key = `${connection.id}:${name}`;
     const cached = cache.get(key);
-    if (cached && now() - cached.at < ENDPOINT_TTL_MS) {
+    if (!known && cached && now() - cached.at < ENDPOINT_TTL_MS) {
       return { google, kube: cached.kube, cluster: cached.cluster };
     }
-    const cluster = await google.container.getCluster(name);
+    const cluster = known ?? (await google.container.getCluster(name));
     if (!cluster) {
       throw new ValidationError(
         `Cluster ${record.name} was not found in ${record.projectId}, ${record.location}. Check it in Platform › Clusters`,

@@ -1,3 +1,4 @@
+import type { GkeCluster } from '../../../clients/gcp/index.ts';
 import type { AccessQuestion } from '../../../clients/kubernetes/index.ts';
 import { KubernetesApiError } from '../../../clients/kubernetes/index.ts';
 import type { ClusterRecord, ConnectionRecord } from '../contract.ts';
@@ -32,11 +33,11 @@ export async function clusterRightsProblems(
   cluster: ClusterRecord,
   account: Readonly<Record<string, unknown>> | null,
   who: string,
-  options: { gatewayOn: boolean },
+  options: { gatewayOn: boolean; found: GkeCluster },
 ): Promise<{ critical: string[]; soft: string[] }> {
   const name = cluster.name;
   try {
-    const { kube } = await access.open(connection, cluster, account);
+    const { kube } = await access.open(connection, cluster, account, options.found);
     const critical: string[] = [];
     const soft: string[] = [];
     const served = await kube.served(`${GATEWAY_GROUP}/v1`);
