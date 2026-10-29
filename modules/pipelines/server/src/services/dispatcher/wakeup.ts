@@ -13,14 +13,18 @@ export interface DispatchWakeups {
   wait(poolId: string, ms: number, signal?: AbortSignal): Promise<boolean>;
   /** Wakes local waiters directly, for jobs readied in this process. */
   wake(poolId: string): void;
+  /** Hears every pool's wake-ups, from any replica, until the returned function is called. */
+  subscribe(listener: (poolId: string) => void): () => void;
   stop(): Promise<void>;
 }
 
 export function createDispatchWakeups(sql: SqlClient | undefined): DispatchWakeups {
   const waiters = new Map<string, Set<() => void>>();
+  const listeners = new Set<(poolId: string) => void>();
   let listening: Promise<{ unlisten: () => Promise<void> }> | null = null;
 
   const wake = (poolId: string) => {
+    for (const listener of listeners) listener(poolId);
     const set = waiters.get(poolId);
     if (!set) return;
     waiters.delete(poolId);
@@ -38,6 +42,11 @@ export function createDispatchWakeups(sql: SqlClient | undefined): DispatchWakeu
 
   return {
     wake,
+    subscribe(listener) {
+      listeners.add(listener);
+      listen();
+      return () => listeners.delete(listener);
+    },
     wait(poolId, ms, signal) {
       listen();
       return new Promise<boolean>((resolve) => {
@@ -60,6 +69,7 @@ export function createDispatchWakeups(sql: SqlClient | undefined): DispatchWakeu
       });
     },
     async stop() {
+      listeners.clear();
       for (const poolId of [...waiters.keys()]) wake(poolId);
       const current = listening;
       listening = null;

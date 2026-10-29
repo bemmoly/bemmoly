@@ -6,6 +6,7 @@ import {
   slugSchema,
   teamRefSchema,
 } from './common.ts';
+import { cloudBuildPoolBodySchema, cloudBuildPoolSchema, poolMachineSchema } from './machines.ts';
 
 /*
  * Platform › Capacity: GET /api/v1/pipelines/capacity?range=now|7d|30d, GET/POST/PATCH
@@ -32,6 +33,12 @@ export const runnerPoolSchema = z.object({
   scaling: z.string(),
   atLimit: z.boolean(),
   queued: z.number().int().min(0),
+  /** How a Cloud Build pool starts its builds; null for every other hosting. */
+  cloudBuild: cloudBuildPoolSchema.nullable(),
+  /** Machines Pipelines started for this pool's jobs that are still starting or running. */
+  machines: z.array(poolMachineSchema),
+  /** Why the last machine would not start, until one starts again. */
+  lastError: z.string().nullable(),
 });
 
 export const capacityStatsSchema = z.object({
@@ -99,10 +106,15 @@ export const createPoolBodySchema = z
     maxRunners: z.number().int().min(1).max(10_000),
     warmRunners: z.number().int().min(0).default(0),
     cloudAccount: idSchema.optional(),
+    cloudBuild: cloudBuildPoolBodySchema.optional(),
   })
   .refine((body) => body.maxRunners >= body.minRunners, {
     message: 'The most runners must be at least the fewest',
     path: ['maxRunners'],
+  })
+  .refine((body) => (body.hosting === 'cloud-build') === (body.cloudBuild !== undefined), {
+    message: 'A Cloud Build pool needs its project, region, image and service account',
+    path: ['cloudBuild'],
   });
 
 export const updatePoolBodySchema = z.object({
@@ -112,6 +124,8 @@ export const updatePoolBodySchema = z.object({
   minRunners: z.number().int().min(0).optional(),
   maxRunners: z.number().int().min(1).max(10_000).optional(),
   warmRunners: z.number().int().min(0).optional(),
+  /** Replaces a Cloud Build pool's settings as a whole. */
+  cloudBuild: cloudBuildPoolBodySchema.optional(),
 });
 
 export const teamShareBodySchema = z.object({ weight: z.number().int().min(1).max(1000) });
