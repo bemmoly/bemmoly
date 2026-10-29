@@ -18,6 +18,7 @@ import { createShippingController } from './shipping.controller.ts';
 import { createStreamsController } from './streams.controller.ts';
 import { createViewsController } from './views.controller.ts';
 import { createVariablesController } from './variables.controller.ts';
+import { createRuntimesController } from './runtimes.controller.ts';
 
 export function createPipelinesControllers(services: PipelinesServices) {
   return {
@@ -40,6 +41,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     runner: createRunnerController(services.runner),
     capacity: createCapacityController(services.capacity),
     variables: createVariablesController(services.variables),
+    runtimes: createRuntimesController(services.clusters, services.runtimes),
   };
 }
 
