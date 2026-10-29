@@ -37,6 +37,10 @@ export function createModuleApprovals(
       own(id, 'read approval requests');
       return bound().forSubject(id, subject);
     },
+    ensureWorkflow(input) {
+      own(input.moduleId, 'define approval workflows');
+      return bound().ensureWorkflow(input);
+    },
     delegation: (actor) => bound().delegation(actor),
     setDelegation: (actor, body) => bound().setDelegation(actor, body),
     clearDelegation: (actor) => bound().clearDelegation(actor),

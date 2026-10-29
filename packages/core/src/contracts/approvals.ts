@@ -8,6 +8,7 @@ import type {
   DecideApprovalBody,
   DelegationBody,
   ListApprovalsQuery,
+  SaveWorkflowBody,
   StartApprovalInput,
   WithdrawApprovalBody,
 } from '@bemmoly/shared/approvals';
@@ -57,6 +58,11 @@ export interface Approvals {
   list(actor: Actor, query?: ListApprovalsQuery): Promise<ApprovalRequestPage>;
   /** Every request a module opened on one subject, newest first; no person check. */
   forSubject(moduleId: string, subject: ApprovalSubject): Promise<ApprovalRequest[]>;
+  /**
+   * Saves a module's default workflow as version 1 when none exists; an existing one, with
+   * whatever versions admins saved, is left as it is.
+   */
+  ensureWorkflow(input: SaveWorkflowBody): Promise<void>;
   delegation(actor: Actor): Promise<ApprovalDelegation | null>;
   setDelegation(actor: Actor, body: DelegationBody): Promise<ApprovalDelegation>;
   clearDelegation(actor: Actor): Promise<void>;

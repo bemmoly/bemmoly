@@ -19,13 +19,12 @@ import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
 import { createDisabledAi } from '../services/ai/index.ts';
-import type { Approvals } from '../contracts/approvals.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
-import { createModuleApprovals } from './approvals.ts';
+import { lateServicesFor, type LateServices } from './late-services.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
 import { createPersonDirectory } from '../services/people/index.ts';
 
-export interface ModuleContextOptions {
+export interface ModuleContextOptions extends LateServices {
   events: EventBus;
   editorEnabled: boolean;
   /** Bound once the jobs service starts; sends before that fail loudly. */
@@ -53,8 +52,6 @@ export interface ModuleContextOptions {
   contextFor?: ActorContextFactory;
   /** The connected code hosts, read on every call so they can be bound after modules register. */
   codeHosts?: () => CodeHostDirectory | undefined;
-  /** The approval engine, read on every call so it can be bound after modules register. */
-  approvals?: () => Approvals | undefined;
   /** The optional PDF renderer; absent unless one is configured. */
   pdf?: PdfRenderer;
   publicUrl?: string;
@@ -282,9 +279,7 @@ export function createModuleContext(
     start: createStartRegistry(module.id, into),
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
-    ...(options.approvals
-      ? { approvals: createModuleApprovals(module.id, options.approvals) }
-      : {}),
+    ...lateServicesFor(module.id, options),
     ...(options.pdf ? { pdf: options.pdf } : {}),
     ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
     ...(options.database

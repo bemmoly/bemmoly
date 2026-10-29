@@ -6,6 +6,7 @@ import type { BemmolyModule } from '@bemmoly/core';
  */
 export const MODULE_PACKAGES: readonly string[] = [
   '@bemmoly/module-docs',
+  '@bemmoly/module-people',
   '@bemmoly/module-pipelines',
   '@bemmoly/module-work',
 ];

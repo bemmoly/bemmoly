@@ -58,6 +58,9 @@ export async function currentVersion(
   };
 }
 
+/** Who saves a module's default workflow: the module, not a person. */
+const DEFAULTS_ACTOR: Actor = { kind: 'system', id: 'approvals:defaults' };
+
 /** Settings' view of definitions: admins read them and save new versions. */
 export function createDefinitions(deps: ApprovalDeps) {
   const { sql } = deps;
@@ -108,6 +111,34 @@ export function createDefinitions(deps: ApprovalDeps) {
       });
       const [row] = await sql<WorkflowRow[]>`${latest(sql)} where w.id = ${id as string}`;
       return toWorkflow(row!);
+    },
+
+    /**
+     * A module's default: saved as version 1 when the workflow does not exist yet, left alone
+     * when it does, so an admin's later versions always win.
+     */
+    async ensure(input: SaveWorkflowBody): Promise<void> {
+      const body = saveWorkflowBodySchema.parse(input);
+      await sql.begin(async (tx) => {
+        const [workflow] = await tx<{ id: string }[]>`
+          insert into approval_workflows (module_id, key, name, latest_version)
+          values (${body.moduleId}, ${body.key}, ${body.name}, 1)
+          on conflict (module_id, key) do nothing
+          returning id`;
+        if (!workflow) return;
+        await tx`
+          insert into approval_workflow_versions (workflow_id, version, spec, created_by)
+          values (${workflow.id}, 1, ${JSON.stringify(body.spec)}::jsonb, null)`;
+        await deps.audit.record(
+          {
+            actor: DEFAULTS_ACTOR,
+            action: 'approval_workflow.saved',
+            target: { kind: 'approval_workflow', id: workflow.id },
+            after: { key: body.key, version: 1, spec: body.spec },
+          },
+          tx,
+        );
+      });
     },
   };
 }

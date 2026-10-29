@@ -34,7 +34,7 @@ describe('buildApp', () => {
     expect(ready.json()).toMatchObject({ status: 'unavailable' });
   });
 
-  it('lists the shipped module manifests: docs, pipelines and work', async () => {
+  it('lists the shipped module manifests: docs, people, pipelines and work', async () => {
     const app = await buildApp({ env: TEST_ENV, modules: await shippedModules(), logger: false });
     const response = await app.inject({ method: 'GET', url: '/api/v1/modules' });
     expect(response.statusCode).toBe(200);
@@ -73,6 +73,8 @@ describe('buildApp', () => {
             add: { create: 'docs.create-space', label: 'New space' },
           },
         },
+        // The full People manifest is held by modules/people/module.test.ts.
+        expect.objectContaining({ id: 'people', name: 'People', icon: 'people', order: 30 }),
         {
           id: 'pipelines',
           name: 'Pipelines',

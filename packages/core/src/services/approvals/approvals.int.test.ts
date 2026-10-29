@@ -228,6 +228,19 @@ describe('the approval engine against Postgres', () => {
     expect(count?.n).toBe(0);
   });
 
+  it('saves a module default once and never over an admin version', async () => {
+    const fallback = { stages: [{ name: 'Anyone', approvers: [{ type: 'manager' as const }] }] };
+    const input = { moduleId: 'expenses', key: 'expenses.claim', name: 'Claims', spec: fallback };
+    await h.service.ensureWorkflow(input);
+    await h.service.ensureWorkflow(input);
+    const [first] = await h.service.workflows.list(h.as('admin'), 'expenses');
+    expect(first).toMatchObject({ version: 1, name: 'Claims' });
+    await define();
+    await h.service.ensureWorkflow(input);
+    const [after] = await h.service.workflows.list(h.as('admin'), 'expenses');
+    expect(after).toMatchObject({ version: 2, name: 'Expense claims' });
+  });
+
   it('keeps a running request on the version it started with', async () => {
     await define();
     const started = await claim(640);
