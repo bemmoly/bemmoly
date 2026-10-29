@@ -60,6 +60,41 @@ describe('runner configuration', () => {
     ).toThrow(/only with --local/);
   });
 
+  it('runs one job with a launch token, sharing its own volumes with steps when asked', () => {
+    const config = loadRunnerConfig(
+      [],
+      {
+        BEMMOLY_URL: 'https://ci.example.com',
+        BEMMOLY_LAUNCH_TOKEN: 'l'.repeat(20),
+        BEMMOLY_RUNNER_VOLUMES_FROM: 'self',
+      },
+      never,
+    );
+    expect(config).toMatchObject({
+      launchToken: 'l'.repeat(20),
+      once: true,
+      volumesFrom: hostname(),
+    });
+    expect(config.poolToken).toBeUndefined();
+    expect(() =>
+      loadRunnerConfig(
+        [
+          '--url',
+          'http://x.test',
+          '--pool-token',
+          'p'.repeat(20),
+          '--launch-token',
+          'l'.repeat(20),
+        ],
+        {},
+        never,
+      ),
+    ).toThrow(/not both/);
+    expect(() =>
+      loadRunnerConfig(['--url', 'http://x.test', '--local', '--volumes-from', 'self'], {}, never),
+    ).toThrow(/leave out --local/);
+  });
+
   it('fails fast with a plain message on a missing address or an unknown flag', () => {
     expect(() => loadRunnerConfig([], {}, never)).toThrow(/--url/);
     expect(() => loadRunnerConfig(['--url', 'ftp://x.test'], {}, never)).toThrow(ValidationError);
