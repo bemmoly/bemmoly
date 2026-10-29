@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Provider } from '../../../../../shared/common.ts';
 import type { CloudProvider, DesiredResource } from '../contract.ts';
+import { createFakeClusters, type FakeClustersWorld } from './clusters.ts';
 import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
 
 /*
@@ -9,7 +10,7 @@ import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
  * kit runs against it first so the kit itself is known to be right.
  */
 
-export interface FakeWorld extends FakeTargetsWorld {
+export interface FakeWorld extends FakeTargetsWorld, FakeClustersWorld {
   boundaries: Set<string>;
   accounts: Map<string, { name: string; labels: Readonly<Record<string, string>> }>;
   resources: Map<string, Record<string, unknown>>;
@@ -39,6 +40,8 @@ export function createFakeWorld(): FakeWorld {
     accountQuota: 100,
     connectionProblems: [],
     accountProblems: new Map(),
+    clusters: new Map(),
+    clusterProblems: new Map(),
   };
 }
 
@@ -51,6 +54,7 @@ export function createFakeProvider(
   id: Provider = 'gcp',
 ): CloudProvider & { world: FakeWorld } {
   const { targets, metrics } = createFakeTargets(world);
+  const kubernetes = createFakeTargets(world, { kubernetes: true });
   return {
     id,
     name: 'Simulated',
@@ -59,6 +63,12 @@ export function createFakeProvider(
     world,
     targets,
     metrics,
+    clusters: createFakeClusters(world),
+    runtimes: {
+      'gke-autopilot': kubernetes,
+      'gke-standard': kubernetes,
+      'attached-cluster': kubernetes,
+    },
     connection: {
       async verify(connection) {
         const problems = [...world.connectionProblems];
