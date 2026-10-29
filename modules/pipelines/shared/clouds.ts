@@ -87,6 +87,8 @@ export const cloudConnectionSchema = z.object({
   lastCheckedAt: isoDateTimeSchema.nullable(),
   /** What to do next, in plain words, when the last check failed. */
   lastError: z.string().nullable(),
+  /** The same, one sentence per thing to grant or change; empty when the check passed. */
+  problems: z.array(z.string()),
   createdAt: isoDateTimeSchema,
 });
 
@@ -122,6 +124,9 @@ export const gcpRegionSchema = z
   .string()
   .regex(/^[a-z]+-[a-z]+[0-9]+$/, 'Name a region such as us-central1');
 
+/** "01A2B3-C4D5E6-F7A8B9", as the console's Billing › Account management shows it. */
+export const billingAccountIdPattern = /^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/;
+
 /** "folders/417302018845" or "417302018845", stored as the digits alone. */
 export const folderIdSchema = z
   .string()
@@ -147,10 +152,7 @@ export const connectCloudBodySchema = z.discriminatedUnion('provider', [
         .string()
         .regex(/^[0-9]{6,20}$/)
         .optional(),
-      billingAccountId: z
-        .string()
-        .regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/)
-        .optional(),
+      billingAccountId: z.string().regex(billingAccountIdPattern).optional(),
       folderName: z.string().trim().min(1).max(30).default('Bemmoly'),
       /** The folder bootstrap.sh made, "folders/417302018845" or its digits; managed only. */
       folderId: folderIdSchema.optional(),

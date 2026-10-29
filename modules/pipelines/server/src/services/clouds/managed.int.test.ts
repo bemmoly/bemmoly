@@ -98,6 +98,17 @@ describe('managed mode on a folder', () => {
         return 'job';
       },
     });
+    // An environment that deploys into an attached project is never taken over.
+    const [attached] = await h.sql<{ id: string }[]>`
+      insert into cloud_connections (provider, name, layout, config, status)
+      values ('gcp', 'Shop attached', 'per-environment', '{"mode":"attached"}'::jsonb, 'connected')
+      returning id`;
+    const [shopProject] = await h.sql<{ id: string }[]>`
+      insert into cloud_accounts (connection_id, external_id, name, origin, status)
+      values (${attached?.id ?? ''}, 'acme-shop-prod', 'Shop', 'attached', 'ready') returning id`;
+    await h.sql`
+      insert into pipeline_environments (key, name, class, position, cloud_account_id)
+      values ('shop-prod', 'Shop prod', 'prod', 9, ${shopProject?.id ?? ''})`;
     const connection = await connectStarter(clouds, 'Acme Starter');
     expect(connection.boundary).toBe('Bemmoly');
     const [row] = await h.sql<{ boundary_ref: string }[]>`
@@ -159,6 +170,9 @@ describe('managed mode on a folder', () => {
       'prod',
       'nonprod',
     ]);
+    const [shop] = await h.sql<{ cloud_account_id: string }[]>`
+      select cloud_account_id from pipeline_environments where key = 'shop-prod'`;
+    expect(shop?.cloud_account_id).toBe(shopProject?.id);
     const [saved] = (await clouds.list(admin)).items.filter((item) => item.id === connection.id);
     expect(saved?.registry).toBe('fake.registry/bemmoly-control-583920174411/apps');
 
