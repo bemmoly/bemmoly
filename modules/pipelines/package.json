@@ -24,7 +24,7 @@
     "@bemmoly/shared": "workspace:*",
     "@marcbachmann/cel-js": "8.0.0",
     "cron-parser": "5.10.1",
-    "fastify": "5.12.5",
+    "fastify": "5.12.6",
     "google-auth-library": "10.9.1",
     "yaml": "2.8.3",
     "zod": "4.6.6"
