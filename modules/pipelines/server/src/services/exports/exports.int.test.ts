@@ -93,6 +93,36 @@ async function serveInDev(h: PipelinesHarness, app: string) {
     from pipeline_applications a where a.id = ${app}`;
 }
 
+/** Dev's front door with checkout-api's host, and an Autopilot runner pool, both ready. */
+async function frontDoorAndPool(h: PipelinesHarness, app: string) {
+  const [dev] = await h.sql<{ id: string; account: string; account_id: string }[]>`
+    select e.id, a.external_id as account, a.id as account_id from pipeline_environments e
+    join cloud_accounts a on a.id = e.cloud_account_id where e.key = 'dev'`;
+  const [door] = await h.sql<{ id: string }[]>`
+    insert into pipeline_front_doors (environment_id, domain, status)
+    values (${dev?.id ?? ''}, 'dev.acme.example', 'ready') returning id`;
+  await h.sql`
+    insert into pipeline_front_door_routes (front_door_id, application_id, account, host, backends)
+    values (${door?.id ?? ''}, ${app}, ${dev?.account ?? ''}, 'checkout-api.dev.acme.example',
+      '[{"runtime": "cloud-run", "revision": null, "percent": 100}]'::jsonb)`;
+  const autopilot = {
+    location: 'us-central1',
+    cluster: { name: 'bemmoly-runners', create: true },
+    image: 'us-docker.pkg.dev/acme-ci/bemmoly/runner-gke:1',
+    cpu: 2,
+    memoryGb: 8,
+    spot: false,
+    serviceAccount: `builder@${dev?.account ?? ''}.iam.gserviceaccount.com`,
+    builderImage: 'gcr.io/kaniko-project/executor:v1.23.2-debug',
+    namespace: 'bemmoly-runners-gke',
+  };
+  const pods = { ref: 'pool', status: 'ready', detail: null, prepared: 'x', warm: 0, ready: 0 };
+  await h.sql`
+    insert into pipeline_runner_pools (key, name, hosting, cloud_account_id, config)
+    values ('gke', 'GKE runners', 'gke-autopilot', ${dev?.account_id ?? ''},
+      ${JSON.stringify({ autopilot, pods })}::jsonb)`;
+}
+
 describe('exporting what Pipelines made', () => {
   let connection = '';
 
@@ -108,6 +138,7 @@ describe('exporting what Pipelines made', () => {
     );
     expect(set.statusCode, set.body).toBeLessThan(300);
     await serveInDev(h, app);
+    await frontDoorAndPool(h, app);
 
     const preview = await api.get('/exports', h.users.admin);
     expect(preview.statusCode, preview.body).toBe(200);
@@ -126,6 +157,9 @@ describe('exporting what Pipelines made', () => {
         'acme-starter/terraform/landing-zone.tf',
         'acme-starter/terraform/cloud-run.tf',
         'acme-starter/terraform/imports.tf',
+        'acme-starter/terraform/front-door.tf',
+        'acme-starter/terraform/build-pools.tf',
+        'acme-starter/helm/runner-pools/values/gke.yaml',
       ]),
     );
     expect(starter.toFill).toEqual([]);
@@ -153,6 +187,12 @@ describe('exporting what Pipelines made', () => {
       'secret_id = "bemmoly-checkout-api-DB_URL-dev"',
     );
     expect(files['acme-starter/terraform/imports.tf']).toContain('/services/checkout-api"');
+    const door = files['acme-starter/terraform/front-door.tf'] ?? '';
+    expect(door).toContain('hosts        = ["checkout-api.dev.acme.example"]');
+    expect(door).toContain('resource "google_compute_managed_ssl_certificate"');
+    expect(files['acme-starter/terraform/build-pools.tf']).toContain(
+      '[bemmoly-runners-gke/bemmoly-runner]',
+    );
     for (const [name, content] of Object.entries(files)) {
       expect(content.includes(SENTINEL), `${name} holds the secret's value`).toBe(false);
     }
