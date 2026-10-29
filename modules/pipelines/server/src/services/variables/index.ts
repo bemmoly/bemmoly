@@ -1,7 +1,13 @@
 import type { RequestContext, SqlClient } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
 import type { SetVariableBody, Variable, VariablesResponse } from '../../../../shared/variables.ts';
-import { personOf, requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
+import {
+  authorizePipelines,
+  personOf,
+  requireAccess,
+  requireDatabase,
+  type PipelinesServiceDeps,
+} from '../deps.ts';
 import type { ProviderSourceOrRegistry } from '../shipping/engine-deps.ts';
 import { loadApplication } from '../shipping/load.ts';
 import { ciSecretValues } from './ci.ts';
@@ -27,7 +33,14 @@ export function createVariablesService(
     return row;
   }
 
-  async function targetOf(application: string, environment: string | undefined, name: string) {
+  // The product gate comes first, so someone outside Pipelines cannot tell which names exist.
+  async function targetOf(
+    ctx: RequestContext,
+    application: string,
+    environment: string | undefined,
+    name: string,
+  ) {
+    await authorizePipelines(ctx);
     const app = await loadApplication(sql(), { key: application });
     return {
       application: { id: app.id, key: app.key },
@@ -42,6 +55,7 @@ export function createVariablesService(
       application: string,
       query: { environment?: string },
     ): Promise<VariablesResponse> {
+      await authorizePipelines(ctx);
       const app = await loadApplication(sql(), { key: application });
       const access = requireAccess(deps);
       await access.authorizeAction(ctx, 'view', { application: app.id });
@@ -62,14 +76,14 @@ export function createVariablesService(
       at: { application: string; environment?: string; name: string },
       body: SetVariableBody,
     ): Promise<Variable> {
-      return writes().set(ctx, await targetOf(at.application, at.environment, at.name), body);
+      return writes().set(ctx, await targetOf(ctx, at.application, at.environment, at.name), body);
     },
 
     async remove(
       ctx: RequestContext,
       at: { application: string; environment?: string; name: string },
     ): Promise<void> {
-      await writes().remove(ctx, await targetOf(at.application, at.environment, at.name));
+      await writes().remove(ctx, await targetOf(ctx, at.application, at.environment, at.name));
     },
 
     /** The sweep job: values from before secrets existed, into the store. */
