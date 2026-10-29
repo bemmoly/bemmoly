@@ -6,6 +6,7 @@ import {
   serviceAccountMember,
   withBinding,
 } from '../../../clients/gcp/index.ts';
+import type { SecretManagerClient } from '../../../clients/gcp/secret-manager.ts';
 import type { RegistryPart, SecretsPart } from '../contract.ts';
 import type { GcpContexts } from './context.ts';
 import { MANAGED_LABEL } from './org.ts';
@@ -59,6 +60,19 @@ export function createGcpRegistry(contexts: GcpContexts): RegistryPart {
   };
 }
 
+/** Grants Secret Accessor on one secret; does nothing when the binding is there already. */
+export async function grantSecretAccess(
+  sm: SecretManagerClient,
+  input: { account: string; name: string; principal: string },
+): Promise<void> {
+  const updated = withBinding(
+    await sm.getPolicy(input.account, input.name),
+    SECRET_ACCESSOR,
+    memberOf(input.principal),
+  );
+  if (updated) await sm.setPolicy(input.account, input.name, updated);
+}
+
 export function createGcpSecrets(contexts: GcpContexts): SecretsPart {
   return {
     async writeVersion(connection, input) {
@@ -69,14 +83,14 @@ export function createGcpSecrets(contexts: GcpContexts): SecretsPart {
       return { version: await sm.addVersion(input.account, input.name, input.value) };
     },
 
-    async grantAccess(connection, input) {
-      const sm = contexts(connection).control.secretManager;
-      const updated = withBinding(
-        await sm.getPolicy(input.account, input.name),
-        SECRET_ACCESSOR,
-        memberOf(input.principal),
-      );
-      if (updated) await sm.setPolicy(input.account, input.name, updated);
-    },
+    grantAccess: (connection, input) =>
+      grantSecretAccess(contexts(connection).control.secretManager, input),
+
+    accessVersion: (connection, input) =>
+      contexts(connection).control.secretManager.accessVersion(
+        input.account,
+        input.name,
+        input.version,
+      ),
   };
 }

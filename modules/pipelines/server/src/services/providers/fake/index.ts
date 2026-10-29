@@ -15,6 +15,8 @@ export interface FakeWorld extends FakeTargetsWorld {
   resources: Map<string, Record<string, unknown>>;
   /** Secret versions by "account/name": only a hash, as a real store's audit would show. */
   secrets: Map<string, string[]>;
+  /** The same versions' values, in this process's memory only, for CI jobs to read back. */
+  secretValues: Map<string, string[]>;
   grants: Set<string>;
   /** How many more accounts the billing account may link; quota checks read it. */
   accountQuota: number;
@@ -32,6 +34,7 @@ export function createFakeWorld(): FakeWorld {
     accounts: new Map(),
     resources: new Map(),
     secrets: new Map(),
+    secretValues: new Map(),
     grants: new Set(),
     accountQuota: 100,
     connectionProblems: [],
@@ -131,10 +134,20 @@ export function createFakeProvider(
         const versions = world.secrets.get(key) ?? [];
         versions.push(createHash('sha256').update(input.value).digest('hex'));
         world.secrets.set(key, versions);
+        world.secretValues.set(key, [...(world.secretValues.get(key) ?? []), input.value]);
         return { version: String(versions.length) };
       },
       async grantAccess(_connection, input) {
         world.grants.add(`secret ${input.account}/${input.name} ${input.principal}`);
+      },
+      async accessVersion(_connection, input) {
+        const value = world.secretValues
+          .get(`${input.account}/${input.name}`)
+          ?.at(Number(input.version) - 1);
+        if (value === undefined) {
+          throw new Error(`${input.name} has no version ${input.version} in ${input.account}`);
+        }
+        return value;
       },
     },
     runners: {
