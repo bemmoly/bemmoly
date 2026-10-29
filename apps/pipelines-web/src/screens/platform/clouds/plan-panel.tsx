@@ -68,7 +68,10 @@ export function PlanPanel({
       ) : (
         <>
           <ZoneTree root={plan.root} />
-          {plan.billing && <BillingLine billing={plan.billing} />}
+          {/* Over the limit, the warning below says the same and more. */}
+          {plan.billing && plan.billing.linked + plan.billing.adding <= plan.billing.limit && (
+            <BillingLine billing={plan.billing} />
+          )}
           {plan.warnings.length > 0 && (
             <ul
               aria-label={t('pipelines.clouds.planWarnings')}

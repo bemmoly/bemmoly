@@ -45,10 +45,15 @@ export default function ConnectCloud() {
   const unit = unitOf(provider);
   const [chosen, setLayout] = useState<Layout | null>(null);
   const layout = chosen ?? connection?.layout ?? 'starter';
-  const showPlan = Boolean(connection && !attached && !planId);
-  const plan = useLandingZonePlan(showPlan ? connectionId : null, { layout });
   const { apply, check } = useCloudWrites();
   const checking = arrival.checking || check.isPending;
+  // Planning waits for the check, whose result decides what stops Apply.
+  const showPlan = Boolean(connection && !attached && !planId && !checking);
+  const plan = useLandingZonePlan(
+    showPlan ? connectionId : null,
+    { layout },
+    connection?.lastCheckedAt ?? null,
+  );
   const blocked = (plan.data?.blockers.length ?? 0) > 0;
   const adding = plan.data?.billing?.adding ?? plan.data?.counts.accounts ?? 0;
   const create = () =>
