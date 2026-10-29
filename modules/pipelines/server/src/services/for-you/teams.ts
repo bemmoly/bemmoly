@@ -30,7 +30,7 @@ export async function myTeams(sql: SqlExecutor, me: string): Promise<TeamMain[]>
       select t.id, t.name from teams t join team_members m on m.team_id = t.id
       where m.user_id = ${me}::uuid),
     last_green as (
-      select mine.id as team_id, (select max(r.finished_at) from pipeline_runs r
+      select mine.id as team_id, (select max(r.created_at) from pipeline_runs r
         where r.team_id = mine.id and r.pull_request is null and r.ref in ('main', 'master')
           and r.state = 'passed' and r.created_at > now() - interval '14 days') as at
       from mine),
