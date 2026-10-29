@@ -1,6 +1,11 @@
 import { ValidationError } from '@bemmoly/shared';
 import { z } from 'zod';
-import type { EnvironmentClass, Tier } from '../../../../shared/common.ts';
+import {
+  deployRuntimeSchema,
+  type DeployRuntime,
+  type EnvironmentClass,
+  type Tier,
+} from '../../../../shared/common.ts';
 import type { EnvironmentRef } from '../../../../shared/environments.ts';
 import type { RolloutPlan } from '../../../../shared/promotions.ts';
 
@@ -45,6 +50,8 @@ export interface DeploymentPlan {
   checks: Array<z.infer<typeof checkSchema>>;
   /** The stable revision's numbers just before the deploy, for the watch period. */
   baseline?: { error_rate: number | null; latency_p95: number | null };
+  /** The runtime the deploy started on; a switch takes effect on the next deploy. */
+  runtime?: DeployRuntime;
 }
 
 export const deploymentPlanSchema = z.object({
@@ -57,6 +64,7 @@ export const deploymentPlanSchema = z.object({
   baseline: z
     .object({ error_rate: z.number().nullable(), latency_p95: z.number().nullable() })
     .optional(),
+  runtime: deployRuntimeSchema.optional(),
 });
 
 export function readPlan(value: unknown): StoredPlan {
