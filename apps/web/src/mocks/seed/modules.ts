@@ -173,7 +173,7 @@ const SHIPPED: Shipped[] = [
         },
       ],
       icon: 'people',
-      color: 'brand-3',
+      color: 'epic-7',
       order: 30,
       sidebar: {
         path: '/people',
