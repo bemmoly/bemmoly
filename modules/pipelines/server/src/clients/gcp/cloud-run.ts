@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { GcpHttp } from './http.ts';
+import { GcpApiError, type GcpHttp } from './http.ts';
 import { operationSchema, waitForOperation, type PollOptions } from './operations.ts';
 import { policySchema, withBinding } from './policy.ts';
 
@@ -107,6 +107,21 @@ export function createCloudRunClient(http: GcpHttp, poll: PollOptions) {
 
     getRevision(name: string): Promise<RunRevision | null> {
       return http.find({ url: `${BASE}/${name}`, schema: revisionSchema });
+    },
+
+    /** The whole service and every revision; gone already counts as deleted. */
+    async deleteService(name: string): Promise<void> {
+      try {
+        const operation = await http.send({
+          method: 'DELETE',
+          url: `${BASE}/${name}`,
+          schema: operationSchema,
+        });
+        await waitForOperation(http, BASE, operation, poll);
+      } catch (error) {
+        if (error instanceof GcpApiError && error.status === 404) return;
+        throw error;
+      }
     },
 
     async deleteRevision(name: string): Promise<void> {
