@@ -1,6 +1,6 @@
 import type { RunOutcome } from '../orchestrator/advance.ts';
 import type { MachineRef, RunnersPart } from '../providers/contract.ts';
-import { connectionOf, endLaunch, failJob, poolConfigOf } from './store.ts';
+import { connectionOf, endLaunch, failJob, poolConfigOf, regionOf } from './store.ts';
 import type { MachinesDeps } from './types.ts';
 
 /*
@@ -8,7 +8,8 @@ import type { MachinesDeps } from './types.ts';
  * recently (so two servers never ask about one machine at once) and settles what changed: a
  * machine whose job ended or moved on is stopped and closed; one that never came up gives
  * its job back to the queue; one that ended while its job still waited or ran fails the job
- * with the cloud's reason.
+ * with the cloud's reason, and is stopped in case the cloud would keep it (a pod whose image
+ * cannot be pulled waits otherwise until its deadline).
  */
 
 const LEASE_SECONDS = 20;
@@ -75,11 +76,11 @@ async function lease(deps: MachinesDeps): Promise<LiveLaunch[]> {
 }
 
 function refOf(launch: LiveLaunch): MachineRef | null {
-  const settings = poolConfigOf(launch.config).cloudBuild;
-  if (!launch.external_ref || !settings || !launch.account_external_id) return null;
+  const region = regionOf(poolConfigOf(launch.config));
+  if (!launch.external_ref || !region || !launch.account_external_id) return null;
   return {
     account: { externalId: launch.account_external_id, config: launch.account_config ?? {} },
-    region: settings.region,
+    region,
     ref: launch.external_ref,
   };
 }
@@ -133,6 +134,10 @@ async function settle(
   const status = await runners.status(connection, ref);
   if (UP.includes(status.state)) return;
   const why = status.detail ?? `The machine ended as ${status.state}`;
+  if (status.state === 'failed') {
+    // Best effort: the machine's own deadline ends it if the cloud refuses the stop.
+    await runners.cancel?.(connection, ref).catch(() => undefined);
+  }
   await endLaunch(deps.sql, launch.id, { state: 'failed', error: why });
   const outcome = await failJob(
     deps.sql,
