@@ -1,0 +1,50 @@
+{
+  "recorded": "Hand-written from the Google Cloud REST reference (shapes and field names as documented); not captured from a live organisation. Replace with a capture from a sandbox: see README.md beside this file.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://oauth2.googleapis.com/tokeninfo",
+      "repeat": true,
+      "response": {
+        "azp": "108245519374462230118",
+        "aud": "108245519374462230118",
+        "scope": "https://www.googleapis.com/auth/cloud-platform",
+        "exp": "1792195200",
+        "expires_in": 3412,
+        "email": "bemmoly-control@bemmoly-control-583920174411.iam.gserviceaccount.com",
+        "email_verified": "true",
+        "access_type": "online"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/folders/417302018845:testIamPermissions",
+      "body": {
+        "permissions": ["resourcemanager.projects.create", "resourcemanager.folders.create"]
+      },
+      "response": {
+        "permissions": ["resourcemanager.projects.create"]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9",
+      "response": {
+        "name": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+        "open": true,
+        "displayName": "Acme main billing",
+        "masterBillingAccount": "",
+        "parent": "organizations/583920174411",
+        "currencyCode": "USD"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9:testIamPermissions",
+      "body": {
+        "permissions": ["billing.resourceAssociations.create"]
+      },
+      "response": {}
+    }
+  ]
+}

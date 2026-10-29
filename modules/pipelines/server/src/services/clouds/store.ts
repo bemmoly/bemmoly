@@ -19,8 +19,8 @@ import type { RecordedResource } from './tree.ts';
 const CONNECTION_COLUMNS = `id, provider, name, status, principal, boundary_ref, layout, config,
   last_checked_at, last_error, created_at`;
 
-const PLAN_COLUMNS = `id, connection_id, layout, spec_hash, desired, tree, counts, blockers, status,
-  attempts, created_at`;
+const PLAN_COLUMNS = `id, connection_id, layout, spec_hash, desired, tree, counts, blockers,
+  warnings, billing, status, attempts, last_error, created_at`;
 
 export const toRecord = (row: ConnectionRow): ConnectionRecord => ({
   id: row.id,
@@ -69,9 +69,15 @@ export async function insertConnection(
 ): Promise<ConnectionRow> {
   const { provider, name, layout } = body;
   const config = configOf(body);
+  // The folder bootstrap.sh made is the boundary from the start: Pipelines never makes one.
+  const boundary =
+    body.provider === 'gcp' && body.mode === 'managed' && body.folderId
+      ? `folders/${body.folderId}`
+      : null;
   const [row] = await sql<ConnectionRow[]>`
-    insert into cloud_connections (provider, name, layout, config, created_by)
-    values (${provider}, ${name}, ${layout}, ${JSON.stringify(config)}::jsonb, ${createdBy})
+    insert into cloud_connections (provider, name, layout, config, boundary_ref, created_by)
+    values (${provider}, ${name}, ${layout}, ${JSON.stringify(config)}::jsonb, ${boundary},
+      ${createdBy})
     returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
   if (!row) throw new Error('insert returned nothing');
   return row;
@@ -180,14 +186,18 @@ export async function recordedResources(
 
 export async function insertPlan(
   sql: SqlClient,
-  plan: Omit<PlanRow, 'id' | 'status' | 'attempts' | 'created_at'> & { createdBy: string | null },
+  plan: Omit<PlanRow, 'id' | 'status' | 'attempts' | 'last_error' | 'created_at'> & {
+    createdBy: string | null;
+  },
 ): Promise<PlanRow> {
   const [row] = await sql<PlanRow[]>`
     insert into cloud_landing_zone_plans
-      (connection_id, layout, spec_hash, desired, tree, counts, blockers, created_by)
+      (connection_id, layout, spec_hash, desired, tree, counts, blockers, warnings, billing,
+        created_by)
     values (${plan.connection_id}, ${plan.layout}, ${plan.spec_hash},
       ${JSON.stringify(plan.desired)}::jsonb, ${JSON.stringify(plan.tree)}::jsonb,
-      ${JSON.stringify(plan.counts)}::jsonb, ${plan.blockers}::text[], ${plan.createdBy})
+      ${JSON.stringify(plan.counts)}::jsonb, ${plan.blockers}::text[], ${plan.warnings}::text[],
+      ${plan.billing === null ? null : JSON.stringify(plan.billing)}::jsonb, ${plan.createdBy})
     returning ${sql.unsafe(PLAN_COLUMNS)}`;
   if (!row) throw new Error('insert returned nothing');
   return row;

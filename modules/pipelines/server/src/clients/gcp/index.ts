@@ -55,7 +55,14 @@ export { GcpApiError, type GcpTokenSource, type GcpTransport } from './http.ts';
 export { createTokenSource, gcpCredentialsSchema, type GcpCredentials } from './auth.ts';
 export { impersonatedTokens } from './iam-credentials.ts';
 export { serviceAccountEmail } from './iam.ts';
-export { hasBinding, serviceAccountMember, withBinding, type IamPolicy } from './policy.ts';
+export type { GcpProject } from './resource-manager.ts';
+export {
+  hasBinding,
+  principalMember,
+  serviceAccountMember,
+  withBinding,
+  type IamPolicy,
+} from './policy.ts';
 export { LATEST_TARGET, REVISION_TARGET, runServiceName, type RunService } from './cloud-run.ts';
 export { dockerHostPath, parseDockerPath, repositoryName } from './artifact-registry.ts';
 export type { PollOptions } from './operations.ts';
