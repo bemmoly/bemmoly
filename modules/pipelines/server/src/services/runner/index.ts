@@ -33,6 +33,7 @@ import { ingestReport, type TestsService } from '../tests/index.ts';
 import { hashToken, newToken } from '../../utils/tokens.ts';
 import { jobFromToken, LIVE_JOB, runnerFromToken } from './auth.ts';
 import { finishJob, type FinishInput } from './finish.ts';
+import type { PipelinesCodeHosts } from '../code/hosts.ts';
 import { claimedJobPayload } from './payload.ts';
 import { secretNames, secretsForRunner, type SecretResolver } from './secrets.ts';
 import { uploadArtifact } from './artifacts.ts';
@@ -52,6 +53,8 @@ export interface RunnerDeps extends ExecutionDeps {
   tests: TestsService;
   secrets: SecretResolver;
   objects?: Pick<ModuleObjects, 'put'>;
+  /** Mints a checkout's read-only credential, for private repositories. */
+  code?: PipelinesCodeHosts;
 }
 
 /** Sweeping more often than heartbeats arrive finds nothing new. */
@@ -138,7 +141,7 @@ export function createRunnerService(deps: RunnerDeps) {
           runnerId: runner.id,
           tokenHash: hashToken(jobToken),
         });
-        if (claimed) return claimedJobPayload(sql, claimed.id, jobToken);
+        if (claimed) return claimedJobPayload(sql, claimed.id, jobToken, deps.code);
         const left = deadline - Date.now();
         if (left <= 0 || signal?.aborted) return null;
         await deps.wakeups.wait(runner.pool_id, Math.min(left, SWEEP_EVERY_MS), signal);

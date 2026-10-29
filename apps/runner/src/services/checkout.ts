@@ -14,13 +14,29 @@ export function cloneCredentials(cloneUrl: string): string[] {
   }
 }
 
-/** Fetches exactly the commit the run is for: one shallow fetch, no branch history. */
+/** The clone URL with any credential taken out, for what stays in the workspace. */
+export function withoutCredentials(cloneUrl: string): string {
+  try {
+    const url = new URL(cloneUrl);
+    url.username = '';
+    url.password = '';
+    return url.toString();
+  } catch {
+    return cloneUrl;
+  }
+}
+
+/**
+ * Fetches exactly the commit the run is for: one shallow fetch, no branch history. The fetch
+ * names the URL itself, so a checkout token is used once and never written to .git/config,
+ * where the pipeline's own steps could read it back.
+ */
 export function checkoutCommand(job: ClaimedJob): string {
   const { cloneUrl, commitSha } = job.repository;
   return [
     'git init -q .',
-    `git remote add origin ${quote(cloneUrl)}`,
-    `git fetch --depth 1 --no-tags origin ${quote(commitSha)}`,
+    `git remote add origin ${quote(withoutCredentials(cloneUrl))}`,
+    `git fetch --depth 1 --no-tags ${quote(cloneUrl)} ${quote(commitSha)}`,
     'git -c advice.detachedHead=false checkout -q FETCH_HEAD',
     'git log -1 --format="%h %s"',
   ].join(' && ');

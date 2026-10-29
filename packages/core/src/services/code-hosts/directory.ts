@@ -43,6 +43,7 @@ export function clientOf(rt: CodeHostRuntime, row: IntegrationRow): DirectoryCli
       (api().listFiles ?? unsupported(driver.label, 'list files'))(repository, ref),
     openPullRequest: (input) =>
       (api().openPullRequest ?? unsupported(driver.label, 'open pull requests'))(input),
+    readToken: async (repository) => (await api().readToken?.(repository)) ?? null,
     async repositories() {
       const host = api();
       const found = host.listRepositories

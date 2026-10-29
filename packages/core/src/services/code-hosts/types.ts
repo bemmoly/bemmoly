@@ -8,6 +8,7 @@ import type {
   CodeEvent,
   CodeHostRepository,
   CodePullRequestInput,
+  CodeReadToken,
 } from '../../contracts/code-hosts.ts';
 
 /** An inbound request as the webhook route hands it over: headers and the untouched bytes. */
@@ -69,6 +70,8 @@ export interface CodeHostApi {
   openPullRequest?(input: CodePullRequestInput): Promise<{ url: string; number: number }>;
   /** The repositories the connection can read, asked of the host; archived ones left out. */
   listRepositories?(): Promise<HostRepository[]>;
+  /** A read-only credential scoped to one repository, minted fresh for each checkout. */
+  readToken?(repository: string): Promise<CodeReadToken | null>;
 }
 
 export type HostRepository = Omit<CodeHostRepository, 'hostKind'>;

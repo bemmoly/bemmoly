@@ -20,6 +20,7 @@ const METHODS = [
   'readFile',
   'listFiles',
   'openPullRequest',
+  'readToken',
 ] as const;
 
 export function createPipelinesCodeHosts(
