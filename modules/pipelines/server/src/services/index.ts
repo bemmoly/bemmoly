@@ -47,6 +47,8 @@ import { createTeamsService } from './teams/index.ts';
 import { createVariablesService } from './variables/index.ts';
 import { createClustersService } from './clusters/index.ts';
 import { createRuntimesService } from './runtimes/index.ts';
+import { createFrontDoorsService } from './front-doors/index.ts';
+import { createMovesService } from './moves/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -72,6 +74,8 @@ export interface PipelinesServicesDeps {
   providers?: ProviderRegistry;
   /** Wakes the shipping engine at a time; without it the minute sweep does the waking. */
   wake?: Waker;
+  /** Wakes one runtime move at a time; without it the minute sweep does. */
+  wakeMove?: (id: string, at: Date) => Promise<void>;
   /** Opens a webhook gate's sealed signing secret. */
   webhookSecrets?: WebhookSecrets;
   /** The server's configured address: the audience CI's OIDC tokens must name. */
@@ -190,6 +194,13 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     }),
     clusters: createClustersService({ ...deps, providers: providerSource }),
     runtimes: createRuntimesService({ ...deps, providers: providerSource }),
+    frontDoors: createFrontDoorsService({ ...deps, providers }),
+    moves: createMovesService({
+      ...deps,
+      providers,
+      ...(input.now ? { now: input.now } : {}),
+      variables: variables.forDeploy,
+    }),
     machines: createMachinesService({
       ...deps,
       providers,

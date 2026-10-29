@@ -12,7 +12,8 @@ import {
   type EnvironmentPath,
 } from '../../../../shared/environments.ts';
 import type { Tier } from '../../../../shared/common.ts';
-import { requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
+import { personOf, requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
+import { openFrontDoor } from '../front-doors/index.ts';
 import { selectEnvironments } from './read.ts';
 import { selectPath } from './paths.ts';
 
@@ -95,7 +96,10 @@ export function createEnvironmentWrites(deps: PipelinesServiceDeps) {
         }
         throw error;
       }
-      return one(db, body.key);
+      const created = await one(db, body.key);
+      // Prod moves between runtimes with no downtime from its first day.
+      if (body.class === 'prod') await openFrontDoor(db, created.id, personOf(ctx.actor));
+      return created;
     },
 
     async update(ctx: RequestContext, key: string, body: UpdateEnvironment): Promise<Environment> {
