@@ -31,6 +31,8 @@ export function createTerraform(records: ExportRecords, facts: ExportFacts) {
   const secrets = new Map<string, string>();
   /** Grants already exported, so services sharing a reader grant it once. */
   const granted = new Set<string>();
+  /** Services a deploy has moved past since their serving release: "checkout-api in prod". */
+  const moving: string[] = [];
   const madeProjects = new Set(
     records.resources
       .filter((resource) => resource.kind === 'account' && resource.spec['adopt'] !== true)
@@ -68,6 +70,7 @@ export function createTerraform(records: ExportRecords, facts: ExportFacts) {
     identities,
     secrets,
     granted,
+    moving,
     unique,
     projectVar,
     numberVar,

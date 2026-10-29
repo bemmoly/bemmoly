@@ -1,6 +1,7 @@
 import type { SqlClient } from '@bemmoly/core';
 import { cloudResourceKindSchema } from '../../../../shared/clouds.ts';
 import type { ConnectionRow } from '../../models/clouds.ts';
+import { few } from '../../utils/few.ts';
 import { listAccountRows, listResourceRows } from '../clouds/records.ts';
 import { toRecord } from '../clouds/store.ts';
 import { poolConfigOf } from '../machines/store.ts';
@@ -33,6 +34,7 @@ interface ClusterRow {
 
 async function landingZone(sql: SqlClient, connectionId: string, leftOut: string[]) {
   const resources: ExportResource[] = [];
+  const incomplete = new Map<string, string[]>();
   let unapplied = 0;
   for (const row of await listResourceRows(sql, connectionId)) {
     if (!row.last_reconciled_at) {
@@ -42,9 +44,7 @@ async function landingZone(sql: SqlClient, connectionId: string, leftOut: string
     const kind = cloudResourceKindSchema.safeParse(row.kind);
     const spec = kind.success ? SPEC_SCHEMAS[kind.data].safeParse(row.desired) : null;
     if (!kind.success || !spec?.success) {
-      leftOut.push(
-        `${row.kind} ${row.name} in ${row.account_external_id}: its recorded settings are incomplete.`,
-      );
+      incomplete.set(row.kind, [...(incomplete.get(row.kind) ?? []), row.account_external_id]);
       continue;
     }
     resources.push({
@@ -53,6 +53,11 @@ async function landingZone(sql: SqlClient, connectionId: string, leftOut: string
       account: row.account_external_id,
       spec: row.desired,
     });
+  }
+  for (const [kind, accounts] of incomplete) {
+    leftOut.push(
+      `${accounts.length === 1 ? `A ${kind}` : `${accounts.length} ${kind}`} in ${few(accounts)}: the recorded settings are incomplete, so there is nothing to declare.`,
+    );
   }
   if (unapplied > 0) {
     leftOut.push(

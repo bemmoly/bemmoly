@@ -20,7 +20,7 @@ You should see `Plan: 34 to import, 0 to add, 0 to change, 0 to destroy.` Run
 
 ## Before you plan
 
-- payments-worker in prod: a deploy after v2.1.0 did not finish, so what runs may be newer than this export. A plan or helm diff shows it going back to v2.1.0; apply only if that is what you want.
+- A deploy did not finish since the exported release of payments-worker in prod, so what runs there may be newer than this export. A plan or helm diff shows it going back; apply only if that is what you want.
 
 ## Helm
 
