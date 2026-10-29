@@ -79,6 +79,22 @@ sidebar or the person's menu.
 - States: rest, hover, focus ring, error (`red` border and `red-tx` message), disabled,
   read-only (`sunken`), loading options ("Searching…"), no matches.
 
+### CustomFieldControl, FormSections and CustomForm
+
+`import { CustomFieldControl, FormSections } from '@bemmoly/ui'` · `import { CustomForm, useCustomForm } from '@bemmoly/core-web'` ·
+Story: Components/CustomField ([`custom-field.stories.tsx`](../../../packages/ui/src/components/custom-field/custom-field.stories.tsx))
+
+- Use: every company-defined field and form ([ADR 0052](../../adr/0052-kernel-owns-custom-fields-and-forms.md)).
+  One control per kind, built only from the controls above: `Input` (text, date, number, money
+  with its currency after the amount), `Textarea` (long text), `Select` (select, person, file;
+  people and files through `loadOptions`), a `Checkbox` group under a legend (multi-select) and
+  a labelled `Checkbox` (boolean). Required fields carry `RequiredMark`.
+- `FormSections` lays a form out: a 13px semibold title and a description per section, fields
+  on `FormGrid` (one or two columns, one under 640px), 24px between sections.
+- `CustomForm` binds a form definition: hidden fields are not drawn or sent, errors come from
+  the kernel's own validator, and a server `validation_failed` lands under its fields.
+- Not: a page drawing its own control for a custom field, or a native `<select>`.
+
 ### PasswordInput
 
 `import { PasswordInput, passwordStrength } from '@bemmoly/ui'` · Story:

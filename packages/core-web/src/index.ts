@@ -193,3 +193,4 @@ export {
 } from './shell/sidebar/sidebar-row.tsx';
 export { useSidebarFocusOwner, useSidebarTakeover } from './shell/sidebar-focus.ts';
 export { SwitcherMenu, type SwitcherItem, type SwitcherMenuProps } from './shell/switcher-menu.tsx';
+export * from './custom-fields/index.ts';
