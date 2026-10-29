@@ -195,6 +195,12 @@ Clusters and delete them:
 for c in shop-dev shop-prod; do gcloud container clusters delete "$c" --location "$REGION" --project "$PROJECT" --quiet; done
 ```
 
+## Next: move with no downtime
+
+[Move an application between Cloud Run and GKE](front-door.md) turns on Prod's front door, a
+stable address in front of both runtimes, and moves this application to GKE and back while you
+count the requests that fail.
+
 ## What to send back
 
 For each step, whether it did what "You should see" says. When it did not, send the sentence
@@ -207,7 +213,8 @@ Things worth trying on purpose:
 - **Delete shop-dev in Google Cloud, then push.** The deploy should fail saying the cluster was
   not found, and where to check it.
 
-Known gaps: switching between Cloud Run and GKE is not a traffic move yet, so the first deploy
-on the new runtime takes all its traffic at once; the front door does that move later.
+Known gaps: without a front door, switching between Cloud Run and GKE is not a traffic move,
+so the first deploy on the new runtime takes all its traffic at once and the address changes.
+[Move with a front door](front-door.md) makes it a move with no downtime.
 Secrets are files, not environment variables. Creating clusters through a managed connection
 is built but has not run against a real organization.
