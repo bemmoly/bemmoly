@@ -33,13 +33,21 @@ roles/resourcemanager.folderViewer'
 BILLING_ROLES='roles/billing.user
 roles/billing.costsManager'
 
+# On the control project only. In the Starter layout it is also the platform project, which
+# holds the shared registry and its logs, and the folder roles above do not reach either.
+PROJECT_ROLES='roles/artifactregistry.admin
+roles/logging.configWriter'
+
 FOLDER_IAM_FIX='You need Folder IAM Admin (roles/resourcemanager.folderIamAdmin) on the folder, or Organization Administrator.'
+
+# Who the roles go to: the control identity, or the principal --member names.
+grantee() { printf '%s' "${MEMBER:-serviceAccount:${SA_EMAIL}}"; }
 
 # The roles the control identity already holds on the folder, one per line.
 folder_roles() {
   if [ -n "${PLANNED_FOLDER}" ]; then return 0; fi
   gc resource-manager folders get-iam-policy "${FOLDER_ID}" --flatten='bindings[].members' \
-    --filter="bindings.members:serviceAccount:${SA_EMAIL}" --format='value(bindings.role)' ||
+    --filter="bindings.members:$(grantee)" --format='value(bindings.role)' ||
     die "Cannot read the access policy of folder ${FOLDER_ID}" "${FOLDER_IAM_FIX}"
 }
 
@@ -50,7 +58,7 @@ grant_folder_roles() {
   for role in $1; do
     if has_line "${held}" "${role}"; then continue; fi
     gc_change "${FOLDER_IAM_FIX}" resource-manager folders add-iam-policy-binding "${FOLDER_ID}" \
-      --member="serviceAccount:${SA_EMAIL}" --role="${role}" --condition=None
+      --member="$(grantee)" --role="${role}" --condition=None
     added=1
   done
   if [ -z "${added}" ]; then skip "The control identity holds its roles on folder ${FOLDER_ID}"; fi
@@ -63,7 +71,7 @@ revoke_provisioning_roles() {
   for role in ${PROVISIONING_ROLES}; do
     if ! has_line "${held}" "${role}"; then continue; fi
     gc_change "${FOLDER_IAM_FIX}" resource-manager folders remove-iam-policy-binding "${FOLDER_ID}" \
-      --member="serviceAccount:${SA_EMAIL}" --role="${role}" --all
+      --member="$(grantee)" --role="${role}" --all
     removed=1
   done
   if [ -z "${removed}" ]; then skip 'No provisioning roles were left on the folder'; fi
@@ -71,14 +79,32 @@ revoke_provisioning_roles() {
 
 grant_billing_roles() {
   held=$(gc billing accounts get-iam-policy "${BILLING}" --flatten='bindings[].members' \
-    --filter="bindings.members:serviceAccount:${SA_EMAIL}" --format='value(bindings.role)') ||
+    --filter="bindings.members:$(grantee)" --format='value(bindings.role)') ||
     die "Cannot read the access policy of billing account ${BILLING}" 'You need Billing Account Administrator on it.'
   added=''
   for role in ${BILLING_ROLES}; do
     if has_line "${held}" "${role}"; then continue; fi
     gc_change "You need Billing Account Administrator on ${BILLING}." \
-      billing accounts add-iam-policy-binding "${BILLING}" --member="serviceAccount:${SA_EMAIL}" --role="${role}"
+      billing accounts add-iam-policy-binding "${BILLING}" --member="$(grantee)" --role="${role}"
     added=1
   done
   if [ -z "${added}" ]; then skip "The control identity holds its roles on billing account ${BILLING}"; fi
+}
+
+# grant_project_roles  the control project's own roles, for Starter's registry and logs.
+grant_project_roles() {
+  held=''
+  if [ -z "${PLANNED_PROJECT}" ]; then
+    held=$(gc projects get-iam-policy "${PROJECT}" --flatten='bindings[].members' \
+      --filter="bindings.members:$(grantee)" --format='value(bindings.role)') ||
+      die "Cannot read the access policy of project ${PROJECT}" 'You need Project IAM Admin or Owner on it.'
+  fi
+  added=''
+  for role in ${PROJECT_ROLES}; do
+    if has_line "${held}" "${role}"; then continue; fi
+    gc_change "You need Project IAM Admin on ${PROJECT}." projects add-iam-policy-binding "${PROJECT}" \
+      --member="$(grantee)" --role="${role}" --condition=None
+    added=1
+  done
+  if [ -z "${added}" ]; then skip "The control identity holds its roles on project ${PROJECT}"; fi
 }
