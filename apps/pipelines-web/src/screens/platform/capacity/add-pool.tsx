@@ -5,6 +5,7 @@ import { Button, Field, Input, Modal, Select } from '@bemmoly/ui';
 import { useState } from 'react';
 import { usePoolWrites } from '../../../hooks/use-capacity.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
+import { slugOf } from '../../../lib/slug.ts';
 import { refusalOf } from '../../../parts/load-failed.tsx';
 import { TokenReveal } from './token-reveal.tsx';
 
@@ -16,13 +17,6 @@ const HOSTING = {
   codebuild: 'pipelines.hosting.codebuild',
 } as const satisfies Record<PoolHosting, string>;
 
-const slug = (name: string) =>
-  name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 63);
-
 /** A new runner pool: where it runs and how far it scales; its token is shown once after. */
 export function AddPool({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT(pipelinesText);
@@ -32,7 +26,7 @@ export function AddPool({ open, onClose }: { open: boolean; onClose: () => void 
   const [location, setLocation] = useState('');
   const [min, setMin] = useState('0');
   const [max, setMax] = useState('10');
-  const key = slug(name);
+  const key = slugOf(name);
   const ready = key.length > 0 && Number(max) >= Math.max(1, Number(min));
   const error = create.error
     ? (refusalOf(create.error)?.sentence ??
