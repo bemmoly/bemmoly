@@ -93,15 +93,23 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
       await platform(ctx);
       const body = updatePoolBodySchema.parse(input);
       const sql = requireDatabase(deps);
-      if (body.cloudBuild && (await onePool(key)).hosting !== 'cloud-build') {
+      const pool = await onePool(key);
+      const hosting = body.hosting ?? pool.hosting;
+      if (body.cloudBuild && hosting !== 'cloud-build') {
         throw new ValidationError(
-          `${key} is not a Cloud Build pool; its builds settings do not apply`,
+          `${key} does not run on Cloud Build, so Cloud Build settings do not apply`,
+        );
+      }
+      if (hosting === 'cloud-build' && !body.cloudBuild && !pool.cloudBuild) {
+        throw new ValidationError(
+          'A Cloud Build pool needs its project, region, image and service account',
         );
       }
       const cloudBuild = body.cloudBuild ? await cloudBuildConfig(sql, body.cloudBuild) : null;
       const updated = await sql`
         update pipeline_runner_pools set
           name = coalesce(${body.name ?? null}, name),
+          hosting = coalesce(${body.hosting ?? null}, hosting),
           location = coalesce(${body.location ?? null}, location),
           labels = coalesce(${body.labels ?? null}::text[], labels),
           min_runners = coalesce(${body.minRunners ?? null}, min_runners),
@@ -113,6 +121,11 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
           updated_at = now()
         where key = ${key} returning id`;
       if (updated.length === 0) throw new NotFoundError(`There is no runner pool called ${key}`);
+      await publishStreamEvent(sql, {
+        topic: topicOf.capacity(),
+        kind: 'capacity.updated',
+        data: {},
+      });
       return onePool(key);
     },
 
