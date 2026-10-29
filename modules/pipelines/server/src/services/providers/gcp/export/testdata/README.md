@@ -20,7 +20,7 @@ You should see `Plan: 34 to import, 0 to add, 0 to change, 0 to destroy.` Run
 
 ## Before you plan
 
-- payments-worker in prod: a deploy after v2.1.0 did not finish, so what runs may be newer than this export. A plan or helm diff shows it going back to v2.1.0; apply only if that is what you want
+- payments-worker in prod: a deploy after v2.1.0 did not finish, so what runs may be newer than this export. A plan or helm diff shows it going back to v2.1.0; apply only if that is what you want.
 
 ## Helm
 
@@ -39,6 +39,8 @@ kubectl -n NAMESPACE label deployment,service,httproute,secretproviderclass,serv
   -l app.kubernetes.io/managed-by=bemmoly-pipelines app.kubernetes.io/managed-by=Helm --overwrite
 kubectl -n NAMESPACE annotate deployment,service,httproute,secretproviderclass,serviceaccount \
   -l app.kubernetes.io/name=APP meta.helm.sh/release-name=APP meta.helm.sh/release-namespace=NAMESPACE
+kubectl -n NAMESPACE annotate gateway bemmoly \
+  meta.helm.sh/release-name=NAMESPACE-gateway meta.helm.sh/release-namespace=NAMESPACE
 ```
 
 ## Left out

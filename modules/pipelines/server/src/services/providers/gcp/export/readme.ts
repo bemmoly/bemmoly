@@ -71,6 +71,8 @@ kubectl -n NAMESPACE label deployment,service,httproute,secretproviderclass,serv
   -l app.kubernetes.io/managed-by=bemmoly-pipelines app.kubernetes.io/managed-by=Helm --overwrite
 kubectl -n NAMESPACE annotate deployment,service,httproute,secretproviderclass,serviceaccount \\
   -l app.kubernetes.io/name=APP meta.helm.sh/release-name=APP meta.helm.sh/release-namespace=NAMESPACE
+kubectl -n NAMESPACE annotate gateway bemmoly \\
+  meta.helm.sh/release-name=NAMESPACE-gateway meta.helm.sh/release-namespace=NAMESPACE
 \`\`\`
 
 ## Left out
