@@ -13,6 +13,7 @@ export interface ConnectionRow {
   config: Record<string, unknown>;
   last_checked_at: Date | null;
   last_error: string | null;
+  problems: string[];
   created_at: Date;
 }
 

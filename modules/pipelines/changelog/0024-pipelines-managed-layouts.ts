@@ -3,7 +3,8 @@ import { changeset, sql } from '@bemmoly/core/changelog';
 /*
  * Managed mode on a real organisation. Connections and plans may use the Starter layout (a
  * platform project, one for non-production, one for production). A plan keeps the warnings a
- * person read before Apply and the billing account's headroom it saw. The landing zone's
+ * person read before Apply and the billing account's headroom it saw, and a connection keeps
+ * each problem its last check found, so a screen can list them. The landing zone's
  * resource kinds are no longer listed in the table: the service validates them, so a new kind
  * is new code and needs no schema change.
  */
@@ -11,14 +12,15 @@ import { changeset, sql } from '@bemmoly/core/changelog';
 export default changeset({
   id: '0024-pipelines-managed-layouts',
   author: 'bemmoly',
-  description: 'Add the Starter layout, plan warnings and billing, and free resource kinds',
+  description: 'Add the Starter layout, check problems, plan warnings and billing',
   contexts: ['*'],
   up: async (ctx) => {
     await ctx.exec(sql`
       ALTER TABLE cloud_connections
         DROP CONSTRAINT IF EXISTS cloud_connections_layout_check,
         ADD CONSTRAINT cloud_connections_layout_check CHECK (layout IN
-          ('per-environment', 'per-domain-environment', 'per-group-environment', 'starter'))`);
+          ('per-environment', 'per-domain-environment', 'per-group-environment', 'starter')),
+        ADD COLUMN problems jsonb NOT NULL DEFAULT '[]'::jsonb`);
     await ctx.exec(sql`
       ALTER TABLE cloud_landing_zone_plans
         DROP CONSTRAINT IF EXISTS cloud_landing_zone_plans_layout_check,
@@ -38,6 +40,7 @@ export default changeset({
       UPDATE cloud_landing_zone_plans SET layout = 'per-environment' WHERE layout = 'starter'`);
     await ctx.exec(sql`
       ALTER TABLE cloud_connections
+        DROP COLUMN problems,
         DROP CONSTRAINT cloud_connections_layout_check,
         ADD CONSTRAINT cloud_connections_layout_check CHECK (layout IN
           ('per-environment', 'per-domain-environment', 'per-group-environment'))`);

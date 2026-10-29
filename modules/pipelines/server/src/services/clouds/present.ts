@@ -47,6 +47,7 @@ export const toConnection = (row: ConnectionRow): CloudConnection => ({
   layout: row.layout as Layout,
   lastCheckedAt: isoOrNull(row.last_checked_at),
   lastError: row.last_error,
+  problems: Array.isArray(row.problems) ? row.problems.map(String) : [],
   createdAt: iso(row.created_at),
 });
 
