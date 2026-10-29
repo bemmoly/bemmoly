@@ -1,4 +1,4 @@
-import type { GcpTransport } from '../clients/gcp/index.ts';
+import { fetchTransport, type GcpTransport } from '../clients/gcp/index.ts';
 import type { FixtureFile, RecordedExchange } from './gcp-replay.ts';
 
 /*
@@ -30,7 +30,7 @@ const parse = (text: string | undefined): unknown => {
   }
 };
 
-export function createRecordingTransport(real: GcpTransport = (url, init) => fetch(url, init)) {
+export function createRecordingTransport(real: GcpTransport = fetchTransport) {
   const exchanges: RecordedExchange[] = [];
   const transport: GcpTransport = async (url, init) => {
     const response = await real(url, init);

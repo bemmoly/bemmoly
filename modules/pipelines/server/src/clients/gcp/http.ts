@@ -105,10 +105,11 @@ export function urlWithQuery(url: string, query: GcpQuery = {}): string {
   return target.toString();
 }
 
-const defaultTransport: GcpTransport = (url, init) => fetch(url, init);
+/** Google over the network, as every client uses it unless a test passes its own. */
+export const fetchTransport: GcpTransport = (url, init) => fetch(url, init);
 
 export function createGcpHttp(options: GcpHttpOptions): GcpHttp {
-  const transport = options.transport ?? defaultTransport;
+  const transport = options.transport ?? fetchTransport;
   const timeoutMs = options.timeoutMs ?? GCP_TIMEOUT_MS;
 
   async function raw(request: GcpRequest<unknown>): Promise<{ status: number; text: string }> {
