@@ -19,7 +19,8 @@ export interface FakeBackend {
 }
 
 export interface FakeFrontDoor {
-  address: string;
+  /** One address in each project the environment's applications run in. */
+  addresses: Map<string, string>;
   domain: string | null;
   hosts: Map<string, FakeBackend[]>;
 }
@@ -82,18 +83,25 @@ export function createFakeFrontDoor(world: FakeFrontDoorsWorld): FrontDoorPart {
     ],
 
     async ensure(_connection, door) {
-      let found = world.frontDoors.get(door.environment);
-      if (!found) {
-        found = {
-          address: `203.0.113.${10 + world.frontDoors.size}`,
-          domain: door.domain,
-          hosts: new Map(),
-        };
-        world.frontDoors.set(door.environment, found);
-        world.log.push(`front door ${door.environment} ${found.address}`);
-      }
+      const found = world.frontDoors.get(door.environment) ?? {
+        addresses: new Map<string, string>(),
+        domain: door.domain,
+        hosts: new Map<string, FakeBackend[]>(),
+      };
+      world.frontDoors.set(door.environment, found);
       found.domain = door.domain;
-      return { address: found.address, problems: [] };
+      const account = door.account.externalId;
+      let address = found.addresses.get(account);
+      if (!address) {
+        const reserved = [...world.frontDoors.values()].reduce(
+          (sum, each) => sum + each.addresses.size,
+          0,
+        );
+        address = `203.0.113.${10 + reserved}`;
+        found.addresses.set(account, address);
+        world.log.push(`front door ${door.environment} ${account} ${address}`);
+      }
+      return { address, problems: [] };
     },
 
     async route(_connection, door, input) {
