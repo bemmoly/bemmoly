@@ -16,7 +16,11 @@ import {
   routeManifest,
 } from '../gke-manifests.ts';
 import { secretClassManifest, secretsOf, serviceAccountManifest } from '../gke-secrets.ts';
+import type { PodPoolSite } from '../../runners-contract.ts';
+import { poolNamespaceManifest, runnerServiceAccountManifest } from '../autopilot-manifests.ts';
+import { gkeBackendName } from '../front-door-map.ts';
 import { EXPORT_RECORDS } from './fixture.ts';
+import { NEG_ANNOTATION } from './helm-templates.ts';
 
 /*
  * The golden export checked by the tools a company would run on it, when this machine has
@@ -73,6 +77,7 @@ describe.runIf(has('helm'))('the Helm chart, with helm', () => {
     if (!service) throw new Error('fixture has no GKE service');
     const { application, revision, release, variables } = service;
     const namespace = service.placement.namespace;
+    const neg = gkeBackendName(namespace, revision);
     const rendered = run('helm', [
       'template',
       application,
@@ -97,7 +102,16 @@ describe.runIf(has('helm'))('the Helm chart, with helm', () => {
         [LABELS.application]: application,
         [LABELS.managedBy]: MANAGED_BY,
       }),
-      kubeService,
+      // The front door routes to this revision, so GKE was asked for its endpoint group.
+      {
+        ...kubeService,
+        metadata: {
+          ...kubeService.metadata,
+          annotations: {
+            [NEG_ANNOTATION]: JSON.stringify({ exposed_ports: { '80': { name: neg } } }),
+          },
+        },
+      },
       deployment,
       routeManifest({
         application,
@@ -113,6 +127,26 @@ describe.runIf(has('helm'))('the Helm chart, with helm', () => {
       }),
     ].map(asHelm);
     expect(docs).toHaveLength(expected.length);
+    expect(docs).toEqual(expect.arrayContaining(expected));
+  });
+
+  it("renders each Autopilot pool's namespace and service account as Pipelines makes them", () => {
+    const pool = EXPORT_RECORDS.pools.find((p) => p.kind === 'gke-autopilot');
+    if (pool?.kind !== 'gke-autopilot') throw new Error('fixture has no Autopilot pool');
+    const pools = join('helm', 'runner-pools');
+    const values = join(pools, `values/${pool.key}.yaml`);
+    const lint = run('helm', ['lint', pools, '-f', values]);
+    expect(lint.ok, lint.output).toBe(true);
+    const rendered = run('helm', ['template', pool.key, pools, '-n', pool.namespace, '-f', values]);
+    expect(rendered.ok, rendered.output).toBe(true);
+    const docs = parseAllDocuments(rendered.output).map((doc) => doc.toJSON() as object);
+    const site = {
+      pool: pool.key,
+      namespace: pool.namespace,
+      serviceAccount: pool.serviceAccount,
+    } as PodPoolSite;
+    const expected = [poolNamespaceManifest(site), runnerServiceAccountManifest(site)].map(asHelm);
+    expect(docs).toHaveLength(2);
     expect(docs).toEqual(expect.arrayContaining(expected));
   });
 

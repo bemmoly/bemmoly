@@ -27,3 +27,5 @@ route:
     namespace: checkout
 gateway:
   create: false
+frontDoor:
+  neg: fd-checkout-payments-worker-v2-1-0-a1c9e3f-80
