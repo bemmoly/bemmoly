@@ -384,8 +384,8 @@ bash.
   80 GiB in all, or hold more than 8 images, fails with a sentence.
 - **Steps that run `docker`**, start services or need privileges cannot run here. Send those
   pipelines to machines you start or to Cloud Build.
-- **Step images that run as a non-root user** may not write the workspace, which the runner
-  checks out as root. This is the same on Cloud Build.
+- **Step images that run as a non-root user** cannot open the workspace, which the runner
+  checks out as root in a folder only root may enter. This is the same on Cloud Build.
 - **Spot pods** that Google takes back fail their job with GKE's reason; the job is not retried.
 - **Warm room** is pause pods at the lowest priority. On a cluster you attached, Pipelines needs
   the right to create a PriorityClass, which is cluster-wide.
