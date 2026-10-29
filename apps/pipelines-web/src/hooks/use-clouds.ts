@@ -55,6 +55,18 @@ export function useLandingZonePlan(connection: string | null, body: LandingZoneP
   });
 }
 
+/** A plan being applied: polled until it is applied or has stopped. */
+export function usePlanProgress(connection: string, plan: string) {
+  return useQuery({
+    queryKey: platformKeys.planById(connection, plan),
+    queryFn: () => api.platform.planById(connection, plan),
+    refetchInterval: (query) =>
+      query.state.data && ['applied', 'failed', 'superseded'].includes(query.state.data.status)
+        ? false
+        : 3_000,
+  });
+}
+
 export function useCloudWrites() {
   const client = useQueryClient();
   const settle = () => client.invalidateQueries({ queryKey: [...platformKeys.all] });

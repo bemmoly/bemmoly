@@ -16,6 +16,7 @@ const STATUS: Record<LandingZoneNode['status'], string | null> = {
   create: 'bg-acc-50 text-acc',
   update: 'bg-line-2 text-tx-2',
   drifted: 'bg-amber-50 text-amber-tx',
+  kept: 'bg-line-2 text-tx-3',
 };
 
 /** Children shown before "N more": enough to read the shape without a wall of names. */
@@ -56,7 +57,7 @@ function Node({ node, depth }: { node: LandingZoneNode; depth: number }) {
           <span
             className={cx('ms-auto shrink-0 rounded-chip px-1.5 py-px text-11 font-medium', tone)}
           >
-            {t(`pipelines.clouds.node.${node.status as 'create' | 'update' | 'drifted'}`)}
+            {t(`pipelines.clouds.node.${node.status as 'create' | 'update' | 'drifted' | 'kept'}`)}
           </span>
         )}
       </span>
