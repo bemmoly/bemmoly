@@ -81,3 +81,4 @@ export { usePresence, type Presence } from './lib/presence.ts';
 export { useDialog } from './lib/use-dialog.ts';
 export { focusRing, focusRingInset } from './lib/focus.ts';
 export * from './tokens.ts';
+export * from './components/custom-field/index.ts';

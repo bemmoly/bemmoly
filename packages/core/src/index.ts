@@ -189,3 +189,14 @@ export {
   serviceProviderUrls,
   type SsoDependencies,
 } from './services/sso/index.ts';
+export {
+  createCustomFieldsService,
+  CUSTOM_FIELDS_CAPABILITY,
+  fieldOrder,
+  fieldPredicate,
+  shadowOf,
+  type CompiledQuery,
+  type CustomFieldsDeps,
+  type CustomFieldsService,
+  type WriteOptions as CustomFieldWriteOptions,
+} from './services/custom-fields/index.ts';

@@ -12,7 +12,8 @@
     "./i18n/*": "./src/i18n/*",
     "./people": "./src/schemas/people/index.ts",
     "./webhooks": "./src/schemas/webhooks/index.ts",
-    "./approvals": "./src/schemas/approvals/index.ts"
+    "./approvals": "./src/schemas/approvals/index.ts",
+    "./custom-fields": "./src/schemas/custom-fields/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

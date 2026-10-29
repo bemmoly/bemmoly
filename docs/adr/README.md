@@ -52,3 +52,4 @@ accepted record is never edited except to mark it superseded.
 | [0049](0049-pages-have-a-kind-page-file-or-folder.md) | Pages have a kind: page, file or folder | accepted; adds the file page and the folder to the design system |
 | [0050](0050-the-person-record-lives-in-the-kernel.md) | The person record and org data live in the kernel | accepted |
 | [0051](0051-one-approval-engine-in-the-kernel.md) | One approval engine in the kernel | accepted |
+| [0052](0052-kernel-owns-custom-fields-and-forms.md) | The kernel owns typed custom fields and forms | accepted |
