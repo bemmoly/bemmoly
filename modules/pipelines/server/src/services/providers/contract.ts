@@ -1,5 +1,12 @@
 import type { CloudResourceKind, Layout } from '../../../../shared/clouds.ts';
-import type { EnvironmentClass, Health, Provider, Runtime } from '../../../../shared/common.ts';
+import type { ClustersPart, Placement, RuntimeParts } from './cluster-contract.ts';
+import type {
+  DeployRuntime,
+  EnvironmentClass,
+  Health,
+  Provider,
+  Runtime,
+} from '../../../../shared/common.ts';
 
 /*
  * The provider model (architecture §14). Everything cloud-specific sits behind these
@@ -46,6 +53,8 @@ export interface DeployTarget {
    */
   account: { externalId: string; name: string; config?: Readonly<Record<string, unknown>> } | null;
   application: { id: string; key: string; runtime: Runtime };
+  /** Which runtime it runs on there, and the cluster when that runtime needs one. */
+  placement?: Placement;
 }
 
 /** What a target needs to know about a release: the image by digest and its config. */
@@ -270,9 +279,24 @@ export interface CloudProvider {
   runners?: RunnersPart;
   access?: AccessPart;
   cost?: CostPart;
+  clusters?: ClustersPart;
+  /**
+   * Runtimes beyond the default one `targets` and `metrics` serve, such as GKE beside Cloud
+   * Run. Target resolution swaps these in for the application's runtime in an environment.
+   */
+  runtimes?: Partial<Record<DeployRuntime, RuntimeParts>>;
 }
 
 export function partAvailability(provider: CloudProvider, part: ProviderPart): PartAvailability {
   if (provider[part]) return 'available';
   return provider.comingSoon.includes(part) ? 'coming_soon' : 'unsupported';
 }
+
+export type {
+  ClusterCheck,
+  ClusterRecord,
+  ClusterState,
+  ClustersPart,
+  Placement,
+  RuntimeParts,
+} from './cluster-contract.ts';
