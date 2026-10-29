@@ -8,12 +8,13 @@ import { pipelinesText } from '../../../i18n/catalog.ts';
 import { AttachedProjects } from './attached-projects.tsx';
 import { SIGN_IN_LABEL } from './connect-attached.tsx';
 import { CONNECTION_GLYPH, FailedBand } from './connection-card.tsx';
+import { CiProjectRow } from './ci-project-row.tsx';
 import { RegistryRow } from './registry-row.tsx';
 
 /**
  * A connection that uses projects the company already has: how Bemmoly signs in, the region
- * services default to and the registry runners push to, then the projects attached to it with
- * what each check found. `arrived` is the card just connected: it is brought into view and its
+ * services default to, the registry runners push to and the project CI secrets live in, then
+ * the projects attached to it with what each check found. `arrived` is the card just connected: it is brought into view and its
  * first check shows as it runs, then its result.
  */
 export function AttachedCard({
@@ -93,6 +94,7 @@ export function AttachedCard({
           )}
         </dl>
         <RegistryRow connection={connection} />
+        <CiProjectRow connection={connection} />
       </section>
       <AttachedProjects connection={connection} />
     </div>

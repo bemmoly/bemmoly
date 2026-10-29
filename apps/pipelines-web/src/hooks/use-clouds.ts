@@ -76,9 +76,9 @@ export function useCloudWrites() {
 }
 
 /**
- * Projects attached to one connection: attach, check again, detach, and the registry its
- * runners push to. Every write refreshes the connection and its accounts, and environments
- * too, since the projects an environment may choose come from here.
+ * Projects attached to one connection: attach, check again, detach, the registry its runners
+ * push to, and the project CI secrets live in. Every write refreshes the connection and its
+ * accounts, and environments too, since the projects an environment may choose come from here.
  */
 export function useAccountWrites(connection: string) {
   const client = useQueryClient();
@@ -103,6 +103,11 @@ export function useAccountWrites(connection: string) {
     registry: useMutation({
       mutationFn: (registry: string | null) =>
         api.platform.updateConnection(connection, { registry }),
+      onSettled: settle,
+    }),
+    ciAccount: useMutation({
+      mutationFn: (ciAccountId: string | null) =>
+        api.platform.updateConnection(connection, { ciAccountId }),
       onSettled: settle,
     }),
   };
