@@ -18,7 +18,8 @@ export function createQueries(deps: ApprovalDeps) {
     /** The requester, anyone ever asked (or asked for), and admins may read a request. */
     async get(actor: Actor, id: string): Promise<ApprovalRequest> {
       const loaded = await loadRequest(sql, id);
-      const person = userIdOf(actor);
+      // Only a person reads as involved; a token, AI plan or rule needs the admin capability.
+      const person = actor.kind === 'user' ? userIdOf(actor) : null;
       const involved =
         person !== null &&
         (loaded.row.requester_id === person ||
@@ -29,7 +30,7 @@ export function createQueries(deps: ApprovalDeps) {
 
     /** Newest first across every module; `waiting` is the caller's open tasks, one row each. */
     async list(actor: Actor, input: ListApprovalsQuery = {}): Promise<ApprovalRequestPage> {
-      const person = userIdOf(actor);
+      const person = actor.kind === 'user' ? userIdOf(actor) : null;
       if (!person) throw new ForbiddenError('Approvals are listed for people');
       const query = listApprovalsQuerySchema.parse(input);
       const after = decodeCursor(query.cursor);

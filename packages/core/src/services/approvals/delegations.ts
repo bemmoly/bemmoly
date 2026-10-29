@@ -20,7 +20,7 @@ const toDelegation = (row: DelegationRow): ApprovalDelegation => ({
 });
 
 function personOf(actor: Actor): string {
-  const id = userIdOf(actor);
+  const id = actor.kind === 'user' ? userIdOf(actor) : null;
   if (!id) throw new ForbiddenError('Delegations belong to people');
   return id;
 }

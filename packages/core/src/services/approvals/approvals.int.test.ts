@@ -248,4 +248,19 @@ describe('the approval engine against Postgres', () => {
     expect((await h.service.list(h.as('requester'), { scope: 'mine' })).items).toHaveLength(1);
     expect(await h.service.forSubject('expenses', { kind: 'claim', id: 'c-1' })).toHaveLength(1);
   });
+
+  it('keeps reads and delegations to people, not tokens acting for them', async () => {
+    await define();
+    const started = await claim(640);
+    const token = { kind: 'api_token', id: 'token-1', userId: h.ids.requester } as const;
+    await expect(h.service.get(token, started.id)).rejects.toThrow(ForbiddenError);
+    await expect(h.service.list(token, { scope: 'mine' })).rejects.toThrow(ForbiddenError);
+    await expect(
+      h.service.setDelegation(token, {
+        delegateId: h.ids.manager,
+        startsAt: new Date('2026-10-20T00:00:00Z'),
+        endsAt: new Date('2026-10-30T00:00:00Z'),
+      }),
+    ).rejects.toThrow(ForbiddenError);
+  });
 });
