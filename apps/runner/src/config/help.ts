@@ -16,6 +16,8 @@ Options (each also reads the environment variable in brackets)
   --allow-build-path <dir>  A folder outside the job's workspace an image build may read; repeat for more [BEMMOLY_RUNNER_ALLOW_BUILD_PATHS]
   --data-dir <dir>       Where the registration, job folders and unsent logs live (default: ~/.bemmoly-runner) [BEMMOLY_RUNNER_DATA_DIR]
   --once                 Run one job, then exit, for one machine or pod per job [BEMMOLY_RUNNER_ONCE]
+  --launch-token <token> One-job mode on a machine Pipelines started: register for that one job, run it, exit [BEMMOLY_LAUNCH_TOKEN]
+  --volumes-from <name>  Step containers mount this container's volumes instead of a host folder; "self" is this container [BEMMOLY_RUNNER_VOLUMES_FROM]
   --docker-socket <path> The Docker socket (default: DOCKER_HOST, then Colima's, then /var/run/docker.sock)
   --log-level <level>    fatal, error, warn, info, debug or trace (default: info) [LOG_LEVEL]
 

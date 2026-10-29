@@ -25,9 +25,16 @@ export class DockerExecutor implements StepExecutor {
   private cancelled = false;
 
   private readonly engine: DockerEngine;
+  private readonly volumesFrom: string | undefined;
 
-  constructor(engine: DockerEngine) {
+  /**
+   * `volumesFrom` names the runner's own container when the runner runs beside its steps on
+   * one daemon (a Cloud Build step): a host path means nothing there, so the step shares the
+   * runner's volumes and works in the workspace at the same path the runner sees.
+   */
+  constructor(engine: DockerEngine, volumesFrom?: string) {
     this.engine = engine;
+    this.volumesFrom = volumesFrom;
   }
 
   async run(step: ResolvedStep, options: StepRunOptions): Promise<StepResult> {
@@ -50,11 +57,13 @@ export class DockerExecutor implements StepExecutor {
         Image: image,
         Cmd: ['sh', '-c', step.run ?? ''],
         Env: Object.entries(containerEnv(options.env)).map(([key, value]) => `${key}=${value}`),
-        WorkingDir: '/workspace',
+        WorkingDir: this.volumesFrom ? options.workspace : '/workspace',
         Tty: false,
         Labels: { 'dev.bemmoly.runner': 'step' },
         HostConfig: {
-          Binds: [`${options.workspace}:/workspace`],
+          ...(this.volumesFrom
+            ? { VolumesFrom: [this.volumesFrom] }
+            : { Binds: [`${options.workspace}:/workspace`] }),
           ExtraHosts: ['host.docker.internal:host-gateway'],
         },
       },

@@ -43,6 +43,7 @@ async function runAgent(args: string[]): Promise<void> {
       dataDir: config.dataDir,
       url: config.url,
       poolToken: config.poolToken,
+      launchToken: config.launchToken,
       name: config.name,
       version: VERSION,
       labels: config.labels,
@@ -51,6 +52,7 @@ async function runAgent(args: string[]): Promise<void> {
       executors: createExecutors({
         local: config.local,
         dockerSocket: config.dockerSocket,
+        ...(config.volumesFrom ? { volumesFrom: config.volumesFrom } : {}),
         hostEnv: config.hostEnv,
         binDir,
       }),
