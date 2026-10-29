@@ -3,6 +3,7 @@ import { deployRuntimeSchema, type ApplicationRuntime } from '@bemmoly/module-pi
 import { Select, Skeleton } from '@bemmoly/ui';
 import { useApplicationRuntimes, useSetRuntime } from '../../hooks/use-runtimes.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
+import { RUNTIME_NAME } from '../../parts/runtime-words.ts';
 import { ActionError } from '../../parts/action-error.tsx';
 import { LoadFailed } from '../../parts/load-failed.tsx';
 import { SIDE_CARD } from './side-cards.tsx';
@@ -18,7 +19,7 @@ export function RuntimeCard({ application }: { application: string }) {
   const t = useT(pipelinesText);
   const runtimes = useApplicationRuntimes(application);
   const set = useSetRuntime(application);
-  const name = (runtime: ApplicationRuntime['runtime']) => t(`pipelines.runtimes.name.${runtime}`);
+  const name = (runtime: ApplicationRuntime['runtime']) => t(RUNTIME_NAME[runtime]);
   const followLabel = (item: ApplicationRuntime) =>
     item.file
       ? t('pipelines.runtimes.followFile', { runtime: name(item.file) })

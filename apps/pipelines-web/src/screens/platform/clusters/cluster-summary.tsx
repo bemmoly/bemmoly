@@ -3,6 +3,7 @@ import type { Cluster, DeployRuntime } from '@bemmoly/module-pipelines/shared';
 import { Badge, RelativeTime, type BadgeTone } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { pipelinesText } from '../../../i18n/catalog.ts';
+import { RUNTIME_NAME } from '../../../parts/runtime-words.ts';
 
 const TONE: Record<Cluster['status'], BadgeTone> = {
   creating: 'neutral',
@@ -25,7 +26,7 @@ export const runtimeOfCluster = (cluster: Pick<Cluster, 'origin' | 'mode'>): Dep
 export function ClusterSummary({ cluster, actions }: { cluster: Cluster; actions?: ReactNode }) {
   const t = useT(pipelinesText);
   const facts = [
-    t(`pipelines.runtimes.name.${runtimeOfCluster(cluster)}`),
+    t(RUNTIME_NAME[runtimeOfCluster(cluster)]),
     t('pipelines.clusters.where', { project: cluster.projectId, location: cluster.location }),
     cluster.releaseChannel
       ? t('pipelines.clusters.channel', { channel: cluster.releaseChannel.toLowerCase() })
