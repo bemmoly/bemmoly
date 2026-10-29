@@ -1,6 +1,9 @@
 import { GATEWAY_CLASS, GATEWAY_NAME, LABELS, SERVICE_PORT } from '../gke-manifests.ts';
 import { SECRETS_DRIVER, SECRET_MOUNT, SECRET_VOLUME } from '../gke-secrets.ts';
 
+/** GKE makes a standalone endpoint group for a Service port that names one here. */
+export const NEG_ANNOTATION = 'cloud.google.com/neg';
+
 /*
  * The chart's templates: the objects gke-manifests.ts and gke-secrets.ts write for one
  * revision, as Helm templates. One release renders one application from its values file; the
@@ -90,6 +93,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bemmoly.labels" . | nindent 4 }}
+  {{- with .Values.frontDoor.neg }}
+  annotations:
+    ${NEG_ANNOTATION}: {{ dict "exposed_ports" (dict "${SERVICE_PORT}" (dict "name" .)) | toJson | quote }}
+  {{- end }}
 spec:
   type: ClusterIP
   selector:
@@ -206,4 +213,7 @@ route:
     namespace: ""
 gateway:
   create: false
+# The front door's endpoint group for this revision, when a front door routes to it.
+frontDoor:
+  neg: ""
 `;

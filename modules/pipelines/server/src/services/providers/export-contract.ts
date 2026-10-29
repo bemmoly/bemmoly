@@ -51,13 +51,50 @@ export interface ExportSecret {
 }
 
 /** A pool that starts one build machine per job, and how it starts them. */
-export interface ExportPool {
-  key: string;
+export type ExportPool =
+  | {
+      key: string;
+      kind: 'cloud-build';
+      account: string;
+      region: string;
+      image: string;
+      machine: string;
+      serviceAccount: string;
+    }
+  | {
+      key: string;
+      kind: 'gke-autopilot';
+      account: string;
+      location: string;
+      /** `create`: Pipelines made the cluster when it was missing. */
+      cluster: { name: string; create: boolean };
+      namespace: string;
+      image: string;
+      builderImage: string;
+      cpu: number;
+      memoryGb: number;
+      spot: boolean;
+      serviceAccount: string;
+    };
+
+/** One host on a front door: where its traffic goes, by runtime and revision. */
+export interface ExportFrontDoorHost {
+  application: string;
+  /** The catalog group's namespace, where its GKE revisions run. */
+  namespace: string;
+  host: string;
+  backends: ReadonlyArray<{ runtime: string; revision: string | null; percent: number }>;
+  /** A move between runtimes or a canary is under way, so the weights are in flight. */
+  moving: boolean;
+}
+
+/** An environment's front door in one account (project): its address and its hosts. */
+export interface ExportFrontDoor {
+  environment: string;
   account: string;
-  region: string;
-  image: string;
-  machine: string;
-  serviceAccount: string;
+  region: string | null;
+  domain: string | null;
+  hosts: readonly ExportFrontDoorHost[];
 }
 
 export interface ExportRecords {
@@ -68,6 +105,7 @@ export interface ExportRecords {
   clusters: readonly ExportCluster[];
   secrets: readonly ExportSecret[];
   pools: readonly ExportPool[];
+  frontDoors: readonly ExportFrontDoor[];
   /** What the records could not export, one sentence each. */
   leftOut: readonly string[];
 }
@@ -77,6 +115,8 @@ export interface ExportFacts {
   accounts: Readonly<Record<string, { number: string | null; parent: string | null }>>;
   /** The cloud's own name for each account's budget, by account. */
   budgets: Readonly<Record<string, string>>;
+  /** The zonal endpoint groups GKE made for a front door's backend, by backend name. */
+  groups?: Readonly<Record<string, readonly string[]>>;
   problems: readonly string[];
 }
 

@@ -1,7 +1,8 @@
 import { stringify } from 'yaml';
-import type { ExportFile, ExportService } from '../../export-contract.ts';
+import type { ExportFile, ExportFrontDoor, ExportService } from '../../export-contract.ts';
 import { deploySettingsOf, imageOf } from '../container.ts';
 import { GATEWAY_NAME, kubeRevisionOf, routeHostOf } from '../gke-manifests.ts';
+import { gkeBackendName } from '../front-door-map.ts';
 import { containerEnv, secretsOf } from '../gke-secrets.ts';
 import { DEFAULT_VALUES, TEMPLATES } from './helm-templates.ts';
 
@@ -23,7 +24,7 @@ const portOf = (value: unknown): number => {
 };
 
 /** One application's values in one environment: what its last deploy there wrote. */
-export function valuesOf(service: ExportService): Record<string, unknown> {
+export function valuesOf(service: ExportService, neg = ''): Record<string, unknown> {
   const { release, application } = service;
   const settings = deploySettingsOf(release);
   const namespace = service.placement.namespace;
@@ -53,6 +54,7 @@ export function valuesOf(service: ExportService): Record<string, unknown> {
       parent: { name: gateway.name, namespace: gateway.namespace },
     },
     gateway: { create: false },
+    frontDoor: { neg },
   };
 }
 
@@ -71,7 +73,23 @@ const header = (service: ExportService) =>
 export const helmRevisionOf = (service: ExportService) =>
   kubeRevisionOf(service.application, service.release);
 
-export function helmFiles(services: readonly ExportService[]): ExportFile[] {
+/** The endpoint group a front door asked GKE for on this revision, or "" when none. */
+function negOf(service: ExportService, doors: readonly ExportFrontDoor[]): string {
+  const routed = doors.some((door) =>
+    door.hosts.some(
+      (host) =>
+        door.environment === service.environment.key &&
+        host.application === service.application &&
+        host.backends.some((share) => share.revision === service.revision),
+    ),
+  );
+  return routed ? gkeBackendName(service.placement.namespace, service.revision) : '';
+}
+
+export function helmFiles(
+  services: readonly ExportService[],
+  doors: readonly ExportFrontDoor[] = [],
+): ExportFile[] {
   const onGke = services.filter((service) => service.placement.runtime !== 'cloud-run');
   const groups = new Map<string, ExportService[]>();
   for (const service of onGke) {
@@ -93,7 +111,7 @@ export function helmFiles(services: readonly ExportService[]): ExportFile[] {
       const env = service.environment.key;
       files.push({
         path: `${root}/values/${env}/${service.application}.yaml`,
-        content: header(service) + stringify(valuesOf(service)),
+        content: header(service) + stringify(valuesOf(service, negOf(service, doors))),
       });
       if (!service.placement.cluster?.gateway && !gateways.has(env)) {
         gateways.add(env);
