@@ -11,6 +11,7 @@ import type { RunTrafficTarget } from '../../../clients/gcp/cloud-run.ts';
 import type { DeployTarget, ReleaseArtifact, TargetsPart } from '../contract.ts';
 import { containerOf, deploySettingsOf } from './container.ts';
 import { placeOf, type GcpContexts } from './context.ts';
+import { envOf, grantRevisionSecrets } from './revision-secrets.ts';
 
 /*
  * Cloud Run as the container-service target (architecture §12). A deploy adds a revision
@@ -82,7 +83,7 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
     const run = context.deployer(place.projectId, place.account).run;
     const name = runServiceName(place.projectId, place.region, place.service);
     const runtime = context.runtimeAccount(place.projectId, place.account);
-    return { place, run, name, runtime };
+    return { place, run, name, runtime, context };
   };
 
   async function service(
@@ -100,9 +101,11 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
   return {
     kinds: ['container-service'],
 
-    async deploy(target, release) {
-      const { place, run, name, runtime } = open(target);
+    async deploy(target, release, variables) {
+      const { place, run, name, runtime, context } = open(target);
       const revision = revisionIdOf(place.service, release);
+      if (variables) await grantRevisionSecrets(context, place.projectId, runtime, variables);
+      const env = variables ? envOf(place.projectId, variables) : undefined;
       const existing = await run.getService(name);
       const tagged = { type: REVISION_TARGET, revision, tag: tagOf(release) };
       if (!existing) {
@@ -115,7 +118,7 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
             template: {
               revision,
               ...(runtime ? { serviceAccount: runtime } : {}),
-              containers: [containerOf(release)],
+              containers: [containerOf(release, {}, env)],
             },
             traffic: [{ ...tagged, percent: 100 }],
           },
@@ -130,7 +133,7 @@ export function createGcpTargets(contexts: GcpContexts): TargetsPart {
             ...existing.template,
             revision,
             ...(runtime ? { serviceAccount: runtime } : {}),
-            containers: [containerOf(release, containers[0]), ...containers.slice(1)],
+            containers: [containerOf(release, containers[0], env), ...containers.slice(1)],
           },
           traffic: [...pinned(existing), { ...tagged, percent: 0 }],
         });
