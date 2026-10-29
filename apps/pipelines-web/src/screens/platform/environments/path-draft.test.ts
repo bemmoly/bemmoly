@@ -1,6 +1,14 @@
 import type { Environment, EnvironmentPath } from '@bemmoly/module-pipelines/shared';
 import { describe, expect, it } from 'vitest';
-import { addStep, addable, draftOfPath, moveStep, pathBodyOf, removeStep } from './path-draft.ts';
+import {
+  addStep,
+  addable,
+  canAutoPromote,
+  draftOfPath,
+  moveStep,
+  pathBodyOf,
+  removeStep,
+} from './path-draft.ts';
 
 const env = (id: string, position: number) =>
   ({ id, key: id, name: id, class: 'dev', position }) as Environment;
@@ -66,5 +74,22 @@ describe('the path editor', () => {
     const offered = addable([env('prod', 2), env('dev', 0), env('staging', 1)], steps);
     expect(offered.map((environment) => environment.id)).toEqual(['staging', 'prod']);
     expect(removeStep(steps, 0)).toEqual([]);
+  });
+});
+
+describe('auto-promote into production', () => {
+  it('is never offered or sent for a production step', () => {
+    const prod = {
+      environmentId: 'p',
+      name: 'Prod',
+      class: 'prod' as const,
+      stage: 1,
+      bakeMinutes: 0,
+      autoPromote: true,
+    };
+    const dev = { ...prod, environmentId: 'd', name: 'Dev', class: 'dev' as const, stage: 0 };
+    expect(canAutoPromote(prod)).toBe(false);
+    expect(canAutoPromote(dev)).toBe(true);
+    expect(pathBodyOf([dev, prod]).steps.map((step) => step.autoPromote)).toEqual([true, false]);
   });
 });

@@ -441,6 +441,7 @@
   "pipelines.environments.auto": "automatic",
   "pipelines.environments.autoPromote": "Promote on its own",
   "pipelines.environments.autoPromoteOf": "Promote {name} on its own",
+  "pipelines.environments.prodByPerson": "Production is only ever promoted to by a person",
   "pipelines.environments.bake": "after {minutes} min",
   "pipelines.environments.bakeMinutes": "Bake minutes",
   "pipelines.environments.bakeOf": "Bake minutes in {name}",

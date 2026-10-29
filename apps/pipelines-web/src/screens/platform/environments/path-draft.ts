@@ -23,6 +23,9 @@ export interface StepDraft {
 
 export const stageAt = (steps: readonly StepDraft[], index: number) => steps[index]?.stage ?? index;
 
+/** Whether a step may move on by itself: never into production. */
+export const canAutoPromote = (step: Pick<StepDraft, 'class'>) => step.class !== 'prod';
+
 /** A path as the editor starts: the saved steps in stage order, or none for a new tier. */
 export function draftOfPath(path: EnvironmentPath | undefined): StepDraft[] {
   return [...(path?.steps ?? [])]
@@ -93,7 +96,8 @@ export function pathBodyOf(steps: readonly StepDraft[]): SetPathBody {
       environmentId: step.environmentId,
       stage: stageAt(steps, index),
       bakeMinutes: step.bakeMinutes,
-      autoPromote: step.autoPromote,
+      // Production is only ever promoted to by a person; the server ignores it there too.
+      autoPromote: step.class !== 'prod' && step.autoPromote,
     })),
   };
 }
