@@ -5,6 +5,7 @@ import { environmentEndpoints } from '../api/environments.ts';
 import { pipelinesEndpoints } from '../api/pipelines.ts';
 import { platformEndpoints } from '../api/platform.ts';
 import { shippingEndpoints } from '../api/shipping.ts';
+import { variablesEndpoints } from '../api/variables.ts';
 import { goToSignIn } from './sign-in.ts';
 
 /**
@@ -20,6 +21,7 @@ export const api = {
   platform: platformEndpoints(client.http),
   delivery: deliveryEndpoints(client.http),
   environments: environmentEndpoints(client.http),
+  variables: variablesEndpoints(client.http),
 };
 
 export type Api = typeof api;
