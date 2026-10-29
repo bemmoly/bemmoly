@@ -52,6 +52,7 @@ export function Policies({ scope, scopeName }: { scope: string; scopeName: strin
       actions={
         <SegmentedControl
           size="sm"
+          aria-label={t('pipelines.access.policiesView')}
           options={[
             { value: 'sentences', label: t('pipelines.access.sentences') },
             { value: 'code', label: t('pipelines.access.code') },

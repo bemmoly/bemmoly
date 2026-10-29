@@ -113,6 +113,7 @@ export default function ChangesScreen() {
       <div className="flex flex-wrap items-center gap-2">
         <SegmentedControl
           size="sm"
+          aria-label={t('pipelines.common.timeRange')}
           options={WINDOWS.map((value) => ({
             value,
             label: t(`pipelines.changes.window.${value}`),
