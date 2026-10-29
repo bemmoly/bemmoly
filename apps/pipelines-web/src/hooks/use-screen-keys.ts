@@ -1,11 +1,13 @@
 import { typingInField } from '@bemmoly/core-web';
 import { useEffect, useLayoutEffect, useRef } from 'react';
+import { focusOwnsKey } from '../lib/screen-keys.ts';
 
 /**
  * A screen's own single keys ("j", "/", "shift+r", "[", "enter"). The shell's keys ignore
  * Shift, so a screen that needs Shift+R and R apart binds here. Like the shell's, they never
  * fire while typing, inside a dialog or menu, with Alt, Ctrl or Cmd held, or after another
- * handler took the event.
+ * handler took the event; and Enter or Space on a focused button, link or control presses
+ * that control instead.
  */
 export function useScreenKeys(bindings: Readonly<Record<string, (event: KeyboardEvent) => void>>) {
   const latest = useRef(bindings);
@@ -18,7 +20,8 @@ export function useScreenKeys(bindings: Readonly<Record<string, (event: Keyboard
       if (event.altKey || event.metaKey || event.ctrlKey) return;
       if (typingInField(event.target)) return;
       if (document.querySelector('dialog[open], [role="menu"]')) return;
-      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key.toLowerCase();
+      const key = event.key.toLowerCase();
+      if (focusOwnsKey(event.target, key)) return;
       const name = event.shiftKey && key !== '?' ? `shift+${key}` : key;
       const run = latest.current[name];
       if (!run) return;

@@ -7,7 +7,8 @@ import { StateGlyph } from '../../parts/bits.tsx';
 
 /**
  * One change as a journey from commit to the last Prod region, with what is happening now
- * and the one action that moves it on: open it, remind the approvers, or re-run what failed.
+ * and the one action that moves it on: re-run what failed, or open it. A change waiting on its
+ * approvers opens too: there is no reminder to send them yet.
  */
 export function JourneyCard({
   journey,
@@ -72,10 +73,6 @@ export function JourneyCard({
           <Button size="sm" onClick={onRerun} loading={rerunning}>
             <Icon name="undo" size={14} />
             {t('pipelines.run.rerunFailed')}
-          </Button>
-        ) : note.action === 'remind' ? (
-          <Button size="sm" onClick={onOpen}>
-            {t('pipelines.forYou.remind')}
           </Button>
         ) : (
           <Button size="sm" variant="ghost" onClick={onOpen}>
