@@ -1,5 +1,9 @@
 import { useT } from '@bemmoly/core-web';
-import { environmentClassSchema, type Environment } from '@bemmoly/module-pipelines/shared';
+import {
+  deployRuntimeSchema,
+  environmentClassSchema,
+  type Environment,
+} from '@bemmoly/module-pipelines/shared';
 import {
   Button,
   Checkbox,
@@ -13,6 +17,7 @@ import {
 import { useId, useState, type KeyboardEvent } from 'react';
 import { useEnvironmentWrites } from '../../../hooks/use-environments.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
+import { RUNTIME_NAME } from '../../../parts/runtime-words.ts';
 import { ActionError } from '../../../parts/action-error.tsx';
 import {
   accountById,
@@ -191,6 +196,19 @@ export function EnvironmentDialog({
             />
           </Field>
         </div>
+        <Field
+          label={t('pipelines.runtimes.environmentDefault')}
+          hint={t('pipelines.runtimes.environmentDefaultHint')}
+        >
+          <Select
+            value={draft.defaultRuntime}
+            options={deployRuntimeSchema.options.map((value) => ({
+              value,
+              label: t(RUNTIME_NAME[value]),
+            }))}
+            onChange={(event) => set({ defaultRuntime: deployRuntimeSchema.parse(event.value) })}
+          />
+        </Field>
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 font-medium text-tx">
             {t('pipelines.environments.protection')}

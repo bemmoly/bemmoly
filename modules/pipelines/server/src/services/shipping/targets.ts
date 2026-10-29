@@ -1,16 +1,31 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { ProviderError } from '@bemmoly/shared';
 import type { Layout } from '../../../../shared/clouds.ts';
-import type { EnvironmentClass, Provider, Runtime } from '../../../../shared/common.ts';
+import type { ClusterGateway } from '../../../../shared/clusters.ts';
+import type {
+  DeployRuntime,
+  EnvironmentClass,
+  Provider,
+  Runtime,
+} from '../../../../shared/common.ts';
 import type { ReleaseRow } from '../../models/shipping.ts';
-import type { CloudProvider, DeployTarget, ReleaseArtifact } from '../providers/contract.ts';
+import type {
+  CloudProvider,
+  DeployTarget,
+  Placement,
+  ReleaseArtifact,
+} from '../providers/contract.ts';
+import { runtimeProblem } from '../runtimes/fit.ts';
 import type { ProviderSourceOrRegistry } from './engine-deps.ts';
 
 /*
  * Where one application deploys in one environment: the environment names its provider;
  * the account comes from the layout (per domain first, then the environment's own), and
  * the connection from the account, or the provider's only connection when it has no
- * accounts (the local Docker provider).
+ * accounts (the local Docker provider). The runtime is the one chosen in Pipelines, then the
+ * application file's, then the environment's default; a runtime other than the provider's
+ * default swaps in that runtime's targets and metrics, deploying into the environment's
+ * cluster in the namespace of the application's catalog group.
  */
 
 interface TargetRow {
@@ -31,6 +46,16 @@ interface TargetRow {
   layout: string | null;
   boundary_ref: string | null;
   config: Record<string, unknown> | null;
+  deploy_runtime: string;
+  group_key: string | null;
+  cluster_id: string | null;
+  cluster_origin: string | null;
+  cluster_mode: string | null;
+  cluster_project: string | null;
+  cluster_location: string | null;
+  cluster_name: string | null;
+  cluster_status: string | null;
+  cluster_gateway: ClusterGateway | null;
 }
 
 export interface ResolvedTarget {
@@ -38,14 +63,67 @@ export interface ResolvedTarget {
   target: DeployTarget;
 }
 
+export interface ResolveOptions {
+  /** The runtime a deployment started on, so a switch mid-canary waits for the next deploy. */
+  runtime?: DeployRuntime | undefined;
+}
+
+function placementOf(row: TargetRow, runtime: DeployRuntime): Placement {
+  return {
+    runtime,
+    namespace: row.group_key ?? 'default',
+    cluster:
+      row.cluster_id && row.cluster_project && row.cluster_location && row.cluster_name
+        ? {
+            id: row.cluster_id,
+            origin: row.cluster_origin === 'attached' ? 'attached' : 'created',
+            mode: row.cluster_mode === 'standard' ? 'standard' : 'autopilot',
+            projectId: row.cluster_project,
+            location: row.cluster_location,
+            name: row.cluster_name,
+            gateway: row.cluster_gateway,
+          }
+        : null,
+  };
+}
+
+/** The provider with the runtime's own targets and metrics in place of its defaults. */
+function forRuntime(provider: CloudProvider, row: TargetRow, placement: Placement): CloudProvider {
+  const parts = placement.runtime === 'cloud-run' ? null : provider.runtimes?.[placement.runtime];
+  const problem = runtimeProblem({
+    runtime: placement.runtime,
+    application: row.application_key,
+    environment: row.environment_key,
+    cluster:
+      placement.cluster && row.cluster_status
+        ? {
+            ...placement.cluster,
+            status: row.cluster_status as 'creating' | 'ready' | 'failed',
+          }
+        : null,
+    supported: placement.runtime === 'cloud-run' || Boolean(parts),
+  });
+  if (problem) throw new ProviderError(problem, { provider: row.provider });
+  if (!parts) return provider;
+  // The default runtime's metrics would measure the wrong thing, so none beats those.
+  const swapped: CloudProvider = { ...provider, targets: parts.targets };
+  if (parts.metrics) swapped.metrics = parts.metrics;
+  else delete swapped.metrics;
+  return swapped;
+}
+
 export async function resolveTarget(
   sql: SqlExecutor,
   providers: ProviderSourceOrRegistry,
   applicationId: string,
   environmentId: string,
+  options: ResolveOptions = {},
 ): Promise<ResolvedTarget> {
   const [row] = await sql<TargetRow[]>`
-    with app as (select id, key, runtime, domain_id from pipeline_applications where id = ${applicationId}),
+    with app as (
+      select a.id, a.key, a.runtime, a.domain_id, a.file_runtimes, g.key as group_key
+      from pipeline_applications a left join pipeline_groups g on g.id = a.group_id
+      where a.id = ${applicationId}),
     env as (select * from pipeline_environments where id = ${environmentId}),
     account as (
       select c.* from env
@@ -71,13 +149,21 @@ export async function resolveTarget(
       account.name as account_name, account.config as account_config,
       connection.id as connection_id,
       connection.name as connection_name, connection.provider as connection_provider,
-      connection.layout, connection.boundary_ref, connection.config
+      connection.layout, connection.boundary_ref, connection.config,
+      coalesce(chosen.runtime, app.file_runtimes ->> env.key, env.default_runtime) as deploy_runtime,
+      app.group_key, k.id as cluster_id, k.origin as cluster_origin, k.mode as cluster_mode,
+      k.project_id as cluster_project, k.location as cluster_location, k.name as cluster_name,
+      k.status as cluster_status, k.gateway as cluster_gateway
     from app cross join env
     left join account on true
-    left join connection on true`;
+    left join connection on true
+    left join pipeline_application_runtimes chosen
+      on chosen.application_id = app.id and chosen.environment_id = env.id
+    left join cloud_clusters k on k.environment_id = env.id`;
   if (!row) throw new ProviderError('The application or environment no longer exists');
   const registry = typeof providers === 'function' ? await providers() : providers;
-  const provider = registry.get(row.provider as Provider);
+  const placement = placementOf(row, options.runtime ?? (row.deploy_runtime as DeployRuntime));
+  const provider = forRuntime(registry.get(row.provider as Provider), row, placement);
   if (!row.connection_id) {
     throw new ProviderError(
       `${row.environment_key} deploys to ${provider.name}, and no ${provider.name} connection exists. Connect one in Platform › Clouds.`,
@@ -113,6 +199,7 @@ export async function resolveTarget(
         key: row.application_key,
         runtime: row.runtime as Runtime,
       },
+      placement,
     },
   };
 }

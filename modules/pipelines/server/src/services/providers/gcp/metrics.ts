@@ -11,10 +11,13 @@ import { accountConfigOf, placeOf, type GcpContexts } from './context.ts';
 
 const minuteKey = (at: Date) => Math.floor(at.getTime() / 60_000);
 
-function errorRate(series: MonitoringSeries[]): RevisionMetric {
+/** Cloud Run labels a class "5xx"; the load balancer labels it 500. */
+const SERVER_ERRORS = new Set(['5xx', '500']);
+
+export function errorRate(series: MonitoringSeries[]): RevisionMetric {
   const totals = new Map<number, { at: Date; all: number; errors: number }>();
   for (const entry of series) {
-    const isError = entry.labels['response_code_class'] === '5xx';
+    const isError = SERVER_ERRORS.has(entry.labels['response_code_class'] ?? '');
     for (const point of entry.points) {
       const key = minuteKey(point.at);
       const minute = totals.get(key) ?? { at: point.at, all: 0, errors: 0 };
@@ -35,7 +38,7 @@ function errorRate(series: MonitoringSeries[]): RevisionMetric {
   };
 }
 
-function latency(series: MonitoringSeries[], requests: number): RevisionMetric {
+export function latency(series: MonitoringSeries[], requests: number): RevisionMetric {
   const points = series
     .flatMap((entry) => entry.points)
     .sort((a, b) => a.at.getTime() - b.at.getTime())

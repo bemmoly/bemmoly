@@ -4,7 +4,7 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { LinkTabs } from '../../parts/link-tabs.tsx';
 
 /**
- * Platform: the platform team's places (access, capacity, clouds, environments) under one
+ * Platform: the platform team's places (access, capacity, clouds, environments, clusters) under one
  * title, each with its own address. The areas draw their own headers below the tabs.
  */
 export default function PlatformLayout() {
@@ -26,6 +26,7 @@ export default function PlatformLayout() {
               label: t('pipelines.platform.environments'),
               icon: 'layers',
             },
+            { to: '/platform/clusters', label: t('pipelines.platform.clusters'), icon: 'hexagon' },
           ]}
         />
       </div>

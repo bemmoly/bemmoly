@@ -1,0 +1,1176 @@
+{
+  "recorded": "Hand-recorded from the GKE, Kubernetes, Gateway API and Cloud Monitoring references (shapes and field names as documented); not captured from a live cluster.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-prod.iam.gserviceaccount.com:generateAccessToken",
+      "body": {
+        "lifetime": "900s"
+      },
+      "repeat": true,
+      "response": {
+        "accessToken": "ya29.deployer-acme-commerce-prod",
+        "expireTime": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://container.googleapis.com/v1/projects/acme-commerce-prod/locations/asia-south1/clusters/bemmoly-prod-asia-south1",
+      "response": {
+        "name": "bemmoly-prod-asia-south1",
+        "location": "asia-south1",
+        "status": "RUNNING",
+        "endpoint": "34.118.10.2",
+        "masterAuth": {
+          "clusterCaCertificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCnJlY29yZGVkLWNsdXN0ZXItY2EKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+        },
+        "autopilot": {
+          "enabled": true
+        },
+        "releaseChannel": {
+          "channel": "REGULAR"
+        },
+        "workloadIdentityConfig": {
+          "workloadPool": "acme-commerce-prod.svc.id.goog"
+        },
+        "networkConfig": {
+          "gatewayApiConfig": {
+            "channel": "CHANNEL_STANDARD"
+          }
+        },
+        "currentMasterVersion": "1.33.4-gke.1013000"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout",
+      "response": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "checkout"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Gateway",
+        "spec": {
+          "gatewayClassName": "gke-l7-global-external-managed"
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v1-42-0-b7d2e91?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Deployment",
+        "apiVersion": "apps/v1",
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v1-42-0-b7d2e91",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v1-42-0-b7d2e91?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Service",
+        "spec": {
+          "selector": {
+            "pipelines.bemmoly.dev/revision": "checkout-api-v1-42-0-b7d2e91"
+          }
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v1-42-0-b7d2e91",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-41-0-a0a0a0a",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments?labelSelector=app.kubernetes.io%2Fname%3Dcheckout-api%2Capp.kubernetes.io%2Fmanaged-by%3Dbemmoly-pipelines",
+      "response": {
+        "items": [
+          {
+            "metadata": {
+              "name": "checkout-api-v1-41-0-a0a0a0a",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-20T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          },
+          {
+            "metadata": {
+              "name": "checkout-api-v1-42-0-b7d2e91",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-28T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "HTTPRoute",
+        "spec": {
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-41-0-a0a0a0a",
+                  "weight": 100
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "weight": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-41-0-a0a0a0a",
+                  "port": 80,
+                  "weight": 100
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 0
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-41-0-a0a0a0a",
+                  "port": 80,
+                  "weight": 100
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 0
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "Gateway",
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        },
+        "status": {
+          "addresses": [
+            {
+              "type": "IPAddress",
+              "value": "34.120.8.17"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "HTTPRoute",
+        "spec": {
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "Gateway",
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        },
+        "status": {
+          "addresses": [
+            {
+              "type": "IPAddress",
+              "value": "34.120.8.17"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout",
+      "response": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "checkout"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Gateway",
+        "spec": {
+          "gatewayClassName": "gke-l7-global-external-managed"
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Deployment",
+        "apiVersion": "apps/v1",
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v2-0-0-c4e8a10?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "Service",
+        "spec": {
+          "selector": {
+            "pipelines.bemmoly.dev/revision": "checkout-api-v2-0-0-c4e8a10"
+          }
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments?labelSelector=app.kubernetes.io%2Fname%3Dcheckout-api%2Capp.kubernetes.io%2Fmanaged-by%3Dbemmoly-pipelines",
+      "response": {
+        "items": [
+          {
+            "metadata": {
+              "name": "checkout-api-v1-39-0-9a9a9a9",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-01T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          },
+          {
+            "metadata": {
+              "name": "checkout-api-v1-40-0-9b9b9b9",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-10T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          },
+          {
+            "metadata": {
+              "name": "checkout-api-v1-41-0-a0a0a0a",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-20T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          },
+          {
+            "metadata": {
+              "name": "checkout-api-v1-42-0-b7d2e91",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-28T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          },
+          {
+            "metadata": {
+              "name": "checkout-api-v2-0-0-c4e8a10",
+              "namespace": "checkout",
+              "labels": {
+                "app.kubernetes.io/name": "checkout-api",
+                "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+              },
+              "creationTimestamp": "2026-10-29T09:00:00Z"
+            },
+            "spec": {
+              "replicas": 1
+            },
+            "status": {}
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "HTTPRoute",
+        "spec": {
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "weight": 100
+                },
+                {
+                  "name": "checkout-api-v2-0-0-c4e8a10",
+                  "weight": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                },
+                {
+                  "name": "checkout-api-v2-0-0-c4e8a10",
+                  "port": 80,
+                  "weight": 0
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v1-39-0-9a9a9a9",
+      "body": {
+        "propagationPolicy": "Background"
+      },
+      "response": {
+        "kind": "Status",
+        "status": "Success"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v1-39-0-9a9a9a9",
+      "status": 404,
+      "response": {
+        "kind": "Status",
+        "reason": "NotFound",
+        "message": "services \"checkout-api-v1-39-0-9a9a9a9\" not found"
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "HTTPRoute",
+        "spec": {
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v2-0-0-c4e8a10",
+                  "weight": 25
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "weight": 75
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v2-0-0-c4e8a10",
+                  "port": 80,
+                  "weight": 25
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 75
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v2-0-0-c4e8a10",
+                  "port": 80,
+                  "weight": 25
+                },
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 75
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "Gateway",
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        },
+        "status": {
+          "addresses": [
+            {
+              "type": "IPAddress",
+              "value": "34.120.8.17"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          },
+          "creationTimestamp": "2026-10-29T09:00:00Z"
+        },
+        "spec": {
+          "replicas": 1
+        },
+        "status": {
+          "readyReplicas": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "True"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://monitoring.googleapis.com/v3/projects/acme-commerce-prod/timeSeries?aggregation.groupByFields=metric.label.response_code_class",
+      "response": {
+        "timeSeries": [
+          {
+            "metric": {
+              "labels": {
+                "response_code_class": "200"
+              }
+            },
+            "points": [
+              {
+                "interval": {
+                  "endTime": "2026-10-29T09:05:00Z"
+                },
+                "value": {
+                  "int64Value": "396"
+                }
+              },
+              {
+                "interval": {
+                  "endTime": "2026-10-29T09:04:00Z"
+                },
+                "value": {
+                  "int64Value": "400"
+                }
+              }
+            ]
+          },
+          {
+            "metric": {
+              "labels": {
+                "response_code_class": "500"
+              }
+            },
+            "points": [
+              {
+                "interval": {
+                  "endTime": "2026-10-29T09:05:00Z"
+                },
+                "value": {
+                  "int64Value": "4"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "HTTPRoute",
+        "spec": {
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "Gateway",
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        },
+        "status": {
+          "addresses": [
+            {
+              "type": "IPAddress",
+              "value": "34.120.8.17"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          },
+          "creationTimestamp": "2026-10-29T09:00:00Z"
+        },
+        "spec": {
+          "replicas": 1
+        },
+        "status": {}
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "kind": "Status",
+        "status": "Success"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "kind": "Status",
+        "status": "Success"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/httproutes/checkout-api",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "HTTPRoute",
+        "metadata": {
+          "name": "checkout-api",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          }
+        },
+        "spec": {
+          "parentRefs": [
+            {
+              "name": "bemmoly",
+              "namespace": "checkout"
+            }
+          ],
+          "hostnames": ["checkout-api.checkout.bemmoly.internal"],
+          "rules": [
+            {
+              "backendRefs": [
+                {
+                  "name": "checkout-api-v1-42-0-b7d2e91",
+                  "port": 80,
+                  "weight": 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/gateway.networking.k8s.io/v1/namespaces/checkout/gateways/bemmoly",
+      "response": {
+        "apiVersion": "gateway.networking.k8s.io/v1",
+        "kind": "Gateway",
+        "metadata": {
+          "name": "bemmoly",
+          "namespace": "checkout"
+        },
+        "status": {
+          "addresses": [
+            {
+              "type": "IPAddress",
+              "value": "34.120.8.17"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

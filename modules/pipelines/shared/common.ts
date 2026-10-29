@@ -159,3 +159,16 @@ export type CurrentState = z.infer<typeof currentStateSchema>;
 export type PromotionState = z.infer<typeof promotionStateSchema>;
 export type PersonRef = z.infer<typeof personRefSchema>;
 export type TeamRef = z.infer<typeof teamRefSchema>;
+
+/**
+ * Where an application runs in one environment: Cloud Run, a GKE cluster Pipelines runs in
+ * Autopilot or Standard mode, or a cluster the company attached. See shared/runtimes.ts.
+ */
+export const deployRuntimeSchema = z.enum([
+  'cloud-run',
+  'gke-autopilot',
+  'gke-standard',
+  'attached-cluster',
+]);
+export const DEFAULT_DEPLOY_RUNTIME = 'cloud-run' satisfies z.infer<typeof deployRuntimeSchema>;
+export type DeployRuntime = z.infer<typeof deployRuntimeSchema>;

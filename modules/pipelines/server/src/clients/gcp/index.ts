@@ -4,6 +4,7 @@ import { createBudgetsClient } from './budgets.ts';
 import { createCloudBuildClient } from './cloud-build.ts';
 import { createCloudRunClient } from './cloud-run.ts';
 import { createComputeClient } from './compute.ts';
+import { createContainerClient } from './container.ts';
 import { createGcpHttp, type GcpTokenSource, type GcpTransport } from './http.ts';
 import { createIamCredentialsClient } from './iam-credentials.ts';
 import { createIamClient } from './iam.ts';
@@ -42,6 +43,9 @@ export function createGcpClients(options: GcpClientOptions) {
     cloudBuild: createCloudBuildClient(http),
     compute: createComputeClient(http, poll),
     logging: createLoggingClient(http),
+    container: createContainerClient(http, poll),
+    /** The identity these clients act as, for APIs outside Google's, such as a cluster's. */
+    tokens: options.tokens,
   };
 }
 
@@ -55,3 +59,11 @@ export { hasBinding, serviceAccountMember, withBinding, type IamPolicy } from '.
 export { LATEST_TARGET, REVISION_TARGET, runServiceName, type RunService } from './cloud-run.ts';
 export { dockerHostPath, parseDockerPath, repositoryName } from './artifact-registry.ts';
 export type { PollOptions } from './operations.ts';
+export {
+  gatewayApiOn,
+  gkeClusterName,
+  secretManagerOn,
+  type ContainerClient,
+  type GkeCluster,
+  type GkeOperation,
+} from './container.ts';
