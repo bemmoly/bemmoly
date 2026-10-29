@@ -57,6 +57,8 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
     environmentId: environment.id,
     mode: 'autopilot',
   });
+  // The simulator reports a new cluster as creating once, then running.
+  await json(request, 'POST', `/clusters/${cluster.id}/check`);
   await json(request, 'POST', `/clusters/${cluster.id}/check`);
 
   // Turn the front door on from its row; without a domain it answers on the address.
@@ -72,19 +74,22 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
   await dialog.getByLabel('Domain').fill('');
   await dialog.getByRole('button', { name: 'Save' }).click();
   await expect(row.getByText('Ready', { exact: true })).toBeVisible({ timeout: 60_000 });
-  await expect(row).toContainText(/203\.0\.113\.\d+/);
+  await expect(row).toContainText(/203\.0\.113\.\d+|addresses, one in each project/);
   await expect(row).toContainText('No domain: HTTP on the address');
   await expectLoaded(page);
   await page.screenshot({ path: info.outputPath('front-doors-light.png'), fullPage: true });
 
   // An application the front door serves, with no deploy under way there.
   const listed = await json<{
-    items: Array<{ environment: { key: string }; routes: Array<{ application: { key: string } }> }>;
+    items: Array<{
+      environment: { key: string };
+      routes: Array<{ account: string; application: { key: string } }>;
+    }>;
   }>(request, 'GET', '/front-doors');
   const routes = listed.items.find((door) => door.environment.key === ENV)?.routes ?? [];
   expect(routes.length).toBeGreaterThan(0);
   let application = '';
-  for (const route of routes) {
+  for (const route of routes.filter((each) => each.account === 'acme-commerce-prod')) {
     const key = route.application.key;
     const deployments = await json<{ items: Array<{ state: string }> }>(
       request,
@@ -104,7 +109,9 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
   await expect(door).toContainText(ENV_NAME);
   await expect(door).toContainText('Cloud Run 100%');
   const card = page.getByRole('region', { name: 'Where it runs' });
-  await expect(card).toContainText('Where a front door serves it, a switch plans a move');
+  await expect(card).toContainText(
+    'Where a front door serves it, a switch plans a move with no downtime',
+  );
   await card.getByRole('combobox', { name: `Runtime in ${ENV_NAME}` }).click();
   await page.getByRole('option', { name: 'GKE Autopilot' }).click();
   await card.getByRole('link', { name: 'Move to GKE Autopilot planned. Review the plan' }).click();
@@ -138,7 +145,7 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
   await expect(page.getByText('10% moved')).toBeVisible();
   await page.screenshot({ path: info.outputPath('move-running-light.png'), fullPage: true });
   await page.getByRole('button', { name: 'Roll back' }).click();
-  await expect(page.getByText('Rolled back', { exact: true })).toBeVisible();
+  await expect(page.getByText('Rolled back by hand')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Start the move' })).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: info.outputPath('move-phone.png'), fullPage: true });
@@ -153,4 +160,15 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
       name: `Runtime in ${ENV_NAME}`,
     }),
   ).toHaveText('Default: Cloud Run');
+
+  // Turn it off again: the load balancer goes, and the later journeys see no front door.
+  await page.goto('/pipelines/platform/environments');
+  await row.getByRole('button', { name: 'Edit…' }).click();
+  const edit = page.getByRole('dialog', { name: `Front door for ${ENV_NAME}` });
+  await edit.getByRole('switch', { name: 'Front door on' }).click();
+  await expect(edit).toContainText('Turning it off takes the load balancer down');
+  await edit.getByRole('button', { name: 'Save' }).click();
+  await expect(row).toContainText('Off. A switch of runtime here waits for the next deploy', {
+    timeout: 60_000,
+  });
 });
