@@ -75,7 +75,9 @@ export async function startPipelinesHarness(): Promise<HarnessStart> {
   const modules = loadModules({ available: [pipelines], enabled: ['pipelines'] });
   const db = createDatabase(sql);
   const world = createFakeWorld();
-  const registry = createProviderRegistry(createDefaultProviders({ simulate: true, world }));
+  const registry = createProviderRegistry(
+    createDefaultProviders({ simulate: true, local: true, world }),
+  );
   const jobs: SentJob[] = [];
   const services = createPipelinesServices({
     database: sql,

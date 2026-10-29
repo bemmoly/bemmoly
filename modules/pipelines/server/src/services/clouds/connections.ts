@@ -63,11 +63,10 @@ export function createConnections(deps: ConnectionsDeps) {
 
     async connect(ctx: RequestContext, body: ConnectCloud): Promise<CloudConnection> {
       await deps.authorizeAdmin(ctx);
-      if (body.provider !== 'local') {
-        const provider = await providerFor(deps.providers, body.provider);
-        if (partAvailability(provider, 'connection') !== 'available') {
-          throw new ValidationError(`${provider.name} is coming soon`);
-        }
+      // The local provider has no connection part to check, but it must be switched on.
+      const provider = await providerFor(deps.providers, body.provider);
+      if (body.provider !== 'local' && partAvailability(provider, 'connection') !== 'available') {
+        throw new ValidationError(`${provider.name} is coming soon`);
       }
       try {
         return toConnection(await insertConnection(deps.sql(), body, personOf(ctx.actor)));
