@@ -9,6 +9,8 @@ import type {
 } from '../../../../shared/common.ts';
 import type { BillingHeadroom } from './org-contract.ts';
 import type { FrontDoorPart } from './front-door-contract.ts';
+import type { ExportPart } from './export-contract.ts';
+import type { AccessPart, CostPart } from './planned-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
 
 /*
@@ -35,6 +37,7 @@ export const PROVIDER_PARTS = [
 
 export type { MachineLaunch, MachineRef, MachineStatus, RunnersPart } from './runners-contract.ts';
 export { ApplyStopped, type BillingHeadroom } from './org-contract.ts';
+export type { AccessPart, CostPart } from './planned-contract.ts';
 
 export type ProviderPart = (typeof PROVIDER_PARTS)[number];
 export type PartAvailability = 'available' | 'coming_soon' | 'unsupported';
@@ -247,24 +250,6 @@ export interface SecretsPart {
   ): Promise<string>;
 }
 
-export interface AccessPart {
-  grant(
-    connection: ConnectionRecord,
-    input: { account: string; principal: string; role: string; until: Date },
-  ): Promise<void>;
-  revoke(
-    connection: ConnectionRecord,
-    input: { account: string; principal: string; role: string },
-  ): Promise<void>;
-}
-
-export interface CostPart {
-  spend(
-    connection: ConnectionRecord,
-    input: { account: string; from: Date; to: Date },
-  ): Promise<{ amount: number; currency: string } | null>;
-}
-
 /** What a provider is, and the parts it implements. */
 export interface CloudProvider {
   id: Provider;
@@ -284,6 +269,7 @@ export interface CloudProvider {
   cost?: CostPart;
   clusters?: ClustersPart;
   frontDoor?: FrontDoorPart;
+  export?: ExportPart;
   /**
    * Runtimes beyond the default one `targets` and `metrics` serve, such as GKE beside Cloud
    * Run. Target resolution swaps these in for the application's runtime in an environment.
