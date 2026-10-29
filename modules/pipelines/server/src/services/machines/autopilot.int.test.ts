@@ -14,8 +14,9 @@ import { createMachinesService, type MachinesService } from './index.ts';
  * GKE Autopilot runner pools end to end against the simulated cloud: the cluster Pipelines
  * creates in the CI project comes up over a sweep, a job queued on the pool gets a pod whose
  * runner registers with the one-time token and passes the job, and the pool returns to zero.
- * Fewest keeps warm room that shrinks while pods are up; a job whose pod could not be
- * scheduled is refused with a sentence; only a managed connection may create a cluster.
+ * Fewest keeps warm room that shrinks while pods are up, and given back when the pool moves
+ * off Autopilot; a job whose pod could not be scheduled is refused with a sentence; only a
+ * managed connection may create a cluster.
  */
 
 const at = () => new Date().toISOString();
@@ -189,6 +190,15 @@ describe('runner pools on GKE Autopilot', () => {
       starting: 1,
       warm: 1,
     });
+  });
+
+  it('gives its warm room back when the pool moves to machines you start', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const { services, users, world } = harness;
+    await services.capacity.update(harness.as(users.admin), 'gke', { hosting: 'vm' });
+    await machines.sweep();
+    expect(world.podPools.get(POOL_REF)?.site.warm).toBe(0);
+    expect(await capacityPool('gke')).toMatchObject({ hosting: 'vm', autopilot: null });
   });
 
   it('refuses a job whose pod would hold more step images than a pod may', async (ctx) => {
