@@ -26,6 +26,27 @@ function definition(value: unknown) {
 }
 
 describe('resolvePipeline', () => {
+  it('keeps every deploy setting a release needs, public access included', async () => {
+    const resolved = await resolvePipeline(
+      definition({
+        build: { dockerfile: 'Dockerfile' },
+        deploy: {
+          kind: 'container-service',
+          port: 3000,
+          public: true,
+          resources: { memory: '512Mi' },
+        },
+      }),
+      lookup,
+      options,
+    );
+    expect(resolved.deploy).toMatchObject({
+      port: 3000,
+      public: true,
+      resources: { memory: '512Mi' },
+    });
+  });
+
   it('names the image after the registry and pushes it when there is one', async () => {
     const pipeline = definition({ extends: 'acme/node-service@3' });
     const env = async (registry: string | null) =>
