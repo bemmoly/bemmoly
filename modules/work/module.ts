@@ -16,6 +16,7 @@ import {
 } from './server/src/services/jobs.ts';
 import { createCsvImporter } from './server/src/services/import/csv/index.ts';
 import { createJiraImporter } from './server/src/services/import/jira/index.ts';
+import { createWorkStartSource } from './server/src/services/my-work/start.ts';
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
 import { registerWorkAi, withAiTriggers } from './server/src/services/ai/index.ts';
 import { registerWorkReferences } from './server/src/services/references/index.ts';
@@ -185,17 +186,18 @@ export default defineModule({
       handle: async () => void (await services.automation.tick()),
     });
     subscribeAutomation(ctx.events, services.automation);
+    const importDeps = {
+      ...(ctx.database ? { database: ctx.database } : {}),
+      ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+    };
     registerWorkSearch(ctx.search, services.search, ctx.database);
+    ctx.start.add(createWorkStartSource(importDeps));
     registerWorkRetrieval(ctx);
     registerWorkReferences(ctx, ctx.database);
     registerWorkAiTools(ctx.ai, services);
     registerWorkMcp(ctx.mcp, services);
     registerWorkAi(ctx, ctx.database);
     const askReports = registerAskReports(ctx);
-    const importDeps = {
-      ...(ctx.database ? { database: ctx.database } : {}),
-      ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
-    };
     ctx.importers.add(importerContribution(createJiraImporter(importDeps)));
     ctx.importers.add(importerContribution(createCsvImporter(importDeps)));
     const routes = workRoutes(createWorkControllers(services));

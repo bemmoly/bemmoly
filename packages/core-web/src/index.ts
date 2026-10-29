@@ -144,6 +144,8 @@ export {
   type SidebarRegistry,
 } from './shell/module-sidebars.ts';
 export { knownIcon, moduleName, ModuleTile } from './shell/module-tile.tsx';
+export { ProductSwitcher, type ProductSwitcherProps } from './shell/product-switcher.tsx';
+export { productAt, productsOf, START_PATH, type Product } from './shell/products.ts';
 export {
   HeaderActions,
   HeaderPresence,

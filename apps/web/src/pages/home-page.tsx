@@ -32,7 +32,7 @@ function needsLine(count: number | null): string {
  * admin on a fresh install that step turns Work and Docs on in place; Settings stays a link
  * for anyone who wants to choose.
  */
-function NoModules({ canEnable }: { canEnable: boolean }) {
+export function NoModules({ canEnable }: { canEnable: boolean }) {
   const modules = useFrameLink('/settings/modules');
   const starter = useStarterModules(canEnable);
   const choose = (

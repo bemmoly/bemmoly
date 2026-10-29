@@ -109,6 +109,7 @@ export const queryKeys = {
     insights: () => ['ai', 'insights'] as const,
     insight: (kind: string, targetId: string) => ['ai', 'insights', kind, targetId] as const,
   },
+  startSummaries: () => ['start-summaries'] as const,
   search: (q: string, kinds: readonly string[] = []) => ['search', q, kinds] as const,
   /** The Work module's root; its own factory (workKeys) nests everything under it. */
   work: () => ['work'] as const,
