@@ -50,6 +50,12 @@ command changes nothing.
 for c in shop-dev shop-prod; do gcloud container clusters update "$c" --location "$REGION" --project "$PROJECT" --gateway-api=standard; done
 ```
 
+Turn on GKE's Secret Manager add-on too, so pods can read the application's secrets:
+
+```sh
+for c in shop-dev shop-prod; do gcloud container clusters update "$c" --location "$REGION" --project "$PROJECT" --enable-secret-manager; done
+```
+
 **You should see** `CHANNEL_STANDARD` from:
 
 ```sh
@@ -106,7 +112,46 @@ gcloud container clusters get-credentials shop-dev --location "$REGION" --projec
 
 Cloud Run still serves Prod.
 
-## 5. Switch Prod, and watch a canary on GKE
+## 5. Read a secret on GKE
+
+Set a secret for Dev on the application's **Variables** tab, as in step 10 of
+[Ship your own project](your-own-project.md#10-secrets), then push and let it reach Dev.
+
+On GKE a secret is a file, not an environment variable. Kubernetes cannot fill a variable from a
+file, and Pipelines never puts a value into a Kubernetes Secret. GKE's Secret Manager add-on
+mounts each secret at the version the deploy recorded, at `/var/run/secrets/bemmoly/<NAME>`, and
+the variable `<NAME>_FILE` holds that path. Plain variables stay ordinary environment variables.
+Read `API_KEY` like this in Node:
+
+```js
+const apiKey = readFileSync(process.env.API_KEY_FILE, 'utf8');
+```
+
+The pods run as a Kubernetes service account named after the application. At each deploy
+Pipelines grants that account's Workload Identity principal Secret Manager Secret Accessor on
+each secret the revision mounts, and nothing else.
+
+**You should see** the revision's class name the secret by version, with no value:
+
+```sh
+kubectl -n "$GROUP" get secretproviderclass -o yaml | grep resourceName
+```
+
+```
+- resourceName: "projects/<PROJECT>/secrets/bemmoly-shop-API_KEY-dev/versions/1"
+```
+
+And the file inside a pod, without printing it. Use the newest Deployment that
+`kubectl -n "$GROUP" get deploy` lists, and an image that has a shell:
+
+```sh
+kubectl -n "$GROUP" exec deploy/<newest> -- sh -c 'wc -c < "$API_KEY_FILE"'
+```
+
+**You should see** the length of what you pasted. If the add-on is off, the deploy fails saying
+which command turns it on.
+
+## 6. Switch Prod, and watch a canary on GKE
 
 On the card, set **Runtime in Prod** to **Attached cluster**. Promote the release Dev runs to
 Prod. A first deploy into a new cluster takes all its traffic at once, since there is nothing
@@ -132,15 +177,15 @@ ADDRESS=$(kubectl -n "$GROUP" get gateway bemmoly -o jsonpath='{.status.addresse
 for i in $(seq 900); do curl -s -o /dev/null -H "Host: $APP.$GROUP.bemmoly.internal" "http://$ADDRESS/"; sleep 1; done
 ```
 
-## 6. Roll back
+## 7. Roll back
 
 Press **Roll back** on the application's page.
 
 **You should see** the route send everything to the previous revision at once: the command from
-step 5 prints the old revision with weight 100. Its Deployment was never removed. Pipelines
+step 6 prints the old revision with weight 100. Its Deployment was never removed. Pipelines
 keeps the two newest revisions that take no traffic and prunes older ones on each deploy.
 
-## 7. Switch back and clean up
+## 8. Switch back and clean up
 
 Set both lines on the card back to **Default: Cloud Run**. The next deploy to each environment
 goes to Cloud Run again; nothing moves until then. Then forget the clusters on Platform ›
@@ -164,5 +209,5 @@ Things worth trying on purpose:
 
 Known gaps: switching between Cloud Run and GKE is not a traffic move yet, so the first deploy
 on the new runtime takes all its traffic at once; the front door does that move later.
-Variables reach the pods, secrets do not yet. Creating clusters through a managed connection
+Secrets are files, not environment variables. Creating clusters through a managed connection
 is built but has not run against a real organization.
