@@ -27,13 +27,18 @@ export const gcpConnectionConfigSchema = z.object({
   organizationId: z.string().default(''),
   billingAccountId: z.string().default(''),
   folderName: z.string().min(1).default('Bemmoly'),
+  /**
+   * The folder bootstrap.sh made and granted Bemmoly roles on, as digits. Connections made
+   * before it named only the organisation, and Pipelines created the folder there itself.
+   */
+  folderId: z.string().default(''),
   /** Used where an environment names no region. */
   region: z.string().min(1).default('us-central1'),
   /**
-   * Projects the billing account may pay for. Google publishes no API for this limit; new
-   * billing accounts start with a handful, so an admin who has an increase records it here.
+   * Projects the billing account may pay for, when an admin has recorded it. Google publishes
+   * no API for this limit, so without it the plan compares against the usual default.
    */
-  projectQuota: z.number().int().positive().default(5),
+  projectQuota: z.number().int().positive().optional(),
   credentials: gcpCredentialsSchema,
   /** Service Monitoring SLO names by application key; no entry means no error budget. */
   slos: z.record(z.string(), z.string()).default({}),
@@ -86,10 +91,10 @@ export function parseGcpConfig(connection: ConnectionRecord): GcpConnectionConfi
   const managedWithout =
     parsed.success &&
     parsed.data.mode === 'managed' &&
-    (!parsed.data.organizationId || !parsed.data.billingAccountId);
+    ((!parsed.data.folderId && !parsed.data.organizationId) || !parsed.data.billingAccountId);
   if (!parsed.success || managedWithout) {
     throw new ValidationError(
-      `${connection.name} is missing its organization or billing account; reconnect it`,
+      `${connection.name} is missing its folder or billing account; connect it again with the values bootstrap.sh printed`,
     );
   }
   return parsed.data;

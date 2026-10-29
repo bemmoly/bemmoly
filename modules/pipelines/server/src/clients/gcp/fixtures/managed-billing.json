@@ -1,0 +1,46 @@
+{
+  "recorded": "Hand-written from the Google Cloud REST reference (shapes and field names as documented); not captured from a live organisation. Replace with a capture from a sandbox: see README.md beside this file.",
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9/projects?pageSize=200",
+      "response": {
+        "projectBillingInfo": [
+          {
+            "name": "projects/bemmoly-control-583920174411/billingInfo",
+            "projectId": "bemmoly-control-583920174411",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          },
+          {
+            "name": "projects/acme-website/billingInfo",
+            "projectId": "acme-website",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          }
+        ],
+        "nextPageToken": "CgwIARIIYWNtZS1vbGQ"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9/projects?pageToken=CgwIARIIYWNtZS1vbGQ",
+      "response": {
+        "projectBillingInfo": [
+          {
+            "name": "projects/acme-analytics/billingInfo",
+            "projectId": "acme-analytics",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          },
+          {
+            "name": "projects/acme-old-sandbox/billingInfo",
+            "projectId": "acme-old-sandbox",
+            "billingAccountName": "",
+            "billingEnabled": false
+          }
+        ]
+      }
+    }
+  ]
+}

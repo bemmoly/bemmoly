@@ -2,10 +2,9 @@ import type {
   CloudAccount,
   CloudConnection,
   CloudResource,
-  LandingZoneNode,
-  LandingZonePlan,
   Layout,
 } from '../../../../shared/clouds.ts';
+import type { LandingZoneNode, LandingZonePlan } from '../../../../shared/landing-zones.ts';
 import type { DomainColor } from '../../../../shared/catalog.ts';
 import type { EnvironmentClass, Provider } from '../../../../shared/common.ts';
 import type { AccountRow, ConnectionRow, PlanRow, ResourceRow } from '../../models/clouds.ts';
@@ -94,5 +93,9 @@ export const toPlan = (row: PlanRow): LandingZonePlan => ({
   root: row.tree as LandingZoneNode,
   counts: row.counts,
   blockers: row.blockers,
+  warnings: row.warnings ?? [],
+  billing: row.billing ?? null,
+  status: row.status as LandingZonePlan['status'],
+  lastError: row.last_error,
   specHash: row.spec_hash,
 });

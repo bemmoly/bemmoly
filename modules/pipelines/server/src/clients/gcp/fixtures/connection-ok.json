@@ -20,7 +20,7 @@
       "method": "POST",
       "url": "https://cloudresourcemanager.googleapis.com/v3/organizations/583920174411:testIamPermissions",
       "body": {
-        "permissions": ["resourcemanager.folders.create", "resourcemanager.projects.create"]
+        "permissions": ["resourcemanager.projects.create", "resourcemanager.folders.create"]
       },
       "response": {
         "permissions": ["resourcemanager.folders.create", "resourcemanager.projects.create"]

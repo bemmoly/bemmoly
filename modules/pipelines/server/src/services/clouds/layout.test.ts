@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Layout } from '../../../../shared/clouds.ts';
-import { landingZoneNodeSchema } from '../../../../shared/clouds.ts';
+import { landingZoneNodeSchema } from '../../../../shared/landing-zones.ts';
 import { canonicalJson, specHash } from './hash.ts';
 import { buildZone, resourceHash, type ZoneInput } from './layout.ts';
 import { accountIdOf, prefixOf } from './naming.ts';
@@ -84,6 +84,60 @@ describe('landing zone layouts', () => {
     const budgets = zone.resources.filter((resource) => resource.kind === 'budget');
     expect(budgets).toHaveLength(1);
     expect(budgets[0]?.spec).toEqual({ monthly: 1500, currency: 'USD', alerts: [0.5, 0.9, 1] });
+  });
+});
+
+describe('the Starter layout', () => {
+  const starter = buildZone(input('starter', { controlProject: 'bemmoly-control-583920174411' }));
+
+  it('declares the platform project and one each for non-production and production', () => {
+    expect(starter.accounts.map((account) => [account.name, account.purpose])).toEqual([
+      ['Bemmoly platform', 'control'],
+      ['Non-production', 'workload'],
+      ['Production', 'workload'],
+    ]);
+    const [, nonprod, prod] = starter.accounts;
+    expect(nonprod?.externalId).toMatch(/^acme-nonprod-[0-9a-f]{4}$/);
+    expect(nonprod?.environments?.map((environment) => environment.key)).toEqual([
+      'dev',
+      'staging',
+    ]);
+    expect(prod?.environments?.map((environment) => environment.key)).toEqual(['prod-asia-south1']);
+  });
+
+  it('adopts the bootstrap project and keeps the shared registry and builder there', () => {
+    const platform = 'bemmoly-control-583920174411';
+    const own = starter.resources.filter((resource) => resource.account === platform);
+    expect(own.map((resource) => `${resource.kind}/${resource.name}`)).toEqual([
+      `account/${platform}`,
+      'service_api/apis',
+      'runtime_identity/builder',
+      'registry_access/apps',
+      'logging/logs',
+    ]);
+    expect(own[0]?.spec).toMatchObject({ adopt: true });
+    const pulls = starter.resources.filter(
+      (resource) => resource.kind === 'registry_access' && resource.account !== platform,
+    );
+    expect(pulls.map((pull) => pull.spec['registryAccount'])).toEqual([platform, platform]);
+  });
+
+  it('gives each project its own deployer and runtime identity', () => {
+    for (const account of starter.accounts.slice(1)) {
+      const kinds = starter.resources
+        .filter((resource) => resource.account === account.externalId)
+        .map((resource) => resource.kind);
+      expect(kinds).toEqual(expect.arrayContaining(['deployer_identity', 'runtime_identity']));
+    }
+  });
+
+  it('leaves out a tier with no environments', () => {
+    const small = input('starter');
+    small.environments = small.environments.filter((environment) => environment.class === 'dev');
+    expect(buildZone(small).accounts.map((account) => account.name)).toEqual([
+      'Bemmoly platform',
+      'Non-production',
+    ]);
   });
 });
 
