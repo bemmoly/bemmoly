@@ -119,6 +119,8 @@ export const createPoolBodySchema = z
 
 export const updatePoolBodySchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
+  /** Where its runners come from; a switch to Cloud Build needs its settings too. */
+  hosting: poolHostingSchema.optional(),
   location: z.string().max(120).optional(),
   labels: z.array(z.string().max(60)).max(20).optional(),
   minRunners: z.number().int().min(0).optional(),

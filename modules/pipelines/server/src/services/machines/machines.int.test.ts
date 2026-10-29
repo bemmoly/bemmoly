@@ -203,7 +203,43 @@ describe('build machines on a Cloud Build pool', () => {
     await machines.sweep({ pools: [created.jobs[0]?.pool?.id ?? ''] });
     const refused = await services.runs.get(harness.as(users.admin), created.id);
     expect(refused.jobs[0]?.state).toBe('failed');
-    expect(refused.jobs[0]?.failureSummary).toMatch(/^Pools whose machines Pipelines starts do not run pull requests from forks/);
+    expect(refused.jobs[0]?.failureSummary).toMatch(
+      /^Pools whose machines Pipelines starts do not run pull requests from forks/,
+    );
     expect((await capacityPool('cb-forks'))?.machines).toEqual([]);
+  });
+
+  it('switches a pool of machines you start to Cloud Build and back', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const { services, users } = harness;
+    const admin = harness.as(users.admin);
+    await services.capacity.create(admin, {
+      key: 'laptops',
+      name: 'Laptops',
+      hosting: 'vm',
+      maxRunners: 3,
+    });
+    await expect(
+      services.capacity.update(admin, 'laptops', { hosting: 'cloud-build' }),
+    ).rejects.toThrow(/needs its project, region, image and service account/);
+    const switched = await services.capacity.update(admin, 'laptops', {
+      hosting: 'cloud-build',
+      cloudBuild: {
+        account,
+        region: 'europe-west1',
+        image: IMAGE,
+        serviceAccount: 'builder@nila-ci.iam.gserviceaccount.com',
+      },
+    });
+    expect(switched).toMatchObject({
+      hosting: 'cloud-build',
+      cloudBuild: {
+        account: { externalId: 'nila-ci' },
+        region: 'europe-west1',
+        machine: 'default',
+      },
+    });
+    const back = await services.capacity.update(admin, 'laptops', { hosting: 'vm' });
+    expect(back).toMatchObject({ hosting: 'vm', cloudBuild: null });
   });
 });
