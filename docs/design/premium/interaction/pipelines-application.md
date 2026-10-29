@@ -90,3 +90,50 @@ stacks with the others.
 **Choices recorded.** A select per environment rather than a dialog, since the choice is one
 value and takes effect on the next deploy, not now. The default option names what it follows
 (application.yaml, then the environment), so nobody has to guess.
+
+Where a front door serves the application, a switch plans a move instead of waiting for the
+next deploy. The line then shows the move's target and a link under it ("Move to GKE Autopilot
+planned. Review the plan", "Moving to GKE Autopilot: 10%"), and the card's foot says a switch
+there has no downtime.
+
+## Front door
+
+**Primary job.** Show where callers reach the application in each environment with a front
+door, and how its traffic is split between runtimes now.
+
+**States.** Loading: one skeleton line. Error: the card's own Try again. None: one sentence
+saying an admin turns a front door on in Platform › Environments. During a move: both runtimes
+with their shares. Phone: the card stacks with the others.
+
+**URL state.** None.
+
+**Choices recorded.** A side card, not a tab: it is a few lines per environment and reads
+beside Where it runs. Without a domain the card names the Host header to send, since the
+address alone does not reach the application.
+
+## Moving between runtimes
+
+**Primary job.** Decide whether to move an application to another runtime, then follow and
+steer the move.
+
+| Action | Mouse | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Start the move | Start the move in the header | Tab, Enter | Tap |
+| Pause, then Continue | Pause, Continue in the header | Tab, Enter | Tap |
+| Roll back (Cancel the plan before it starts) | Roll back in the header | Tab, Enter | Tap |
+
+**Order.** The steps, the downtime, the month's cost and what is untested come first, before
+any action, so the decision is made on them. The cost says it is an estimate and the date its
+prices were read.
+
+**States.** Loading: two card skeletons. Error: Try again. Planned: Start and Cancel the plan.
+Moving: Pause and Roll back; the screen follows the move every five seconds. Paused: Continue
+and Roll back. Ended (moved, rolled back, failed, cancelled): no actions, Back to the
+application. A refused action shows the server's sentence above the cards. Phone: the cards
+stack in the same order.
+
+**URL state.** `/applications/<key>/moves/<id>`: the move.
+
+**Choices recorded.** The steps reuse `RolloutPlan` as three waves (deploy and wait, shift,
+remove), so a move reads like a canary. Roll back needs no confirmation: it only ever returns
+traffic to where it ran before.
