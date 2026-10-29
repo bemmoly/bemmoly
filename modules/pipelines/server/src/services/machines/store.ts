@@ -89,10 +89,12 @@ export interface MachinePoolRow {
   live: number;
 }
 
+/** `warmLeft` adds pools that moved off a pod hosting while room was still kept warm. */
 export async function machinePools(
   sql: SqlExecutor,
   hostings: readonly string[],
   only?: readonly string[],
+  warmLeft = false,
 ): Promise<MachinePoolRow[]> {
   return sql<MachinePoolRow[]>`
     select p.id, p.key, p.hosting, p.min_runners, p.max_runners, p.config,
@@ -110,7 +112,8 @@ export async function machinePools(
     from pipeline_runner_pools p
     left join cloud_accounts a on a.id = p.cloud_account_id
     left join cloud_connections c on c.id = a.connection_id
-    where p.hosting = any(${[...hostings]}::text[])
+    where (p.hosting = any(${[...hostings]}::text[])
+        or (${warmLeft} and coalesce((p.config -> 'pods' ->> 'warm')::int, 0) > 0))
       and (${only ? [...only] : null}::uuid[] is null or p.id = any(${only ? [...only] : null}::uuid[]))
     order by oldest nulls last, p.key`;
 }
