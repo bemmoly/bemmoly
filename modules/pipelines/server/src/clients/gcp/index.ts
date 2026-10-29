@@ -8,6 +8,7 @@ import { createContainerClient } from './container.ts';
 import { createGcpHttp, type GcpTokenSource, type GcpTransport } from './http.ts';
 import { createIamCredentialsClient } from './iam-credentials.ts';
 import { createIamClient } from './iam.ts';
+import { createLoadBalancingClient } from './load-balancing.ts';
 import { createLoggingClient } from './logging.ts';
 import { createMonitoringClient } from './monitoring.ts';
 import { DEFAULT_POLL, type PollOptions } from './operations.ts';
@@ -42,6 +43,7 @@ export function createGcpClients(options: GcpClientOptions) {
     monitoring: createMonitoringClient(http),
     cloudBuild: createCloudBuildClient(http),
     compute: createComputeClient(http, poll),
+    loadBalancing: createLoadBalancingClient(http, poll),
     logging: createLoggingClient(http),
     container: createContainerClient(http, poll),
     /** The identity these clients act as, for APIs outside Google's, such as a cluster's. */
@@ -66,6 +68,7 @@ export {
 export { LATEST_TARGET, REVISION_TARGET, runServiceName, type RunService } from './cloud-run.ts';
 export { dockerHostPath, parseDockerPath, repositoryName } from './artifact-registry.ts';
 export type { PollOptions } from './operations.ts';
+export { linkOf, type LoadBalancingClient, type Place } from './load-balancing.ts';
 export {
   gatewayApiOn,
   gkeClusterName,
