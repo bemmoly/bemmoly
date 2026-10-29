@@ -28,7 +28,9 @@ pnpm --filter @bemmoly/module-pipelines seed:demo -- --reset # to start over
 
 `seed:demo` enables Pipelines for everyone and seeds Acme: 512 people, 54 teams, 1,140
 applications in 9 domains, 30 days of runs, releases and deploys, and the live picture right
-now. It takes about a minute. `-- --scale 0.2` seeds a fifth of it.
+now. It takes about a minute. `-- --scale 0.2` seeds a fifth of it. `--reset` empties every
+Pipelines and cloud table first, so it refuses a database that is not on this machine
+(localhost or a unix socket) unless you add `--force`.
 
 Open **http://localhost:5173/pipelines/**.
 

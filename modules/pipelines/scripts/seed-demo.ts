@@ -1,21 +1,26 @@
 #!/usr/bin/env node
 /**
- * pnpm --filter @bemmoly/module-pipelines seed:demo [-- --reset] [-- --scale 0.2]
+ * pnpm --filter @bemmoly/module-pipelines seed:demo [-- --reset [--force]] [-- --scale 0.2]
  *
  * Seeds the Acme demo organisation into the database in apps/server/.env. The package script
  * enables the Pipelines module first (granted to everyone), which applies its changesets.
- * Refuses to run over an existing catalog unless --reset is given.
+ * Refuses to run over an existing catalog unless --reset is given, and --reset refuses a
+ * database that is not on this machine unless --force is given too.
  */
 import { parseArgs } from 'node:util';
 import { createSqlClient } from '@bemmoly/core';
 import { loadPipelinesObjects, loadSeedConfig } from './demo/config.ts';
-import { hasCatalog, resetDemo } from './demo/reset.ts';
+import { hasCatalog, resetDemo, resetRefusal } from './demo/reset.ts';
 import { seedDemo } from './demo/seed.ts';
 
 const { values } = parseArgs({
   // `pnpm … seed:demo -- --reset` passes the separator through; options follow it either way.
   args: process.argv.slice(2).filter((arg) => arg !== '--'),
-  options: { reset: { type: 'boolean', default: false }, scale: { type: 'string', default: '1' } },
+  options: {
+    reset: { type: 'boolean', default: false },
+    force: { type: 'boolean', default: false },
+    scale: { type: 'string', default: '1' },
+  },
 });
 const scale = Number(values.scale);
 if (!Number.isFinite(scale) || scale <= 0 || scale > 1) {
@@ -24,6 +29,11 @@ if (!Number.isFinite(scale) || scale <= 0 || scale > 1) {
 }
 
 const { databaseUrl } = loadSeedConfig();
+const refusal = values.reset ? resetRefusal(databaseUrl, values.force) : null;
+if (refusal) {
+  process.stderr.write(`${refusal}\n`);
+  process.exit(2);
+}
 const sql = createSqlClient(databaseUrl, {
   applicationName: 'bemmoly-pipelines-seed',
   maxConnections: 4,
