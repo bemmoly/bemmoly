@@ -118,8 +118,8 @@ function Concurrency({ capacity }: { capacity: Capacity }) {
 /**
  * Platform › Capacity: runner pools and how busy they are, each team's fair share, the queue
  * and why it waits, and the build minutes the cloud will bill. Live from the dispatcher. A
- * pool takes machines people start or has Cloud Build start one per job; those builds show
- * while they run.
+ * pool takes machines people start, or has Cloud Build or GKE Autopilot start one per job;
+ * those show while they run.
  */
 export default function CapacityArea() {
   const t = useT(pipelinesText);
@@ -169,7 +169,9 @@ export default function CapacityArea() {
               <Panel flush title={t('pipelines.capacity.pools')}>
                 <Pools pools={data.pools} onRotate={setRotating} onEdit={setEditing} />
               </Panel>
-              {data.pools.some((pool) => pool.hosting === 'cloud-build') && (
+              {data.pools.some(
+                (pool) => pool.hosting === 'cloud-build' || pool.hosting === 'gke-autopilot',
+              ) && (
                 <Panel
                   flush
                   labelledBy={buildsTitle}
