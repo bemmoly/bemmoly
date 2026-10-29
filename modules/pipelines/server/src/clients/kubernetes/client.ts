@@ -41,13 +41,16 @@ export interface AccessQuestion {
 export function createKubernetesClient(options: KubernetesHttpOptions) {
   const http = createKubernetesHttp(options);
   return {
-    /** Creates or updates it to match; fields this manager set before and left out go away. */
-    apply(manifest: KubernetesManifest): Promise<KubernetesObject> {
+    /**
+     * Creates or updates it to match; fields this manager set before and left out go away. A
+     * second manager owns only what it applies, so it can add to an object another wrote.
+     */
+    apply(manifest: KubernetesManifest, manager = FIELD_MANAGER): Promise<KubernetesObject> {
       const info = KINDS[manifest.kind];
       return http.send({
         method: 'PATCH',
         path: objectPath(manifest.kind, manifest.metadata.name, manifest.metadata.namespace),
-        query: { fieldManager: FIELD_MANAGER, force: 'true' },
+        query: { fieldManager: manager, force: 'true' },
         contentType: 'application/apply-patch+yaml',
         body: { ...manifest, apiVersion: info.apiVersion },
         schema: kubernetesObjectSchema,
