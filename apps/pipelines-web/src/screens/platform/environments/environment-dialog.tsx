@@ -17,6 +17,7 @@ import {
 import { useId, useState, type KeyboardEvent } from 'react';
 import { useEnvironmentWrites } from '../../../hooks/use-environments.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
+import { RUNTIME_NAME } from '../../../parts/runtime-words.ts';
 import { ActionError } from '../../../parts/action-error.tsx';
 import {
   accountById,
@@ -203,7 +204,7 @@ export function EnvironmentDialog({
             value={draft.defaultRuntime}
             options={deployRuntimeSchema.options.map((value) => ({
               value,
-              label: t(`pipelines.runtimes.name.${value}`),
+              label: t(RUNTIME_NAME[value]),
             }))}
             onChange={(event) => set({ defaultRuntime: deployRuntimeSchema.parse(event.value) })}
           />
