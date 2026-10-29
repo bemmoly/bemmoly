@@ -21,24 +21,61 @@ export interface RequestSettings extends PlanDefaults {
   expiryHours: number;
 }
 
+type RequestBody = CreatePromotionBody & { mode: NonNullable<CreatePromotionBody['mode']> };
+
 export async function requestPromotion(
   deps: ShippingEngineDeps,
   ctx: RequestContext,
-  body: CreatePromotionBody & { mode: NonNullable<CreatePromotionBody['mode']> },
+  body: RequestBody,
   settings: RequestSettings,
 ): Promise<{ id: string; created: boolean }> {
-  const { sql } = deps;
   const person = requirePerson(ctx.actor);
+  return recordPromotion(deps, body, settings, async (where, applicationId) => {
+    const action = where.environmentClass === 'prod' ? 'request_prod' : 'deploy';
+    const { policies } = await deps.access.authorize(ctx, action, {
+      applicationId,
+      environmentId: where.environments[0]?.id ?? '',
+    });
+    return { person, policyVersions: await deps.access.policyVersionIds(deps.sql, policies) };
+  });
+}
+
+/**
+ * Asked for by the path, not a person: a platform admin marked this step auto-promote, so the
+ * system requests it with nobody named. It never reaches production, and gates, bake time
+ * and approvals hold it exactly as they hold a person's request.
+ */
+export async function requestAutomatically(
+  deps: ShippingEngineDeps,
+  body: RequestBody,
+  settings: RequestSettings,
+): Promise<{ id: string; created: boolean }> {
+  return recordPromotion(deps, body, settings, async (where) => {
+    if (where.environmentClass === 'prod') {
+      throw new ValidationError('Production is only ever promoted to by a person');
+    }
+    return { person: null, policyVersions: [] };
+  });
+}
+
+type Requester = (
+  where: Awaited<ReturnType<typeof promotionTargets>>,
+  applicationId: string,
+) => Promise<{ person: string | null; policyVersions: string[] }>;
+
+async function recordPromotion(
+  deps: ShippingEngineDeps,
+  body: RequestBody,
+  settings: RequestSettings,
+  requester: Requester,
+): Promise<{ id: string; created: boolean }> {
+  const { sql } = deps;
   const release = await loadRelease(sql, body.release);
   const application = await loadApplication(sql, { id: release.application_id });
   const where = await promotionTargets(sql, { tier: application.tier as Tier, to: body.to });
   const first = where.environments[0];
   if (!first) throw new ValidationError('Name an environment to promote to');
-  const action = where.environmentClass === 'prod' ? 'request_prod' : 'deploy';
-  const { policies } = await deps.access.authorize(ctx, action, {
-    applicationId: application.id,
-    environmentId: first.id,
-  });
+  const { person, policyVersions } = await requester(where, application.id);
   await requireLandedBefore(sql, {
     applicationId: application.id,
     releaseId: release.id,
@@ -57,7 +94,6 @@ export async function requestPromotion(
     }),
     body.plan as Partial<RolloutPlan> | undefined,
   );
-  const policyVersions = await deps.access.policyVersionIds(sql, policies);
   const now = deps.now();
   const at = now.toISOString();
   const expires = new Date(now.getTime() + settings.expiryHours * 3_600_000).toISOString();
