@@ -1,5 +1,6 @@
 export type * from './ai.ts';
 export type * from './approvals.ts';
+export type * from './custom-fields.ts';
 export type * from './audit.ts';
 export type * from './authn.ts';
 export type * from './authz.ts';

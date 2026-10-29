@@ -15,9 +15,9 @@ import {
   loadModules,
   processAuthorizationCache,
   SYSTEM_SETTINGS,
-  wirePeople,
   type Actor,
   type ApprovalsWired,
+  type CustomFieldsService,
   type BemmolyModule,
   type CodeHosts,
   type CollabHost,
@@ -40,7 +40,7 @@ import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 import { wireOutgoingWebhooks } from './webhooks.ts';
-import { wireApprovalEngine } from './approvals.ts';
+import { wireSuiteServices } from './approvals.ts';
 
 export interface BootOptions {
   env: Env;
@@ -114,6 +114,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   // Bound once code hosts are wired below; modules ask for it only at request time.
   let codeHostDirectory: CodeHosts['directory'] | undefined = undefined;
   let approvals: ApprovalsWired['service'] | undefined = undefined;
+  let customFields: CustomFieldsService | undefined = undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -126,6 +127,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     objects: () => objects,
     codeHosts: () => codeHostDirectory,
     approvals: () => approvals,
+    customFields: () => customFields,
     publicUrl: env.BEMMOLY_PUBLIC_URL,
     ...(env.BEMMOLY_PDF_URL
       ? {
@@ -237,12 +239,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireOutgoingWebhooks({ env, database, kernel, identity, logger })
       : undefined;
-  const people =
-    database && kernel
-      ? wirePeople({ sql: database.sql, authorize: identity.authorize, events: kernel.events })
-      : undefined;
-  approvals =
-    database && kernel ? wireApprovalEngine({ database, kernel, identity }).service : undefined;
+  const suite = database && kernel ? wireSuiteServices({ database, kernel, identity }) : undefined;
+  const people = suite?.people;
+  approvals = suite?.approvals;
+  customFields = suite?.customFields;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({

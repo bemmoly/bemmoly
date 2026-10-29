@@ -2,6 +2,7 @@ import type { PdfRenderer } from '../contracts/pdf.ts';
 import type { ModuleColor, ModuleSettingsInput, SidebarSectionInput } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { Approvals } from '../contracts/approvals.ts';
+import type { ModuleCustomFields } from '../contracts/custom-fields.ts';
 import type { AuditRecorder } from '../contracts/audit.ts';
 import type { Actor } from '../contracts/authz.ts';
 import type { Changelog } from '../contracts/changelog.ts';
@@ -103,6 +104,8 @@ export interface ModuleContext {
   database?: SqlClient;
   /** The approval engine (ADR 0051); requests start only on the module's own workflows. */
   approvals?: Approvals;
+  /** Typed custom fields (ADR 0052) on the module's own entity types. */
+  customFields?: ModuleCustomFields;
   /** Writes the kernel's audit log; present whenever the database is. */
   audit?: AuditRecorder;
   /** Project and space membership; present whenever the database is. */

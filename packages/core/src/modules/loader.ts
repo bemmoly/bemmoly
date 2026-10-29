@@ -7,6 +7,7 @@ import type { JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { AiFacade } from '../contracts/ai.ts';
 import type { Approvals } from '../contracts/approvals.ts';
+import type { CustomFieldsService } from '../services/custom-fields/index.ts';
 import type { CodeHostDirectory } from './code.ts';
 import type { CollabTransactor } from './collab.ts';
 import type { ActorContextFactory, BemmolyModule } from './contract.ts';
@@ -60,6 +61,8 @@ export interface LoadModulesOptions {
   codeHosts?: () => CodeHostDirectory | undefined;
   /** The approval engine every module reaches through ctx.approvals, bound late. */
   approvals?: () => Approvals | undefined;
+  /** The custom fields service behind ctx.customFields, bound late. */
+  customFields?: () => CustomFieldsService | undefined;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -157,6 +160,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
         ...(options.codeHosts ? { codeHosts: options.codeHosts } : {}),
         ...(options.approvals ? { approvals: options.approvals } : {}),
+        ...(options.customFields ? { customFields: options.customFields } : {}),
         peers: () => registry,
       }),
     );

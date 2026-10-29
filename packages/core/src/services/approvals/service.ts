@@ -14,6 +14,7 @@ export function createApprovalsService(deps: ApprovalDeps): ApprovalsService {
   const runtime = createRuntime(deps);
   const queries = createQueries(deps);
   const delegations = createDelegations(deps);
+  const workflows = createDefinitions(deps);
   return {
     start: runtime.start,
     decide: runtime.decide,
@@ -24,6 +25,7 @@ export function createApprovalsService(deps: ApprovalDeps): ApprovalsService {
     delegation: delegations.get,
     setDelegation: delegations.set,
     clearDelegation: delegations.clear,
-    workflows: createDefinitions(deps),
+    ensureWorkflow: workflows.ensure,
+    workflows,
   };
 }
