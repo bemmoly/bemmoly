@@ -9,18 +9,14 @@ import type { ClusterRecord, ConnectionRecord } from '../contract.ts';
 import { createGcpProvider } from './index.ts';
 
 /*
- * Clusters against written answers: creating one through a managed connection (the Regular
- * channel, a maintenance window, Workload Identity, the Gateway API, a node pool on
- * Standard), following it until it runs, and checking an attached one, whose every gap is
- * one sentence saying what to grant or turn on.
+ * Clusters against written answers: creating one through a managed connection and following
+ * it, and checking an attached one, each gap one sentence saying what to grant or turn on.
  */
 
 const GKE = 'https://container.googleapis.com/v1';
 const KUBE = 'https://10.20.0.2';
 const PROJECT = 'nila-shop-prod';
-const CA = Buffer.from(
-  '-----BEGIN CERTIFICATE-----\nrecorded\n-----END CERTIFICATE-----\n',
-).toString('base64');
+const CA = Buffer.from('recorded-cluster-ca').toString('base64');
 
 const managed: ConnectionRecord = {
   id: '0199f0aa-0000-7000-8000-0000000000b1',
