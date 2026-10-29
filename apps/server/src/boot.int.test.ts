@@ -22,6 +22,7 @@ describe('the host boots the data kernel with the fixture module', () => {
       pinned: false,
       items: [
         { id: 'docs', enabled: false, defaultAccess: 'teams' },
+        { id: 'people', enabled: false, defaultAccess: 'everyone' },
         { id: 'pipelines', enabled: false, defaultAccess: 'teams' },
         { id: 'work', enabled: false, defaultAccess: 'teams' },
         { id: 'fixture', enabled: false, defaultAccess: 'none' },
@@ -101,6 +102,7 @@ describe('the host boots the data kernel with the fixture module', () => {
       pinned: false,
       items: [
         { id: 'docs', enabled: false, changelogState: 'pending' },
+        { id: 'people', enabled: false, changelogState: 'pending' },
         { id: 'pipelines', enabled: false, changelogState: 'pending' },
         { id: 'work', enabled: false, changelogState: 'pending' },
         { id: 'fixture', enabled: false, changelogState: 'current' },

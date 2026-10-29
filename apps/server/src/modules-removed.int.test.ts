@@ -84,6 +84,7 @@ describe('a module a later image no longer ships', () => {
     expect(me.json()).toMatchObject({ modules: [] });
     expect(ids((await app.inject({ url: '/api/v1/admin/modules' })).json().items)).toEqual([
       'docs',
+      'people',
       'pipelines',
       'work',
     ]);
