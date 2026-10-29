@@ -1,6 +1,7 @@
 import type { CloudProvider } from '../contract.ts';
 import { createGcpConnection } from './connection.ts';
 import { createGcpContexts, type GcpProviderOptions } from './context.ts';
+import { createGcpFrontDoor } from './front-door.ts';
 import { createGkeAccess } from './gke-access.ts';
 import { createGkeClusters } from './gke-clusters.ts';
 import { createGkeMetrics } from './gke-metrics.ts';
@@ -16,7 +17,8 @@ import { createGcpTargets } from './targets.ts';
  * Google Cloud (architecture §15): projects in a folder, a keyless control identity and a
  * deployer per environment that every deploy acts as. Cloud Run is the default runtime; GKE
  * Autopilot, GKE Standard and attached clusters deploy through the same Kubernetes parts.
- * Builds run on Cloud Build, one job per build; Autopilot runner pools, time-boxed console
+ * A front door per environment moves applications between runtimes by weight. Builds run on
+ * Cloud Build, one job per build; Autopilot runner pools, time-boxed console
  * access and spend are designed but not built, so access and spend say "Coming soon".
  */
 export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvider {
@@ -42,6 +44,7 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
     targets: createGcpTargets(contexts),
     metrics: createGcpMetrics(contexts),
     clusters: createGkeClusters(contexts, gke),
+    frontDoor: createGcpFrontDoor(contexts, gke),
     runtimes: {
       'gke-autopilot': kubernetes,
       'gke-standard': kubernetes,
