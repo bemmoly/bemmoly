@@ -17,3 +17,18 @@ export function refusalOf(error: unknown): Refusal | null {
   if (!parsed.success) return null;
   return { sentence: parsed.data.sentence, askWho: parsed.data.askWho?.label ?? null };
 }
+
+/**
+ * The server's own sentence for a write it turned down because of what was asked: a refusal,
+ * a clash ("An environment called dev exists already") or a rule the request broke ("acme-prod
+ * failed its last check…"). Those say what to do next better than a generic line could;
+ * anything else (offline, a crash) is null so the caller says to try again.
+ */
+const SAYS_WHY = new Set(['conflict', 'validation_failed', 'bad_request', 'not_found']);
+
+export function sentenceOf(error: unknown): string | null {
+  const refusal = refusalOf(error);
+  if (refusal) return refusal.sentence;
+  if (error instanceof ApiError && SAYS_WHY.has(error.code) && error.message) return error.message;
+  return null;
+}
