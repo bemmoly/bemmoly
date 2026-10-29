@@ -69,6 +69,7 @@ export default function ReleasesScreen() {
         actions={
           <SegmentedControl
             size="sm"
+            aria-label={t('pipelines.releases.viewLabel')}
             options={[
               { value: 'promotions', label: t('pipelines.releases.promotions') },
               { value: 'releases', label: t('pipelines.releases.releases') },

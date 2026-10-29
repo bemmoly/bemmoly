@@ -42,6 +42,7 @@ export default function InsightsScreen() {
       actions={
         <SegmentedControl
           size="sm"
+          aria-label={t('pipelines.common.timeRange')}
           options={RANGES.map((value) => ({
             value,
             label: t('pipelines.insights.rangeDays', { days: DAYS[value] }),
@@ -65,6 +66,7 @@ export default function InsightsScreen() {
           group ? null : (
             <SegmentedControl
               size="sm"
+              aria-label={t('pipelines.insights.breakdownBy')}
               options={[
                 {
                   value: 'scope',

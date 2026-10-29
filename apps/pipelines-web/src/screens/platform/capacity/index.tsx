@@ -131,6 +131,7 @@ export default function CapacityArea() {
       meta={
         <SegmentedControl
           size="sm"
+          aria-label={t('pipelines.common.timeRange')}
           options={[
             { value: 'now', label: t('pipelines.capacity.rangeNow') },
             { value: '7d', label: t('pipelines.insights.rangeDays', { days: 7 }) },
