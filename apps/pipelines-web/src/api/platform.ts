@@ -4,7 +4,9 @@ import {
   accessDecisionSchema,
   bindingsResponseSchema,
   capacitySchema,
+  cloudAccountSchema,
   cloudAccountsResponseSchema,
+  cloudConnectionSchema,
   connectionsResponseSchema,
   discoveryStatusSchema,
   idSchema,
@@ -19,6 +21,7 @@ import {
   sweepQueuedSchema,
   type AcceptProposalsBody,
   type ApplyLandingZoneBody,
+  type AttachAccountBody,
   type CapacityQuery,
   type CheckAccessBody,
   type ConnectCloudBody,
@@ -27,6 +30,7 @@ import {
   type InsightsQuery,
   type LandingZonePlanBody,
   type ListBindingsQuery,
+  type UpdateConnectionBody,
   type UpdatePolicyBody,
 } from '@bemmoly/module-pipelines/shared';
 import { z } from 'zod';
@@ -79,9 +83,22 @@ export function platformEndpoints(http: Http) {
     connections: () => http.request(`${base}/clouds`, connectionsResponseSchema),
     connect: (body: ConnectCloudBody) =>
       http.request(`${base}/clouds`, created, { method: 'POST', body }),
-    checkConnection: (id: string) => http.send(`${base}/clouds/${id}/check`, { method: 'POST' }),
+    checkConnection: (id: string) =>
+      http.request(`${base}/clouds/${id}/check`, cloudConnectionSchema, { method: 'POST' }),
+    /** Where runners push the images they build; null keeps them on the runner. */
+    updateConnection: (id: string, body: UpdateConnectionBody) =>
+      http.request(`${base}/clouds/${id}`, cloudConnectionSchema, { method: 'PATCH', body }),
     accounts: (id: string) =>
       http.request(`${base}/clouds/${id}/accounts`, cloudAccountsResponseSchema),
+    /** A project that exists already; the answer carries what its check found. */
+    attachAccount: (id: string, body: AttachAccountBody) =>
+      http.request(`${base}/clouds/${id}/accounts`, cloudAccountSchema, { method: 'POST', body }),
+    recheckAccount: (id: string, accountId: string) =>
+      http.request(`${base}/clouds/${id}/accounts/${accountId}/check`, cloudAccountSchema, {
+        method: 'POST',
+      }),
+    detachAccount: (id: string, accountId: string) =>
+      http.send(`${base}/clouds/${id}/accounts/${accountId}`, { method: 'DELETE' }),
     plan: (id: string, body: LandingZonePlanBody) =>
       http.request(`${base}/clouds/${id}/plan`, landingZonePlanSchema, { method: 'POST', body }),
     apply: (id: string, body: ApplyLandingZoneBody) =>

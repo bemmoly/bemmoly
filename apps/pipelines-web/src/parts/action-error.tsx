@@ -1,11 +1,12 @@
 import { useT } from '@bemmoly/core-web';
 import { Icon } from '@bemmoly/ui/icons';
 import { pipelinesText } from '../i18n/catalog.ts';
-import { refusalOf } from '../lib/refusal.ts';
+import { refusalOf, sentenceOf } from '../lib/refusal.ts';
 
 /**
  * Why an action did not happen, where it was asked for: a refusal names the rule and who can
- * grant it; any other failure says to try again. Announced politely, never as a toast alone.
+ * grant it, a clash or a broken rule gives the server's sentence, and any other failure says
+ * to try again. Announced politely, never as a toast alone.
  */
 export function ActionError({ error }: { error: unknown }) {
   const t = useT(pipelinesText);
@@ -18,7 +19,7 @@ export function ActionError({ error }: { error: unknown }) {
     >
       <Icon name={refusal ? 'lock' : 'warning'} size={14} className="mt-0.5 shrink-0" />
       <span className="flex flex-col gap-0.5">
-        <span>{refusal ? refusal.sentence : t('pipelines.common.actionFailed')}</span>
+        <span>{sentenceOf(error) ?? t('pipelines.common.actionFailed')}</span>
         {refusal?.askWho ? <span className="font-medium">{refusal.askWho}</span> : null}
       </span>
     </div>

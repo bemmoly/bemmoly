@@ -1,9 +1,19 @@
 import type {
   ApplyLandingZoneBody,
+  AttachAccountBody,
+  CloudAccount,
+  CloudConnection,
   ConnectCloudBody,
   LandingZonePlanBody,
 } from '@bemmoly/module-pipelines/shared';
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { pipelinesKeys } from '../api/pipelines.ts';
 import { platformKeys } from '../api/platform.ts';
 import { api } from '../lib/api.ts';
 
@@ -60,5 +70,67 @@ export function useCloudWrites() {
         api.platform.apply(id, body),
       onSettled: settle,
     }),
+  };
+}
+
+/**
+ * Projects attached to one connection: attach, check again, detach, and the registry its
+ * runners push to. Every write refreshes the connection and its accounts, and environments
+ * too, since the projects an environment may choose come from here.
+ */
+export function useAccountWrites(connection: string) {
+  const client = useQueryClient();
+  const settle = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: [...platformKeys.all] }),
+      client.invalidateQueries({ queryKey: pipelinesKeys.environments() }),
+    ]);
+  return {
+    attach: useMutation({
+      mutationFn: (body: AttachAccountBody) => api.platform.attachAccount(connection, body),
+      onSettled: settle,
+    }),
+    recheck: useMutation({
+      mutationFn: (accountId: string) => api.platform.recheckAccount(connection, accountId),
+      onSettled: settle,
+    }),
+    detach: useMutation({
+      mutationFn: (accountId: string) => api.platform.detachAccount(connection, accountId),
+      onSettled: settle,
+    }),
+    registry: useMutation({
+      mutationFn: (registry: string | null) =>
+        api.platform.updateConnection(connection, { registry }),
+      onSettled: settle,
+    }),
+  };
+}
+
+export interface ConnectionAccounts {
+  connection: CloudConnection;
+  accounts: readonly CloudAccount[];
+}
+
+/** Every connection with its accounts, for choosing where an environment deploys. */
+export function useAllCloudAccounts(): {
+  items: ConnectionAccounts[];
+  pending: boolean;
+  error: unknown;
+} {
+  const connections = useConnections();
+  const list = connections.data?.items ?? [];
+  const accounts = useQueries({
+    queries: list.map((connection) => ({
+      queryKey: platformKeys.accounts(connection.id),
+      queryFn: () => api.platform.accounts(connection.id),
+    })),
+  });
+  return {
+    items: list.map((connection, index) => ({
+      connection,
+      accounts: accounts[index]?.data?.items ?? [],
+    })),
+    pending: connections.isPending || accounts.some((query) => query.isPending),
+    error: connections.error ?? accounts.find((query) => query.error)?.error ?? null,
   };
 }
