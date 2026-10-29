@@ -17,6 +17,7 @@ import {
   SYSTEM_SETTINGS,
   wirePeople,
   type Actor,
+  type ApprovalsWired,
   type BemmolyModule,
   type CodeHosts,
   type CollabHost,
@@ -39,6 +40,7 @@ import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 import { wireOutgoingWebhooks } from './webhooks.ts';
+import { wireApprovalEngine } from './approvals.ts';
 
 export interface BootOptions {
   env: Env;
@@ -111,6 +113,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   let objects: DataKernel['objectStore'] | undefined;
   // Bound once code hosts are wired below; modules ask for it only at request time.
   let codeHostDirectory: CodeHosts['directory'] | undefined = undefined;
+  let approvals: ApprovalsWired['service'] | undefined = undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -122,6 +125,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     files: () => files,
     objects: () => objects,
     codeHosts: () => codeHostDirectory,
+    approvals: () => approvals,
     publicUrl: env.BEMMOLY_PUBLIC_URL,
     ...(env.BEMMOLY_PDF_URL
       ? {
@@ -237,6 +241,8 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wirePeople({ sql: database.sql, authorize: identity.authorize, events: kernel.events })
       : undefined;
+  approvals =
+    database && kernel ? wireApprovalEngine({ database, kernel, identity }).service : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -271,6 +277,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...(codeHosts ? { codeHosts } : {}),
             ...(webhooks ? { webhooks: webhooks.service } : {}),
             ...(people ? { people } : {}),
+            ...(approvals ? { approvals } : {}),
             ...(collab ? { collab } : {}),
           },
         }

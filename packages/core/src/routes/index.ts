@@ -1,18 +1,13 @@
 import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 import { createAiController, type AiControllerDependencies } from '../controllers/ai.controller.ts';
-import { createAppearanceController } from '../controllers/appearance.controller.ts';
 import { createAiPlansController } from '../controllers/ai-plans.controller.ts';
 import { createAiInsightsController } from '../controllers/ai-insights.controller.ts';
 import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
-import { createAuditController } from '../controllers/audit.controller.ts';
-import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCodeHostsController } from '../controllers/code-hosts.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
 import { createFilesController } from '../controllers/files.controller.ts';
-import { createWorkspaceLogoController } from '../controllers/workspace-logo.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
-import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMcpController } from '../controllers/mcp.controller.ts';
 import { createOAuthController } from '../controllers/oauth.controller.ts';
 import { createImportsController } from '../controllers/imports.controller.ts';
@@ -21,7 +16,6 @@ import {
   createModuleAdminController,
   createModulesController,
 } from '../controllers/modules.controller.ts';
-import { createPeopleController } from '../controllers/people.controller.ts';
 import { createOrgController, type People } from '../controllers/org.controller.ts';
 import {
   createRealtimeController,
@@ -37,6 +31,7 @@ import {
   type SystemControllerDependencies,
 } from '../controllers/system.controller.ts';
 import { createWebhooksController } from '../controllers/webhooks.controller.ts';
+import { createApprovalsController } from '../controllers/approvals.controller.ts';
 import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { ObjectStore } from '../contracts/object-store.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
@@ -60,13 +55,11 @@ import { SCIM_PATH, type SsoDependencies } from '../services/sso/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
 import type { WebhookAdmin } from '../services/webhooks/index.ts';
+import type { ApprovalsService } from '../services/approvals/index.ts';
 import { aiAdminRoutes, aiPersonRoutes } from './ai.routes.ts';
-import { appearanceRoutes } from './appearance.routes.ts';
 import { aiPlansRoutes } from './ai-plans.routes.ts';
 import { aiInsightsRoutes } from './ai-insights.routes.ts';
 import { aiAnswersRoutes } from './ai-answers.routes.ts';
-import { auditRoutes } from './audit.routes.ts';
-import { authzRoutes } from './authz.routes.ts';
 import { codeHostsRoutes } from './code-hosts.routes.ts';
 import { collabRoutes } from './collab.routes.ts';
 import {
@@ -74,9 +67,7 @@ import {
   type EmailNotificationRouteDependencies,
 } from './email-notifications.routes.ts';
 import { filesRoutes } from './files.routes.ts';
-import { workspaceLogoRoutes } from './workspace-logo.routes.ts';
 import { healthRoutes } from './health.routes.ts';
-import { identityRoutes } from './identity.routes.ts';
 import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
 import { oauthApiRoutes, oauthServerRoutes, type OAuthRateLimit } from './oauth.routes.ts';
 import { importsRoutes } from './imports.routes.ts';
@@ -90,6 +81,8 @@ import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
 import { webhooksRoutes } from './webhooks.routes.ts';
 import { orgRoutes } from './org.routes.ts';
+import { approvalsRoutes } from './approvals.routes.ts';
+import { identityAndAccessRoutes } from './identity-access.routes.ts';
 
 export const API_PREFIX = '/api/v1';
 
@@ -153,28 +146,8 @@ export interface KernelRouteDependencies {
   webhooks?: WebhookAdmin;
   /** The person record, locations and cost centres (/people, /locations, /cost-centres). */
   people?: People;
-}
-
-function identityAndAccessRoutes(
-  deps: IdentityDependencies,
-  logoStore?: KernelRouteDependencies['logoStore'],
-): FastifyPluginAsync {
-  const identity = createIdentityController(deps);
-  const people = createPeopleController(deps);
-  const authz = createAuthzController(deps);
-  const audit = createAuditController(deps.db);
-  const appearance = createAppearanceController(deps);
-  return async (api) => {
-    await api.register(identityRoutes(identity, people));
-    await api.register(appearanceRoutes(appearance));
-    if (logoStore) {
-      await api.register(
-        workspaceLogoRoutes(createWorkspaceLogoController({ ...deps, ...logoStore })),
-      );
-    }
-    await api.register(authzRoutes(authz));
-    await api.register(auditRoutes(audit));
-  };
+  /** The approval engine (/approval-requests, /admin/approval-workflows), with a database. */
+  approvals?: ApprovalsService;
 }
 
 /** Health probes, /metrics and /ws at the root; kernel and module resources under /api/v1. */
@@ -286,6 +259,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
           await api.register(webhooksRoutes(createWebhooksController(deps.webhooks, actorOf)));
         }
         if (deps.people) await api.register(orgRoutes(createOrgController(deps.people, actorOf)));
+        if (deps.approvals) {
+          await api.register(approvalsRoutes(createApprovalsController(deps.approvals, actorOf)));
+        }
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
         }
