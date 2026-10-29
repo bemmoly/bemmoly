@@ -51,7 +51,7 @@ export function createGcpClients(options: GcpClientOptions) {
 
 export type GcpClients = ReturnType<typeof createGcpClients>;
 
-export { GcpApiError, type GcpTokenSource, type GcpTransport } from './http.ts';
+export { fetchTransport, GcpApiError, type GcpTokenSource, type GcpTransport } from './http.ts';
 export { createTokenSource, gcpCredentialsSchema, type GcpCredentials } from './auth.ts';
 export { impersonatedTokens } from './iam-credentials.ts';
 export { serviceAccountEmail } from './iam.ts';
