@@ -29,7 +29,7 @@ function FrontDoorRow({
 }) {
   const t = useT(pipelinesText);
   const on = door?.enabled ?? false;
-  const addresses = door?.addresses.map((entry) => entry.address).join(', ');
+  const addresses = [...new Set(door?.addresses.map((entry) => entry.address))];
   return (
     <li
       aria-label={environment.name}
@@ -48,7 +48,11 @@ function FrontDoorRow({
           )}
           {on && (
             <span className="font-mono text-12 text-tx">
-              {addresses || t('pipelines.frontDoor.addressLater')}
+              {addresses.length === 0
+                ? t('pipelines.frontDoor.addressLater')
+                : addresses.length === 1
+                  ? addresses[0]
+                  : t('pipelines.frontDoor.addresses', { count: addresses.length })}
             </span>
           )}
           <Button size="sm" variant="secondary" className="ms-auto" onClick={onEdit}>
