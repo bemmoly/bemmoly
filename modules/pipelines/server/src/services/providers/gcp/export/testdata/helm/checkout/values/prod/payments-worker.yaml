@@ -1,0 +1,29 @@
+# payments-worker in prod, release v2.1.0, as Pipelines last deployed it.
+application: payments-worker
+revision: payments-worker-v2-1-0-a1c9e3f
+release: v2.1.0
+image: us-central1-docker.pkg.dev/bemmoly-control-583920174411/apps/payments-worker@sha256:4f1c2a9e0b7d6c5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e
+port: 9090
+replicas: 1
+resources:
+  cpu: 500m
+  memory: 1Gi
+healthcheck:
+  path: /ready
+  timeoutSeconds: 3
+serviceAccount: payments-worker
+env:
+  - name: QUEUE
+    value: payments
+  - name: STRIPE_KEY_FILE
+    value: /var/run/secrets/bemmoly/STRIPE_KEY
+secrets:
+  - path: STRIPE_KEY
+    resourceName: projects/acme-prod-7f3a/secrets/bemmoly-payments-worker-STRIPE_KEY-prod/versions/1
+route:
+  hostname: payments-worker.checkout.bemmoly.internal
+  parent:
+    name: bemmoly
+    namespace: checkout
+gateway:
+  create: false
