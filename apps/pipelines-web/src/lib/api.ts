@@ -2,6 +2,7 @@ import { createApiClient, type ApiError } from '@bemmoly/api-client';
 import { QueryClient } from '@tanstack/react-query';
 import { deliveryEndpoints } from '../api/delivery.ts';
 import { environmentEndpoints } from '../api/environments.ts';
+import { frontDoorEndpoints } from '../api/front-doors.ts';
 import { pipelinesEndpoints } from '../api/pipelines.ts';
 import { platformEndpoints } from '../api/platform.ts';
 import { runtimeEndpoints } from '../api/runtimes.ts';
@@ -24,6 +25,7 @@ export const api = {
   environments: environmentEndpoints(client.http),
   variables: variablesEndpoints(client.http),
   runtimes: runtimeEndpoints(client.http),
+  frontDoors: frontDoorEndpoints(client.http),
 };
 
 export type Api = typeof api;
