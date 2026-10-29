@@ -1082,6 +1082,25 @@
       }
     },
     {
+      "method": "GET",
+      "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "labels": {
+            "app.kubernetes.io/name": "checkout-api",
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines"
+          },
+          "creationTimestamp": "2026-10-29T09:00:00Z"
+        },
+        "spec": {
+          "replicas": 1
+        },
+        "status": {}
+      }
+    },
+    {
       "method": "DELETE",
       "url": "https://34.118.10.2/apis/apps/v1/namespaces/checkout/deployments/checkout-api-v2-0-0-c4e8a10",
       "response": {
