@@ -4,14 +4,16 @@ import { Button, Skeleton } from '@bemmoly/ui';
 import { useState } from 'react';
 import { useCloudWrites, useConnections, useLandingZonePlan } from '../../../hooks/use-clouds.ts';
 import { useGo } from '../../../hooks/use-go.ts';
-import { useSearchText } from '../../../hooks/use-search-state.ts';
+import { useSearchState, useSearchText } from '../../../hooks/use-search-state.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { LoadFailed, refusalOf } from '../../../parts/load-failed.tsx';
 import { Panel } from '../../../parts/screen.tsx';
 import { ApplyProgress } from './apply-progress.tsx';
+import { ConnectAttached } from './connect-attached.tsx';
 import { ConnectForm } from './connect-form.tsx';
 import { unitOf } from './connection-card.tsx';
 import { LayoutChooser } from './layout-chooser.tsx';
+import { MODES, ModeChoice } from './mode-choice.tsx';
 import { ProviderCards } from './provider-cards.tsx';
 import { ZoneTree } from './zone-tree.tsx';
 
@@ -19,6 +21,8 @@ import { ZoneTree } from './zone-tree.tsx';
  * Connect a cloud: pick a provider, say where Pipelines may work, pick how environments map
  * to accounts, and read every folder and project it would create before choosing Create.
  * Onboarding and adding a cloud later are this same screen; ?connection= opens step two.
+ * Google Cloud can instead use projects that exist (?mode=attached): that creates nothing, so
+ * it has no layout or preview and goes straight to the connection's card to attach projects.
  */
 export default function ConnectCloud() {
   const t = useT(pipelinesText);
@@ -27,11 +31,14 @@ export default function ConnectCloud() {
   const [connectionId, setConnection] = useSearchText('connection');
   const connection = useConnections().data?.items.find((item) => item.id === connectionId) ?? null;
   const [picked, setPicked] = useState<Provider | null>(null);
+  const [mode, setMode] = useSearchState('mode', MODES, 'managed');
   const provider = connection?.provider ?? picked ?? 'gcp';
+  const attached = connection?.mode === 'attached';
   const unit = unitOf(provider);
   const [chosen, setLayout] = useState<Layout | null>(null);
   const layout = chosen ?? connection?.layout ?? 'per-domain-environment';
-  const plan = useLandingZonePlan(connectionId || null, { layout });
+  // Only a managed connection has a landing zone; wait to know which this one is.
+  const plan = useLandingZonePlan(connection && !attached ? connection.id : null, { layout });
   const { apply } = useCloudWrites();
   const applied = apply.isSuccess;
   const blocked = (plan.data?.blockers.length ?? 0) > 0;
@@ -47,8 +54,19 @@ export default function ConnectCloud() {
         value={provider}
         onChange={(info) => !connectionId && setPicked(info.provider)}
       />
+      {!connectionId && provider === 'gcp' && <ModeChoice value={mode} onChange={setMode} />}
       {!connectionId ? (
-        <ConnectForm key={provider} provider={provider} onConnected={setConnection} />
+        provider === 'gcp' && mode === 'attached' ? (
+          <ConnectAttached
+            onConnected={(id) => go({ to: '/platform/clouds', search: { connection: id } })}
+          />
+        ) : (
+          <ConnectForm key={provider} provider={provider} onConnected={setConnection} />
+        )
+      ) : attached ? (
+        <p className="rounded-card border border-line bg-card p-4 text-13 text-tx-2 shadow-e1">
+          {t('pipelines.clouds.attachedNoZone', { name: connection.name })}
+        </p>
       ) : applied ? (
         <ApplyProgress connection={connectionId} />
       ) : (
@@ -105,7 +123,7 @@ export default function ConnectCloud() {
             <Button variant="ghost" onClick={() => go({ to: '/platform/clouds' })}>
               {applied ? t('pipelines.capacity.done') : t('pipelines.clouds.back')}
             </Button>
-            {!applied && (
+            {!applied && !attached && (
               <Button
                 variant="primary"
                 disabled={!plan.data || blocked}

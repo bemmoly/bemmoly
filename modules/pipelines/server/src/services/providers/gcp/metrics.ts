@@ -1,6 +1,6 @@
 import type { MonitoringSeries } from '../../../clients/gcp/monitoring.ts';
 import type { MetricsPart, RevisionMetric } from '../contract.ts';
-import { placeOf, type GcpContexts } from './context.ts';
+import { accountConfigOf, placeOf, type GcpContexts } from './context.ts';
 
 /*
  * Canary numbers from Cloud Monitoring, read as the environment's deployer: error rate is
@@ -52,7 +52,7 @@ export function createGcpMetrics(contexts: GcpContexts): MetricsPart {
     async revision(target, revision, metric, window) {
       const context = contexts(target.connection);
       const place = placeOf(target, context.config);
-      const monitoring = context.deployer(place.projectId).monitoring;
+      const monitoring = context.deployer(place.projectId, place.account).monitoring;
       const query = {
         projectId: place.projectId,
         service: place.service,
@@ -70,7 +70,7 @@ export function createGcpMetrics(contexts: GcpContexts): MetricsPart {
       const slo = context.config.slos[target.application.key];
       if (!slo || !target.account) return null;
       const fraction = await context
-        .deployer(target.account.externalId)
+        .deployer(target.account.externalId, accountConfigOf(target.account.config))
         .monitoring.sloBudgetFraction(target.account.externalId, slo, new Date());
       return fraction === null ? null : Math.min(1, Math.max(0, fraction));
     },

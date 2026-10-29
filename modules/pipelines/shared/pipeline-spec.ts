@@ -146,6 +146,8 @@ export const deploySpecSchema = z.object({
       timeoutSeconds: z.number().int().min(1).max(300).default(5),
     })
     .optional(),
+  /** Anyone on the internet may call it; otherwise callers need an identity token. */
+  public: z.boolean().optional(),
 });
 
 /** A template file, e.g. acme/pipeline-templates/node-service.yaml at tag v3. */

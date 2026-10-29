@@ -24,6 +24,7 @@ interface TargetRow {
   provider: string;
   account_external_id: string | null;
   account_name: string | null;
+  account_config: Record<string, unknown> | null;
   connection_id: string | null;
   connection_name: string | null;
   connection_provider: string | null;
@@ -67,7 +68,8 @@ export async function resolveTarget(
     select app.id as application_id, app.key as application_key, app.runtime,
       env.id as environment_id, env.key as environment_key, env.class as environment_class,
       env.region, env.provider, account.external_id as account_external_id,
-      account.name as account_name, connection.id as connection_id,
+      account.name as account_name, account.config as account_config,
+      connection.id as connection_id,
       connection.name as connection_name, connection.provider as connection_provider,
       connection.layout, connection.boundary_ref, connection.config
     from app cross join env
@@ -100,7 +102,11 @@ export async function resolveTarget(
         region: row.region,
       },
       account: row.account_external_id
-        ? { externalId: row.account_external_id, name: row.account_name ?? row.account_external_id }
+        ? {
+            externalId: row.account_external_id,
+            name: row.account_name ?? row.account_external_id,
+            config: row.account_config ?? {},
+          }
         : null,
       application: {
         id: row.application_id,

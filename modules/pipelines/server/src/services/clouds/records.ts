@@ -113,7 +113,7 @@ export async function rollUpAccounts(sql: SqlClient, connectionId: string): Prom
 export async function listAccountRows(sql: SqlClient, connectionId: string) {
   return sql<AccountRow[]>`
     select a.id, a.connection_id, a.external_id, a.name, a.purpose, a.status, a.environment_class,
-      a.domain_id, d.key as domain_key, d.name as domain_name, d.color as domain_color
+      a.origin, a.config, a.problems, a.last_checked_at, a.domain_id, d.key as domain_key, d.name as domain_name, d.color as domain_color
     from cloud_accounts a left join pipeline_domains d on d.id = a.domain_id
     where a.connection_id = ${connectionId}
     order by case a.purpose when 'control' then 0 when 'ci' then 1 else 2 end, a.external_id`;

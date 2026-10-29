@@ -43,7 +43,7 @@ export function githubAppJwt(appId: string, privateKey: string, nowSeconds: numb
   return `${header}.${claims}.${base64url(signer.sign(privateKey))}`;
 }
 
-const tokenSchema = z.object({ token: z.string() });
+const tokenSchema = z.object({ token: z.string(), expires_at: z.string().optional() });
 const installationRepositoriesSchema = z.object({
   total_count: z.number().int(),
   repositories: z.array(
@@ -114,10 +114,26 @@ function githubApi(connection: HostConnection, options: HostApiOptions) {
     return found;
   }
 
+  /** An installation token narrowed to reading one repository, never the cached one. */
+  async function readToken(repository: string) {
+    const name = repository.split('/').pop() ?? repository;
+    const answer = tokenSchema.parse(
+      await rest(`Bearer ${appJwt()}`).postJson(
+        `app/installations/${encodeURIComponent(installationId ?? '')}/access_tokens`,
+        { repositories: [name], permissions: { contents: 'read' } },
+      ),
+    );
+    return {
+      username: 'x-access-token',
+      token: answer.token,
+      expiresAt: answer.expires_at ?? null,
+    };
+  }
+
   return {
     ...githubWrites(async () => rest(await bearer())),
     // A token sees every repository its owner can; only the ones named on it are Bemmoly's.
-    ...(connection.authMode === 'app' ? { listRepositories } : {}),
+    ...(connection.authMode === 'app' ? { listRepositories, readToken } : {}),
     async check() {
       if (connection.authMode === 'app') {
         const app = appSchema.parse(await rest(`Bearer ${appJwt()}`).getJson('app'));

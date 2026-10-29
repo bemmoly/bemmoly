@@ -20,6 +20,8 @@ export interface FakeWorld extends FakeTargetsWorld {
   accountQuota: number;
   /** Set to make the next connection check fail with these problems. */
   connectionProblems: string[];
+  /** Projects an attach check finds problems in; any other project attaches cleanly. */
+  accountProblems: Map<string, string[]>;
 }
 
 export function createFakeWorld(): FakeWorld {
@@ -33,6 +35,7 @@ export function createFakeWorld(): FakeWorld {
     grants: new Set(),
     accountQuota: 100,
     connectionProblems: [],
+    accountProblems: new Map(),
   };
 }
 
@@ -61,6 +64,10 @@ export function createFakeProvider(
           principal: problems.length === 0 ? `fake-control@${connection.name}` : null,
           problems,
         };
+      },
+      async verifyAccount(_connection, account) {
+        const problems = world.accountProblems.get(account.externalId) ?? [];
+        return { ok: problems.length === 0, name: `Simulated ${account.externalId}`, problems };
       },
     },
     org: {
