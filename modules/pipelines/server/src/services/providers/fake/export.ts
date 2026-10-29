@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
 import type { ExportFacts, ExportRecords } from '../export-contract.ts';
+import { gkeBackendNames } from '../gcp/export/terraform-front-door-backends.ts';
 
 /*
  * What the simulator answers when an export asks the cloud for facts: a fixed number per
  * project, a folder per domain under the connection's own, and a name per budget, all
- * derived from the names so the same records always export the same files.
+ * derived from the names so the same records always export the same files. Zonal endpoint
+ * groups sit in the connection region's first zone.
  */
 
 const digits = (value: string, length: number) =>
@@ -44,6 +46,15 @@ export function simulatedFacts(records: ExportRecords): ExportFacts {
           resource.account,
           `billingAccounts/${String(records.connection.config['billingAccountId'] ?? 'SIMULATED')}/budgets/${digits(resource.account, 8)}`,
         ]),
+    ),
+    // One zonal group per GKE backend, in the first zone of the door's region.
+    groups: Object.fromEntries(
+      gkeBackendNames(records.frontDoors).map(({ account, name }) => [
+        name,
+        [
+          `https://www.googleapis.com/compute/v1/projects/${account}/zones/${String(records.connection.config['region'] ?? 'us-central1')}-a/networkEndpointGroups/${name}`,
+        ],
+      ]),
     ),
     problems: [],
   };

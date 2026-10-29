@@ -13,7 +13,9 @@ export type TerraformFile =
   | 'registry.tf'
   | 'secrets.tf'
   | 'cloud-run.tf'
-  | 'clusters.tf';
+  | 'clusters.tf'
+  | 'build-pools.tf'
+  | 'front-door.tf';
 
 export function createTerraform(records: ExportRecords, facts: ExportFacts) {
   const taken = new Set<string>();
@@ -33,6 +35,8 @@ export function createTerraform(records: ExportRecords, facts: ExportFacts) {
   const granted = new Set<string>();
   /** Services a deploy has moved past since their serving release: "checkout-api in prod". */
   const moving: string[] = [];
+  /** Resources several hosts share, declared once: "type/key" to their Terraform name. */
+  const declared = new Map<string, string>();
   const madeProjects = new Set(
     records.resources
       .filter((resource) => resource.kind === 'account' && resource.spec['adopt'] !== true)
@@ -71,6 +75,7 @@ export function createTerraform(records: ExportRecords, facts: ExportFacts) {
     secrets,
     granted,
     moving,
+    declared,
     unique,
     projectVar,
     numberVar,
@@ -98,6 +103,10 @@ export function createTerraform(records: ExportRecords, facts: ExportFacts) {
       if (importId) {
         imports.push([block('import', [], [attr('to', `${type}.${name}`), attr('id', importId)])]);
       }
+    },
+    /** Items that are not a resource, such as a locals block, as their own group. */
+    addItems(file: TerraformFile, items: Item[]) {
+      files.set(file, [...(files.get(file) ?? []), items]);
     },
     files,
     imports,

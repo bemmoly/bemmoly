@@ -6,14 +6,18 @@ import type {
   ExportService,
 } from '../../export-contract.ts';
 import { imageOf } from '../container.ts';
-import type { GcpContexts } from '../context.ts';
+import { accountConfigOf, type GcpContexts } from '../context.ts';
+import { poolFiles, RUNNER_POOLS_CHART } from './helm-pools.ts';
 import { helmFiles } from './helm.ts';
 import { nameOf } from './hcl.ts';
 import { few } from '../../../../utils/few.ts';
 import { ALWAYS_LEFT_OUT, readme } from './readme.ts';
 import { createTerraform } from './terraform-context.ts';
 import { terraformFiles } from './terraform-files.ts';
+import { frontDoors } from './terraform-front-door.ts';
+import { gkeBackendNames } from './terraform-front-door-backends.ts';
 import { clusters } from './terraform-gke.ts';
+import { pools } from './terraform-pools.ts';
 import { identities } from './terraform-identity.ts';
 import { services } from './terraform-run.ts';
 import { secrets } from './terraform-secrets.ts';
@@ -58,8 +62,10 @@ export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportB
   secrets(tf);
   services(tf);
   clusters(tf);
+  pools(tf);
+  frontDoors(tf);
   const terraform = terraformFiles(tf);
-  const helm = helmFiles(kept);
+  const helm = [...helmFiles(kept, records.frontDoors), ...poolFiles(records.pools)];
   const missing = [
     ...[...tf.numbers]
       .filter((account) => !facts.accounts[account]?.number)
@@ -76,7 +82,12 @@ export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportB
   ];
   const toFill = [...facts.problems, ...missing, ...tf.fill, ...movingNote(tf.moving)];
   const allLeftOut = [...records.leftOut, ...leftOut];
-  const groups = [...new Set(helm.map((file) => file.path.split('/')[1] ?? ''))].filter(Boolean);
+  const groups = [...new Set(helm.map((file) => file.path.split('/')[1] ?? ''))].filter(
+    (group) => group && group !== RUNNER_POOLS_CHART,
+  );
+  const autopilot = records.pools.flatMap((pool) =>
+    pool.kind === 'gke-autopilot' ? [{ key: pool.key, namespace: pool.namespace }] : [],
+  );
   return {
     files: [
       {
@@ -85,6 +96,7 @@ export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportB
           records,
           imports: tf.imports.length,
           groups,
+          pools: autopilot,
           leftOut: allLeftOut,
           toFill,
         }),
@@ -126,6 +138,19 @@ export function createGcpExport(contexts: GcpContexts): ExportPart {
           problems.push(`Pipelines could not read ${account}: ${(error as Error).message}`);
         }
       }
+      const groups: Record<string, string[]> = {};
+      for (const backend of gkeBackendNames(records.frontDoors)) {
+        const account = records.accounts.find((a) => a.externalId === backend.account);
+        try {
+          const lb = context.deployer(
+            backend.account,
+            accountConfigOf(account?.config),
+          ).loadBalancing;
+          groups[backend.name] = await lb.zonalGroups(backend.account, backend.name);
+        } catch (error) {
+          problems.push(`Pipelines could not read ${backend.name}: ${(error as Error).message}`);
+        }
+      }
       for (const resource of records.resources.filter((r) => r.kind === 'budget')) {
         try {
           const found = await context.control.budgets.findByName(
@@ -139,7 +164,7 @@ export function createGcpExport(contexts: GcpContexts): ExportPart {
           );
         }
       }
-      return { accounts, budgets, problems };
+      return { accounts, budgets, groups, problems };
     },
   };
 }

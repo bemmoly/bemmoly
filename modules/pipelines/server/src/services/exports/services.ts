@@ -92,7 +92,7 @@ export async function currentServices(
         providers,
         row.application_id,
         row.environment_id,
-        { runtime: plan.runtime },
+        { runtime: plan.runtime, frontDoor: false },
       );
       if (!target.account || !target.placement) {
         leftOut.push(`${where}: it deploys to no project, so there is nothing to export.`);

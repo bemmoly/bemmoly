@@ -31,6 +31,8 @@ const RESOURCE_FILES: readonly TerraformFile[] = [
   'secrets.tf',
   'cloud-run.tf',
   'clusters.tf',
+  'build-pools.tf',
+  'front-door.tf',
 ];
 
 const HEADERS: Readonly<Record<TerraformFile, string>> = {
@@ -43,6 +45,9 @@ const HEADERS: Readonly<Record<TerraformFile, string>> = {
   'cloud-run.tf':
     'The Cloud Run service of each application in each environment, at its serving release.\nRevision history and canary weights are left out; traffic is ignored, so set it here\nwhen you take over releasing.',
   'clusters.tf': 'GKE clusters Pipelines created. What runs in them is in the Helm charts.',
+  'build-pools.tf': 'Runner pools: how each starts its machines, and what an Autopilot pool keeps.',
+  'front-door.tf':
+    "Each environment's front door: one load balancer per environment and project, with a host\nper application. A host still shifting traffic between runtimes is exported at the backend\nthat takes most of it, so the move's weights in flight are left out.",
 };
 
 function versions(): Item[] {
@@ -144,29 +149,9 @@ function variables(tf: Terraform): { declared: Item[]; values: Item[] } {
   };
 }
 
-function buildPools(tf: Terraform): Item[] {
-  const pools = Object.fromEntries(
-    tf.records.pools.map((pool) => [
-      nameOf(pool.key),
-      object({
-        project: str(pool.account),
-        region: str(pool.region),
-        image: str(pool.image),
-        machine: str(pool.machine),
-        service_account: str(pool.serviceAccount),
-      }),
-    ]),
-  );
-  return [
-    comment(
-      'Cloud Build pools start one build per job, running the runner image for that job, and\nleave nothing behind to import. These are the settings each pool starts builds with.',
-    ),
-    block('locals', [], [attr('cloud_build_pools', object(pools))]),
-  ];
-}
-
-const FRONT_DOOR = comment(
-  'The front door: one load balancer per service, so a move between Cloud Run and GKE is a\nweighted traffic change. Pipelines does not make one yet. When it does, its addresses,\nbackends and certificates are exported in this file.',
+/** Where the front door goes when no environment here has one turned on. */
+const NO_FRONT_DOOR = comment(
+  'No environment here has its front door turned on. Turn one on in Platform › Environments,\nexport again, and its address, URL map, backends and certificates are declared here.',
 );
 
 export function terraformFiles(tf: Terraform): ExportFile[] {
@@ -174,15 +159,13 @@ export function terraformFiles(tf: Terraform): ExportFile[] {
   const { declared, values } = variables(tf);
   for (const file of RESOURCE_FILES) {
     const groups = tf.files.get(file);
-    if (!groups) continue;
-    files.push({
-      path: `terraform/${file}`,
-      content: render([comment(HEADERS[file]), blank, ...spaced(groups)]),
-    });
+    if (groups) {
+      const content = render([comment(HEADERS[file]), blank, ...spaced(groups)]);
+      files.push({ path: `terraform/${file}`, content });
+    } else if (file === 'front-door.tf') {
+      files.push({ path: `terraform/${file}`, content: render([NO_FRONT_DOOR]) });
+    }
   }
-  if (tf.records.pools.length > 0)
-    files.push({ path: 'terraform/build-pools.tf', content: render(buildPools(tf)) });
-  files.push({ path: 'terraform/front-door.tf', content: render([FRONT_DOOR]) });
   if (tf.imports.length > 0) {
     files.push({
       path: 'terraform/imports.tf',

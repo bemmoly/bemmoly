@@ -12,8 +12,9 @@ export const ALWAYS_LEFT_OUT = [
   "The canary's weights while one is moving. Cloud Run's traffic is ignored by Terraform, and each HTTPRoute sends all traffic to the serving revision.",
   'Secret values. They live only in Secret Manager; the export names each secret and the version a service reads.',
   'The workload identity federation pool and the control project. bootstrap.sh made them, so they are already yours.',
-  'The front door. Pipelines makes no load balancers yet; terraform/front-door.tf is where they will go.',
-  'Build machines. A Cloud Build pool leaves nothing behind to import; terraform/build-pools.tf lists how each pool starts them.',
+  "The weights of a move between runtimes while one is under way. The front door's URL map sends all of a moving host's traffic to the backend that takes most of it now.",
+  "GKE's zonal endpoint groups for the front door. GKE makes them from each Service's annotation, so Terraform reads them instead of declaring them.",
+  "Build machines. A Cloud Build pool leaves nothing behind to import, and an Autopilot pool's job pods and warm room start and stop with its jobs; terraform/build-pools.tf lists how each pool starts them.",
 ];
 
 const bullets = (lines: readonly string[]) => lines.map((line) => `- ${line}`).join('\n');
@@ -22,13 +23,21 @@ export function readme(input: {
   records: ExportRecords;
   imports: number;
   groups: readonly string[];
+  /** Autopilot runner pools: their keys and namespaces. */
+  pools: ReadonlyArray<{ key: string; namespace: string }>;
   leftOut: readonly string[];
   toFill: readonly string[];
 }): string {
   const { records, imports, groups } = input;
-  const helm =
+  const pools = input.pools.map(
+    (pool) =>
+      `- \`helm/runner-pools/\`, the ${pool.key} pool: \`helm upgrade --install ${pool.key} helm/runner-pools -n ${pool.namespace} -f helm/runner-pools/values/${pool.key}.yaml\``,
+  );
+  const charts =
     groups.length === 0
-      ? 'Nothing here runs on GKE, so there are no Helm charts.'
+      ? pools.length === 0
+        ? 'Nothing here runs on GKE, so there are no Helm charts.'
+        : ''
       : groups
           .map(
             (group) =>
@@ -39,6 +48,7 @@ export function readme(input: {
               '  ```',
           )
           .join('\n');
+  const helm = [charts, ...pools].filter(Boolean).join('\n');
   return `# ${records.connection.name}
 
 Everything Bemmoly Pipelines created and deployed through this connection, as Terraform and
