@@ -35,6 +35,12 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
       ],
       ['workspace.audit.view', 'View the audit log', null, [1, 0, 0, 0, 0]],
       [
+        'workspace.people.manage',
+        'Manage people records',
+        'Employment, managers, locations and cost centres',
+        [1, 0, 0, 0, 0],
+      ],
+      [
         'workspace.settings.manage',
         'Manage workspace settings',
         'Details, backups, updates',
