@@ -6,8 +6,8 @@ describe('demoWorkspace', () => {
   it('starts signed in, with every shipped module on', () => {
     const db = demoWorkspace();
     expect(db.signedInAs).not.toBeNull();
-    expect(db.manifests.map((manifest) => manifest.id)).toEqual(['work', 'docs']);
-    expect(db.adminModules.map((module) => module.id)).toEqual(['work', 'docs']);
+    expect(db.manifests.map((manifest) => manifest.id)).toEqual(['work', 'docs', 'people']);
+    expect(db.adminModules.map((module) => module.id)).toEqual(['work', 'docs', 'people']);
   });
 
   it('answers the session and Work from memory', () => {
