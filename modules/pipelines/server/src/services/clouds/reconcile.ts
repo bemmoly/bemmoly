@@ -25,7 +25,7 @@ import {
   recordBoundary,
   requireConnection,
   setPlanStatus,
-  setRegistry,
+  setConfigValue,
   toRecord,
 } from './store.ts';
 
@@ -159,7 +159,7 @@ async function nameRegistry(
   const location = observed['location'];
   if (resource.kind !== 'registry_access' || resource.spec['access'] !== 'push') return;
   if (typeof location !== 'string' || row.config['registry']) return;
-  await setRegistry(sql, row.id, location);
+  await setConfigValue(sql, row.id, 'registry', location);
   row.config = { ...row.config, registry: location };
 }
 
