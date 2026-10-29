@@ -1,5 +1,6 @@
 import type { RequestContext } from '@bemmoly/core';
-import { ConflictError, NotFoundError } from '@bemmoly/shared';
+import { ConflictError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import type { SqlExecutor } from '@bemmoly/core';
 import type {
   Capacity,
   CapacityQuery,
@@ -10,7 +11,9 @@ import type {
   TeamShareBody,
   UpdatePoolBody,
 } from '../../../../shared/capacity.ts';
-import { createPoolBodySchema } from '../../../../shared/capacity.ts';
+import { createPoolBodySchema, updatePoolBodySchema } from '../../../../shared/capacity.ts';
+import type { CloudBuildPoolBody } from '../../../../shared/machines.ts';
+import { cloudBuildPoolBodySchema } from '../../../../shared/machines.ts';
 import { topicOf } from '../../../../shared/streams.ts';
 import {
   authorizePipelines,
@@ -26,8 +29,23 @@ import { readCapacity } from './read.ts';
 /*
  * Runner pools and fair share (architecture §5, §6, Platform › Capacity). Reading is for
  * anyone in Pipelines; changing pools, tokens and weights is platform work. A pool's token is
- * shown once, on create and on rotate, and only its hash is kept.
+ * shown once, on create and on rotate, and only its hash is kept. A Cloud Build pool also
+ * keeps the project, region, image and service account its builds use.
  */
+
+/** A Cloud Build pool's settings as stored, after checking its project is one Pipelines has. */
+async function cloudBuildConfig(sql: SqlExecutor, input: CloudBuildPoolBody) {
+  const body = cloudBuildPoolBodySchema.parse(input);
+  const [account] = await sql<{ id: string }[]>`
+    select id from cloud_accounts where id = ${body.account}`;
+  if (!account) {
+    throw new ValidationError(
+      'That project is not attached to Pipelines; attach it in Clouds first',
+    );
+  }
+  const { account: accountId, ...settings } = body;
+  return { accountId, config: { cloudBuild: settings } };
+}
 
 export function createCapacityService(deps: PipelinesServiceDeps) {
   const platform = (ctx: RequestContext) => requireAccess(deps).authorizeAction(ctx, 'platform');
@@ -53,13 +71,15 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
       await platform(ctx);
       const body = createPoolBodySchema.parse(input);
       const sql = requireDatabase(deps);
+      const cloudBuild = body.cloudBuild ? await cloudBuildConfig(sql, body.cloudBuild) : null;
       const token = newToken('pool');
       const [row] = await sql<{ token_rotated_at: Date }[]>`
         insert into pipeline_runner_pools (key, name, hosting, location, labels, min_runners,
-          max_runners, warm_runners, cloud_account_id, token_hash, token_rotated_at)
+          max_runners, warm_runners, cloud_account_id, token_hash, token_rotated_at, config)
         values (${body.key}, ${body.name}, ${body.hosting}, ${body.location ?? null},
           ${body.labels}::text[], ${body.minRunners}, ${body.maxRunners}, ${body.warmRunners},
-          ${body.cloudAccount ?? null}::uuid, ${hashToken(token)}, now())
+          ${cloudBuild?.accountId ?? body.cloudAccount ?? null}::uuid, ${hashToken(token)}, now(),
+          ${JSON.stringify(cloudBuild?.config ?? {})}::jsonb)
         on conflict (key) do nothing
         returning token_rotated_at`;
       if (!row) throw new ConflictError(`A pool called ${body.key} already exists`);
@@ -69,9 +89,16 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
       };
     },
 
-    async update(ctx: RequestContext, key: string, body: UpdatePoolBody): Promise<RunnerPool> {
+    async update(ctx: RequestContext, key: string, input: UpdatePoolBody): Promise<RunnerPool> {
       await platform(ctx);
+      const body = updatePoolBodySchema.parse(input);
       const sql = requireDatabase(deps);
+      if (body.cloudBuild && (await onePool(key)).hosting !== 'cloud-build') {
+        throw new ValidationError(
+          `${key} is not a Cloud Build pool; its builds settings do not apply`,
+        );
+      }
+      const cloudBuild = body.cloudBuild ? await cloudBuildConfig(sql, body.cloudBuild) : null;
       const updated = await sql`
         update pipeline_runner_pools set
           name = coalesce(${body.name ?? null}, name),
@@ -80,6 +107,9 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
           min_runners = coalesce(${body.minRunners ?? null}, min_runners),
           max_runners = coalesce(${body.maxRunners ?? null}, max_runners),
           warm_runners = coalesce(${body.warmRunners ?? null}, warm_runners),
+          cloud_account_id = coalesce(${cloudBuild?.accountId ?? null}::uuid, cloud_account_id),
+          config = config || ${JSON.stringify(cloudBuild?.config ?? {})}::jsonb,
+          last_error = case when ${cloudBuild !== null} then null else last_error end,
           updated_at = now()
         where key = ${key} returning id`;
       if (updated.length === 0) throw new NotFoundError(`There is no runner pool called ${key}`);

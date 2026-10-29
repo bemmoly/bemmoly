@@ -9,12 +9,14 @@ import { createAccessService } from './access/index.ts';
 import { createArtifactsService } from './artifacts/index.ts';
 import { createDispatchWakeups } from './dispatcher/wakeup.ts';
 import { createLogsService } from './logs/index.ts';
+import { createMachinesService } from './machines/index.ts';
 import { createRunnerService, createVariableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
+import { announce } from './runs/context.ts';
 import { reportJobCheck, reportRunCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
 import { createCatalogService } from './catalog/index.ts';
@@ -188,6 +190,11 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     }),
     clusters: createClustersService({ ...deps, providers: providerSource }),
     runtimes: createRuntimesService({ ...deps, providers: providerSource }),
+    machines: createMachinesService({
+      ...deps,
+      providers,
+      announce: (outcomes) => announce(execution, outcomes),
+    }),
   };
 }
 
