@@ -9,6 +9,7 @@ import { ActionError } from '../../../parts/action-error.tsx';
 import {
   addStep,
   addable,
+  canAutoPromote,
   draftOfPath,
   moveStep,
   pathBodyOf,
@@ -133,7 +134,11 @@ export function PathDialog({
                     }
                   />
                   <Checkbox
-                    checked={step.autoPromote}
+                    checked={canAutoPromote(step) && step.autoPromote}
+                    disabled={!canAutoPromote(step)}
+                    title={
+                      canAutoPromote(step) ? undefined : t('pipelines.environments.prodByPerson')
+                    }
                     aria-label={t('pipelines.environments.autoPromoteOf', { name: step.name })}
                     onChange={(event) =>
                       setSteps(setStep(steps, index, { autoPromote: event.target.checked }))
