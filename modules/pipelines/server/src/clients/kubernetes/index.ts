@@ -10,5 +10,10 @@ export {
   type KubernetesTransport,
   type KubernetesTransportInit,
 } from './http.ts';
-export type { KubernetesKind, KubernetesManifest, KubernetesObject } from './resources.ts';
+export type {
+  KubernetesKind,
+  KubernetesManifest,
+  KubernetesObject,
+  OwnerReference,
+} from './resources.ts';
 export { clusterTransport, pemFromBase64 } from './transport.ts';
