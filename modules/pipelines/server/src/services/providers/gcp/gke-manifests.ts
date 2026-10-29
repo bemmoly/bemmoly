@@ -1,7 +1,8 @@
 import type { KubernetesManifest } from '../../../clients/kubernetes/index.ts';
 import type { ClusterGateway } from '../../../../../shared/clusters.ts';
-import type { ReleaseArtifact } from '../contract.ts';
+import type { DeployVariable, ReleaseArtifact } from '../contract.ts';
 import { deploySettingsOf, imageOf } from './container.ts';
+import { containerEnv, secretsOf, secretsVolume } from './gke-secrets.ts';
 import { revisionIdOf } from './targets.ts';
 
 /*
@@ -45,18 +46,6 @@ const portOf = (value: unknown): number => {
     : DEFAULT_CONTAINER_PORT;
 };
 
-/** Plain variables a release carries; secret references are mounted by their own stream. */
-function variablesOf(release: ReleaseArtifact): Array<{ name: string; value: string }> {
-  const raw = release.resolvedConfig['variables'];
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
-  return Object.entries(raw as Record<string, unknown>)
-    .filter((entry): entry is [string, string | number | boolean] =>
-      ['string', 'number', 'boolean'].includes(typeof entry[1]),
-    )
-    .map(([name, value]) => ({ name, value: String(value) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-
 export function namespaceManifest(namespace: string): KubernetesManifest {
   return {
     kind: 'Namespace',
@@ -82,30 +71,41 @@ export function gatewayManifest(namespace: string): KubernetesManifest {
   };
 }
 
+/** The labels every object of one revision carries. */
+export const revisionLabels = (application: string, revision: string) => ({
+  [LABELS.application]: application,
+  [LABELS.managedBy]: MANAGED_BY,
+  [LABELS.revision]: revision,
+});
+
+/**
+ * `variables` are the whole environment when given; `serviceAccount` is who the pods run as,
+ * named when they mount secrets.
+ */
 export function revisionManifests(input: {
   application: string;
   namespace: string;
   revision: string;
   release: ReleaseArtifact;
+  variables?: readonly DeployVariable[] | undefined;
+  serviceAccount?: string | null;
 }): { deployment: KubernetesManifest; service: KubernetesManifest } {
   const { application, namespace, revision, release } = input;
   const settings = deploySettingsOf(release);
   const port = portOf(settings.port);
-  const labels = {
-    [LABELS.application]: application,
-    [LABELS.managedBy]: MANAGED_BY,
-    [LABELS.revision]: revision,
-  };
+  const labels = revisionLabels(application, revision);
   const limits = {
     ...(settings.resources?.cpu !== undefined ? { cpu: String(settings.resources.cpu) } : {}),
     ...(settings.resources?.memory ? { memory: settings.resources.memory } : {}),
   };
-  const env = variablesOf(release);
+  const env = containerEnv(input.variables ?? []);
+  const secrets = secretsOf(input.variables ?? []).length > 0 ? secretsVolume(revision) : null;
   const container = {
     name: application,
     image: imageOf(release),
     ports: [{ name: 'http', containerPort: port }],
     ...(env.length > 0 ? { env } : {}),
+    ...(secrets ? { volumeMounts: [secrets.mount] } : {}),
     // Autopilot bills and schedules by requests, and sets limits equal to them.
     ...(Object.keys(limits).length > 0 ? { resources: { requests: limits, limits } } : {}),
     ...(settings.healthcheck
@@ -130,7 +130,14 @@ export function revisionManifests(input: {
       spec: {
         replicas: 1,
         selector: { matchLabels: { [LABELS.revision]: revision } },
-        template: { metadata: { labels }, spec: { containers: [container] } },
+        template: {
+          metadata: { labels },
+          spec: {
+            ...(input.serviceAccount ? { serviceAccountName: input.serviceAccount } : {}),
+            containers: [container],
+            ...(secrets ? { volumes: [secrets.volume] } : {}),
+          },
+        },
       },
     },
     service: {

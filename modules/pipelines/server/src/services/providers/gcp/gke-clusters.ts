@@ -13,6 +13,7 @@ import { accountConfigOf, type GcpContexts } from './context.ts';
 import { clusterPath, identityFor, type GkeAccess } from './gke-access.ts';
 import { clusterSpec } from './gke-cluster-spec.ts';
 import { clusterRightsProblems } from './gke-rights.ts';
+import { secretsProblem } from './gke-secrets.ts';
 
 /*
  * GKE clusters, one per environment. On a managed connection Pipelines creates them in the
@@ -127,11 +128,13 @@ export function createGkeClusters(contexts: GcpContexts, access: GkeAccess): Clu
         found,
       });
       critical.push(...rights.critical);
+      // Only applications with secrets need these, so they warn rather than fail the check.
+      const secrets = secretsProblem(found, name, cluster.location);
       return {
         ok: critical.length === 0,
         mode: state.mode,
         releaseChannel: state.releaseChannel,
-        problems: [...critical, ...rights.soft],
+        problems: [...critical, ...(secrets ? [secrets] : []), ...rights.soft],
       };
     },
   };

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 /*
- * The resources Pipelines writes into a cluster, by kind: where each lives in the API and
+ * The resources Pipelines writes into a cluster, by kind (a SecretProviderClass names secret
+ * versions for GKE's Secret Manager add-on to mount, never a value): where each lives in the API and
  * the loose shape every object shares. Specs and statuses stay records here; the code that
  * builds or reads one knows its fields.
  */
@@ -15,6 +16,18 @@ export const KINDS = {
     namespaced: true,
   },
   Service: { apiVersion: 'v1', prefix: '/api/v1', plural: 'services', namespaced: true },
+  ServiceAccount: {
+    apiVersion: 'v1',
+    prefix: '/api/v1',
+    plural: 'serviceaccounts',
+    namespaced: true,
+  },
+  SecretProviderClass: {
+    apiVersion: 'secrets-store.csi.x-k8s.io/v1',
+    prefix: '/apis/secrets-store.csi.x-k8s.io/v1',
+    plural: 'secretproviderclasses',
+    namespaced: true,
+  },
   Gateway: {
     apiVersion: 'gateway.networking.k8s.io/v1',
     prefix: '/apis/gateway.networking.k8s.io/v1',

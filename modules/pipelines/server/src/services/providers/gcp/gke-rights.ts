@@ -65,6 +65,19 @@ export async function clusterRightsProblems(
         `Grant ${who} rights to create Gateways in ${name}, or attach it again naming the Gateway routes should use`,
       );
     }
+    const secretRights = [
+      { verb: 'create', group: '', resource: 'serviceaccounts' },
+      { verb: 'create', group: 'secrets-store.csi.x-k8s.io', resource: 'secretproviderclasses' },
+    ];
+    const lackingSecrets: string[] = [];
+    for (const question of secretRights) {
+      if (!(await kube.can(question))) lackingSecrets.push(question.resource);
+    }
+    if (lackingSecrets.length > 0) {
+      soft.push(
+        `Grant ${who} rights to create ${lackingSecrets.join(' and ')} in ${name} so applications there can read their secrets`,
+      );
+    }
     if (!(await kube.can({ verb: 'create', group: '', resource: 'namespaces' }))) {
       soft.push(
         `${who} cannot create namespaces in ${name}. Create one per catalog group yourself, or grant it that right`,
