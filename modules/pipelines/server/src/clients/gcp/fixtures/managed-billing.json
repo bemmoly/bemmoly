@@ -19,12 +19,12 @@
             "billingEnabled": true
           }
         ],
-        "nextPageToken": "CgwIARIIYWNtZS1vbGQ"
+        "nextPageToken": "page-2"
       }
     },
     {
       "method": "GET",
-      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9/projects?pageToken=CgwIARIIYWNtZS1vbGQ",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9/projects?pageToken=page-2",
       "response": {
         "projectBillingInfo": [
           {
