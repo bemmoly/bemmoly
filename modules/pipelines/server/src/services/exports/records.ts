@@ -5,8 +5,10 @@ import { few } from '../../utils/few.ts';
 import { listAccountRows, listResourceRows } from '../clouds/records.ts';
 import { toRecord } from '../clouds/store.ts';
 import { poolConfigOf } from '../machines/store.ts';
+import { frontDoors } from './front-doors.ts';
 import type {
   ExportCluster,
+  ExportPool,
   ExportRecords,
   ExportResource,
   ExportService,
@@ -105,26 +107,19 @@ async function secrets(sql: SqlClient, connectionId: string, application: string
     order by 1, 2`;
 }
 
-async function pools(sql: SqlClient, connectionId: string) {
+async function pools(sql: SqlClient, connectionId: string): Promise<ExportPool[]> {
   const rows = await sql<Array<{ key: string; config: unknown; account: string }>>`
     select p.key, p.config, a.external_id as account
     from pipeline_runner_pools p join cloud_accounts a on a.id = p.cloud_account_id
-    where p.hosting = 'cloud-build' and a.connection_id = ${connectionId}
+    where p.hosting in ('cloud-build', 'gke-autopilot') and a.connection_id = ${connectionId}
     order by p.key`;
-  return rows.flatMap((row) => {
-    const build = poolConfigOf(row.config).cloudBuild;
-    return build
-      ? [
-          {
-            key: row.key,
-            account: row.account,
-            region: build.region,
-            image: build.image,
-            machine: build.machine,
-            serviceAccount: build.serviceAccount,
-          },
-        ]
-      : [];
+  return rows.flatMap((row): ExportPool[] => {
+    const config = poolConfigOf(row.config);
+    const { cloudBuild: build, autopilot } = config;
+    if (build) return [{ key: row.key, kind: 'cloud-build', account: row.account, ...build }];
+    // A pool whose pods were never prepared has made nothing to adopt.
+    if (!autopilot || config.pods?.status !== 'ready') return [];
+    return [{ key: row.key, kind: 'gke-autopilot', account: row.account, ...autopilot }];
   });
 }
 
@@ -151,6 +146,7 @@ export async function connectionRecords(
     clusters: whole ? await clusters(sql, row.id, leftOut) : [],
     secrets: await secrets(sql, row.id, application),
     pools: whole ? await pools(sql, row.id) : [],
+    frontDoors: whole ? await frontDoors(sql, row.id, leftOut) : [],
     leftOut,
   };
 }
