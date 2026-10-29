@@ -44,14 +44,33 @@ export function useCloudAccounts(connection: string | null, creating = false) {
   });
 }
 
-/** The landing zone preview: what would be created for a layout. Nothing is written. */
-export function useLandingZonePlan(connection: string | null, body: LandingZonePlanBody) {
+/**
+ * The landing zone preview: what would be created for a layout. Nothing is written. A plan
+ * says what the last check found, so a new check (`checkedAt`) asks for a new plan.
+ */
+export function useLandingZonePlan(
+  connection: string | null,
+  body: LandingZonePlanBody,
+  checkedAt: string | null = null,
+) {
   return useQuery({
-    queryKey: platformKeys.plan(connection ?? '', body),
+    queryKey: [...platformKeys.plan(connection ?? '', body), checkedAt],
     queryFn: () => api.platform.plan(connection ?? '', body),
     enabled: Boolean(connection),
     placeholderData: keepPreviousData,
     staleTime: 60_000,
+  });
+}
+
+/** A plan being applied: polled until it is applied or has stopped. */
+export function usePlanProgress(connection: string, plan: string) {
+  return useQuery({
+    queryKey: platformKeys.planById(connection, plan),
+    queryFn: () => api.platform.planById(connection, plan),
+    refetchInterval: (query) =>
+      query.state.data && ['applied', 'failed', 'superseded'].includes(query.state.data.status)
+        ? false
+        : 3_000,
   });
 }
 

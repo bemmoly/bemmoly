@@ -22,6 +22,9 @@ export interface FakeWorld extends FakeTargetsWorld, FakeClustersWorld, FakeMach
   grants: Set<string>;
   /** How many more accounts the billing account may link; quota checks read it. */
   accountQuota: number;
+  /** Projects the billing account paid for before Pipelines, and the limit it reports. */
+  billingLinked: number;
+  billingLimit: { limit: number; recorded: boolean };
   /** Set to make the next connection check fail with these problems. */
   connectionProblems: string[];
   /** Projects an attach check finds problems in; any other project attaches cleanly. */
@@ -39,6 +42,8 @@ export function createFakeWorld(): FakeWorld {
     secretValues: new Map(),
     grants: new Set(),
     accountQuota: 100,
+    billingLinked: 0,
+    billingLimit: { limit: 5, recorded: false },
     connectionProblems: [],
     accountProblems: new Map(),
     clusters: new Map(),
@@ -106,6 +111,14 @@ export function createFakeProvider(
         }
         return { externalId: input.externalId };
       },
+      async billing() {
+        const created = [...world.resources.keys()].filter((key) => key.startsWith('account/'));
+        return {
+          account: 'SIMULATED-BILLING',
+          linked: world.billingLinked + created.length,
+          ...world.billingLimit,
+        };
+      },
       async checkQuota(_connection, count) {
         return count > world.accountQuota
           ? [
@@ -119,7 +132,11 @@ export function createFakeProvider(
         return world.resources.get(resourceKey(resource)) ?? null;
       },
       async apply(_connection, resource) {
-        const observed = { ...resource.spec };
+        const spec = resource.spec as Record<string, unknown>;
+        const observed: Record<string, unknown> = { ...spec };
+        if (resource.kind === 'registry_access' && spec['access'] === 'push') {
+          observed['location'] = `fake.registry/${resource.account}/${String(spec['repository'])}`;
+        }
         world.resources.set(resourceKey(resource), observed);
         world.log.push(`apply ${resourceKey(resource)}`);
         return observed;

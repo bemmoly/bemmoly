@@ -27,11 +27,21 @@ export const providerInfoSchema = z.object({
 export const providersResponseSchema = z.object({ items: z.array(providerInfoSchema) });
 
 export const connectionStatusSchema = z.enum(['pending', 'connected', 'failed', 'disconnected']);
+/**
+ * How environments map to projects. On screen the managed layouts are Starter (`starter`: a
+ * platform project, one for non-production and one for production), Standard
+ * (`per-environment`) and Enterprise (`per-domain-environment`); `per-group-environment` stays
+ * for connections made with it.
+ */
 export const layoutSchema = z.enum([
   'per-environment',
   'per-domain-environment',
   'per-group-environment',
+  'starter',
 ]);
+
+/** The layouts the connect screen offers, smallest first. */
+export const MANAGED_LAYOUTS = ['starter', 'per-environment', 'per-domain-environment'] as const;
 
 /**
  * Managed: Pipelines creates projects inside its folder. Attached: Pipelines deploys into
@@ -77,6 +87,8 @@ export const cloudConnectionSchema = z.object({
   lastCheckedAt: isoDateTimeSchema.nullable(),
   /** What to do next, in plain words, when the last check failed. */
   lastError: z.string().nullable(),
+  /** The same, one sentence per thing to grant or change; empty when the check passed. */
+  problems: z.array(z.string()),
   createdAt: isoDateTimeSchema,
 });
 
@@ -112,6 +124,19 @@ export const gcpRegionSchema = z
   .string()
   .regex(/^[a-z]+-[a-z]+[0-9]+$/, 'Name a region such as us-central1');
 
+/** "01A2B3-C4D5E6-F7A8B9", as the console's Billing › Account management shows it. */
+export const billingAccountIdPattern = /^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/;
+
+/** "folders/417302018845" or "417302018845", stored as the digits alone. */
+export const folderIdSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^(folders\/)?[0-9]{6,20}$/,
+    'Use the folder ID bootstrap.sh printed, such as 417302018845',
+  )
+  .transform((value) => value.replace(/^folders\//, ''));
+
 export const connectCloudBodySchema = z.discriminatedUnion('provider', [
   z
     .object({
@@ -127,19 +152,24 @@ export const connectCloudBodySchema = z.discriminatedUnion('provider', [
         .string()
         .regex(/^[0-9]{6,20}$/)
         .optional(),
-      billingAccountId: z
-        .string()
-        .regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/)
-        .optional(),
+      billingAccountId: z.string().regex(billingAccountIdPattern).optional(),
       folderName: z.string().trim().min(1).max(30).default('Bemmoly'),
+      /** The folder bootstrap.sh made, "folders/417302018845" or its digits; managed only. */
+      folderId: folderIdSchema.optional(),
+      /** The project bootstrap.sh made, where Bemmoly runs; Starter keeps the registry there. */
+      controlProject: z
+        .string()
+        .trim()
+        .regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, 'Use the project ID bootstrap.sh printed')
+        .optional(),
     })
     .superRefine((body, issues) => {
       if (body.mode === 'managed') {
-        if (!body.organizationId) {
+        if (!body.folderId && !body.organizationId) {
           issues.addIssue({
             code: 'custom',
-            path: ['organizationId'],
-            message: 'Creating projects needs the organization they go in',
+            path: ['folderId'],
+            message: 'Creating projects needs the folder bootstrap.sh made; paste its ID',
           });
         }
         if (!body.billingAccountId) {
@@ -178,55 +208,6 @@ export const connectCloudBodySchema = z.discriminatedUnion('provider', [
     dockerHost: dockerHostSchema.default('unix:///var/run/docker.sock'),
   }),
 ]);
-
-export const landingZoneNodeKindSchema = z.enum(['folder', 'account', 'resource']);
-
-export interface LandingZoneNode {
-  kind: z.infer<typeof landingZoneNodeKindSchema>;
-  name: string;
-  note: string | null;
-  status: 'exists' | 'create' | 'update' | 'drifted';
-  children: LandingZoneNode[];
-}
-
-/** The preview tree: what will be created, folder by folder and project by project. */
-export const landingZoneNodeSchema: z.ZodType<LandingZoneNode> = z.lazy(() =>
-  z.object({
-    kind: landingZoneNodeKindSchema,
-    name: z.string(),
-    /** "runners, registry, caches", "3 regions". */
-    note: z.string().nullable(),
-    status: z.enum(['exists', 'create', 'update', 'drifted']),
-    children: z.array(landingZoneNodeSchema),
-  }),
-);
-
-export const landingZonePlanBodySchema = z.object({
-  layout: layoutSchema.optional(),
-  environments: z.array(slugSchema).min(1).optional(),
-});
-
-export const landingZonePlanSchema = z.object({
-  planId: idSchema,
-  connectionId: idSchema,
-  layout: layoutSchema,
-  root: landingZoneNodeSchema,
-  /** "27 projects · 1 folder per domain". */
-  counts: z.object({
-    folders: z.number().int(),
-    accounts: z.number().int(),
-    resources: z.number().int(),
-  }),
-  /** Quota or permission problems found before planning; Apply stays off while any exist. */
-  blockers: z.array(z.string()),
-  specHash: z.string(),
-});
-
-export const applyLandingZoneBodySchema = z.object({
-  planId: idSchema,
-  /** The hash the person saw, so a changed plan cannot be applied unseen. */
-  specHash: z.string().min(1),
-});
 
 export const cloudAccountSchema = z.object({
   id: idSchema,
@@ -281,9 +262,6 @@ export type ConnectionStatus = z.infer<typeof connectionStatusSchema>;
 export type Layout = z.infer<typeof layoutSchema>;
 export type CloudConnection = z.infer<typeof cloudConnectionSchema>;
 export type ConnectCloudBody = z.input<typeof connectCloudBodySchema>;
-export type LandingZonePlanBody = z.infer<typeof landingZonePlanBodySchema>;
-export type LandingZonePlan = z.infer<typeof landingZonePlanSchema>;
-export type ApplyLandingZoneBody = z.infer<typeof applyLandingZoneBodySchema>;
 export type CloudAccount = z.infer<typeof cloudAccountSchema>;
 export type CloudResourceKind = z.infer<typeof cloudResourceKindSchema>;
 export type CloudResource = z.infer<typeof cloudResourceSchema>;

@@ -70,7 +70,11 @@ export async function setAccountStatus(sql: SqlClient, id: string, status: Accou
   await sql`update cloud_accounts set status = ${status}, updated_at = now() where id = ${id}`;
 }
 
-/** Points environments at their new account so deploys know where to go. */
+/**
+ * Points environments at their new account so deploys know where to go. A layout without
+ * domains also clears the per-domain mappings this connection made, which would otherwise
+ * win; the accounts they named are kept, only no longer deployed to.
+ */
 export async function mapEnvironment(
   sql: SqlClient,
   layout: Layout,
@@ -78,16 +82,24 @@ export async function mapEnvironment(
   accountId: string,
 ): Promise<void> {
   // A group's account cannot be named by (environment, domain), so groups map nothing yet.
-  if (!account.environment || layout === 'per-group-environment') return;
-  await sql`
-    insert into pipeline_environment_accounts (environment_id, domain_id, cloud_account_id)
-    values (${account.environment.id}, ${account.domain?.id ?? null}, ${accountId})
-    on conflict (environment_id, domain_id) do update
-      set cloud_account_id = excluded.cloud_account_id, updated_at = now()`;
-  if (layout === 'per-environment') {
+  if (layout === 'per-group-environment') return;
+  const served = account.environments ?? (account.environment ? [account.environment] : []);
+  for (const environment of served) {
+    await sql`
+      insert into pipeline_environment_accounts (environment_id, domain_id, cloud_account_id)
+      values (${environment.id}, ${account.domain?.id ?? null}, ${accountId})
+      on conflict (environment_id, domain_id) do update
+        set cloud_account_id = excluded.cloud_account_id, updated_at = now()`;
+    if (layout === 'per-domain-environment') continue;
     await sql`
       update pipeline_environments set cloud_account_id = ${accountId}, updated_at = now()
-      where id = ${account.environment.id}`;
+      where id = ${environment.id}`;
+    await sql`
+      delete from pipeline_environment_accounts
+      where environment_id = ${environment.id} and domain_id is not null
+        and cloud_account_id in (
+          select id from cloud_accounts where connection_id = (
+            select connection_id from cloud_accounts where id = ${accountId}))`;
   }
 }
 

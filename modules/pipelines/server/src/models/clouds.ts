@@ -1,3 +1,5 @@
+import type { PlanBilling } from '../../../shared/landing-zones.ts';
+
 /* Row shapes of cloud connections, accounts, resources and landing zone plans. */
 
 export interface ConnectionRow {
@@ -11,6 +13,7 @@ export interface ConnectionRow {
   config: Record<string, unknown>;
   last_checked_at: Date | null;
   last_error: string | null;
+  problems: string[];
   created_at: Date;
 }
 
@@ -55,8 +58,11 @@ export interface PlanRow {
   tree: unknown;
   counts: { folders: number; accounts: number; resources: number };
   blockers: string[];
+  warnings: string[];
+  billing: PlanBilling | null;
   status: string;
   attempts: number;
+  last_error: string | null;
   created_at: Date;
 }
 

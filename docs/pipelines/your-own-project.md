@@ -8,6 +8,9 @@ service and its revisions. It attaches to a project you already have.
 Plan on about an hour the first time. Each step says what you should see, so you can tell where
 something went wrong.
 
+To start from an empty organization and let Pipelines create the projects instead, follow
+[Let Pipelines create your Google Cloud projects](managed-mode.md).
+
 ## What you need
 
 - **A Google Cloud project** you can deploy to, with billing on. Your own gcloud sign-in should

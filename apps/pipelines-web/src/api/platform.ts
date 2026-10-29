@@ -51,6 +51,8 @@ export const platformKeys = {
   accounts: (connection: string) => ['pipelines', 'platform', 'accounts', connection] as const,
   plan: (connection: string, body: LandingZonePlanBody) =>
     ['pipelines', 'platform', 'plan', connection, body] as const,
+  planById: (connection: string, plan: string) =>
+    ['pipelines', 'platform', 'plans', connection, plan] as const,
   insights: (query: InsightsQuery) => ['pipelines', 'insights', query] as const,
   proposals: () => ['pipelines', 'platform', 'proposals'] as const,
   discovery: () => ['pipelines', 'platform', 'discovery'] as const,
@@ -107,6 +109,9 @@ export function platformEndpoints(http: Http) {
       http.request(`${base}/clouds/${id}/plan`, landingZonePlanSchema, { method: 'POST', body }),
     apply: (id: string, body: ApplyLandingZoneBody) =>
       http.send(`${base}/clouds/${id}/apply`, { method: 'POST', body }),
+    /** One plan and how its apply is going. */
+    planById: (id: string, plan: string) =>
+      http.request(`${base}/clouds/${id}/plans/${plan}`, landingZonePlanSchema),
     proposals: () =>
       http.request(`${base}/discovery/proposals`, proposalsPageSchema, {
         query: { limit: 200 },

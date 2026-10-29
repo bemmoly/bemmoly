@@ -1,12 +1,12 @@
 import { contextOf } from '@bemmoly/core';
 import { parseOrThrow } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { connectCloudBodySchema, connectionParamsSchema } from '../../../shared/clouds.ts';
 import {
   applyLandingZoneBodySchema,
-  connectCloudBodySchema,
-  connectionParamsSchema,
   landingZonePlanBodySchema,
-} from '../../../shared/clouds.ts';
+  planParamsSchema,
+} from '../../../shared/landing-zones.ts';
 import {
   accountParamsSchema,
   attachAccountBodySchema,
@@ -56,6 +56,11 @@ export function createCloudsController(clouds: CloudsService) {
       // Accepted: the landing zone is applied by a job; accounts and resources show progress.
       reply.code(202);
       return plan;
+    },
+    /** One plan with how its apply is going, for the progress screen and Retry. */
+    planById(request: FastifyRequest) {
+      const params = parseOrThrow(planParamsSchema, request.params);
+      return clouds.planById(contextOf(request), params.id, params.planId);
     },
     accounts: (request: FastifyRequest) => clouds.accounts(contextOf(request), idOf(request)),
     resources: (request: FastifyRequest) => clouds.resources(contextOf(request), idOf(request)),

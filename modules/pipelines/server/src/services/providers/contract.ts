@@ -7,6 +7,7 @@ import type {
   Provider,
   Runtime,
 } from '../../../../shared/common.ts';
+import type { BillingHeadroom } from './org-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
 
 /*
@@ -32,6 +33,7 @@ export const PROVIDER_PARTS = [
 ] as const;
 
 export type { MachineLaunch, MachineRef, MachineStatus, RunnersPart } from './runners-contract.ts';
+export { ApplyStopped, type BillingHeadroom } from './org-contract.ts';
 
 export type ProviderPart = (typeof PROVIDER_PARTS)[number];
 export type PartAvailability = 'available' | 'coming_soon' | 'unsupported';
@@ -179,6 +181,11 @@ export interface OrgPart {
   ): Promise<{ externalId: string }>;
   /** Problems (quota, billing links) that stop `count` new accounts; empty when fine. */
   checkQuota(connection: ConnectionRecord, count: number): Promise<string[]>;
+  /**
+   * How many accounts the billing account pays for now, and the limit to compare against.
+   * Clouds that publish no limit answer their usual default with `recorded` false.
+   */
+  billing?(connection: ConnectionRecord): Promise<BillingHeadroom>;
 }
 
 /** One neutral resource of the landing zone as declared, before any provider maps it. */
