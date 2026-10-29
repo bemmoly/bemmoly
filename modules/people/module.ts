@@ -18,7 +18,7 @@ export default defineModule({
   coreApi: '^0.1.0',
   defaultAccess: 'everyone',
   icon: 'people',
-  color: 'brand-3',
+  color: 'epic-7',
   order: 30,
   sidebar: {
     path: '/people',
