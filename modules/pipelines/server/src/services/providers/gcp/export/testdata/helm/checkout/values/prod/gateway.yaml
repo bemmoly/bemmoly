@@ -1,0 +1,3 @@
+# The checkout namespace's Gateway in prod, which every route here attaches to.
+gateway:
+  create: true
