@@ -292,11 +292,4 @@ export function partAvailability(provider: CloudProvider, part: ProviderPart): P
   return provider.comingSoon.includes(part) ? 'coming_soon' : 'unsupported';
 }
 
-export type {
-  ClusterCheck,
-  ClusterRecord,
-  ClusterState,
-  ClustersPart,
-  Placement,
-  RuntimeParts,
-} from './cluster-contract.ts';
+export type * from './cluster-contract.ts';

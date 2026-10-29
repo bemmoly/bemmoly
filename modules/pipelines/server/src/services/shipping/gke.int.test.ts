@@ -3,6 +3,7 @@ import { clusterSchema, clustersResponseSchema } from '../../../../shared/cluste
 import { applicationRuntimesResponseSchema } from '../../../../shared/runtimes.ts';
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
 import { startPipelinesHttp, type PipelinesHttp } from '../../testing/http.ts';
+import { seedGkeFixture } from '../../testing/gke-fixture.ts';
 import { seedShippingFixture, type ShippingFixture } from '../../testing/shipping-fixture.ts';
 import { columnsHolding } from '../../testing/variables-fixture.ts';
 
@@ -36,33 +37,9 @@ beforeAll(async () => {
     world: harness.world,
     variables: (application, environment) => services.variables.forDeploy(application, environment),
   });
-  const { sql, users } = harness;
-  const [connection] = await sql<{ id: string }[]>`select id from cloud_connections limit 1`;
-  for (const [key, id] of Object.entries(f.environments)) {
-    const [account] = await sql<{ id: string }[]>`
-      insert into cloud_accounts (connection_id, external_id, name, purpose, status)
-      values (${connection?.id ?? ''}, ${`acme-${key.toLowerCase()}`}, ${key}, 'workload', 'ready')
-      returning id`;
-    await sql`update pipeline_environments set cloud_account_id = ${account?.id ?? ''},
-      region = 'us-central1' where id = ${id}`;
-  }
-  const [app] = await sql<{ id: string }[]>`
-    insert into pipeline_applications
-      (key, name, domain_id, group_id, owner_team_id, tier, runtime, health)
-    select 'cart-api', 'cart-api', domain_id, group_id, owner_team_id, 1, 'container-service',
-      'healthy'
-    from pipeline_applications where id = ${f.app}
-    returning id`;
-  cart = app?.id ?? '';
-  cartRelease = async (version, config = {}) => {
-    const [row] = await sql<{ id: string }[]>`
-      insert into pipeline_releases
-        (application_id, version, commit_sha, resolved_config, test_summary, created_by)
-      values (${cart}, ${version}, 'b2d8f41', ${JSON.stringify(config)}::jsonb,
-        '{"total": 4, "passed": 4, "failed": 0, "skipped": 0}'::jsonb, ${users.member})
-      returning id`;
-    return row?.id ?? '';
-  };
+  const gke = await seedGkeFixture(harness, f);
+  cart = gke.cart;
+  cartRelease = gke.cartRelease;
 });
 
 afterAll(async () => {
