@@ -32,6 +32,7 @@ import {
   type ListBindingsQuery,
   type UpdateConnectionBody,
   type UpdatePolicyBody,
+  type UpdatePoolBody,
 } from '@bemmoly/module-pipelines/shared';
 import { z } from 'zod';
 import { toQuery } from './query.ts';
@@ -77,6 +78,9 @@ export function platformEndpoints(http: Http) {
         method: 'POST',
         body,
       }),
+    /** Where its runners come from, its size, and a Cloud Build pool's settings. */
+    updatePool: (key: string, body: UpdatePoolBody) =>
+      http.request(`${base}/pools/${key}`, runnerPoolSchema, { method: 'PATCH', body }),
     rotatePoolToken: (key: string) =>
       http.request(`${base}/pools/${key}/tokens`, poolTokenSchema, { method: 'POST' }),
     providers: () => http.request(`${base}/clouds/providers`, providersResponseSchema),
