@@ -15,7 +15,9 @@ import {
 } from '@tanstack/react-query';
 import { pipelinesKeys } from '../api/pipelines.ts';
 import { platformKeys } from '../api/platform.ts';
+import { useEffect, useRef } from 'react';
 import { api } from '../lib/api.ts';
+import { useSearchText } from './use-search-state.ts';
 
 export function useProviders() {
   return useQuery({
@@ -133,4 +135,21 @@ export function useAllCloudAccounts(): {
     pending: connections.isPending || accounts.some((query) => query.isPending),
     error: connections.error ?? accounts.find((query) => query.error)?.error ?? null,
   };
+}
+
+/**
+ * A connection just made arrives as ?connection=: its first check runs once, so the card
+ * shows whether Bemmoly can reach the cloud before anyone attaches a project.
+ */
+export function useArrivalCheck(): { connectionId: string; checking: boolean } {
+  const [connectionId] = useSearchText('connection');
+  const { check } = useCloudWrites();
+  const { mutate } = check;
+  const checked = useRef<string | null>(null);
+  useEffect(() => {
+    if (!connectionId || checked.current === connectionId) return;
+    checked.current = connectionId;
+    mutate(connectionId);
+  }, [connectionId, mutate]);
+  return { connectionId, checking: check.isPending };
 }
