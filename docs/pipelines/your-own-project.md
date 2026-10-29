@@ -281,7 +281,8 @@ revisions and roll backs may still read it. Delete it there once nothing runs wi
 
 [Run an application on GKE](gke.md) moves this application to GKE Autopilot clusters you
 create, first in Dev, then in Prod, with a canary and a roll back there, while everything else
-stays on Cloud Run.
+stays on Cloud Run. [Move it with no failed requests](front-door.md) then puts a front door in
+front of Prod and moves it between Cloud Run and GKE as a traffic shift.
 
 ## What to send back
 
