@@ -5,6 +5,7 @@ import { publishStreamEvent } from '../streams/publish.ts';
 import {
   connectionOf,
   poolConfigOf,
+  POD_HOSTINGS,
   setPoolError,
   type MachinePoolRow,
   type PoolConfig,
@@ -16,7 +17,8 @@ import type { MachinesDeps } from './types.ts';
  * changed, until its cluster, namespace and identity are in place, and sizes its warm room.
  * The pods themselves start one per job like any build machine, so a pool with no fewest
  * scales to zero with its queue; fewest keeps that many runners' worth of room warm while
- * fewer pods than that are up, so the next job's pod starts without waiting for a node.
+ * fewer pods than that are up, so the next job's pod starts without waiting for a node. A
+ * pool moved to another hosting gives its warm room back, since it would bill on otherwise.
  */
 
 /** Warm room: what fewest asks for beyond the pods already up, never past the most. */
@@ -28,7 +30,7 @@ export function warmSize(
 
 type PodsState = NonNullable<PoolConfig['pods']>;
 
-async function savePods(sql: SqlExecutor, poolId: string, before: unknown, pods: PodsState) {
+async function savePods(sql: SqlExecutor, poolId: string, before: unknown, pods: PodsState | null) {
   if (JSON.stringify(before) === JSON.stringify(pods)) return;
   await sql`
     update pipeline_runner_pools
@@ -68,7 +70,10 @@ export async function preparePools(
     const key = JSON.stringify(site);
     const now = config.pods;
     try {
-      if (now?.status !== 'ready' || now.prepared !== key) {
+      if (!(POD_HOSTINGS as readonly string[]).includes(pool.hosting)) {
+        await runners.ensurePool(connection, { ...site, warm: 0 });
+        await savePods(deps.sql, pool.id, now, null);
+      } else if (now?.status !== 'ready' || now.prepared !== key) {
         const state = await runners.ensurePool(connection, site);
         await savePods(deps.sql, pool.id, now, {
           ref: state.ref,
