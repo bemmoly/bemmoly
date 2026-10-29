@@ -37,15 +37,27 @@ export interface FakeTargetsWorld {
 
 const keyOf = (target: DeployTarget) => `${target.application.key}@${target.environment.key}`;
 
+/** "bemmoly-dev/checkout/checkout-api@dev": a revision on a cluster lives in its namespace. */
+const kubernetesKeyOf = (target: DeployTarget) => {
+  const cluster = target.placement?.cluster;
+  if (!cluster) throw new Error(`${keyOf(target)} has no cluster to deploy into`);
+  return `${cluster.name}/${target.placement?.namespace ?? 'default'}/${keyOf(target)}`;
+};
+
 const numberOr = (value: unknown, fallback: number) =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
-export function createFakeTargets(world: FakeTargetsWorld): {
+/** `kubernetes` keeps revisions per cluster and namespace, as GKE deploys do. */
+export function createFakeTargets(
+  world: FakeTargetsWorld,
+  options: { kubernetes?: boolean } = {},
+): {
   targets: TargetsPart;
   metrics: MetricsPart;
 } {
+  const keyFor = options.kubernetes ? kubernetesKeyOf : keyOf;
   const targetOf = (target: DeployTarget): FakeTarget => {
-    const key = keyOf(target);
+    const key = keyFor(target);
     let found = world.targets.get(key);
     if (!found) {
       found = { revisions: new Map(), traffic: [], calls: [] };
@@ -55,11 +67,11 @@ export function createFakeTargets(world: FakeTargetsWorld): {
   };
   const record = (target: DeployTarget, call: string) => {
     targetOf(target).calls.push(call);
-    world.log.push(`${call} ${keyOf(target)}`);
+    world.log.push(`${call} ${keyFor(target)}`);
   };
   const known = (target: DeployTarget, revision: string): FakeRevision => {
     const found = targetOf(target).revisions.get(revision);
-    if (!found) throw new Error(`No revision ${revision} in ${keyOf(target)}`);
+    if (!found) throw new Error(`No revision ${revision} in ${keyFor(target)}`);
     return found;
   };
 
