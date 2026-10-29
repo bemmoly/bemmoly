@@ -90,6 +90,7 @@ export {
   type RetrievalService,
   type RetrievedChunk,
 } from './services/ai/index.ts';
+export * from './services/approvals/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
 export * from './services/files/index.ts';

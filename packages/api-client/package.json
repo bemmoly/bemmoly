@@ -10,6 +10,7 @@
     "./ai-insights": "./src/endpoints/ai-insights.ts",
     "./ai-answers": "./src/endpoints/ai-answers.ts",
     "./webhooks": "./src/endpoints/webhooks.ts",
+    "./approvals": "./src/endpoints/approvals.ts",
     "./ai-admin": "./src/endpoints/ai-admin.ts",
     "./code-hosts": "./src/endpoints/code-hosts.ts",
     "./imports": "./src/endpoints/imports.ts",
