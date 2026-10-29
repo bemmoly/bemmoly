@@ -47,10 +47,14 @@ const portOf = (port: DeploySettings['port']) => {
   return value && Number.isInteger(value) && value > 0 && value < 65536 ? value : null;
 };
 
-/** The first container of a revision: the image plus whatever the settings name. */
+/**
+ * The first container of a revision: the image plus whatever the settings name. `env`, when
+ * given, is the whole environment; values set by hand on an earlier revision do not carry over.
+ */
 export function containerOf(
   release: ReleaseArtifact,
   base: Record<string, unknown> = {},
+  env?: ReadonlyArray<Record<string, unknown>>,
 ): Record<string, unknown> {
   const settings = deploySettingsOf(release);
   const port = portOf(settings.port);
@@ -62,6 +66,7 @@ export function containerOf(
   return {
     ...base,
     image: imageOf(release),
+    ...(env ? { env: [...env] } : {}),
     ...(port ? { ports: [{ containerPort: port }] } : {}),
     ...(Object.keys(limits).length > 0
       ? {

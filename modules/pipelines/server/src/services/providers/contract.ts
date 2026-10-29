@@ -58,6 +58,14 @@ export interface ReleaseArtifact {
   resolvedConfig: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * One variable a revision runs with. A plain one carries its value; a secret names where it
+ * lives and the version to pin, so the revision reads exactly that version at start.
+ */
+export type DeployVariable =
+  | { name: string; kind: 'plain'; value: string }
+  | { name: string; kind: 'secret'; account: string; secret: string; version: string };
+
 export interface RevisionWeight {
   revision: string;
   percent: number;
@@ -73,7 +81,15 @@ export interface TargetDescription {
 /** Deploy kinds of §12: deploy creates a revision without traffic, shift moves weight. */
 export interface TargetsPart {
   kinds: readonly Runtime[];
-  deploy(target: DeployTarget, release: ReleaseArtifact): Promise<{ revision: string }>;
+  /**
+   * `variables` are the revision's whole environment: names not in it are not set. The
+   * provider grants whoever the revision runs as read access to each secret it names.
+   */
+  deploy(
+    target: DeployTarget,
+    release: ReleaseArtifact,
+    variables?: readonly DeployVariable[],
+  ): Promise<{ revision: string }>;
   /** `percent` of traffic to `revision`, the rest to `stable` (or nothing when null). */
   shift(
     target: DeployTarget,
@@ -192,7 +208,10 @@ export interface RegistryPart {
   ): Promise<boolean>;
 }
 
-/** Writes and grants only: Pipelines never reads a secret's value back (§17). */
+/**
+ * Writes and grants (§17). The one read is `accessVersion`, for a CI job's secrets: the
+ * server reads them in memory when the runner collects them and keeps them nowhere.
+ */
 export interface SecretsPart {
   writeVersion(
     connection: ConnectionRecord,
@@ -202,6 +221,10 @@ export interface SecretsPart {
     connection: ConnectionRecord,
     input: { account: string; name: string; principal: string },
   ): Promise<void>;
+  accessVersion?(
+    connection: ConnectionRecord,
+    input: { account: string; name: string; version: string },
+  ): Promise<string>;
 }
 
 export interface RunnersPart {
