@@ -4,7 +4,8 @@ import { z } from 'zod';
  * The resources Pipelines writes into a cluster, by kind (a SecretProviderClass names secret
  * versions for GKE's Secret Manager add-on to mount, never a value): where each lives in the API and
  * the loose shape every object shares. Specs and statuses stay records here; the code that
- * builds or reads one knows its fields.
+ * builds or reads one knows its fields. A runner pod's launch token is the one Secret
+ * Pipelines writes, owned by the pod's Job so it goes when the Job does.
  */
 
 export const KINDS = {
@@ -21,6 +22,15 @@ export const KINDS = {
     prefix: '/api/v1',
     plural: 'serviceaccounts',
     namespaced: true,
+  },
+  Secret: { apiVersion: 'v1', prefix: '/api/v1', plural: 'secrets', namespaced: true },
+  Pod: { apiVersion: 'v1', prefix: '/api/v1', plural: 'pods', namespaced: true },
+  Job: { apiVersion: 'batch/v1', prefix: '/apis/batch/v1', plural: 'jobs', namespaced: true },
+  PriorityClass: {
+    apiVersion: 'scheduling.k8s.io/v1',
+    prefix: '/apis/scheduling.k8s.io/v1',
+    plural: 'priorityclasses',
+    namespaced: false,
   },
   SecretProviderClass: {
     apiVersion: 'secrets-store.csi.x-k8s.io/v1',
@@ -53,6 +63,7 @@ export const kubernetesObjectSchema = z.object({
     labels: z.record(z.string(), z.string()).default({}),
     annotations: z.record(z.string(), z.string()).default({}),
     creationTimestamp: z.string().optional(),
+    uid: z.string().optional(),
   }),
   spec: z.record(z.string(), z.unknown()).optional(),
   status: z.record(z.string(), z.unknown()).optional(),
@@ -64,7 +75,18 @@ export const kubernetesListSchema = z.object({
 
 export type KubernetesObject = z.infer<typeof kubernetesObjectSchema>;
 
-/** What Pipelines writes: a kind, a name, its namespace when it has one, and its body. */
+/** The object another one belongs to; Kubernetes deletes it when its owner goes. */
+export interface OwnerReference {
+  apiVersion: string;
+  kind: string;
+  name: string;
+  uid: string;
+}
+
+/**
+ * What Pipelines writes: a kind, a name, its namespace when it has one, and its body. Most
+ * kinds have a spec; a Secret has its string data and a PriorityClass its fields at the top.
+ */
 export interface KubernetesManifest {
   kind: KubernetesKind;
   metadata: {
@@ -72,8 +94,15 @@ export interface KubernetesManifest {
     namespace?: string;
     labels?: Readonly<Record<string, string>>;
     annotations?: Readonly<Record<string, string>>;
+    ownerReferences?: readonly OwnerReference[];
   };
   spec?: Readonly<Record<string, unknown>>;
+  type?: string;
+  stringData?: Readonly<Record<string, string>>;
+  value?: number;
+  preemptionPolicy?: string;
+  globalDefault?: boolean;
+  description?: string;
 }
 
 export function collectionPath(kind: KubernetesKind, namespace?: string): string {

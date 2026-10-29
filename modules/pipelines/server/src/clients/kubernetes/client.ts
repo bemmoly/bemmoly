@@ -12,8 +12,8 @@ import {
 } from './resources.ts';
 
 /*
- * A small Kubernetes client: namespaces, apps/v1 Deployments, Services, and the Gateway API's
- * Gateways and HTTPRoutes. Every write is a server-side apply under one field manager, so a
+ * A small Kubernetes client: namespaces, apps/v1 Deployments, Services, the Gateway API's
+ * Gateways and HTTPRoutes, and the Jobs, pods and Secrets runner pods are made of. Every write is a server-side apply under one field manager, so a
  * repeat is a no-op and fields other tools own are left alone. It also answers the two
  * questions an attach check asks: is an API group served, and may I do this.
  */
