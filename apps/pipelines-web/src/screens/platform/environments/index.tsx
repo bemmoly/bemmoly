@@ -79,7 +79,7 @@ export default function EnvironmentsArea() {
                 <Skeleton height={28} />
               </div>
             ) : (
-              <Paths paths={paths.data.items} />
+              <Paths paths={paths.data.items} environments={items} />
             )}
           </Panel>
           <Panel flush title={t('pipelines.platform.environments')}>

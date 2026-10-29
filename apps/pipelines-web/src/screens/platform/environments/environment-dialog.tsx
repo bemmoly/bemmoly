@@ -168,6 +168,7 @@ export function EnvironmentDialog({
             hint={groups.length === 0 ? t('pipelines.environments.noReadyProjects') : undefined}
           >
             <Select
+              searchable
               value={draft.accountId ?? NONE}
               groups={options}
               onChange={(event) => set({ accountId: event.value === NONE ? null : event.value })}
