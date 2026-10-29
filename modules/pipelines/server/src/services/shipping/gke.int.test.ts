@@ -4,13 +4,17 @@ import { applicationRuntimesResponseSchema } from '../../../../shared/runtimes.t
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
 import { startPipelinesHttp, type PipelinesHttp } from '../../testing/http.ts';
 import { seedShippingFixture, type ShippingFixture } from '../../testing/shipping-fixture.ts';
+import { columnsHolding } from '../../testing/variables-fixture.ts';
 
 /*
  * GKE as a runtime, the milestone's proof: checkout-api stays on Cloud Run while cart-api is
  * switched to GKE Autopilot in the same four environments, each of which gets a cluster.
  * Both ship to Prod, both canary, both roll back by themselves, and a switch back to Cloud
- * Run takes effect on the next deploy. The simulated cloud stands in for Google Cloud.
+ * Run takes effect on the next deploy. cart-api's secret reaches GKE as a version, never a
+ * value. The simulated cloud stands in for Google Cloud.
  */
+
+const SECRET_VALUE = 'sentinel-5e0b7d21-gke-test-value';
 
 let harness: PipelinesHarness | undefined;
 let http: PipelinesHttp | undefined;
@@ -27,7 +31,11 @@ beforeAll(async () => {
   }
   harness = started.harness;
   http = await startPipelinesHttp(harness);
-  f = await seedShippingFixture(harness, { world: harness.world });
+  const services = harness.services;
+  f = await seedShippingFixture(harness, {
+    world: harness.world,
+    variables: (application, environment) => services.variables.forDeploy(application, environment),
+  });
   const { sql, users } = harness;
   const [connection] = await sql<{ id: string }[]>`select id from cloud_connections limit 1`;
   for (const [key, id] of Object.entries(f.environments)) {
@@ -217,6 +225,39 @@ describe('GKE as a runtime beside Cloud Run', () => {
       'deploy v1.0.0 bemmoly-prod-us-east1/checkout/cart-api@prod-us-east1',
     );
     expect(deploys.filter((line) => line.includes('/'))).toHaveLength(4);
+  });
+
+  it('deploys cart-api on GKE with its secret pinned to a version, never its value', async (ctx) => {
+    if (!harness) return ctx.skip(skip);
+    const { h, api } = ready();
+    const put = (name: string, kind: string, value: string) =>
+      api.send('PUT', `/applications/cart-api/variables/${name}?environment=dev`, h.users.admin, {
+        kind,
+        value,
+      });
+    expect((await put('API_KEY', 'secret', SECRET_VALUE)).statusCode).toBe(200);
+    expect((await put('GREETING', 'plain', 'hello')).statusCode).toBe(200);
+    const release = await cartRelease('v1.1.0');
+    const { promotion } = await f.service.requestPromotion(h.as(h.users.member), {
+      release,
+      to: 'dev',
+      mode: 'approval',
+    });
+    expect(
+      await f.runUntil(async () => (await promotionState(promotion.id))?.state === 'succeeded', 30),
+    ).toBe(true);
+    const revisions = [
+      ...(h.world.targets.get('bemmoly-dev/checkout/cart-api@dev')?.revisions.values() ?? []),
+    ];
+    const variables = revisions.at(-1)?.variables ?? [];
+    expect(variables).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'API_KEY', kind: 'secret', version: '1' }),
+        { name: 'GREETING', kind: 'plain', value: 'hello' },
+      ]),
+    );
+    expect(JSON.stringify(variables)).not.toContain(SECRET_VALUE);
+    expect((await columnsHolding(h, SECRET_VALUE)).found).toEqual([]);
   });
 
   it('canaries both through to 100% when the new release is healthy', async (ctx) => {

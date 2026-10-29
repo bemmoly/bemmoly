@@ -63,6 +63,8 @@ const clusterAnswer = (overrides: Record<string, unknown> = {}): RecordedExchang
     autopilot: { enabled: true },
     releaseChannel: { channel: 'STABLE' },
     networkConfig: { gatewayApiConfig: { channel: 'CHANNEL_STANDARD' } },
+    workloadIdentityConfig: { workloadPool: `${PROJECT}.svc.id.goog` },
+    secretManagerConfig: { enabled: true },
     ...overrides,
   },
 });
@@ -205,6 +207,7 @@ describe('creating a cluster through a managed connection', () => {
       workloadIdentityConfig: { workloadPool: 'acme-dev.svc.id.goog' },
       networkConfig: { gatewayApiConfig: { channel: 'CHANNEL_STANDARD' } },
       maintenancePolicy: { window: { recurringWindow: { recurrence: 'FREQ=WEEKLY;BYDAY=SA,SU' } } },
+      secretManagerConfig: { enabled: true },
       nodePools: [{ autoscaling: { enabled: true, minNodeCount: 1, maxNodeCount: 3 } }],
     });
     expect(cluster['autopilot']).toBeUndefined();
@@ -273,6 +276,19 @@ describe('checking an attached cluster', () => {
     ]);
     expect((await missing.clusters.verify(attached, shopCluster, null)).problems).toEqual([
       'Cluster shop-prod was not found in nila-shop-prod, europe-west1. Check the project, location and name',
+    ]);
+  });
+
+  it('warns, without failing, when pods could not read secrets there', async () => {
+    const { clusters } = recording(
+      [whoAmI, clusterAnswer({ secretManagerConfig: {} }), served(['gateways', 'httproutes'])],
+      reviews(['secretproviderclasses']),
+    );
+    const check = await clusters.verify(attached, shopCluster, null);
+    expect(check.ok).toBe(true);
+    expect(check.problems).toEqual([
+      'Turn on the Secret Manager add-on on shop-prod so applications there can read their secrets: gcloud container clusters update shop-prod --location europe-west1 --enable-secret-manager',
+      'Grant bemmoly@nila-ops.iam.gserviceaccount.com rights to create secretproviderclasses in shop-prod so applications there can read their secrets',
     ]);
   });
 
