@@ -10,7 +10,6 @@ import {
   releaseCompareSchema,
   releaseSchema,
   releasesPageSchema,
-  trainsResponseSchema,
   type ApprovalBody,
   type ChangesQuery,
   type CompareQuery,
@@ -30,7 +29,7 @@ const base = '/api/v1/pipelines';
 /** What a write answers with that the screen needs: the id to open or refetch. */
 const created = z.object({ id: idSchema });
 
-/** Releases, promotions, trains and What changed?, under the one key root. */
+/** Releases, promotions and What changed?, under the one key root. */
 export const shippingKeys = {
   all: ['pipelines', 'shipping'] as const,
   releases: (query: Partial<ListReleasesQuery>) =>
@@ -41,7 +40,6 @@ export const shippingKeys = {
     ['pipelines', 'shipping', 'promotions', query] as const,
   promotion: (id: string) => ['pipelines', 'shipping', 'promotion', id] as const,
   preview: (query: PromotionPreviewQuery) => ['pipelines', 'shipping', 'preview', query] as const,
-  trains: () => ['pipelines', 'shipping', 'trains'] as const,
   changes: (query: ChangesQuery) => ['pipelines', 'shipping', 'changes', query] as const,
   deployments: (query: Partial<ListDeploymentsQuery>) =>
     ['pipelines', 'shipping', 'deployments', query] as const,
@@ -71,7 +69,6 @@ export function shippingEndpoints(http: Http) {
         method: 'POST',
         body: reason ? { reason } : {},
       }),
-    trains: () => http.request(`${base}/trains`, trainsResponseSchema),
     changes: (query: ChangesQuery) =>
       http.request(`${base}/changes`, changesResponseSchema, { query: toQuery(query) }),
     rollback: (deployment: string, body: RollbackBody) =>
