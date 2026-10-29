@@ -9,7 +9,8 @@ import { imageOf } from '../container.ts';
 import type { GcpContexts } from '../context.ts';
 import { helmFiles } from './helm.ts';
 import { nameOf } from './hcl.ts';
-import { readme } from './readme.ts';
+import { few } from '../../../../utils/few.ts';
+import { ALWAYS_LEFT_OUT, readme } from './readme.ts';
 import { createTerraform } from './terraform-context.ts';
 import { terraformFiles } from './terraform-files.ts';
 import { clusters } from './terraform-gke.ts';
@@ -41,6 +42,14 @@ function deployable(records: ExportRecords) {
   return { kept, leftOut };
 }
 
+/** One sentence for every service a deploy has moved past since the release exported. */
+function movingNote(moving: readonly string[]): string[] {
+  if (moving.length === 0) return [];
+  return [
+    `A deploy did not finish since the exported release of ${few(moving)}, so what runs there may be newer than this export. A plan or helm diff shows it going back; apply only if that is what you want.`,
+  ];
+}
+
 export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportBundle {
   const { kept, leftOut } = deployable(records);
   const tf = createTerraform({ ...records, services: kept }, facts);
@@ -65,7 +74,7 @@ export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportB
           `Fill folders.${name} in terraform.tfvars with the folder's ID: gcloud resource-manager folders list --folder=FOLDER_ID`,
       ),
   ];
-  const toFill = [...facts.problems, ...missing, ...tf.fill];
+  const toFill = [...facts.problems, ...missing, ...tf.fill, ...movingNote(tf.moving)];
   const allLeftOut = [...records.leftOut, ...leftOut];
   const groups = [...new Set(helm.map((file) => file.path.split('/')[1] ?? ''))].filter(Boolean);
   return {
@@ -83,7 +92,7 @@ export function exportFiles(records: ExportRecords, facts: ExportFacts): ExportB
       ...terraform,
       ...helm,
     ],
-    leftOut: allLeftOut,
+    leftOut: [...ALWAYS_LEFT_OUT, ...allLeftOut],
     toFill,
   };
 }
