@@ -3,10 +3,13 @@
 Pipelines never locks you in. Everything it created or deployed through a connection exports
 as Terraform and Helm you can run yourself: the projects and identities of a managed landing
 zone, the shared registry, secrets (never their values), each Cloud Run service at the release
-serving it, the GKE clusters Pipelines created, and what it deploys into them.
+serving it, the GKE clusters Pipelines created and what it deploys into them, each
+environment's front door, and the runner pools it starts build machines in.
 
 This guide exports the project you attached in [Ship your own project](your-own-project.md)
-(and the clusters from [Run an application on GKE](gke.md), if you did that), then proves the
+(and the clusters from [Run an application on GKE](gke.md), the front door from
+[Move an application between Cloud Run and GKE](front-door.md) and the pools from
+[Build machines](build-machines.md), if you did those), then proves the
 export matches what runs: Terraform adopts it with no changes, and Helm renders the same objects.
 Plan on half an hour. Each step says what you should see.
 
@@ -33,7 +36,8 @@ Open **Platform › Export**.
 **You should see** one card per connection, such as "My Google Cloud", with the files it holds
 (`README.md`, `terraform/versions.tf`, `terraform/cloud-run.tf`, `terraform/imports.tf` and the
 rest), **Before you plan** when a value needs filling in, and **Left out**, which always names
-revision history, the canary's weights while one is moving, secret values and the front door.
+revision history, the weights of a canary or a move between runtimes while one is under way,
+and secret values.
 
 ## 2. Download it
 
@@ -115,7 +119,26 @@ Delete the state when you are done testing, so nothing in it outlives the test:
 rm -rf .terraform terraform.tfstate*
 ```
 
-## 6. Render the Helm charts
+## 6. Check the front door and the runner pools
+
+Only if an environment has its front door turned on, or a runner pool runs on GKE Autopilot.
+
+```sh
+grep -c '^resource' front-door.tf build-pools.tf
+```
+
+**You should see** a count for each file. `front-door.tf` declares, per environment and
+project, the address, forwarding rule, proxy, URL map with a host per application, a backend
+service per runtime, Cloud Run's serverless endpoint groups, the health check and, with a
+domain, a managed certificate per host. GKE's zonal endpoint groups are read with `data`
+blocks, since GKE makes them itself. `build-pools.tf` declares an Autopilot pool's cluster when
+Pipelines made it, and the binding that lets its pods act as the pool's service account.
+
+Step 4's plan covers both. A host still shifting between runtimes is exported with all its
+traffic on the backend that takes most now, and Before you plan names it; plan again once the
+move ends.
+
+## 7. Render the Helm charts
 
 Only if you followed [Run an application on GKE](gke.md). One chart per catalog group, with a
 values file per application per environment:
@@ -148,7 +171,18 @@ helm template "$APP" "$GROUP" -n "$GROUP" -f "$GROUP/values/dev/$APP.yaml" | kub
 directory's README has the `kubectl label` and `annotate` commands to run first; Pipelines no
 longer deploys an application once Helm owns it.
 
-## 7. Export one application
+An Autopilot runner pool has its own chart, `runner-pools`, with a values file per pool:
+
+```sh
+POOL=gke-runners
+NAMESPACE=bemmoly-runners-gke-runners
+helm template "$POOL" runner-pools -n "$NAMESPACE" -f "runner-pools/values/$POOL.yaml"
+```
+
+**You should see** the pool's Namespace and the `bemmoly-runner` ServiceAccount, annotated with
+the Google service account its pods act as. The directory's README names each pool's namespace.
+
+## 8. Export one application
 
 Open the application's page in Pipelines and choose **Export** at the top.
 
@@ -161,18 +195,21 @@ application's services, secrets and Helm values, with no landing zone.
   export holds only the revision serving traffic.
 - **The canary's weights.** Terraform ignores Cloud Run's traffic, and each HTTPRoute sends all
   traffic to the serving revision. When a deploy is moving, Before you plan says so.
+- **A move's weights in flight.** While an application moves between runtimes, its front door
+  host is exported with all its traffic on the backend that takes most now.
+- **GKE's zonal endpoint groups.** GKE makes them from each revision's Service annotation, which
+  the Helm values keep, so Terraform reads them rather than declaring them.
 - **Secret values.** They live only in Secret Manager. The export names each secret and the
   version each service reads.
 - **The workload identity federation pool and the control project.** `bootstrap.sh` made them,
   so they are yours already.
-- **The front door.** Pipelines makes no load balancers yet; `terraform/front-door.tf` is where
-  they will go.
-- **Build machines.** A Cloud Build pool leaves nothing behind to import;
-  `terraform/build-pools.tf` lists how each pool starts builds.
+- **Build machines.** A Cloud Build pool leaves nothing behind to import, and an Autopilot
+  pool's job pods and warm room start and stop with its jobs; `terraform/build-pools.tf` lists
+  how each pool starts them.
 
 ## What to send back
 
 For each step, whether it did what "You should see" says. When a plan shows anything to add or
 change, send the plan's lines for that resource. The likeliest places are the Cloud Run
-service's CPU and memory, its startup probe, a budget, and a GKE cluster, whose plans Google
-fills in with values Pipelines never set.
+service's CPU and memory, its startup probe, a budget, a GKE cluster, and the front door's
+backend services and URL map, whose plans Google fills in with values Pipelines never set.
