@@ -64,7 +64,7 @@ export function createMachinesService(deps: MachinesServiceDeps) {
       // Before starting: a pool prepared now starts its first pod in the same sweep.
       const prepared = options.pools
         ? { scaled: 0 }
-        : await preparePools(ctx, await machinePools(ctx.sql, POD_HOSTINGS));
+        : await preparePools(ctx, await machinePools(ctx.sql, POD_HOSTINGS, undefined, true));
       const started = await startMachines(
         ctx,
         await machinePools(ctx.sql, ONE_JOB_HOSTINGS, options.pools),
