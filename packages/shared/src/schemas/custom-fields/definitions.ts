@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { fieldPattern } from './pattern.ts';
 import { moduleIdSchema } from '../../modules/index.ts';
 
 /*
@@ -52,8 +53,13 @@ export const fieldValidationSchema = z
   .object({
     minLength: z.number().int().min(0).max(10_000),
     maxLength: z.number().int().min(1).max(10_000),
-    /** A regular expression the whole text must match. */
-    pattern: z.string().max(200),
+    /** A regular expression the whole text must match, in a shape that cannot backtrack. */
+    pattern: z
+      .string()
+      .max(200)
+      .refine((pattern) => fieldPattern(pattern) !== null, {
+        error: 'Use a pattern without nested repeats or backreferences',
+      }),
     min: z.number().finite(),
     max: z.number().finite(),
     /** Digits after the point for a number. */
@@ -113,18 +119,8 @@ export const createCustomFieldBodySchema = definitionBody
     const values = body.options.map((option) => option.value);
     if (new Set(values).size !== values.length)
       ctx.addIssue({ code: 'custom', path: ['options'], message: 'Option values must differ' });
-    if (body.validation.pattern !== undefined && !compiles(body.validation.pattern))
-      ctx.addIssue({ code: 'custom', path: ['validation', 'pattern'], message: 'Fix the pattern' });
   });
 
-function compiles(pattern: string): boolean {
-  try {
-    new RegExp(pattern);
-    return true;
-  } catch {
-    return false;
-  }
-}
 export type CreateCustomFieldBody = z.input<typeof createCustomFieldBodySchema>;
 export type CreateCustomField = z.output<typeof createCustomFieldBodySchema>;
 

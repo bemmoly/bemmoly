@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createCustomFieldBodySchema, type CustomFieldKind } from './definitions.ts';
+import {
+  createCustomFieldBodySchema,
+  updateCustomFieldBodySchema,
+  type CustomFieldKind,
+} from './definitions.ts';
 import { formLayoutSchema, visibleFieldKeys } from './forms.ts';
 import { validateFieldValues, type FieldRules } from './values.ts';
 
@@ -111,6 +115,73 @@ describe('definitions', () => {
       }).success,
     ).toBe(false);
     expect(createCustomFieldBodySchema.parse({ ...base, kind: 'boolean' }).required).toBe(false);
+  });
+
+  it('refuses patterns that could backtrack for minutes, on create and update', () => {
+    const base = {
+      moduleId: 'people',
+      entityType: 'person',
+      key: 'kit',
+      label: 'Kit',
+      kind: 'text',
+    };
+    for (const pattern of [
+      '(a+)+',
+      '(a|ab)*',
+      '((ab)*c)+',
+      '(x)\\1',
+      '(?<n>a)\\k<n>',
+      'a*a*a*a*b',
+      '(a|a)(a|a)(a|a)(a|a)',
+      'a?a?a?a?aaaa',
+      '(?:a{1,9}){2,}',
+      'a)|(b',
+      '(a',
+      '(?:a{9}){9}',
+      'a{201}',
+      '(?:(?=a)){5}',
+    ]) {
+      expect(
+        createCustomFieldBodySchema.safeParse({ ...base, validation: { pattern } }).success,
+      ).toBe(false);
+      expect(updateCustomFieldBodySchema.safeParse({ validation: { pattern } }).success).toBe(
+        false,
+      );
+    }
+    for (const pattern of [
+      '[A-Z]{3}-\\d+',
+      '(ab)?c*',
+      '(a|b)c',
+      '[(+)]+',
+      'a+b*',
+      '(?:ab){2}\\d{4}',
+    ]) {
+      expect(
+        createCustomFieldBodySchema.safeParse({ ...base, validation: { pattern } }).success,
+      ).toBe(true);
+    }
+  });
+
+  it('caps text under a pattern so the slowest allowed one stays quick', () => {
+    const fields = [field('code', 'text', { validation: { pattern: 'a*a*a*b' } })];
+    const started = Date.now();
+    const short = validateFieldValues(fields, { code: 'a'.repeat(200) }, { mode: 'create' });
+    expect(Date.now() - started).toBeLessThan(500);
+    expect(short.ok).toBe(false);
+    const long = validateFieldValues(fields, { code: `${'a'.repeat(200)}b` }, { mode: 'create' });
+    expect(long).toMatchObject({ ok: false });
+  });
+
+  it('checks a value against an unsafe stored pattern without running it', () => {
+    const started = Date.now();
+    validateFieldValues(
+      [field('code', 'text', { validation: { pattern: '(a+)+$' } })],
+      {
+        code: `${'a'.repeat(40)}!`,
+      },
+      { mode: 'create' },
+    );
+    expect(Date.now() - started).toBeLessThan(500);
   });
 });
 

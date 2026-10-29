@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { moneyValueSchema, type CustomFieldDefinition } from './definitions.ts';
+import { fieldPattern, PATTERN_INPUT_MAX } from './pattern.ts';
 
 /*
  * One validator for the server and the browser (ADR 0052): a form never accepts what the
@@ -25,15 +26,20 @@ const LONG_TEXT_MAX = 10_000;
 
 function textSchema(field: FieldRules, ceiling: number): z.ZodType {
   const { minLength, maxLength, pattern } = field.validation;
+  // A stored pattern passed the same check when it was saved; one that no longer does is skipped
+  // rather than run. A field with a pattern takes no more text than a pattern may run over.
+  const regex = pattern ? fieldPattern(pattern) : null;
+  const max = Math.min(maxLength ?? ceiling, ceiling, regex ? PATTERN_INPUT_MAX : ceiling);
   let schema = z
     .string()
     .trim()
-    .max(Math.min(maxLength ?? ceiling, ceiling), {
-      error: `Keep it under ${Math.min(maxLength ?? ceiling, ceiling)} characters`,
-    });
+    .max(max, { error: `Keep it under ${max} characters` });
   if (minLength) schema = schema.min(minLength, { error: `Use at least ${minLength} characters` });
-  if (pattern) schema = schema.regex(new RegExp(`^(?:${pattern})$`), 'Use the expected format');
-  return schema;
+  if (!regex) return schema;
+  // Checked by hand so the pattern never runs over text the length rule already refused.
+  return schema.refine((text) => text.length > max || regex.test(text), {
+    error: 'Use the expected format',
+  });
 }
 
 function numberSchema(field: FieldRules): z.ZodType {
