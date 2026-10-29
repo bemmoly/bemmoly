@@ -15,6 +15,7 @@ import {
   releasedOnly,
   type Release,
 } from '../src/lib/changelog.ts';
+import { RELEASE_TITLES } from '../src/data/changelog.ts';
 import { parsePage, scriptsOf } from './dom.ts';
 
 const repo = new URL('../../../', import.meta.url);
@@ -75,7 +76,13 @@ describe('version', () => {
 
   it('lists only released versions in a release history, newest first', () => {
     const listed = history('index.html');
-    expect(listed[0]).toBe(LATEST.version);
+    // The home page lists minor releases (and titled ones); a patch on top of the newest minor
+    // is the latest release without being listed, so the list starts at that minor.
+    const newestListed = RELEASES.find(
+      (release) => RELEASE_TITLES[release.version] ?? release.version.endsWith('.0'),
+    );
+    expect(listed[0]).toBe(newestListed?.version);
+    expect(compareVersions(LATEST.version, listed[0] ?? '')).toBeLessThanOrEqual(0);
     const released = RELEASES.map((release) => release.version);
     for (const version of listed) expect(released, version).toContain(version);
     expect([...listed].sort(compareVersions)).toEqual(listed);
