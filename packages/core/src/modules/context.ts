@@ -20,6 +20,7 @@ import type { ModuleRegistry } from './registry.ts';
 import { createDisabledAi } from '../services/ai/index.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
+import { createPersonDirectory } from '../services/people/index.ts';
 
 export interface ModuleContextOptions {
   events: EventBus;
@@ -282,6 +283,7 @@ export function createModuleContext(
           database: options.database,
           audit: createAuditRecorder(options.database),
           memberships: createContainerMemberships(options.database),
+          people: createPersonDirectory(options.database),
         }
       : {}),
   };

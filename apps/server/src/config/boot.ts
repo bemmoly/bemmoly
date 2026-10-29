@@ -15,6 +15,7 @@ import {
   loadModules,
   processAuthorizationCache,
   SYSTEM_SETTINGS,
+  wirePeople,
   type Actor,
   type BemmolyModule,
   type CodeHosts,
@@ -232,6 +233,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireOutgoingWebhooks({ env, database, kernel, identity, logger })
       : undefined;
+  const people =
+    database && kernel
+      ? wirePeople({ sql: database.sql, authorize: identity.authorize, events: kernel.events })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -265,6 +270,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...(imports ? { imports: imports.service } : {}),
             ...(codeHosts ? { codeHosts } : {}),
             ...(webhooks ? { webhooks: webhooks.service } : {}),
+            ...(people ? { people } : {}),
             ...(collab ? { collab } : {}),
           },
         }

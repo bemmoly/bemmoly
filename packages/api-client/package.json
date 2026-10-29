@@ -15,7 +15,8 @@
     "./imports": "./src/endpoints/imports.ts",
     "./oauth": "./src/endpoints/oauth.ts",
     "./operations-admin": "./src/endpoints/operations-admin.ts",
-    "./sso": "./src/endpoints/sso.ts"
+    "./sso": "./src/endpoints/sso.ts",
+    "./org": "./src/endpoints/org.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
