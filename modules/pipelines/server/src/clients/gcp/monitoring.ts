@@ -2,9 +2,9 @@ import { z } from 'zod';
 import type { GcpHttp } from './http.ts';
 
 /*
- * Cloud Monitoring v3 time series for one Cloud Run revision. Cloud Run reports these
- * without any instrumentation in the application, which is why canary analysis can start
- * from them on day one.
+ * Cloud Monitoring v3 time series for one Cloud Run revision, or for one Service behind a GKE
+ * Gateway's load balancer. Both are reported without any instrumentation in the application,
+ * which is why canary analysis can start from them on day one.
  */
 
 const BASE = 'https://monitoring.googleapis.com/v3';
@@ -57,6 +57,26 @@ const revisionFilter = (metric: string, query: RevisionQuery) =>
     `resource.label.revision_name="${query.revision}"`,
   ].join(' AND ');
 
+/** One Kubernetes Service behind a GKE Gateway, as the load balancer names its backends. */
+export interface GatewayBackendQuery {
+  projectId: string;
+  namespace: string;
+  service: string;
+  from: Date;
+  to: Date;
+}
+
+/*
+ * GKE names a Gateway's backend services "gkegw1-<hash>-<namespace>-<service>-<port>-<hash>",
+ * so a backend is found by the namespace and service in the middle of that name.
+ */
+const backendFilter = (metric: string, query: GatewayBackendQuery) =>
+  [
+    `metric.type="loadbalancing.googleapis.com/https/${metric}"`,
+    'resource.type="https_lb_rule"',
+    `resource.label.backend_target_name=has_substring("-${query.namespace}-${query.service}-")`,
+  ].join(' AND ');
+
 export function createMonitoringClient(http: GcpHttp) {
   async function list(projectId: string, query: Record<string, string>) {
     const series: MonitoringSeries[] = [];
@@ -81,7 +101,7 @@ export function createMonitoringClient(http: GcpHttp) {
     return series;
   }
 
-  const window = (query: RevisionQuery) => ({
+  const window = (query: { from: Date; to: Date }) => ({
     'interval.startTime': query.from.toISOString(),
     'interval.endTime': query.to.toISOString(),
     'aggregation.alignmentPeriod': '60s',
@@ -103,6 +123,27 @@ export function createMonitoringClient(http: GcpHttp) {
     latencyP95(query: RevisionQuery): Promise<MonitoringSeries[]> {
       return list(query.projectId, {
         filter: revisionFilter('request_latencies', query),
+        ...window(query),
+        'aggregation.perSeriesAligner': 'ALIGN_PERCENTILE_95',
+        'aggregation.crossSeriesReducer': 'REDUCE_MAX',
+      });
+    },
+
+    /** Requests per minute through the load balancer, one series per class ("200", "500"). */
+    backendRequestCounts(query: GatewayBackendQuery): Promise<MonitoringSeries[]> {
+      return list(query.projectId, {
+        filter: backendFilter('backend_request_count', query),
+        ...window(query),
+        'aggregation.perSeriesAligner': 'ALIGN_DELTA',
+        'aggregation.crossSeriesReducer': 'REDUCE_SUM',
+        'aggregation.groupByFields': 'metric.label.response_code_class',
+      });
+    },
+
+    /** The 95th percentile of backend latency per minute, in milliseconds. */
+    backendLatencyP95(query: GatewayBackendQuery): Promise<MonitoringSeries[]> {
+      return list(query.projectId, {
+        filter: backendFilter('backend_latencies', query),
         ...window(query),
         'aggregation.perSeriesAligner': 'ALIGN_PERCENTILE_95',
         'aggregation.crossSeriesReducer': 'REDUCE_MAX',
