@@ -284,6 +284,11 @@ create, first in Dev, then in Prod, with a canary and a roll back there, while e
 stays on Cloud Run. [Move it with no failed requests](front-door.md) then puts a front door in
 front of Prod and moves it between Cloud Run and GKE as a traffic shift.
 
+## Next: take it with you
+
+[Export what Pipelines made](export.md) downloads everything here as Terraform and Helm, then
+shows that Terraform adopts the live project with no changes.
+
 ## What to send back
 
 For each step, whether it did what "You should see" says. When it did not, send the sentence
