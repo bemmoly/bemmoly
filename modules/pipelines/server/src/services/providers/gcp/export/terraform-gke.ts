@@ -1,7 +1,7 @@
 import type { ExportCluster } from '../../export-contract.ts';
 import { MAINTENANCE, RELEASE_CHANNEL, STANDARD_POOL } from '../gke-cluster-spec.ts';
-import { attr, block, bool, list, num, str, type Item } from './hcl.ts';
-import type { Terraform } from './terraform-context.ts';
+import { attr, block, bool, list, num, str, type HclObject, type Item } from './hcl.ts';
+import type { Terraform, TerraformFile } from './terraform-context.ts';
 import { managedLabels } from './terraform-zone.ts';
 
 /*
@@ -40,18 +40,26 @@ function nodePool(): Item {
   );
 }
 
-function cluster(tf: Terraform, record: ExportCluster) {
+/** A cluster as gke-cluster-spec.ts asks GKE for it, labelled as its maker labelled it. */
+export function gkeCluster(
+  tf: Terraform,
+  file: TerraformFile,
+  record: Pick<ExportCluster, 'projectId' | 'location' | 'name' | 'mode'> & {
+    labels: HclObject;
+    note: string;
+  },
+) {
   const autopilot = record.mode === 'autopilot';
-  tf.add('clusters.tf', {
+  tf.add(file, {
     type: 'google_container_cluster',
     name: tf.unique('google_container_cluster', record.name),
-    note: `${record.environment}'s cluster, GKE ${autopilot ? 'Autopilot' : 'Standard'}.`,
+    note: record.note,
     body: [
       attr('project', tf.projectRef(record.projectId)),
       attr('location', str(record.location)),
       attr('name', str(record.name)),
       ...(autopilot ? [attr('enable_autopilot', bool(true))] : []),
-      attr('resource_labels', managedLabels({ environment: record.environment })),
+      attr('resource_labels', record.labels),
       block('release_channel', [], [attr('channel', str(RELEASE_CHANNEL))]),
       block(
         'maintenance_policy',
@@ -88,6 +96,11 @@ function cluster(tf: Terraform, record: ExportCluster) {
 
 export function clusters(tf: Terraform): void {
   for (const record of tf.records.clusters) {
-    if (record.origin === 'created') cluster(tf, record);
+    if (record.origin !== 'created') continue;
+    gkeCluster(tf, 'clusters.tf', {
+      ...record,
+      labels: managedLabels({ environment: record.environment }),
+      note: `${record.environment}'s cluster, GKE ${record.mode === 'autopilot' ? 'Autopilot' : 'Standard'}.`,
+    });
   }
 }
