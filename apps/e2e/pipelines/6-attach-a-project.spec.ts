@@ -36,8 +36,9 @@ test('attach a project, create an environment in it and put it on a path', async
   await expect(card.getByRole('status')).toHaveText('Connected');
   await expect(card).toContainText('The VM Bemmoly runs on');
 
-  // Attach a project; the check finds nothing missing.
-  await page.getByRole('button', { name: 'Attach a project…' }).click();
+  // Attach a project; the check finds nothing missing. The button sits under this connection's
+  // card, beside any other attached connection's.
+  await card.locator('..').getByRole('button', { name: 'Attach a project…' }).click();
   const attach = page.getByRole('dialog', { name: `Attach a project to ${CONNECTION}` });
   await attach.getByLabel('Project ID').fill(PROJECT);
   await attach.getByRole('button', { name: 'Attach project' }).click();
