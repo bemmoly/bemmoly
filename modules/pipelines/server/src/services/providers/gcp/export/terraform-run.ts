@@ -196,7 +196,7 @@ export function services(tf: Terraform): void {
   for (const service of tf.records.services) {
     if (service.moving) {
       tf.fill.push(
-        `${service.application} in ${service.environment.key}: a deploy after ${service.release.version} did not finish, so what runs may be newer than this export. A plan or helm diff shows it going back to ${service.release.version}; apply only if that is what you want`,
+        `${service.application} in ${service.environment.key}: a deploy after ${service.release.version} did not finish, so what runs may be newer than this export. A plan or helm diff shows it going back to ${service.release.version}; apply only if that is what you want.`,
       );
     }
     const reader =
