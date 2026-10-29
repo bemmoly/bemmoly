@@ -40,6 +40,7 @@ import { requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
 import { promoteAutomatically } from './promotions/automatic.ts';
+import { deployRuntimeSchema } from '../../../../shared/common.ts';
 import { resolveTarget } from './targets.ts';
 
 export type { ShippingEngineDeps, Waker } from './engine-deps.ts';
@@ -183,11 +184,14 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
       await authorizePipelines(ctx);
       const row = await getDeploymentRow(sql, id);
       // No connection means no metrics source: the screen then says the checks are waiting.
+      const [pinned] = await sql<{ runtime: string | null }[]>`
+        select plan ->> 'runtime' as runtime from pipeline_deployments where id = ${id}`;
       const hasMetrics = await resolveTarget(
         sql,
         deps.providers,
         row.application_id,
         row.environment_id,
+        { runtime: deployRuntimeSchema.safeParse(pinned?.runtime).data },
       ).then(
         (resolved) => Boolean(resolved.provider.metrics),
         () => false,
