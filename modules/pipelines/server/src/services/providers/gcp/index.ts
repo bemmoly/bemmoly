@@ -2,6 +2,7 @@ import type { CloudProvider } from '../contract.ts';
 import { createGcpConnection } from './connection.ts';
 import { createGcpContexts, type GcpProviderOptions } from './context.ts';
 import { createGcpFrontDoor } from './front-door.ts';
+import { createGcpExport } from './export/index.ts';
 import { createGkeAccess } from './gke-access.ts';
 import { createGkeClusters } from './gke-clusters.ts';
 import { createGkeMetrics } from './gke-metrics.ts';
@@ -20,6 +21,7 @@ import { createGcpTargets } from './targets.ts';
  * A front door per environment moves applications between runtimes by weight. Builds run one
  * job per machine, on Cloud Build or as a pod on a GKE Autopilot runner pool; time-boxed
  * console access and spend are designed but not built, so they say "Coming soon".
+ * Everything it made exports as Terraform and Helm (export/).
  */
 export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvider {
   const contexts = createGcpContexts(options);
@@ -54,6 +56,7 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
       contexts,
       options.kubernetesTransport ? { kubernetesTransport: options.kubernetesTransport } : {},
     ),
+    export: createGcpExport(contexts),
   };
 }
 

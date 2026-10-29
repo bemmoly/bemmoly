@@ -49,6 +49,7 @@ import { createClustersService } from './clusters/index.ts';
 import { createRuntimesService } from './runtimes/index.ts';
 import { createFrontDoorsService } from './front-doors/index.ts';
 import { createMovesService } from './moves/index.ts';
+import { createExportsService } from './exports/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -201,6 +202,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ...(input.now ? { now: input.now } : {}),
       variables: variables.forDeploy,
     }),
+    exports: createExportsService({ ...deps, providers }),
     machines: createMachinesService({
       ...deps,
       providers,

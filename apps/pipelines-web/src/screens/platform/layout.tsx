@@ -27,6 +27,7 @@ export default function PlatformLayout() {
               icon: 'layers',
             },
             { to: '/platform/clusters', label: t('pipelines.platform.clusters'), icon: 'hexagon' },
+            { to: '/platform/export', label: t('pipelines.platform.export'), icon: 'download' },
           ]}
         />
       </div>

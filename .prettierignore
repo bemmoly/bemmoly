@@ -14,3 +14,5 @@ packages/ui/src/tailwind.css
 deploy/helm/**/templates/
 AGENTS.md
 CLAUDE.md
+# Golden export files: Terraform, Helm templates and READMEs exactly as Pipelines writes them.
+modules/pipelines/server/src/services/providers/gcp/export/testdata/
