@@ -2,9 +2,9 @@ import type { AccessAction, Role } from '../../../../shared/access.ts';
 
 /*
  * What each role may do (product design, "Who can do what"). Protected environments (Prod)
- * narrow deploy and roll back to the roles trusted with them; everyone else reaches Prod by
- * requesting a promotion, which policy then gates. Policies only ever add requirements on
- * top of this table, never take one away.
+ * narrow deploy, roll back and changing variables to the roles trusted with them; everyone
+ * else reaches Prod by requesting a promotion, which policy then gates. Policies only ever add
+ * requirements on top of this table, never take one away.
  */
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -64,6 +64,11 @@ export function rolesFor(action: AccessAction, protectedEnvironment: boolean): r
     case 'approve':
       return ['maintainer', 'release_manager', 'platform_admin'];
     case 'change_variables':
+      // A protected environment's values reach it with the next deploy, which only these
+      // roles may make there, so only they may change them.
+      return protectedEnvironment
+        ? ['release_manager', 'platform_admin']
+        : ['maintainer', 'platform_admin'];
     case 'manage':
       return ['maintainer', 'platform_admin'];
     case 'platform':

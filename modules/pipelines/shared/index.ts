@@ -32,3 +32,4 @@ export * from './saved-views.ts';
 export * from './ci.ts';
 export * from './secret-forms.ts';
 export * from './image-reference.ts';
+export * from './variables.ts';

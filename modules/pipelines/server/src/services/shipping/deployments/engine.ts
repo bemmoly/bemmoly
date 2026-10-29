@@ -70,7 +70,13 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
       await sql`update pipeline_deployments set previous_revision = null where id = ${row.id}`;
     }
     const baseline = await measureBaseline(provider, target, stable, now);
-    const { revision } = await parts.deploy(target, artifactOf(release));
+    // Recorded before the deploy, so a roll back can redeploy exactly this set.
+    const variables = await deps.variables?.(row.application_id, row.environment_id);
+    if (variables) {
+      await sql`update pipeline_deployments set variables = ${JSON.stringify(variables)}::jsonb
+        where id = ${row.id}`;
+    }
+    const { revision } = await parts.deploy(target, artifactOf(release), variables);
     const plan = { ...step.plan, ...(baseline ? { baseline } : {}) };
     await write(
       row,

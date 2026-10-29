@@ -6,7 +6,7 @@ import { registryPathSchema } from './clouds.ts';
  * Attached projects and the image registry (journeys proposal, "How much Pipelines controls"):
  * POST /clouds/:id/accounts attaches a project that already exists, POST
  * /clouds/:id/accounts/:accountId/check runs its checks again, DELETE detaches it, and
- * PATCH /clouds/:id sets where runners push images.
+ * PATCH /clouds/:id sets where runners push images and which project holds CI secrets.
  */
 
 /** A Google Cloud project id: 6 to 30 lowercase letters, digits and hyphens. */
@@ -29,12 +29,21 @@ export const attachAccountBodySchema = z.object({
   runtimeServiceAccount: serviceAccountSchema.nullable().default(null),
 });
 
-export const updateConnectionBodySchema = z.object({
-  /** Null stops pushing: runners keep the images they build. */
-  registry: registryPathSchema.nullable(),
-});
+/** Only what is sent changes; no field has a default. */
+export const updateConnectionBodySchema = z
+  .object({
+    /** Null stops pushing: runners keep the images they build. */
+    registry: registryPathSchema.nullable(),
+    /**
+     * The attached project that holds CI secrets and secrets set for every environment. Null
+     * clears it. A managed connection keeps them in its own CI project instead.
+     */
+    ciAccountId: idSchema.nullable(),
+  })
+  .partial()
+  .refine((body) => Object.keys(body).length > 0, 'Change at least one thing');
 
 export const accountParamsSchema = z.object({ id: idSchema, accountId: idSchema });
 
 export type AttachAccountBody = z.input<typeof attachAccountBodySchema>;
-export type UpdateConnectionBody = z.infer<typeof updateConnectionBodySchema>;
+export type UpdateConnectionBody = z.input<typeof updateConnectionBodySchema>;
