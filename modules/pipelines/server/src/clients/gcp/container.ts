@@ -25,6 +25,8 @@ const clusterSchema = z.object({
   networkConfig: z
     .object({ gatewayApiConfig: z.object({ channel: z.string().optional() }).optional() })
     .default({}),
+  /** GKE's Secret Manager add-on: the managed CSI driver that mounts secret versions. */
+  secretManagerConfig: z.object({ enabled: z.boolean().optional() }).default({}),
   currentMasterVersion: z.string().optional(),
 });
 
@@ -50,6 +52,10 @@ export const GATEWAY_CHANNELS = ['CHANNEL_STANDARD', 'CHANNEL_EXPERIMENTAL'];
 /** The Gateway API is on when GKE installed its standard or experimental channel. */
 export const gatewayApiOn = (cluster: GkeCluster) =>
   GATEWAY_CHANNELS.includes(cluster.networkConfig.gatewayApiConfig?.channel ?? '');
+
+/** The Secret Manager add-on is on: pods can mount secret versions through its CSI driver. */
+export const secretManagerOn = (cluster: GkeCluster) =>
+  cluster.secretManagerConfig.enabled === true;
 
 export function createContainerClient(http: GcpHttp, poll: PollOptions) {
   const client = {

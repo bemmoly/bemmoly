@@ -62,6 +62,7 @@ export type { PollOptions } from './operations.ts';
 export {
   gatewayApiOn,
   gkeClusterName,
+  secretManagerOn,
   type ContainerClient,
   type GkeCluster,
   type GkeOperation,
