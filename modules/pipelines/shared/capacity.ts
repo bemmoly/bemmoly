@@ -7,6 +7,7 @@ import {
   teamRefSchema,
 } from './common.ts';
 import { cloudBuildPoolBodySchema, cloudBuildPoolSchema, poolMachineSchema } from './machines.ts';
+import { autopilotPoolBodySchema, autopilotPoolSchema } from './autopilot.ts';
 
 /*
  * Platform › Capacity: GET /api/v1/pipelines/capacity?range=now|7d|30d, GET/POST/PATCH
@@ -14,7 +15,14 @@ import { cloudBuildPoolBodySchema, cloudBuildPoolSchema, poolMachineSchema } fro
  * why it waits, each team's fair share, and the build minutes the cloud will bill.
  */
 
-export const poolHostingSchema = z.enum(['kubernetes', 'vm', 'local', 'cloud-build', 'codebuild']);
+export const poolHostingSchema = z.enum([
+  'kubernetes',
+  'vm',
+  'local',
+  'cloud-build',
+  'codebuild',
+  'gke-autopilot',
+]);
 
 export const runnerPoolSchema = z.object({
   id: idSchema,
@@ -39,6 +47,8 @@ export const runnerPoolSchema = z.object({
   machines: z.array(poolMachineSchema),
   /** Why the last machine would not start, until one starts again. */
   lastError: z.string().nullable(),
+  /** How a GKE Autopilot pool starts its pods, and how many it has now; null otherwise. */
+  autopilot: autopilotPoolSchema.nullable(),
 });
 
 export const capacityStatsSchema = z.object({
@@ -107,6 +117,7 @@ export const createPoolBodySchema = z
     warmRunners: z.number().int().min(0).default(0),
     cloudAccount: idSchema.optional(),
     cloudBuild: cloudBuildPoolBodySchema.optional(),
+    autopilot: autopilotPoolBodySchema.optional(),
   })
   .refine((body) => body.maxRunners >= body.minRunners, {
     message: 'The most runners must be at least the fewest',
@@ -115,6 +126,10 @@ export const createPoolBodySchema = z
   .refine((body) => (body.hosting === 'cloud-build') === (body.cloudBuild !== undefined), {
     message: 'A Cloud Build pool needs its project, region, image and service account',
     path: ['cloudBuild'],
+  })
+  .refine((body) => (body.hosting === 'gke-autopilot') === (body.autopilot !== undefined), {
+    message: 'A GKE Autopilot pool needs its project, cluster, image, size and service account',
+    path: ['autopilot'],
   });
 
 export const updatePoolBodySchema = z.object({
@@ -128,6 +143,8 @@ export const updatePoolBodySchema = z.object({
   warmRunners: z.number().int().min(0).optional(),
   /** Replaces a Cloud Build pool's settings as a whole. */
   cloudBuild: cloudBuildPoolBodySchema.optional(),
+  /** Replaces a GKE Autopilot pool's settings as a whole. */
+  autopilot: autopilotPoolBodySchema.optional(),
 });
 
 export const teamShareBodySchema = z.object({ weight: z.number().int().min(1).max(1000) });

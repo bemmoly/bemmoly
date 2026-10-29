@@ -10,7 +10,7 @@ import type { JobRow } from './present.ts';
  */
 
 /** Hostings where Pipelines starts one machine per job. */
-const MACHINE_PER_JOB = new Set(['cloud-build', 'codebuild']);
+const MACHINE_PER_JOB = new Set(['cloud-build', 'codebuild', 'gke-autopilot']);
 
 export function ordinal(n: number): string {
   const tens = n % 100;

@@ -1,5 +1,6 @@
 import type { SqlClient, SqlExecutor } from '@bemmoly/core';
 import { z } from 'zod';
+import { autopilotStatusSchema } from '../../../../shared/autopilot.ts';
 import { cloudBuildMachineSchema } from '../../../../shared/machines.ts';
 import type { Layout } from '../../../../shared/clouds.ts';
 import type { Provider } from '../../../../shared/common.ts';
@@ -10,11 +11,15 @@ import { publishStreamEvent } from '../streams/publish.ts';
 
 /* Reads and writes of pools Pipelines starts machines for, and of the machines themselves. */
 
-/** Hostings where Pipelines starts one machine per job, and those it scales as a fleet. */
-export const ONE_JOB_HOSTINGS = ['cloud-build', 'codebuild'] as const;
-export const FLEET_HOSTINGS = ['kubernetes'] as const;
+/** Hostings where Pipelines starts one machine per job, and those it prepares a pool for. */
+export const ONE_JOB_HOSTINGS = ['cloud-build', 'codebuild', 'gke-autopilot'] as const;
+export const POD_HOSTINGS = ['gke-autopilot'] as const;
 
-/** What a pool keeps in its config: how a Cloud Build pool builds, a fleet's ref and size. */
+/**
+ * What a pool keeps in its config: how a Cloud Build pool builds, how a GKE Autopilot pool
+ * starts its pods, and how far that pool's preparation got (`prepared` is what was last
+ * prepared, so a change to the pool prepares it again).
+ */
 export const poolConfigSchema = z.object({
   cloudBuild: z
     .object({
@@ -24,13 +29,42 @@ export const poolConfigSchema = z.object({
       serviceAccount: z.string(),
     })
     .optional(),
-  fleet: z.object({ ref: z.string(), size: z.number().int().min(0) }).optional(),
+  autopilot: z
+    .object({
+      location: z.string(),
+      cluster: z.object({ name: z.string(), create: z.boolean() }),
+      image: z.string(),
+      cpu: z.number(),
+      memoryGb: z.number(),
+      spot: z.boolean(),
+      serviceAccount: z.string(),
+      builderImage: z.string(),
+      namespace: z.string(),
+    })
+    .optional(),
+  pods: z
+    .object({
+      ref: z.string().nullable(),
+      status: autopilotStatusSchema,
+      detail: z.string().nullable(),
+      prepared: z.string().nullable(),
+      /** Warm room asked for, and how much is ready. */
+      warm: z.number().int().min(0),
+      ready: z.number().int().min(0),
+    })
+    .nullable()
+    .optional(),
 });
 
 export type PoolConfig = z.infer<typeof poolConfigSchema>;
 
 export const poolConfigOf = (raw: unknown): PoolConfig =>
   poolConfigSchema.catch({}).parse(raw ?? {});
+
+/** Where a pool's machines run: Cloud Build's region, or the Autopilot cluster's location. */
+export function regionOf(config: PoolConfig): string | null {
+  return config.cloudBuild?.region ?? config.autopilot?.location ?? null;
+}
 
 export interface MachinePoolRow {
   id: string;
@@ -51,6 +85,8 @@ export interface MachinePoolRow {
   oldest: Date | string | null;
   busy: number;
   queued: number;
+  /** Machines started for this pool that are still starting or running. */
+  live: number;
 }
 
 export async function machinePools(
@@ -68,7 +104,9 @@ export async function machinePools(
       (select count(*)::int from pipeline_jobs j where j.pool_id = p.id
         and j.state in ('claimed', 'running')) as busy,
       (select count(*)::int from pipeline_jobs j where j.pool_id = p.id and j.state = 'ready')
-        as queued
+        as queued,
+      (select count(*)::int from pipeline_runner_launches l where l.pool_id = p.id
+        and l.state in ('starting', 'running')) as live
     from pipeline_runner_pools p
     left join cloud_accounts a on a.id = p.cloud_account_id
     left join cloud_connections c on c.id = a.connection_id

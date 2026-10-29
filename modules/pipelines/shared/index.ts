@@ -39,3 +39,4 @@ export * from './runtimes.ts';
 export * from './machines.ts';
 export * from './front-doors.ts';
 export * from './moves.ts';
+export * from './autopilot.ts';
