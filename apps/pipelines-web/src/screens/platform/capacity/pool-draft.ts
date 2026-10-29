@@ -7,24 +7,40 @@ import {
   type RunnerPool,
   type UpdatePoolBody,
 } from '@bemmoly/module-pipelines/shared';
-import type { ConnectionAccounts } from '../../../hooks/use-clouds.ts';
 import { slugOf } from '../../../lib/slug.ts';
+import {
+  autopilotBodyOf,
+  autopilotChanged,
+  AUTOPILOT_DRAFT,
+  autopilotDraftOf,
+  autopilotProblems,
+  type AutopilotDraft,
+} from './autopilot-draft.ts';
+import { regionOfDraft, serviceAccountOfDraft, type BuildProject } from './build-projects.ts';
+
+export {
+  buildProjects,
+  projectOf,
+  regionOfDraft,
+  serviceAccountOfDraft,
+  type BuildProject,
+} from './build-projects.ts';
 
 /*
  * The Add runner pool and Change where it runs dialogs' rules, apart from their drawing. A
  * pool either takes runners people start (on a VM, a laptop, a cluster) or has Pipelines start
- * one Google Cloud Build build per job. A Cloud Build field left as null follows its default:
- * the region follows the project's connection, and a CI project Pipelines made suggests its
- * builder service account.
+ * one machine per job: a Google Cloud Build build, or a pod on GKE Autopilot
+ * (autopilot-draft.ts). A field left as null follows its default: the region follows the
+ * project's connection, and a CI project Pipelines made suggests its builder service account.
  */
 
-export type PoolKind = 'start' | 'cloud-build';
-export const POOL_KINDS: readonly PoolKind[] = ['start', 'cloud-build'];
+export type PoolKind = 'start' | 'cloud-build' | 'gke-autopilot';
+export const POOL_KINDS: readonly PoolKind[] = ['start', 'cloud-build', 'gke-autopilot'];
 /** Where people start runners; Cloud Build is the other kind. */
 export const STARTED_HOSTINGS = ['vm', 'kubernetes', 'local'] as const satisfies PoolHosting[];
 export type StartedHosting = (typeof STARTED_HOSTINGS)[number];
 
-export interface PoolDraft {
+export interface PoolDraft extends AutopilotDraft {
   name: string;
   kind: PoolKind;
   hosting: StartedHosting;
@@ -50,70 +66,34 @@ export const NEW_POOL: PoolDraft = {
   image: '',
   machine: 'default',
   serviceAccount: null,
+  ...AUTOPILOT_DRAFT,
 };
-
-export interface BuildProject {
-  id: string;
-  externalId: string;
-  name: string;
-  connection: string;
-  region: string;
-  /** The service account a CI project Pipelines made builds as; null for attached ones. */
-  builder: string | null;
-}
-
-/** Projects builds may run in: the CI projects Pipelines made, and any attached one, ready. */
-export function buildProjects(items: readonly ConnectionAccounts[]): BuildProject[] {
-  return items.flatMap(({ connection, accounts }) =>
-    connection.provider !== 'gcp'
-      ? []
-      : accounts
-          .filter(
-            (account) =>
-              account.status === 'ready' &&
-              (account.purpose === 'ci' || account.origin === 'attached'),
-          )
-          .map((account) => ({
-            id: account.id,
-            externalId: account.externalId,
-            name: account.name,
-            connection: connection.name,
-            region: connection.region ?? '',
-            builder:
-              account.origin === 'created'
-                ? `builder@${account.externalId}.iam.gserviceaccount.com`
-                : null,
-          })),
-  );
-}
 
 const STARTED = new Set<string>(STARTED_HOSTINGS);
 
+const KIND_OF: Partial<Record<PoolHosting, PoolKind>> = {
+  'cloud-build': 'cloud-build',
+  'gke-autopilot': 'gke-autopilot',
+};
+
 export function draftOfPool(pool: RunnerPool): PoolDraft {
   const build = pool.cloudBuild;
+  const autopilot = pool.autopilot;
   return {
     name: pool.name,
-    kind: pool.hosting === 'cloud-build' ? 'cloud-build' : 'start',
+    kind: KIND_OF[pool.hosting] ?? 'start',
     hosting: STARTED.has(pool.hosting) ? (pool.hosting as StartedHosting) : 'vm',
     location: pool.location ?? '',
     min: String(pool.minRunners),
     max: String(pool.maxRunners),
-    accountId: build?.account.id ?? null,
-    region: build?.region ?? null,
-    image: build?.image ?? '',
+    accountId: build?.account.id ?? autopilot?.account.id ?? null,
+    region: build?.region ?? autopilot?.location ?? null,
+    image: build?.image ?? autopilot?.image ?? '',
     machine: build?.machine ?? 'default',
-    serviceAccount: build?.serviceAccount ?? null,
+    serviceAccount: build?.serviceAccount ?? autopilot?.serviceAccount ?? null,
+    ...autopilotDraftOf(pool),
   };
 }
-
-const projectOf = (projects: readonly BuildProject[], id: string | null) =>
-  projects.find((project) => project.id === id) ?? null;
-
-export const regionOfDraft = (draft: PoolDraft, projects: readonly BuildProject[]) =>
-  draft.region ?? projectOf(projects, draft.accountId)?.region ?? '';
-
-export const serviceAccountOfDraft = (draft: PoolDraft, projects: readonly BuildProject[]) =>
-  draft.serviceAccount ?? projectOf(projects, draft.accountId)?.builder ?? '';
 
 export function cloudBuildOf(
   draft: PoolDraft,
@@ -147,7 +127,12 @@ export function poolReady(draft: PoolDraft, projects: readonly BuildProject[]): 
   const max = Number(draft.max);
   const sizes =
     Number.isInteger(min) && Number.isInteger(max) && min >= 0 && max >= Math.max(1, min);
-  return slugOf(draft.name).length > 0 && sizes && cloudBuildProblems(draft, projects).length === 0;
+  return (
+    slugOf(draft.name).length > 0 &&
+    sizes &&
+    cloudBuildProblems(draft, projects).length === 0 &&
+    autopilotProblems(draft, projects).length === 0
+  );
 }
 
 export function createPoolBodyOf(
@@ -167,6 +152,15 @@ export function createPoolBodyOf(
       cloudBuild: cloudBuildOf(draft, projects),
     };
   }
+  if (draft.kind === 'gke-autopilot') {
+    return {
+      key: slugOf(draft.name),
+      name: draft.name.trim(),
+      hosting: 'gke-autopilot',
+      ...sizes,
+      autopilot: autopilotBodyOf(draft, projects),
+    };
+  }
   return {
     key: slugOf(draft.name),
     name: draft.name.trim(),
@@ -183,7 +177,7 @@ export function updatePoolBodyOf(
   projects: readonly BuildProject[],
 ): UpdatePoolBody {
   const body: UpdatePoolBody = {};
-  const hosting: PoolHosting = draft.kind === 'cloud-build' ? 'cloud-build' : draft.hosting;
+  const hosting: PoolHosting = draft.kind === 'start' ? draft.hosting : draft.kind;
   if (hosting !== pool.hosting) body.hosting = hosting;
   if (draft.name.trim() !== pool.name) body.name = draft.name.trim();
   const max = Number(draft.max);
@@ -204,6 +198,11 @@ export function updatePoolBodyOf(
   }
   const min = Number(draft.min);
   if (min !== pool.minRunners) body.minRunners = min;
+  if (draft.kind === 'gke-autopilot') {
+    const next = autopilotBodyOf(draft, projects);
+    if (autopilotChanged(pool.autopilot, next)) body.autopilot = next;
+    return body;
+  }
   const location = draft.location.trim();
   if (location && location !== (pool.location ?? '')) body.location = location;
   return body;
