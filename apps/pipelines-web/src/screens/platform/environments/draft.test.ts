@@ -21,6 +21,7 @@ const environment: Environment = {
   position: 3,
   cloudAccount: { id: 'a1', externalId: 'acme-shop-prod', name: 'Shop' },
   protection: { protected: true, controlPlaneOnly: false, requiresApproval: true, window: null },
+  defaultRuntime: 'cloud-run',
 };
 
 describe('a new environment', () => {
@@ -52,6 +53,7 @@ describe('a new environment', () => {
       cloudAccountId: 'a1',
       region: 'europe-west1',
       protection: { protected: true, requiresApproval: true },
+      defaultRuntime: 'cloud-run',
     });
     expect(createBodyOf({ ...draft, region: '' }, 'europe-west1').region).toBeNull();
   });

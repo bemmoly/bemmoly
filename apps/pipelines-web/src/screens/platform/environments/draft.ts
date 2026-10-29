@@ -1,6 +1,7 @@
 import {
   slugSchema,
   type CreateEnvironmentBody,
+  type DeployRuntime,
   type Environment,
   type EnvironmentClass,
   type UpdateEnvironmentBody,
@@ -27,6 +28,8 @@ export interface EnvironmentDraft {
   accountId: string | null;
   region: string | null;
   protection: Protection | null;
+  /** What applications here run on unless they choose otherwise. */
+  defaultRuntime: DeployRuntime;
 }
 
 export const NEW_DRAFT: EnvironmentDraft = {
@@ -36,6 +39,7 @@ export const NEW_DRAFT: EnvironmentDraft = {
   accountId: null,
   region: null,
   protection: null,
+  defaultRuntime: 'cloud-run',
 };
 
 const REGION = /^[a-z0-9-]{2,40}$/;
@@ -74,6 +78,7 @@ export function createBodyOf(
     cloudAccountId: draft.accountId,
     region: regionOf(draft, fallback).trim() || null,
     protection: protectionOf(draft),
+    defaultRuntime: draft.defaultRuntime,
   };
 }
 
@@ -89,6 +94,7 @@ export function draftOf(environment: Environment): EnvironmentDraft {
       protected: environment.protection.protected,
       requiresApproval: environment.protection.requiresApproval,
     },
+    defaultRuntime: environment.defaultRuntime,
   };
 }
 
@@ -113,6 +119,9 @@ export function changesOf(
     protection.requiresApproval !== was.requiresApproval
   ) {
     changes.protection = protection;
+  }
+  if (draft.defaultRuntime !== environment.defaultRuntime) {
+    changes.defaultRuntime = draft.defaultRuntime;
   }
   return changes;
 }

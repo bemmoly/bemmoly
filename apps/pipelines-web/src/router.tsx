@@ -61,6 +61,7 @@ const routeTree = root.addChildren([
     platformArea('/clouds', () => import('./screens/platform/clouds/index.tsx')),
     platformArea('/clouds/connect', () => import('./screens/platform/clouds/connect.tsx')),
     platformArea('/environments', () => import('./screens/platform/environments/index.tsx')),
+    platformArea('/clusters', () => import('./screens/platform/clusters/index.tsx')),
   ]),
   screen('/start', () => import('./screens/start/index.tsx')),
   screen('/settings', () => import('./screens/settings/index.tsx')),
