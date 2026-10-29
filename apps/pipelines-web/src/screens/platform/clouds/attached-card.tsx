@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useCloudWrites } from '../../../hooks/use-clouds.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { AttachedProjects } from './attached-projects.tsx';
-import { SIGN_IN_LABEL } from './connect-attached.tsx';
+import { SIGN_IN_LABEL } from './sign-in-fields.tsx';
 import { CONNECTION_GLYPH, FailedBand } from './connection-card.tsx';
 import { CiProjectRow } from './ci-project-row.tsx';
 import { RegistryRow } from './registry-row.tsx';
