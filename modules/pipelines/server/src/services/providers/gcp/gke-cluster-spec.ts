@@ -2,8 +2,8 @@ import type { ClusterMode } from '../../../../../shared/clusters.ts';
 
 /*
  * The cluster Pipelines creates for an environment, as GKE's create call takes it: the
- * Regular release channel, a weekend maintenance window, Workload Identity and the Gateway
- * API on, and for Standard a default node pool that autoscales and repairs itself. GKE wants
+ * Regular release channel, a weekend maintenance window, Workload Identity, the Gateway API
+ * and the Secret Manager add-on on, and for Standard a default node pool that autoscales and repairs itself. GKE wants
  * at least 48 hours of maintenance window in any 32 days, so each weekend day gets eight.
  */
 
@@ -41,6 +41,7 @@ export function clusterSpec(input: {
     },
     workloadIdentityConfig: { workloadPool: `${input.projectId}.svc.id.goog` },
     networkConfig: { gatewayApiConfig: { channel: 'CHANNEL_STANDARD' } },
+    secretManagerConfig: { enabled: true },
     ipAllocationPolicy: { useIpAliases: true },
   };
   if (input.mode === 'autopilot') return { ...shared, autopilot: { enabled: true } };

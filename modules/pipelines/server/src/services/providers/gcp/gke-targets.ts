@@ -1,7 +1,8 @@
 import { ConflictError } from '@bemmoly/shared';
 import type { Health } from '../../../../../shared/common.ts';
-import { KubernetesApiError } from '../../../clients/kubernetes/index.ts';
-import type { TargetsPart } from '../contract.ts';
+import { KubernetesApiError, type KubernetesObject } from '../../../clients/kubernetes/index.ts';
+import type { DeployVariable, TargetsPart } from '../contract.ts';
+import type { GcpContexts } from './context.ts';
 import type { GkeAccess, GkeHandle } from './gke-access.ts';
 import {
   backendsOf,
@@ -11,16 +12,27 @@ import {
   LABELS,
   MANAGED_BY,
   namespaceManifest,
+  revisionLabels,
   revisionManifests,
   routeManifest,
   type BackendWeight,
 } from './gke-manifests.ts';
+import {
+  grantPodSecrets,
+  mountsSecrets,
+  requireSecretsReady,
+  secretClassManifest,
+  secretsOf,
+  serviceAccountManifest,
+  workloadPrincipal,
+} from './gke-secrets.ts';
 
 /*
  * GKE as a deploy target, the same four moves as Cloud Run. A deploy adds a Deployment and a
  * Service for the revision and puts it on the application's HTTPRoute at weight 0; shift and
  * roll back rewrite the route's weights, which is where the split lives (§19). Revisions that
- * take no traffic are pruned on each deploy, keeping the two newest to roll back to.
+ * take no traffic are pruned on each deploy, keeping the two newest to roll back to. Secrets
+ * are mounted by GKE's Secret Manager add-on at the versions the deploy was given (gke-secrets).
  */
 
 const IDLE_KEPT = 2;
@@ -62,7 +74,11 @@ async function writeRoute(handle: Opened, application: string, backends: Backend
 }
 
 /** Revisions past the newest few that take no traffic, oldest last. */
-async function idleRevisions(handle: Opened, application: string, keep: ReadonlySet<string>) {
+async function idleRevisions(
+  handle: Opened,
+  application: string,
+  keep: ReadonlySet<string>,
+): Promise<KubernetesObject[]> {
   const deployments = await handle.kube.list(
     'Deployment',
     handle.namespace,
@@ -73,13 +89,52 @@ async function idleRevisions(handle: Opened, application: string, keep: Readonly
     .sort((a, b) =>
       (b.metadata.creationTimestamp ?? '').localeCompare(a.metadata.creationTimestamp ?? ''),
     )
-    .slice(IDLE_KEPT)
-    .map((deployment) => deployment.metadata.name);
+    .slice(IDLE_KEPT);
 }
 
-async function removeRevision(handle: Opened, revision: string) {
+async function removeRevision(
+  handle: Opened,
+  revision: string,
+  deployment: KubernetesObject | null,
+) {
   await handle.kube.remove('Deployment', revision, handle.namespace);
   await handle.kube.remove('Service', revision, handle.namespace);
+  if (mountsSecrets(deployment?.spec)) {
+    await handle.kube.remove('SecretProviderClass', revision, handle.namespace);
+  }
+}
+
+/**
+ * A revision's secrets: the pods' service account, read access for its Workload Identity
+ * principal, and the class naming each version. Answers who the pods run as, or null.
+ */
+async function mountSecrets(
+  contexts: GcpContexts,
+  handle: Opened & { record: { projectId: string; name: string; location: string } },
+  input: { application: string; revision: string; variables: readonly DeployVariable[] },
+  connection: Parameters<GcpContexts>[0],
+): Promise<string | null> {
+  const secrets = secretsOf(input.variables);
+  if (secrets.length === 0) return null;
+  requireSecretsReady(handle.cluster, handle.record.name, handle.record.location);
+  const labels = revisionLabels(input.application, input.revision);
+  await handle.kube.apply(
+    serviceAccountManifest(input.application, handle.namespace, {
+      [LABELS.application]: input.application,
+      [LABELS.managedBy]: MANAGED_BY,
+    }),
+  );
+  const principal = await workloadPrincipal(
+    contexts(connection),
+    handle.record.projectId,
+    handle.namespace,
+    input.application,
+  );
+  await grantPodSecrets(contexts(connection), principal, secrets);
+  await handle.kube.apply(
+    secretClassManifest({ revision: input.revision, namespace: handle.namespace, labels, secrets }),
+  );
+  return input.application;
 }
 
 function healthOf(status: Readonly<Record<string, unknown>> | undefined, replicas: number): Health {
@@ -92,21 +147,29 @@ function healthOf(status: Readonly<Record<string, unknown>> | undefined, replica
   return ready >= replicas ? 'healthy' : 'degraded';
 }
 
-export function createGkeTargets(access: GkeAccess): TargetsPart {
+export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): TargetsPart {
   return {
     kinds: ['container-service', 'kubernetes'],
 
-    async deploy(target, release) {
+    async deploy(target, release, variables) {
       const handle = await access.target(target);
       const application = target.application.key;
       const revision = kubeRevisionOf(application, release);
       await ensureNamespace(handle);
       if (!handle.record.gateway) await handle.kube.apply(gatewayManifest(handle.namespace));
+      const serviceAccount = await mountSecrets(
+        contexts,
+        handle,
+        { application, revision, variables: variables ?? [] },
+        target.connection,
+      );
       const { deployment, service } = revisionManifests({
         application,
         namespace: handle.namespace,
         revision,
         release,
+        variables,
+        serviceAccount,
       });
       await handle.kube.apply(deployment);
       await handle.kube.apply(service);
@@ -118,12 +181,13 @@ export function createGkeTargets(access: GkeAccess): TargetsPart {
       }
       const serving = backends.filter((backend) => backend.weight > 0).map((b) => b.revision);
       const pruned = await idleRevisions(handle, application, new Set([revision, ...serving]));
+      const prunedNames = pruned.map((old) => old.metadata.name);
       await writeRoute(
         handle,
         application,
-        backends.filter((backend) => !pruned.includes(backend.revision)),
+        backends.filter((backend) => !prunedNames.includes(backend.revision)),
       );
-      for (const old of pruned) await removeRevision(handle, old);
+      for (const old of pruned) await removeRevision(handle, old.metadata.name, old);
       return { revision };
     },
 
@@ -186,7 +250,8 @@ export function createGkeTargets(access: GkeAccess): TargetsPart {
           backends.filter((backend) => backend.revision !== revision),
         );
       }
-      await removeRevision(handle, revision);
+      const deployment = await handle.kube.get('Deployment', revision, handle.namespace);
+      await removeRevision(handle, revision, deployment);
     },
   };
 }

@@ -24,7 +24,10 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
     contexts,
     options.kubernetesTransport ? { kubernetesTransport: options.kubernetesTransport } : {},
   );
-  const kubernetes = { targets: createGkeTargets(gke), metrics: createGkeMetrics(contexts) };
+  const kubernetes = {
+    targets: createGkeTargets(contexts, gke),
+    metrics: createGkeMetrics(contexts),
+  };
   return {
     id: 'gcp',
     name: 'Google Cloud',
