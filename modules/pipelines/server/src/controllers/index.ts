@@ -20,6 +20,7 @@ import { createViewsController } from './views.controller.ts';
 import { createVariablesController } from './variables.controller.ts';
 import { createRuntimesController } from './runtimes.controller.ts';
 import { createFrontDoorsController } from './front-doors.controller.ts';
+import { createExportsController } from './exports.controller.ts';
 
 export function createPipelinesControllers(services: PipelinesServices) {
   return {
@@ -44,6 +45,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     variables: createVariablesController(services.variables),
     runtimes: createRuntimesController(services.clusters, services.runtimes),
     frontDoors: createFrontDoorsController(services.frontDoors, services.moves),
+    exports: createExportsController(services.exports),
   };
 }
 
