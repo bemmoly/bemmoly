@@ -29,7 +29,7 @@ REGION=europe-west1
 ```
 
 ```sh
-gcloud services enable run.googleapis.com artifactregistry.googleapis.com monitoring.googleapis.com iamcredentials.googleapis.com --project "$PROJECT"
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com monitoring.googleapis.com iamcredentials.googleapis.com secretmanager.googleapis.com --project "$PROJECT"
 ```
 
 ```sh
@@ -168,6 +168,109 @@ On the application's page, press Promote and choose Prod.
 - **Press Roll back** on the application's page. Every request goes back to the previous
   revision at once.
 
+## 10. Secrets
+
+A secret's value goes from the screen straight to Secret Manager in the environment's project.
+Pipelines keeps only its name there and its version. A deploy mounts that version into the
+Cloud Run revision, so the service reads it as an environment variable.
+
+**Give the service a way to show it got the secret.** Add an endpoint that says whether
+`API_KEY` is set and how long it is, never what it is. In Node, for example:
+
+```js
+if (req.url === '/secret-check') {
+  const value = process.env.API_KEY;
+  res.setHeader('content-type', 'application/json');
+  return res.end(JSON.stringify({ API_KEY: value ? 'set' : 'missing', length: value?.length ?? 0 }));
+}
+```
+
+Push it and let it reach Dev, as in step 8.
+
+**Who reads the secret.** You attached the project with no runtime account, so Cloud Run runs
+the service as the project's default compute account,
+`PROJECT_NUMBER-compute@developer.gserviceaccount.com`. At each deploy Pipelines grants that
+account Secret Manager Secret Accessor on every secret the revision mounts, and nothing else.
+To find out who that is, Pipelines reads the project's number, so your sign-in needs Browser on
+the project (Owner and Editor include it). If you name a runtime account when you attach a
+project, that account is granted instead. Creating secrets and granting access needs Secret
+Manager Admin, which Owner includes.
+
+**Choose where CI secrets live.** In Platform › Clouds, on your connection, set **CI secrets**
+to your project. Secrets you set for every environment, and secrets your pipeline's steps name
+with `secrets:`, live there. A secret for one environment always lives in that environment's
+own project.
+
+**Set a secret from the screen.** On the application's page, open the **Variables** tab and
+choose **Dev** in the picker. Press **Add variable**, name it `API_KEY`, choose **Secret**,
+paste any value, and save.
+
+**You should see** "API_KEY is version 1 in Secret Manager", and a row that says "Set, never
+shown" with `v1`. Reload the page: the value is nowhere on it.
+
+**See it in Secret Manager.** The name is `bemmoly-<application>-<NAME>-<environment>`:
+
+```sh
+gcloud secrets list --project "$PROJECT" --filter="labels.managed-by=bemmoly"
+```
+
+**You should see** `bemmoly-shop-API_KEY-dev`.
+
+```sh
+gcloud secrets versions list bemmoly-shop-API_KEY-dev --project "$PROJECT"
+```
+
+**You should see** version `1`, enabled.
+
+**Redeploy.** Push any change and let it reach Dev. A secret reaches a service at its next
+deploy, never before.
+
+**You should see** the new revision's environment name the secret by version, with no value:
+
+```sh
+gcloud run services describe shop --region "$REGION" --project "$PROJECT" --format="yaml(spec.template.spec.containers[0].env)"
+```
+
+```yaml
+- name: API_KEY
+  valueFrom:
+    secretKeyRef:
+      key: '1'
+      name: bemmoly-shop-API_KEY-dev
+```
+
+And the grant, now that a revision reads it:
+
+```sh
+gcloud secrets get-iam-policy bemmoly-shop-API_KEY-dev --project "$PROJECT"
+```
+
+**You should see** `roles/secretmanager.secretAccessor` for the compute account.
+
+**Ask the service.** Use the Dev address from the application's page:
+
+```sh
+curl https://<your-dev-address>/secret-check
+```
+
+**You should see** `{"API_KEY":"set","length":…}` with the length of what you pasted.
+
+**Replace it, then roll back.** Press **Replace…** on the row and paste a different value.
+**You should see** `v2`. Push again and curl: the length changes. Roll Dev back from the
+application's page: the old revision still reads version `1`, so the length goes back too.
+
+**Check the database holds no value.** With Bemmoly's database from `apps/server/.env`:
+
+```sh
+psql "$(grep '^DATABASE_URL=' apps/server/.env | cut -d= -f2-)" -c "select name, kind, value is null as no_value, secret_ref, version from pipeline_variables"
+```
+
+**You should see** your secret with `no_value` true, its name in Secret Manager and its version.
+
+Deleting a variable on the Variables tab leaves the secret in Secret Manager, because running
+revisions and roll backs may still read it. Delete it there once nothing runs with it:
+`gcloud secrets delete bemmoly-shop-API_KEY-dev --project "$PROJECT"`.
+
 ## What to send back
 
 For each step, whether it did what "You should see" says. When it did not, send the sentence
@@ -177,6 +280,10 @@ the screen or log showed. Things worth trying on purpose:
 - **Clear the registry and push again.** The deploy should refuse an image that never left
   your laptop, and say what to do.
 - **Archive Dev while a promotion to it is open.** It should be refused with a reason.
+- **Set a Prod secret as someone who is not a Release manager.** It should be refused, naming
+  who may.
+- **Set a secret for every environment before choosing CI secrets.** It should say to choose
+  a project in Platform › Clouds.
 
 ## Without a tunnel
 
