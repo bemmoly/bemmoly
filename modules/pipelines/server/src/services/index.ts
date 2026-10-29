@@ -43,6 +43,8 @@ import { providersFromSettings } from './providers/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
 import { createVariablesService } from './variables/index.ts';
+import { createClustersService } from './clusters/index.ts';
+import { createRuntimesService } from './runtimes/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -120,6 +122,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   });
   const providers = input.providers ?? providersFromSettings(input.settings);
   const variables = createVariablesService({ ...deps, providers });
+  const providerSource = typeof providers === 'function' ? providers : async () => providers;
   const triggers = createTriggersService(execution);
   // Runs start from code host events in arrival order per repository (the inbox's promise).
   inbox.handlers.on('push', async (event) => void (await triggers.push(event)));
@@ -183,6 +186,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       providers,
       ...(input.sendJob ? { sendJob: input.sendJob } : {}),
     }),
+    clusters: createClustersService({ ...deps, providers: providerSource }),
+    runtimes: createRuntimesService({ ...deps, providers: providerSource }),
   };
 }
 
