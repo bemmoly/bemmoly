@@ -17,8 +17,8 @@
     "zod": "4.6.6"
   },
   "devDependencies": {
-    "@types/dockerode": "4.0.1",
-    "@types/node": "26.6.4",
+    "@types/dockerode": "4.0.2",
+    "@types/node": "26.6.5",
     "vitest": "5.0.3"
   }
 }
