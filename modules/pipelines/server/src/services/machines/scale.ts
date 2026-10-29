@@ -6,7 +6,6 @@ import {
   connectionOf,
   poolConfigOf,
   POD_HOSTINGS,
-  setPoolError,
   type MachinePoolRow,
   type PoolConfig,
 } from './store.ts';
@@ -92,9 +91,18 @@ export async function preparePools(
         });
         await savePods(deps.sql, pool.id, now, { ...now, ready: warm });
       }
-      await setPoolError(deps.sql, pool.id, null);
     } catch (error) {
-      await setPoolError(deps.sql, pool.id, (error as Error).message);
+      // A pool not ready yet shows why; a ready one keeps its pods and counts again next sweep.
+      if (now?.status !== 'ready') {
+        await savePods(deps.sql, pool.id, now, {
+          ref: now?.ref ?? null,
+          status: 'failed',
+          detail: (error as Error).message,
+          prepared: null,
+          warm: now?.warm ?? 0,
+          ready: now?.ready ?? 0,
+        });
+      }
     }
   }
   return { scaled };
