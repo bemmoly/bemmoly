@@ -3,8 +3,9 @@
 A walkthrough of Pipelines on your laptop, in about 30 minutes: the seeded Acme organisation,
 a real pipeline run on a local runner, a promotion through Dev, Staging and Prod with canaries
 on your own Docker, a release registered from another CI, access, and clouds. Every step says
-the exact command and what you should see. The same journeys run as Playwright specs in
-`apps/e2e/pipelines` (`pnpm --filter @bemmoly/e2e test:e2e:pipelines`).
+the exact command and what you should see. Steps 1, 2, 4 and 5 also run as Playwright specs in
+`apps/e2e/pipelines` (`pnpm --filter @bemmoly/e2e test:e2e:pipelines`, whose setup does step
+0); steps 3 and 6 have no spec yet and are checked by hand.
 
 You need Node 24, pnpm, and Docker (Colima is fine) running.
 
@@ -34,6 +35,21 @@ Pipelines and cloud table first, so it refuses a database that is not on this ma
 
 Open **http://localhost:5173/pipelines/**.
 
+### Turn the simulator on (for `demo:live` and step 6)
+
+`pipelines.providers.simulate` is a workspace setting, off by default, and nothing in this
+walkthrough turns it on for you. While it is on, the Google Cloud provider is an in-memory fake:
+deploys and landing zones are simulated and nothing reaches a real cloud. As the first admin,
+create an access token that can write in **Settings › Access tokens**
+(http://localhost:5173/settings/access-tokens), then:
+
+```sh
+curl -X PUT http://localhost:8080/api/v1/admin/settings/pipelines.providers.simulate \
+  -H "Authorization: Bearer <token>" -H 'Content-Type: application/json' -d '{"value":true}'
+```
+
+`-d '{"value":false}'` (or `curl -X DELETE` on the same address) turns it off again.
+
 ## 1. Look around: For you, Map, Catalog, an application, Runs
 
 - **For you** (`/pipelines/`): your changes as journeys from commit to every Prod region, what
@@ -60,8 +76,8 @@ pnpm --filter @bemmoly/module-pipelines demo:live -- --rate 4 --quiet
 Runs start, pass and sometimes fail (about 8%); passing main runs become releases that deploy
 to Dev and Staging and ask for Prod; canaries step 5%, 25%, 100% and about one in ten rolls
 back. Two actions a second by default (`--rate`, at most 10); the same `--seed` repeats the same
-story. `Ctrl+C` stops it. Its deploys are simulated: keep `pipelines.providers.simulate` on
-(the seed's default) while it runs.
+story. `Ctrl+C` stops it. Its deploys are simulated: turn `pipelines.providers.simulate` on
+first (it is off by default; see "Turn the simulator on" above) and keep it on while it runs.
 
 ## 2. Run a pipeline on your laptop
 
@@ -92,10 +108,12 @@ UPI collect" (the demo's `flaky` input). When the run has finished, **Re-run fai
 pnpm --filter @bemmoly/module-pipelines demo:local setup
 ```
 
-`setup` points every environment at your Docker, shortens rollout timings and lifts deploy
-windows (`undo` restores them), ships a good **pricing-svc** release through Dev and Staging as a
-member of its team, and asks for Prod. Restart the server (`Ctrl+C`, `pnpm dev`) so it reads the
-shorter timings. Then:
+`setup` turns on `pipelines.providers.local` (off on every install by default; it offers the
+local Docker provider, "This machine"), points every environment at your Docker, shortens
+rollout timings and lifts deploy windows (`undo` restores them and turns the setting off), ships
+a good **pricing-svc** release through Dev and Staging as a member of its team, and asks for
+Prod. Restart the server (`Ctrl+C`, `pnpm dev`) so it reads the shorter timings and the new
+setting. Then:
 
 1. Open **For you**: the Prod promotion waits for you under Waiting for you. Open it: what's
    changing, every gate with its reason, the approvers, the rollout plan. Approve (`A`), or run
@@ -109,13 +127,21 @@ shorter timings. Then:
 4. **Roll back** (`Shift+B` on the application) works any time, skipping gates and windows.
 
 `demo:local continue` resumes a paused (marginal) canary; `demo:local undo` points the
-environments back at the simulated cloud and removes the containers.
+environments back at Google Cloud (simulated while the simulator is on) and removes the
+containers.
 
 ## 4. Bring your CI: register a release built elsewhere
 
-Create a CI token scoped to `checkout-api` (`POST /api/v1/pipelines/ci/tokens` with
-`{"name":"Laptop CI","applications":["checkout-api"]}`, or Platform › Bring your CI where it
-is drawn), then:
+Create a CI token scoped to `checkout-api` with `POST /api/v1/pipelines/ci/tokens`; there is
+no screen for it yet. With the access token from "Turn the simulator on":
+
+```sh
+curl -X POST http://localhost:8080/api/v1/pipelines/ci/tokens \
+  -H "Authorization: Bearer <access token>" -H 'Content-Type: application/json' \
+  -d '{"name":"Laptop CI","applications":["checkout-api"]}'
+```
+
+It answers with the CI token (`"token"`). Then:
 
 ```sh
 BEMMOLY_PIPELINES_URL=http://localhost:8080 BEMMOLY_PIPELINES_TOKEN=<token> \
@@ -139,12 +165,16 @@ the same sentence and who to ask.
 
 ## 6. Platform › Clouds with the fake provider
 
-Open **Platform › Clouds** and choose **Connect a cloud**. Google Cloud is available (against
-recorded responses and the fake provider tonight: nothing reaches a real cloud), AWS and Azure
-say Coming soon. Pick a layout (one project per environment, per domain and environment, or per
-group and environment), read the preview tree of everything that would be created, and create
-it: the checklist fills in as the landing zone is reconciled. The real Google Cloud bootstrap is
-`deploy/gcp/bootstrap.sh` (`--dry-run` prints every command without running it).
+Turn the simulator on first (see "Turn the simulator on"). Open **Platform › Clouds** and choose
+**Connect a cloud**. Google Cloud is available and, with the simulator on, is the in-memory fake
+provider: nothing reaches a real cloud. With the simulator off it is the real provider and
+connecting it reaches your Google Cloud organisation. AWS, Azure and Kubernetes say Coming soon;
+**This machine** (your Docker) is offered only while `pipelines.providers.local` is on, as it is
+between `demo:local setup` and `demo:local undo`. Pick a layout (one project per environment,
+per domain and environment, or per group and environment), read the preview tree of everything
+that would be created, and create it: the checklist fills in as the landing zone is reconciled.
+The real Google Cloud bootstrap is `deploy/gcp/bootstrap.sh` (`--dry-run` prints every command
+without running it).
 
 ## Stopping
 
