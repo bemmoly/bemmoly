@@ -16,10 +16,34 @@ export function versionOf(ref: string, commitSha: string): string {
   return TAG.exec(ref)?.[2] ?? commitSha.slice(0, 7);
 }
 
+/** The repository the build step named, so a release points where the image was pushed. */
+export function repositoryOf(steps: unknown, application: string): string {
+  const named = Array.isArray(steps)
+    ? (steps as Array<{ env?: Record<string, unknown> }>)
+        .map((step) => step.env?.['BEMMOLY_BUILD_IMAGE'])
+        .find((value): value is string => typeof value === 'string' && value.length > 0)
+    : undefined;
+  return named ?? `bemmoly-local/${application}`;
+}
+
+/** The application's deploy settings as the run resolved them; a release keeps them. */
+export function deployConfigOf(spec: unknown, application: string): Record<string, unknown> {
+  if (typeof spec !== 'object' || spec === null) return {};
+  const value = spec as {
+    deploy?: unknown;
+    applications?: Array<{ key: string; pipeline?: { deploy?: unknown } }>;
+  };
+  const deploy = Array.isArray(value.applications)
+    ? value.applications.find((entry) => entry.key === application)?.pipeline?.deploy
+    : value.deploy;
+  return deploy && typeof deploy === 'object' ? { deploy } : {};
+}
+
 interface Built {
   application_id: string;
   application_key: string;
   image_digests: Record<string, string>;
+  steps_spec: unknown;
   total: number;
   passed: number;
   failed: number;
@@ -38,10 +62,12 @@ export async function releaseFromRun(
       ref: string;
       commit_sha: string;
       created_by: string | null;
+      resolved_spec: unknown;
       default_branch: string | null;
     }[]
   >`
-    select r.state, r.trigger, r.ref, r.commit_sha, r.created_by, p.default_branch
+    select r.state, r.trigger, r.ref, r.commit_sha, r.created_by, r.resolved_spec,
+      p.default_branch
     from pipeline_runs r left join pipeline_repositories p on p.id = r.repository_id
     where r.id = ${runId}`;
   if (!run || run.state !== 'passed') return 0;
@@ -49,7 +75,7 @@ export async function releaseFromRun(
   const tagged = TAG.test(run.ref);
   if (!tagged && run.ref !== (run.default_branch ?? 'main')) return 0;
   const built = await sql<Built[]>`
-    select a.id as application_id, a.key as application_key, b.image_digests,
+    select a.id as application_id, a.key as application_key, b.image_digests, b.steps_spec,
       coalesce(sum((j.test_summary->>'total')::int), 0)::int as total,
       coalesce(sum((j.test_summary->>'passed')::int), 0)::int as passed,
       coalesce(sum((j.test_summary->>'failed')::int), 0)::int as failed,
@@ -59,7 +85,7 @@ export async function releaseFromRun(
     left join pipeline_jobs j on j.run_id = b.run_id and j.application_id = b.application_id
     where b.run_id = ${runId} and b.kind = 'build' and b.state = 'passed'
       and b.image_digests is not null
-    group by a.id, a.key, b.id, b.image_digests`;
+    group by a.id, a.key, b.id, b.image_digests, b.steps_spec`;
   let created = 0;
   for (const build of built) {
     await sql.begin(async (tx) => {
@@ -69,8 +95,9 @@ export async function releaseFromRun(
         source: 'runners',
         commitSha: run.commit_sha,
         ref: run.ref,
-        imageRepository: `bemmoly-local/${build.application_key}`,
+        imageRepository: repositoryOf(build.steps_spec, build.application_key),
         imageDigests: build.image_digests,
+        resolvedConfig: deployConfigOf(run.resolved_spec, build.application_key),
         testSummary: {
           total: build.total,
           passed: build.passed,

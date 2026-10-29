@@ -9,6 +9,7 @@ import { expandJobs, type ExpandApplication, type JobPlan } from '../orchestrato
 import { resolvePipeline } from '../orchestrator/resolve.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { cancelJobsOf } from './cancel.ts';
+import { registryOf } from './registry.ts';
 import { definitionOf, templateLookup } from './templates.ts';
 
 /*
@@ -128,6 +129,7 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
     if (existing) return { id: existing.id, number: Number(existing.number), created: false };
   }
   const lookup = templateLookup(tx);
+  const registry = await registryOf(tx);
   const seconds = await testSeconds(
     tx,
     input.applications.map((application) => application.id),
@@ -146,6 +148,7 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
         application: application.key,
         defaultTimeoutMinutes: input.defaultTimeoutMinutes,
         inputs: input.inputs ?? {},
+        registry,
       }).catch((error: unknown) => {
         // In a monorepo run the reason must say which application's pipeline is wrong.
         if (error instanceof ValidationError && input.applications.length > 1) {

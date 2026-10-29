@@ -28,6 +28,15 @@ function tagPart(value: string): string {
 
 /** Where a build leaves its image id, for the finish report's image digests. */
 export const IMAGE_ID_FILE = '.bemmoly/image-id';
+/** The platform a pushed image was built for, when it is not the default. */
+export const IMAGE_PLATFORM_FILE = '.bemmoly/image-platform';
+const PUSH_LOG = '.bemmoly/push.log';
+
+/** The first platform the pipeline names; a pushed image is built for exactly one. */
+export function pushPlatform(step: ResolvedStep): string {
+  const first = (step.env['BEMMOLY_BUILD_PLATFORMS'] ?? '').split(',')[0]?.trim();
+  return first && /^[a-z0-9]+\/[a-z0-9]+(\/[a-z0-9]+)?$/.test(first) ? first : 'linux/amd64';
+}
 
 function buildPaths(step: ResolvedStep): { dockerfile: string; context: string } {
   return {
@@ -45,14 +54,29 @@ export function buildTag(job: ClaimedJob, step?: ResolvedStep): string {
 /**
  * The shell command for a `bemmoly/build` step, run with the docker CLI against the runner's
  * daemon. The step's `with` values arrive as BEMMOLY_BUILD_DOCKERFILE and BEMMOLY_BUILD_CONTEXT.
+ * With BEMMOLY_BUILD_PUSH the image is built for the deploy platform (a laptop on ARM would
+ * otherwise build an image Cloud Run cannot start), pushed with this machine's own docker
+ * credentials, and reported by its registry digest instead of its local id.
  */
 export function buildCommand(job: ClaimedJob, step: ResolvedStep): string {
   const { dockerfile, context } = buildPaths(step);
   const tag = quote(buildTag(job, step));
+  if (step.env['BEMMOLY_BUILD_PUSH'] !== 'true') {
+    return [
+      `docker build -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
+      `mkdir -p .bemmoly`,
+      `docker image inspect --format '{{.Id}}' ${tag} > ${IMAGE_ID_FILE}`,
+    ].join(' && ');
+  }
+  const platform = quote(pushPlatform(step));
   return [
-    `docker build -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
+    `docker build --platform ${platform} -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
     `mkdir -p .bemmoly`,
-    `docker image inspect --format '{{.Id}}' ${tag} > ${IMAGE_ID_FILE}`,
+    // The log is kept to read the digest from; it is printed so the push shows in the job log.
+    `{ docker push ${tag} > ${PUSH_LOG} 2>&1; pushed=$?; cat ${PUSH_LOG}; [ "$pushed" -eq 0 ]; }`,
+    `sed -n 's/.*digest: \\(sha256:[0-9a-f]\\{64\\}\\).*/\\1/p' ${PUSH_LOG} | tail -n 1 > ${IMAGE_ID_FILE}`,
+    `test -s ${IMAGE_ID_FILE} || { echo 'The registry did not report a digest for the pushed image'; exit 1; }`,
+    `printf '%s' ${platform} > ${IMAGE_PLATFORM_FILE}`,
   ].join(' && ');
 }
 

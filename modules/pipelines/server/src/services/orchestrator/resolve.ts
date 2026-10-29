@@ -29,6 +29,8 @@ export type TemplateLookup = (ref: TemplateRef) => Promise<PipelineTemplate | nu
 export interface ResolveOptions {
   application: string | null;
   defaultTimeoutMinutes: number;
+  /** Where the build pushes its image; null keeps it on the runner's machine. */
+  registry?: string | null;
   /** A manual run's or a schedule's values; checked against the declared inputs. */
   inputs?: Readonly<Record<string, Scalar>>;
 }
@@ -127,7 +129,19 @@ function resolveStep(
   };
 }
 
-function buildJob(build: BuildSpec, application: string | null, timeout: number): ResolvedJob {
+/** "us-central1-docker.pkg.dev/acme-ci/apps/checkout-api", or a local name. */
+function imageName(application: string, registry: string | null): string {
+  return registry
+    ? `${registry.replace(/\/+$/, '')}/${application}`
+    : `bemmoly-local/${application}`;
+}
+
+function buildJob(
+  build: BuildSpec,
+  application: string | null,
+  timeout: number,
+  registry: string | null,
+): ResolvedJob {
   return {
     key: 'build',
     name: 'Build',
@@ -144,8 +158,9 @@ function buildJob(build: BuildSpec, application: string | null, timeout: number)
           BEMMOLY_BUILD_DOCKERFILE: build.dockerfile,
           BEMMOLY_BUILD_CONTEXT: build.context,
           BEMMOLY_BUILD_PLATFORMS: build.platforms.join(','),
-          // The image a passing build becomes a release of; registries come with providers.
-          ...(application ? { BEMMOLY_BUILD_IMAGE: `bemmoly-local/${application}` } : {}),
+          // The image a passing build becomes a release of, pushed when there is a registry.
+          ...(application ? { BEMMOLY_BUILD_IMAGE: imageName(application, registry) } : {}),
+          ...(application && registry ? { BEMMOLY_BUILD_PUSH: 'true' } : {}),
         },
         secrets: [],
         locked: true,
@@ -219,7 +234,14 @@ export async function resolvePipeline(
   const inputs = resolveInputValues(layers.declared, [layers.passed, options.inputs ?? {}]);
   const jobs = [
     ...(layers.build
-      ? [buildJob(layers.build, options.application, options.defaultTimeoutMinutes)]
+      ? [
+          buildJob(
+            layers.build,
+            options.application,
+            options.defaultTimeoutMinutes,
+            options.registry ?? null,
+          ),
+        ]
       : []),
     ...testJobs(layers, inputs, options),
   ];
