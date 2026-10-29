@@ -5,6 +5,7 @@ import type { CodeActivityConsumer, CodeAppPermissions, CodeEventConsumer } from
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
 import type { FileTargetDefinition } from './files.ts';
+import type { StartSourceDefinition } from './start.ts';
 import type {
   AiContribution,
   AiExclusionSourceDefinition,
@@ -51,6 +52,7 @@ export interface ModuleContributions {
   codeConsumers: CodeActivityConsumer[];
   codeEventConsumers: CodeEventConsumer[];
   codeAppPermissions: CodeAppPermissions[];
+  startSources: StartSourceDefinition[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -83,5 +85,6 @@ export function emptyContributions(): ModuleContributions {
     codeConsumers: [],
     codeEventConsumers: [],
     codeAppPermissions: [],
+    startSources: [],
   };
 }

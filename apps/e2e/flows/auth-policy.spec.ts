@@ -81,7 +81,7 @@ test.describe('sign-in policy', () => {
       await page.getByLabel('Email', { exact: true }).fill(run.admin.email);
       await page.getByLabel('Password', { exact: true }).fill(run.admin.password);
       await page.getByRole('button', { name: 'Sign in with password' }).click();
-      await page.waitForURL((url) => url.pathname === '/');
+      await page.waitForURL((url) => url.pathname === '/start');
       await page.context().close();
     } finally {
       await admin.call('PUT', '/admin/sso/policy', { requireSso: false });

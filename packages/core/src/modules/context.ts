@@ -8,6 +8,7 @@ import type { RealtimePublisher } from '../contracts/realtime.ts';
 import { collabDocumentName, type CollabTransactor } from './collab.ts';
 import type { CodeHostDirectory } from './code.ts';
 import { createCodeRegistry } from './code-registry.ts';
+import { createStartRegistry } from './start-registry.ts';
 import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -278,6 +279,7 @@ export function createModuleContext(
     },
     objects: createModuleObjects(module.id, options.objects),
     code: createCodeRegistry(module.id, into, options.codeHosts),
+    start: createStartRegistry(module.id, into),
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
     ...(options.approvals

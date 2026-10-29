@@ -3,6 +3,7 @@ import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { CodeActivityConsumer, CodeAppPermissions, CodeEventConsumer } from './code.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
+import type { StartSourceDefinition } from './start.ts';
 import type { FileTargetDefinition } from './files.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -103,6 +104,11 @@ export class ModuleRegistry {
 
   referenceSources(): FromModule<ReferenceSourceDefinition>[] {
     return this.#collect((c) => c.referenceSources);
+  }
+
+  /** Each module's `summaryForUser`, for the start page. */
+  startSources(): FromModule<StartSourceDefinition>[] {
+    return this.#collect((c) => c.startSources);
   }
 
   retrievalSources(): FromModule<RetrievalSourceDefinition>[] {

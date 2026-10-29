@@ -15,6 +15,7 @@ import type { CollabRegistry } from './collab.ts';
 import type { McpRegistry } from './mcp.ts';
 import type { FilesRegistry } from './files.ts';
 import type { ModuleObjects } from './objects.ts';
+import type { StartRegistry } from './start.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -94,6 +95,8 @@ export interface ModuleContext {
   objects: ModuleObjects;
   /** Consumers of verified code host activity (pull requests, branches, commits). */
   code: CodeRegistry;
+  /** Its part of the start page: `summaryForUser`. */
+  start: StartRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
   realtime: RealtimePublisher;
   /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */

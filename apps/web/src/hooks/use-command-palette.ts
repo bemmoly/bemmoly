@@ -86,7 +86,7 @@ export function useCommandPalette() {
   const { setMode } = usePersonalAppearance();
   const screenActions = useCurrentScreenActions();
   const recents = useRecents(12);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(ui.paletteQuery);
   const [scope, setScope] = useState<PaletteScope>(ui.paletteScope);
   const deferred = useDeferredValue(query.trim());
   const { directory } = useDirectory(shell.canInvite);

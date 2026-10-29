@@ -1,3 +1,4 @@
+import { START_PATH } from '@bemmoly/core-web';
 import { queryKeys } from '@bemmoly/api-client';
 import type { User } from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
@@ -98,7 +99,7 @@ export function useLoginForm(redirectTo: string | undefined, initialEmail = '') 
       setPhase('signed-in');
       await startSession(queryClient);
       window.setTimeout(
-        () => leaveFor(redirectTo ?? '/', (to) => void navigate({ to })),
+        () => leaveFor(redirectTo ?? START_PATH, (to) => void navigate({ to })),
         SIGNED_IN_BEAT_MS,
       );
     } catch (error) {

@@ -26,6 +26,14 @@ export const homeRoute = createRoute({
   pendingComponent: PagePending,
 });
 
+/** The suite's front door: sign-in lands here, and every product's switcher returns here. */
+export const startRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/start',
+  component: lazyRouteComponent(() => import('../pages/start-page.tsx'), 'StartPage'),
+  pendingComponent: PagePending,
+});
+
 export interface InboxSearch {
   /** The selected notification, so a reload or a shared link keeps it open. */
   item?: string;

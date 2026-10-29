@@ -5,6 +5,7 @@ import { useOverview } from '../hooks/use-overview.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { useUiStore } from '../store/ui.ts';
 import { LiveCounter } from './live-counter.tsx';
+import { ProductSwitch } from './product-switch.tsx';
 import { ScopeSwitcher } from './scope-switcher.tsx';
 
 const ICON_BUTTON =
@@ -22,6 +23,7 @@ export function TopBar() {
   const organisation = useOverview('').data?.scope.organisation ?? '';
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-canvas px-3 md:px-4">
+      <ProductSwitch />
       <div className="min-w-0 flex-1 md:flex-none">
         <ScopeSwitcher organisation={organisation} />
       </div>

@@ -22,7 +22,6 @@ import {
   REALTIME_MAX_MESSAGE_BYTES,
 } from '../controllers/realtime.controller.ts';
 import { createScimController } from '../controllers/scim.controller.ts';
-import { createSearchController } from '../controllers/search.controller.ts';
 import { createSsoAdminController } from '../controllers/sso-admin.controller.ts';
 import { createSsoController } from '../controllers/sso.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
@@ -49,7 +48,6 @@ import type { OAuthService } from '../services/oauth/index.ts';
 import type { ImportService } from '../services/import/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
-import { createSearchService } from '../services/search/index.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
 import { SCIM_PATH, type SsoDependencies } from '../services/sso/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
@@ -75,7 +73,7 @@ import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
 import { scimRoutes } from './scim.routes.ts';
-import { searchRoutes } from './search.routes.ts';
+import { fanOutRoutes } from './fan-out.routes.ts';
 import { ssoRoutes } from './sso.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
@@ -168,12 +166,6 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     ...(deps.moduleAccess && identified ? { access: deps.moduleAccess, actorOf } : {}),
   };
   const oauth = deps.mcp?.oauth ? createOAuthController(deps.mcp.oauth.service) : undefined;
-  const search = createSearchController(
-    createSearchService({
-      providers: () => deps.modules.searchProviders(),
-      isEnabled: gate.isEnabled,
-    }),
-  );
   return async (app) => {
     await app.register(healthRoutes(health));
     if (metrics) await app.register(metricsRoutes(metrics));
@@ -217,7 +209,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     await app.register(
       async (api) => {
         await api.register(modulesRoutes(modules));
-        await api.register(searchRoutes(search));
+        await api.register(fanOutRoutes(deps.modules, gate.isEnabled));
         if (deps.identity)
           await api.register(identityAndAccessRoutes(deps.identity, deps.logoStore));
         if (deps.sso) {

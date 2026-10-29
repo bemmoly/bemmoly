@@ -8,6 +8,8 @@ interface UiState {
   paletteOpen: boolean;
   /** The scope ⌘K opens on. */
   paletteScope: PaletteScope;
+  /** Words ⌘K opens with: the start page's question box hands its question over. */
+  paletteQuery: string;
   /** The "?" overlay listing every shortcut. */
   shortcutsOpen: boolean;
   /** About Bemmoly, from the workspace menu. */
@@ -21,7 +23,7 @@ interface UiState {
   /** The palette plan in view or still running, followed after the palette closes. */
   aiPlanId: string | null;
   requestInvite(requested: boolean): void;
-  openPalette(scope?: PaletteScope): void;
+  openPalette(scope?: PaletteScope, query?: string): void;
   closePalette(): void;
   togglePalette(): void;
   setShortcutsOpen(open: boolean): void;
@@ -34,6 +36,7 @@ interface UiState {
 export const useUiStore = create<UiState>()((set) => ({
   paletteOpen: false,
   paletteScope: 'all',
+  paletteQuery: '',
   shortcutsOpen: false,
   aboutOpen: false,
   userSearch: '',
@@ -41,13 +44,14 @@ export const useUiStore = create<UiState>()((set) => ({
   appPath: '/',
   aiPlanId: null,
   requestInvite: (requested) => set({ inviteRequested: requested }),
-  openPalette: (scope = 'all') =>
-    set({ paletteOpen: true, paletteScope: scope, shortcutsOpen: false }),
+  openPalette: (scope = 'all', query = '') =>
+    set({ paletteOpen: true, paletteScope: scope, paletteQuery: query, shortcutsOpen: false }),
   closePalette: () => set({ paletteOpen: false }),
   togglePalette: () =>
     set((state) => ({
       paletteOpen: !state.paletteOpen,
       paletteScope: 'all',
+      paletteQuery: '',
       shortcutsOpen: false,
     })),
   setShortcutsOpen: (open) => set({ shortcutsOpen: open, paletteOpen: false }),
