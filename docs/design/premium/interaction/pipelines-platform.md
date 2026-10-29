@@ -105,3 +105,25 @@ Phone: each row stacks the environment above its cluster.
 **Choices recorded.** Rows are environments, not clusters, because the rule is one cluster per
 environment and the empty rows are where the action is. Forget is offered for attached clusters
 and failed created ones only; Pipelines keeps running the clusters it created.
+
+## Front doors
+
+**Primary job.** Give an environment a stable address, so its applications move between
+runtimes with no downtime.
+
+| Action | Mouse | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Turn a front door on, or edit it | Turn on… or Edit… on the row | Tab, Enter | Tap |
+| Name or clear its domain | Domain in the dialog | Tab, type | Tap, type |
+| Turn it off | Front door on in the dialog, then Save | Space, Enter | Tap |
+
+**States.** Loading: row skeletons. Error: Try again. Off: one sentence saying what a switch of
+runtime does there without one. Being made: polled every three seconds. Ready: the address,
+the domain or "No domain", and how many applications it serves. Problems: one sentence each,
+such as a certificate waiting for DNS. Phone: each row stacks.
+
+**URL state.** None.
+
+**Choices recorded.** A panel under the environments rather than a column in their table: a
+front door has an address, a domain and problems of its own. The dialog says what each choice
+means for DNS and certificates beside the field.
