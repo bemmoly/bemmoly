@@ -33,10 +33,39 @@ export const layoutSchema = z.enum([
   'per-group-environment',
 ]);
 
+/**
+ * Managed: Pipelines creates projects inside its folder. Attached: Pipelines deploys into
+ * projects that already exist and creates none of them.
+ */
+export const connectionModeSchema = z.enum(['managed', 'attached']);
+
+/**
+ * How Bemmoly signs in to the cloud. "vm" is the service account of the machine it runs on;
+ * "application_default" is the gcloud sign-in on this machine, for a laptop install;
+ * "workload_identity_file" is a federation file. A service account key is never accepted.
+ */
+export const signInSchema = z.enum(['vm', 'application_default', 'workload_identity_file']);
+
+/** An image repository such as us-central1-docker.pkg.dev/acme-ci/apps. */
+export const registryPathSchema = z
+  .string()
+  .trim()
+  .max(255)
+  .regex(
+    /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?(\/[a-z0-9]([a-z0-9._-]*[a-z0-9])?)+$/,
+    'Name a repository such as us-central1-docker.pkg.dev/my-project/apps',
+  );
+
 export const cloudConnectionSchema = z.object({
   id: idSchema,
   provider: providerSchema,
   name: z.string(),
+  mode: connectionModeSchema,
+  signIn: signInSchema.nullable(),
+  /** Where services go when an environment names no region. */
+  region: z.string().nullable(),
+  /** Where runners push images they build; null keeps images on the runner's machine. */
+  registry: z.string().nullable(),
   status: connectionStatusSchema,
   /** "bemmoly-control@acme-bemmoly". */
   principal: z.string().nullable(),
@@ -77,14 +106,56 @@ const connectionBase = {
   layout: layoutSchema.default('per-domain-environment'),
 };
 
+export const gcpRegionSchema = z
+  .string()
+  .regex(/^[a-z]+-[a-z]+[0-9]+$/, 'Name a region such as us-central1');
+
 export const connectCloudBodySchema = z.discriminatedUnion('provider', [
-  z.object({
-    provider: z.literal('gcp'),
-    ...connectionBase,
-    organizationId: z.string().regex(/^[0-9]{6,20}$/),
-    billingAccountId: z.string().regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/),
-    folderName: z.string().trim().min(1).max(30).default('Bemmoly'),
-  }),
+  z
+    .object({
+      provider: z.literal('gcp'),
+      ...connectionBase,
+      mode: connectionModeSchema.default('managed'),
+      signIn: signInSchema.default('vm'),
+      /** The external_account file, only with the workload_identity_file sign-in. */
+      credentialFile: z.record(z.string(), z.unknown()).optional(),
+      region: gcpRegionSchema.default('us-central1'),
+      registry: registryPathSchema.optional(),
+      organizationId: z
+        .string()
+        .regex(/^[0-9]{6,20}$/)
+        .optional(),
+      billingAccountId: z
+        .string()
+        .regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/)
+        .optional(),
+      folderName: z.string().trim().min(1).max(30).default('Bemmoly'),
+    })
+    .superRefine((body, issues) => {
+      if (body.mode === 'managed') {
+        if (!body.organizationId) {
+          issues.addIssue({
+            code: 'custom',
+            path: ['organizationId'],
+            message: 'Creating projects needs the organization they go in',
+          });
+        }
+        if (!body.billingAccountId) {
+          issues.addIssue({
+            code: 'custom',
+            path: ['billingAccountId'],
+            message: 'Creating projects needs the billing account that pays for them',
+          });
+        }
+      }
+      if ((body.signIn === 'workload_identity_file') !== Boolean(body.credentialFile)) {
+        issues.addIssue({
+          code: 'custom',
+          path: ['credentialFile'],
+          message: 'Upload the workload identity file only with that sign-in',
+        });
+      }
+    }),
   z.object({
     provider: z.literal('aws'),
     ...connectionBase,
@@ -164,6 +235,15 @@ export const cloudAccountSchema = z.object({
   environmentClass: environmentClassSchema.nullable(),
   purpose: z.enum(['workload', 'ci', 'control']),
   status: z.enum(['planned', 'creating', 'ready', 'drifted', 'failed']),
+  /** Created by Pipelines' landing zone, or attached as it already was. */
+  origin: z.enum(['created', 'attached']),
+  /** Who deploys there; null acts as the connection's own identity. */
+  deployerServiceAccount: z.string().nullable(),
+  /** Who the services run as; null leaves the cloud's default. */
+  runtimeServiceAccount: z.string().nullable(),
+  /** What the last check found missing, each a sentence saying what to grant. */
+  problems: z.array(z.string()),
+  lastCheckedAt: isoDateTimeSchema.nullable(),
 });
 
 export const cloudResourceKindSchema = z.enum([

@@ -20,6 +20,11 @@ export type GcpTransport = (url: string, init: GcpTransportInit) => Promise<Resp
 /** Hands out a current access token; implementations cache and refresh. */
 export interface GcpTokenSource {
   token(): Promise<string>;
+  /**
+   * The project a person's own credentials bill API quota to. Google refuses some APIs for
+   * user credentials without one; service accounts never need it.
+   */
+  quotaProject?(): Promise<string | null>;
 }
 
 export class GcpApiError extends Error {
@@ -97,6 +102,8 @@ export function createGcpHttp(options: GcpHttpOptions): GcpHttp {
       accept: 'application/json',
       authorization: `Bearer ${await options.tokens.token()}`,
     };
+    const quotaProject = await options.tokens.quotaProject?.();
+    if (quotaProject) headers['x-goog-user-project'] = quotaProject;
     if (request.body !== undefined) headers['content-type'] = 'application/json';
     const response = await transport(url, {
       method: request.method ?? 'GET',
