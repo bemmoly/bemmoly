@@ -26,6 +26,17 @@ pools busiest first, concurrent jobs against the slots, fair share by team (borr
 amber), the queue with a reason for every wait. `?range=7d|30d`. Live from the `capacity` topic.
 Add runner pool and Rotate token show the new token once, to copy.
 
+Where a pool's runners come from is one choice of two cards in Add runner pool and in the
+row's ··· › Change where it runs…: Machines you start (runs on, where, fewest and most runners;
+the token is shown once after) or Google Cloud Build (project from the ready CI and attached
+projects, region from its connection, runner image, build service account, machine type, most
+builds at once; no token). A field shows its error once it has something in it, and the
+primary button stays off until every field reads; ⌘ Enter saves. A Cloud Build pool's row
+says "Google Cloud Build · region · project" and "n of m builds", and why its last build would
+not start in amber under its name. Builds now, shown once any pool runs on Cloud Build, lists
+each build still starting or running: the job (to its run), the pool, when it started and
+Google's log in a new tab; empty, it says builds start when a job waits and end with it.
+
 ## Clouds and Connect a cloud
 
 **Primary job.** Connect a cloud and see what Pipelines made there. Each connection shows who
