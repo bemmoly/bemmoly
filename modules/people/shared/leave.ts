@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { dateSchema, nameSchema, queryFlagSchema } from './common.ts';
+import { addDays } from './leave-days.ts';
 
 /*
  * Time off: policies per location, balances worked out from requests, and requests that run
@@ -64,6 +65,8 @@ export const leaveRequestSchema = z.object({
   createdAt: z.string(),
 });
 
+const MAX_LEAVE_SPAN_DAYS = 366;
+
 export const createLeaveRequestBodySchema = z
   .object({
     policyId: z.uuid(),
@@ -74,6 +77,11 @@ export const createLeaveRequestBodySchema = z
   })
   .refine((body) => body.startDate <= body.endDate, {
     message: 'The last day is before the first',
+    path: ['endDate'],
+  })
+  // Days are counted one by one, so a request spans at most a year.
+  .refine((body) => body.endDate <= addDays(body.startDate, MAX_LEAVE_SPAN_DAYS), {
+    message: 'Ask for at most a year at a time',
     path: ['endDate'],
   });
 

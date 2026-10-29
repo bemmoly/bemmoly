@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, leaveDays, overlaps } from './leave-days.ts';
+import { createLeaveRequestBodySchema } from './leave.ts';
 
 describe('counting leave', () => {
   it('counts working days only, both ends included', () => {
@@ -32,5 +33,21 @@ describe('counting leave', () => {
         { start: '2026-11-05', end: '2026-11-09' },
       ),
     ).toBe(false);
+  });
+});
+
+describe('a leave request', () => {
+  const body = { policyId: '018f0000-0000-7000-8000-000000000001', startDate: '2026-01-01' };
+
+  it('spans at most a year, so its days are cheap to count', () => {
+    expect(createLeaveRequestBodySchema.safeParse({ ...body, endDate: '2027-01-02' }).success).toBe(
+      true,
+    );
+    expect(createLeaveRequestBodySchema.safeParse({ ...body, endDate: '2027-01-03' }).success).toBe(
+      false,
+    );
+    expect(createLeaveRequestBodySchema.safeParse({ ...body, endDate: '9999-12-31' }).success).toBe(
+      false,
+    );
   });
 });

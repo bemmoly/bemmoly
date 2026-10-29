@@ -79,6 +79,9 @@ describe('onboarding and offboarding journeys against Postgres', () => {
     await expect(
       h.services.journeys.updateTask(h.as('ben'), task.id, { done: true }),
     ).rejects.toThrow(ForbiddenError);
+    await expect(h.services.journeys.updateTask(h.as('ben'), task.id, {})).rejects.toThrow(
+      ForbiddenError,
+    );
     const after = await h.services.journeys.updateTask(h.as('manager'), task.id, { done: true });
     expect(after).toMatchObject({ state: 'done', doneCount: 1 });
     await expect(h.services.journeys.get(h.as('ben'), journey!.id)).rejects.toThrow(ForbiddenError);

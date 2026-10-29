@@ -137,11 +137,12 @@ export function createJourneysService(deps: PeopleServiceDeps) {
       const [task] = await sql<TaskRow[]>`select * from journey_tasks where id = ${taskId}`;
       if (!task) throw new NotFoundError('That task does not exist');
       const manager = await can(ctx, JOURNEYS_CAPABILITY);
+      // Checked before anything else, so an empty change cannot read back someone else's journey.
+      if (!manager && task.owner_id !== me) {
+        throw new ForbiddenError('Only the task’s owner can change it');
+      }
       if (body.ownerId !== undefined && !manager) {
         throw new ForbiddenError('Only people who run journeys can hand a task on');
-      }
-      if (body.done !== undefined && !manager && task.owner_id !== me) {
-        throw new ForbiddenError('Only the task’s owner can tick it');
       }
       const done = body.done ?? null;
       await sql.begin(async (tx) => {
