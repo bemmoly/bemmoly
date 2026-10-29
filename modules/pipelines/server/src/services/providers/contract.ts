@@ -7,6 +7,7 @@ import type {
   Provider,
   Runtime,
 } from '../../../../shared/common.ts';
+import type { BillingHeadroom } from './org-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
 
 /*
@@ -32,6 +33,7 @@ export const PROVIDER_PARTS = [
 ] as const;
 
 export type { MachineLaunch, MachineRef, MachineStatus, RunnersPart } from './runners-contract.ts';
+export { ApplyStopped, type BillingHeadroom } from './org-contract.ts';
 
 export type ProviderPart = (typeof PROVIDER_PARTS)[number];
 export type PartAvailability = 'available' | 'coming_soon' | 'unsupported';
@@ -184,22 +186,6 @@ export interface OrgPart {
    * Clouds that publish no limit answer their usual default with `recorded` false.
    */
   billing?(connection: ConnectionRecord): Promise<BillingHeadroom>;
-}
-
-export interface BillingHeadroom {
-  account: string;
-  linked: number;
-  limit: number;
-  /** True when an admin recorded the limit on the connection. */
-  recorded: boolean;
-}
-
-/**
- * Thrown by a provider when going on cannot help, such as a billing account out of projects:
- * the apply stops there, says `message`, and a retry starts where it stopped.
- */
-export class ApplyStopped extends Error {
-  override readonly name = 'ApplyStopped';
 }
 
 /** One neutral resource of the landing zone as declared, before any provider maps it. */
