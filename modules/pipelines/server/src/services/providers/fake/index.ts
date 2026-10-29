@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Provider } from '../../../../../shared/common.ts';
 import type { CloudProvider, DesiredResource } from '../contract.ts';
 import { createFakeClusters, type FakeClustersWorld } from './clusters.ts';
+import { createFakeMachines, type FakeMachinesWorld } from './machines.ts';
 import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
 
 /*
@@ -10,7 +11,7 @@ import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
  * kit runs against it first so the kit itself is known to be right.
  */
 
-export interface FakeWorld extends FakeTargetsWorld, FakeClustersWorld {
+export interface FakeWorld extends FakeTargetsWorld, FakeClustersWorld, FakeMachinesWorld {
   boundaries: Set<string>;
   accounts: Map<string, { name: string; labels: Readonly<Record<string, string>> }>;
   resources: Map<string, Record<string, unknown>>;
@@ -42,6 +43,8 @@ export function createFakeWorld(): FakeWorld {
     accountProblems: new Map(),
     clusters: new Map(),
     clusterProblems: new Map(),
+    machines: new Map(),
+    fleets: new Map(),
   };
 }
 
@@ -160,12 +163,7 @@ export function createFakeProvider(
         return value;
       },
     },
-    runners: {
-      async ensurePool(_connection, input) {
-        return { ref: `pools/${input.account}/${input.name}` };
-      },
-      async scale() {},
-    },
+    runners: createFakeMachines(world),
     access: {
       async grant(_connection, input) {
         world.grants.add(`${input.role} ${input.account} ${input.principal}`);

@@ -9,14 +9,15 @@ import { createGcpLandingZone } from './landing-zone.ts';
 import { createGcpMetrics } from './metrics.ts';
 import { createGcpOrg } from './org.ts';
 import { createGcpRegistry, createGcpSecrets } from './registry-secrets.ts';
+import { createGcpRunners } from './runners.ts';
 import { createGcpTargets } from './targets.ts';
 
 /*
  * Google Cloud (architecture §15): projects in a folder, a keyless control identity and a
  * deployer per environment that every deploy acts as. Cloud Run is the default runtime; GKE
  * Autopilot, GKE Standard and attached clusters deploy through the same Kubernetes parts.
- * Runner pools, time-boxed console access and spend are designed but not built, so they say
- * "Coming soon".
+ * Builds run on Cloud Build, one job per build; Autopilot runner pools, time-boxed console
+ * access and spend are designed but not built, so access and spend say "Coming soon".
  */
 export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvider {
   const contexts = createGcpContexts(options);
@@ -32,7 +33,7 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
     id: 'gcp',
     name: 'Google Cloud',
     description: 'Projects in a folder, workload identity, no key files',
-    comingSoon: ['runners', 'access', 'cost'],
+    comingSoon: ['access', 'cost'],
     connection: createGcpConnection(contexts),
     org: createGcpOrg(contexts),
     landingZone: createGcpLandingZone(contexts),
@@ -46,6 +47,7 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
       'gke-standard': kubernetes,
       'attached-cluster': kubernetes,
     },
+    runners: createGcpRunners(contexts),
   };
 }
 
