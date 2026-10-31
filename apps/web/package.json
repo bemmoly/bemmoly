@@ -33,12 +33,12 @@
     "@axe-core/playwright": "4.13.0",
     "@bemmoly/i18n-tools": "workspace:*",
     "@mswjs/interceptors": "0.45.7",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.1",
     "@size-limit/file": "14.1.0",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.7",
-    "@types/node": "26.6.4",
+    "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
@@ -47,6 +47,6 @@
     "size-limit": "14.1.0",
     "tailwindcss": "4.3.3",
     "vite": "8.3.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }
