@@ -1,0 +1,28 @@
+# Acme Market: services built from one shared Dockerfile, a web app with its own, a library.
+defaults:
+  group: orders
+  domain: commerce
+  owner: team/orders
+  paths: ['packages/**']
+  build:
+    dockerfile: docker/service.Dockerfile
+    args:
+      SERVICE: '${{ app.name }}'
+  pipeline:
+    checkout: false
+    test:
+      - name: Unit tests
+        image: node:24
+        run: npm test
+applications:
+  - name: market-orders
+    path: services/market-orders
+    tier: 1
+  - name: market-invoices
+    path: services/market-invoices
+  - name: market-shipping
+    path: services/market-shipping
+  - name: market-money
+    path: packages/market-money
+    build: null
+    labels: [library]

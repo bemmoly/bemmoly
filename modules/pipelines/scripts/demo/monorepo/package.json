@@ -1,0 +1,9 @@
+{
+  "name": "acme-market",
+  "private": true,
+  "workspaces": [
+    "services/*",
+    "apps/*",
+    "packages/*"
+  ]
+}
