@@ -23,8 +23,9 @@ import { RuntimeCard } from './runtime-card.tsx';
 import { SettingsCard } from './settings-card.tsx';
 import { FrontDoorCard } from './front-door-card.tsx';
 import { ExportButton } from './export-button.tsx';
+import { SettingsTab } from './settings/settings-tab.tsx';
 
-type Tab = 'overview' | 'runs' | 'variables';
+type Tab = 'overview' | 'runs' | 'variables' | 'settings';
 
 /** The environment the page opens on: the first Prod that lags the one before it. */
 function defaultEnvironment(items: readonly EnvironmentStripItem[]): string | null {
@@ -53,7 +54,10 @@ export default function ApplicationScreen() {
     dialog?: string;
     scope?: string;
   };
-  const tab: Tab = search.tab === 'runs' || search.tab === 'variables' ? search.tab : 'overview';
+  const tab: Tab =
+    search.tab === 'runs' || search.tab === 'variables' || search.tab === 'settings'
+      ? search.tab
+      : 'overview';
   const { application, strip } = useApplication(key);
   const runs = useRecentRuns(key);
   const items = strip.data?.items ?? [];
@@ -196,6 +200,7 @@ export default function ApplicationScreen() {
           { value: 'overview', label: t('pipelines.application.tabOverview') },
           { value: 'runs', label: t('pipelines.application.tabRuns') },
           { value: 'variables', label: t('pipelines.application.tabVariables') },
+          { value: 'settings', label: t('pipelines.application.tabSettings') },
         ]}
         value={tab}
         onChange={(value) => setSearch({ tab: value === 'overview' ? undefined : value })}
@@ -203,6 +208,8 @@ export default function ApplicationScreen() {
       />
       {tab === 'runs' ? (
         <ApplicationRuns application={key} />
+      ) : tab === 'settings' ? (
+        <SettingsTab application={key} />
       ) : tab === 'variables' ? (
         <VariablesTab
           application={key}
