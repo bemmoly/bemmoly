@@ -1,6 +1,8 @@
 import {
   Compute,
   ExternalAccountClient,
+  GoogleAuth,
+  JWT,
   type ExternalAccountClientOptions,
 } from 'google-auth-library';
 import { z } from 'zod';
@@ -11,8 +13,9 @@ import { createStsClient } from './sts.ts';
 /*
  * Keyless credentials only (architecture §15). On Google Cloud the attached service account
  * answers through the metadata server; anywhere else workload identity federation trades a
- * token Bemmoly issued for a Google one. A service account key file is refused outright:
- * keys leak, and nothing here needs one.
+ * token Bemmoly issued for a Google one. On a laptop install, the person's own gcloud sign-in
+ * (application default credentials) works too. A service account key file is refused
+ * outright: keys leak, and nothing here needs one.
  */
 
 const CLOUD_PLATFORM = 'https://www.googleapis.com/auth/cloud-platform';
@@ -22,6 +25,8 @@ const RENEW_BEFORE_MS = 60_000;
 export const gcpCredentialsSchema = z
   .discriminatedUnion('kind', [
     z.object({ kind: z.literal('metadata') }),
+    /** `gcloud auth application-default login` on the machine Bemmoly runs on. */
+    z.object({ kind: z.literal('application_default') }),
     /** An external_account file from `gcloud iam workload-identity-pools create-cred-config`. */
     z.object({
       kind: z.literal('external_account'),
@@ -88,6 +93,38 @@ function federatedTokens(
   return impersonatedTokens(createIamCredentialsClient(http), credentials.serviceAccount, now);
 }
 
+/**
+ * The machine's application default credentials, refusing a service account key even when
+ * GOOGLE_APPLICATION_CREDENTIALS points at one. The client is found once, on first use.
+ */
+function applicationDefaultTokens(): GcpTokenSource {
+  let client: ReturnType<GoogleAuth['getClient']> | null = null;
+  const found = () => {
+    client ??= new GoogleAuth({ scopes: [CLOUD_PLATFORM] }).getClient().then((resolved) => {
+      if (resolved instanceof JWT) {
+        throw new KeyFileRefusedError(
+          'Application default credentials point at a service account key; run gcloud auth application-default login instead',
+        );
+      }
+      return resolved;
+    });
+    client.catch(() => {
+      client = null;
+    });
+    return client;
+  };
+  return {
+    async token() {
+      const { token } = await (await found()).getAccessToken();
+      if (!token) throw new Error('Google Cloud gave no access token');
+      return token;
+    },
+    async quotaProject() {
+      return (await found()).quotaProjectId ?? null;
+    },
+  };
+}
+
 export function createTokenSource(
   credentials: GcpCredentials,
   options: CredentialOptions = {},
@@ -95,6 +132,8 @@ export function createTokenSource(
   switch (credentials.kind) {
     case 'metadata':
       return fromLibrary(new Compute({ scopes: [CLOUD_PLATFORM] }));
+    case 'application_default':
+      return applicationDefaultTokens();
     case 'external_account': {
       if (credentials.config['type'] !== 'external_account') {
         throw new KeyFileRefusedError(

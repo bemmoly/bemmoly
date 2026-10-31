@@ -12,6 +12,7 @@ import type {
   ScheduleSpec,
   TemplateRef,
 } from '../../../../shared/pipeline-spec.ts';
+import { buildJob, mergeBuild } from './build-job.ts';
 import { resolveInputValues, type InputDeclarations } from './inputs.ts';
 import { interpolate, interpolateRecord } from './interpolate.ts';
 import { cellKey, cellName, expandMatrix, type MatrixCell } from './matrix.ts';
@@ -28,7 +29,11 @@ export type TemplateLookup = (ref: TemplateRef) => Promise<PipelineTemplate | nu
 
 export interface ResolveOptions {
   application: string | null;
+  /** The application's folder, for `${{ app.path }}` in build args; "" for the root. */
+  path?: string;
   defaultTimeoutMinutes: number;
+  /** Where the build pushes its image; null keeps it on the runner's machine. */
+  registry?: string | null;
   /** A manual run's or a schedule's values; checked against the declared inputs. */
   inputs?: Readonly<Record<string, Scalar>>;
 }
@@ -99,7 +104,7 @@ async function layersOf(definition: PipelineDefinition, lookup: TemplateLookup):
     declared: { ...template.inputs, ...definition.inputs },
     passed: definition.with,
     checkout: template.checkout,
-    build: template.build,
+    build: mergeBuild(template.build, definition.build),
     test: mergeTests(template.test, definition.test ?? []),
     deploy: deploy as DeploySpec | null,
     schedules: definition.schedules ?? template.schedules,
@@ -124,41 +129,6 @@ function resolveStep(
     origin: spec.origin,
     junit: spec.junit ?? null,
     artifacts: spec.artifacts,
-  };
-}
-
-function buildJob(build: BuildSpec, application: string | null, timeout: number): ResolvedJob {
-  return {
-    key: 'build',
-    name: 'Build',
-    kind: 'build',
-    needs: [],
-    steps: [
-      {
-        key: 'build',
-        name: 'Build image',
-        image: null,
-        run: null,
-        uses: 'bemmoly/build',
-        env: {
-          BEMMOLY_BUILD_DOCKERFILE: build.dockerfile,
-          BEMMOLY_BUILD_CONTEXT: build.context,
-          BEMMOLY_BUILD_PLATFORMS: build.platforms.join(','),
-          // The image a passing build becomes a release of; registries come with providers.
-          ...(application ? { BEMMOLY_BUILD_IMAGE: `bemmoly-local/${application}` } : {}),
-        },
-        secrets: [],
-        locked: true,
-        origin: 'template',
-        junit: null,
-        artifacts: [],
-      },
-    ],
-    pool: build.pool ?? null,
-    shards: null,
-    timeoutMinutes: timeout,
-    application,
-    matrix: null,
   };
 }
 
@@ -219,7 +189,15 @@ export async function resolvePipeline(
   const inputs = resolveInputValues(layers.declared, [layers.passed, options.inputs ?? {}]);
   const jobs = [
     ...(layers.build
-      ? [buildJob(layers.build, options.application, options.defaultTimeoutMinutes)]
+      ? [
+          buildJob(
+            layers.build,
+            { name: options.application, path: options.path ?? '' },
+            inputs,
+            options.defaultTimeoutMinutes,
+            options.registry ?? null,
+          ),
+        ]
       : []),
     ...testJobs(layers, inputs, options),
   ];

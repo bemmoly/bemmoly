@@ -1,0 +1,21 @@
+{{- if .Values.application }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+  {{- with .Values.frontDoor.neg }}
+  annotations:
+    cloud.google.com/neg: {{ dict "exposed_ports" (dict "80" (dict "name" .)) | toJson | quote }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  selector:
+    pipelines.bemmoly.dev/revision: {{ .Values.revision }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: {{ .Values.port }}
+{{- end }}

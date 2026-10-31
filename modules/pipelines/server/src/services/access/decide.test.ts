@@ -53,6 +53,15 @@ describe('roles from bindings and ownership', () => {
     expect(decision.askWho?.teams).toEqual([TEAMS.commerceRm]);
   });
 
+  it('keeps a protected environment’s variables for the roles that may deploy there', () => {
+    const decision = decide(facts({ person: PRIYA }), 'change_variables');
+    expect(decision.allowed).toBe(false);
+    expect(decision.sentence).toContain('needs a Release manager');
+    expect(decide(facts({ person: PRIYA, environment: null }), 'change_variables').allowed).toBe(
+      true,
+    );
+  });
+
   it('lets a Developer deploy to an environment that is not protected', () => {
     expect(decide(facts({ environment: STAGING }), 'deploy').allowed).toBe(true);
   });

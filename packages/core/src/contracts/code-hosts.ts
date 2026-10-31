@@ -189,6 +189,18 @@ export interface CodeHostClient {
   /** Every file path at a ref (blobs only), and whether the host cut the list short. */
   listFiles(repository: string, ref: string): Promise<{ paths: string[]; truncated: boolean }>;
   openPullRequest(input: CodePullRequestInput): Promise<{ url: string; number: number }>;
+  /**
+   * A short-lived credential that can only read this one repository, for a checkout on a
+   * runner. Null when the host cannot mint one: a saved personal token is never handed out.
+   */
+  readToken(repository: string): Promise<CodeReadToken | null>;
+}
+
+export interface CodeReadToken {
+  /** The user name a git URL carries it under, "x-access-token" on GitHub. */
+  username: string;
+  token: string;
+  expiresAt: string | null;
 }
 
 /** A repository a connected host lets Bemmoly read, archived ones left out. */

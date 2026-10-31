@@ -4,9 +4,9 @@ import {
   cloudConnectionSchema,
   cloudResourcesResponseSchema,
   connectionsResponseSchema,
-  landingZonePlanSchema,
   providersResponseSchema,
 } from '../../../../shared/clouds.ts';
+import { landingZonePlanSchema } from '../../../../shared/landing-zones.ts';
 import { seedCatalogFixture } from '../../testing/fixture.ts';
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
 import { startPipelinesHttp, type PipelinesHttp } from '../../testing/http.ts';

@@ -1,0 +1,362 @@
+{
+  "recorded": "Hand-recorded from the GKE v1 REST reference (projects.locations.clusters.get), the IAM v1 reference (serviceAccounts.getIamPolicy, setIamPolicy) and the Kubernetes API reference (server-side apply of Namespace, ServiceAccount, PriorityClass, apps/v1 Deployment, batch/v1 Job and Secret; get and list of Job and Pod; delete with background propagation); not captured from a live cluster.",
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://container.googleapis.com/v1/projects/nila-ci/locations/europe-west1/clusters/bemmoly-runners",
+      "response": {
+        "name": "bemmoly-runners",
+        "location": "europe-west1",
+        "status": "RUNNING",
+        "endpoint": "10.30.0.2",
+        "masterAuth": {
+          "clusterCaCertificate": "cmVjb3JkZWQtcnVubmVyLWNsdXN0ZXItY2E="
+        },
+        "autopilot": {
+          "enabled": true
+        },
+        "releaseChannel": {
+          "channel": "REGULAR"
+        },
+        "workloadIdentityConfig": {
+          "workloadPool": "nila-ci.svc.id.goog"
+        },
+        "currentMasterVersion": "1.33.5-gke.1080000"
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/api/v1/namespaces/runners-gke?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "runners-gke",
+          "labels": {
+            "app.kubernetes.io/managed-by": "bemmoly-pipelines",
+            "pipelines.bemmoly.dev/pool": "gke"
+          }
+        }
+      },
+      "response": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "runners-gke",
+          "uid": "7d1c2a40-5b3e-4f61-9a0c-1e2d3f4a5b60"
+        },
+        "status": {
+          "phase": "Active"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/api/v1/namespaces/runners-gke/serviceaccounts/bemmoly-runner?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "kind": "ServiceAccount",
+        "metadata": {
+          "name": "bemmoly-runner",
+          "namespace": "runners-gke",
+          "annotations": {
+            "iam.gke.io/gcp-service-account": "builder@nila-ci.iam.gserviceaccount.com"
+          }
+        }
+      },
+      "response": {
+        "apiVersion": "v1",
+        "kind": "ServiceAccount",
+        "metadata": {
+          "name": "bemmoly-runner",
+          "namespace": "runners-gke",
+          "annotations": {
+            "iam.gke.io/gcp-service-account": "builder@nila-ci.iam.gserviceaccount.com"
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/-/serviceAccounts/builder@nila-ci.iam.gserviceaccount.com:getIamPolicy",
+      "response": {
+        "version": 1,
+        "etag": "BwYxR2kq3Zc=",
+        "bindings": [
+          {
+            "role": "roles/iam.serviceAccountUser",
+            "members": ["serviceAccount:bemmoly@nila-ops.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/-/serviceAccounts/builder@nila-ci.iam.gserviceaccount.com:setIamPolicy",
+      "body": {
+        "policy": {
+          "etag": "BwYxR2kq3Zc=",
+          "bindings": [
+            {
+              "role": "roles/iam.serviceAccountUser"
+            },
+            {
+              "role": "roles/iam.workloadIdentityUser",
+              "members": ["serviceAccount:nila-ci.svc.id.goog[runners-gke/bemmoly-runner]"]
+            }
+          ]
+        }
+      },
+      "response": {
+        "version": 1,
+        "etag": "BwYxR3m9Q1s=",
+        "bindings": [
+          {
+            "role": "roles/iam.serviceAccountUser",
+            "members": ["serviceAccount:bemmoly@nila-ops.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/iam.workloadIdentityUser",
+            "members": ["serviceAccount:nila-ci.svc.id.goog[runners-gke/bemmoly-runner]"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/apis/scheduling.k8s.io/v1/priorityclasses/bemmoly-warm-room?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "apiVersion": "scheduling.k8s.io/v1",
+        "kind": "PriorityClass",
+        "value": -10,
+        "preemptionPolicy": "Never",
+        "globalDefault": false
+      },
+      "response": {
+        "apiVersion": "scheduling.k8s.io/v1",
+        "kind": "PriorityClass",
+        "metadata": {
+          "name": "bemmoly-warm-room"
+        },
+        "value": -10,
+        "preemptionPolicy": "Never"
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/apis/apps/v1/namespaces/runners-gke/deployments/bemmoly-warm-room?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "spec": {
+          "replicas": 2,
+          "template": {
+            "spec": {
+              "priorityClassName": "bemmoly-warm-room",
+              "containers": [
+                {
+                  "name": "room",
+                  "image": "registry.k8s.io/pause:3.10",
+                  "resources": {
+                    "requests": {
+                      "cpu": "2000m",
+                      "memory": "8192Mi"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "response": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "bemmoly-warm-room",
+          "namespace": "runners-gke"
+        },
+        "spec": {
+          "replicas": 2
+        },
+        "status": {
+          "replicas": 2,
+          "readyReplicas": 1
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://10.30.0.2/apis/apps/v1/namespaces/runners-gke/deployments/bemmoly-warm-room",
+      "response": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "bemmoly-warm-room",
+          "namespace": "runners-gke"
+        },
+        "spec": {
+          "replicas": 2
+        },
+        "status": {
+          "replicas": 2,
+          "readyReplicas": 2,
+          "availableReplicas": 2
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/apis/batch/v1/namespaces/runners-gke/jobs/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "apiVersion": "batch/v1",
+        "kind": "Job",
+        "metadata": {
+          "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+          "namespace": "runners-gke"
+        },
+        "spec": {
+          "backoffLimit": 0,
+          "activeDeadlineSeconds": 4500
+        }
+      },
+      "response": {
+        "apiVersion": "batch/v1",
+        "kind": "Job",
+        "metadata": {
+          "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+          "namespace": "runners-gke",
+          "uid": "3f9a6c1e-8d2b-4e57-b0a4-6c5d4e3f2a10"
+        },
+        "spec": {
+          "backoffLimit": 0
+        },
+        "status": {}
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://10.30.0.2/api/v1/namespaces/runners-gke/secrets/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626-token?fieldManager=bemmoly-pipelines&force=true",
+      "body": {
+        "apiVersion": "v1",
+        "kind": "Secret",
+        "type": "Opaque",
+        "metadata": {
+          "ownerReferences": [
+            {
+              "apiVersion": "batch/v1",
+              "kind": "Job",
+              "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+              "uid": "3f9a6c1e-8d2b-4e57-b0a4-6c5d4e3f2a10"
+            }
+          ]
+        },
+        "stringData": {
+          "token": "bpl_recorded-launch-token-for-tests"
+        }
+      },
+      "response": {
+        "apiVersion": "v1",
+        "kind": "Secret",
+        "metadata": {
+          "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626-token",
+          "namespace": "runners-gke"
+        },
+        "type": "Opaque"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://10.30.0.2/apis/batch/v1/namespaces/runners-gke/jobs/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+      "response": {
+        "apiVersion": "batch/v1",
+        "kind": "Job",
+        "metadata": {
+          "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+          "namespace": "runners-gke"
+        },
+        "status": {
+          "active": 1,
+          "startTime": "2026-10-29T09:12:04Z"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://10.30.0.2/api/v1/namespaces/runners-gke/pods?labelSelector=job-name%3Dbemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+      "response": {
+        "kind": "PodList",
+        "items": [
+          {
+            "metadata": {
+              "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626-x7k2p",
+              "namespace": "runners-gke"
+            },
+            "status": {
+              "phase": "Running",
+              "containerStatuses": [
+                {
+                  "name": "runner",
+                  "image": "europe-west1-docker.pkg.dev/nila-ci/bemmoly/runner-gke:1.7.0",
+                  "state": {
+                    "running": {
+                      "startedAt": "2026-10-29T09:12:41Z"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://10.30.0.2/apis/batch/v1/namespaces/runners-gke/jobs/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+      "response": {
+        "apiVersion": "batch/v1",
+        "kind": "Job",
+        "metadata": {
+          "name": "bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+          "namespace": "runners-gke"
+        },
+        "status": {
+          "succeeded": 1,
+          "conditions": [
+            {
+              "type": "SuccessCriteriaMet",
+              "status": "True"
+            },
+            {
+              "type": "Complete",
+              "status": "True",
+              "lastTransitionTime": "2026-10-29T09:19:55Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://10.30.0.2/apis/batch/v1/namespaces/runners-gke/jobs/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626",
+      "body": {
+        "kind": "DeleteOptions",
+        "propagationPolicy": "Background"
+      },
+      "response": {
+        "kind": "Status",
+        "status": "Success"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://10.30.0.2/api/v1/namespaces/runners-gke/secrets/bemmoly-0199f0bb-1111-7000-8000-000000000001-c85626-token",
+      "status": 404,
+      "response": {
+        "kind": "Status",
+        "status": "Failure",
+        "reason": "NotFound",
+        "code": 404
+      }
+    }
+  ]
+}

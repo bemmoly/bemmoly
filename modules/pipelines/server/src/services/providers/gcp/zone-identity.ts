@@ -1,6 +1,7 @@
 import {
   dockerHostPath,
   hasBinding,
+  principalMember,
   repositoryName,
   serviceAccountEmail,
   serviceAccountMember,
@@ -74,7 +75,7 @@ export const deployerKind: ZoneKind<'deployer_identity'> = {
       ? hasBinding(
           await context.control.iam.getServiceAccountPolicy(email),
           TOKEN_CREATOR,
-          serviceAccountMember(control),
+          principalMember(control),
         )
       : true;
     return {
@@ -94,7 +95,7 @@ export const deployerKind: ZoneKind<'deployer_identity'> = {
     const control = await context.principal();
     if (!control) return;
     const policy = await context.control.iam.getServiceAccountPolicy(email);
-    const updated = withBinding(policy, TOKEN_CREATOR, serviceAccountMember(control));
+    const updated = withBinding(policy, TOKEN_CREATOR, principalMember(control));
     if (updated) await context.control.iam.setServiceAccountPolicy(email, updated);
   },
 };
@@ -122,14 +123,18 @@ export const identityKind: ZoneKind<'runtime_identity'> = {
   },
 };
 
-/** Pulls are made by the Cloud Run service agent; pushes by the named identity. */
-async function registryMember(
+/**
+ * Pushes are made by the named identity. Cloud Run pulls as the project's service agent, and
+ * other runtimes pull as the runtime identity itself, so a pull grant names both.
+ */
+async function registryMembers(
   context: GcpContext,
   account: string,
   spec: { access: 'pull' | 'push'; identity: string },
-): Promise<string> {
-  if (spec.access === 'pull') return runServiceAgent(await projectNumberOf(context, account));
-  return serviceAccountMember(serviceAccountEmail(spec.identity, account));
+): Promise<string[]> {
+  const identity = serviceAccountMember(serviceAccountEmail(spec.identity, account));
+  if (spec.access === 'push') return [identity];
+  return [runServiceAgent(await projectNumberOf(context, account)), identity];
 }
 
 export const registryAccessKind: ZoneKind<'registry_access'> = {
@@ -142,11 +147,15 @@ export const registryAccessKind: ZoneKind<'registry_access'> = {
     const name = repositoryName(spec.registryAccount, spec.region, spec.repository);
     const ar = context.control.artifactRegistry;
     if (!(await ar.getRepository(name))) return null;
-    const member = await registryMember(context, resource.account, spec);
+    const members = await registryMembers(context, resource.account, spec);
+    const policy = await ar.getPolicy(name);
+    const path = dockerHostPath(spec.registryAccount, spec.region, spec.repository);
     return {
-      repository: dockerHostPath(spec.registryAccount, spec.region, spec.repository),
+      repository: path,
       access: spec.access,
-      granted: hasBinding(await ar.getPolicy(name), REGISTRY_ROLES[spec.access], member),
+      granted: members.every((member) => hasBinding(policy, REGISTRY_ROLES[spec.access], member)),
+      // Where runners push, so the connection can name its registry once this is ready.
+      location: path,
     };
   },
   async apply({ context, resource, spec }) {
@@ -155,8 +164,12 @@ export const registryAccessKind: ZoneKind<'registry_access'> = {
     if (!(await ar.getRepository(name))) {
       await ar.createRepository(spec.registryAccount, spec.region, spec.repository);
     }
-    const member = await registryMember(context, resource.account, spec);
-    const updated = withBinding(await ar.getPolicy(name), REGISTRY_ROLES[spec.access], member);
+    const members = await registryMembers(context, resource.account, spec);
+    const role = REGISTRY_ROLES[spec.access];
+    const updated = withBindings(
+      await ar.getPolicy(name),
+      members.map((member) => [role, member]),
+    );
     if (updated) await ar.setPolicy(name, updated);
   },
 };

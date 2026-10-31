@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 import type { Provider } from '../../../../../shared/common.ts';
 import type { CloudProvider, DesiredResource } from '../contract.ts';
+import { createFakeAdopt, type FakeAdoptWorld } from './adopt.ts';
+import { createFakeClusters, type FakeClustersWorld } from './clusters.ts';
+import { createFakeFrontDoor, type FakeFrontDoorsWorld } from './front-door.ts';
+import { createFakeMachines, type FakeMachinesWorld } from './machines.ts';
 import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
 
 /*
@@ -9,30 +13,56 @@ import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
  * kit runs against it first so the kit itself is known to be right.
  */
 
-export interface FakeWorld extends FakeTargetsWorld {
+export interface FakeWorld
+  extends
+    FakeTargetsWorld,
+    FakeClustersWorld,
+    FakeMachinesWorld,
+    FakeFrontDoorsWorld,
+    FakeAdoptWorld {
   boundaries: Set<string>;
   accounts: Map<string, { name: string; labels: Readonly<Record<string, string>> }>;
   resources: Map<string, Record<string, unknown>>;
   /** Secret versions by "account/name": only a hash, as a real store's audit would show. */
   secrets: Map<string, string[]>;
+  /** The same versions' values, in this process's memory only, for CI jobs to read back. */
+  secretValues: Map<string, string[]>;
   grants: Set<string>;
   /** How many more accounts the billing account may link; quota checks read it. */
   accountQuota: number;
+  /** Projects the billing account paid for before Pipelines, and the limit it reports. */
+  billingLinked: number;
+  billingLimit: { limit: number; recorded: boolean };
   /** Set to make the next connection check fail with these problems. */
   connectionProblems: string[];
+  /** Projects an attach check finds problems in; any other project attaches cleanly. */
+  accountProblems: Map<string, string[]>;
 }
 
 export function createFakeWorld(): FakeWorld {
   return {
     targets: new Map(),
     log: [],
+    revisionWarmup: 0,
+    frontDoors: new Map(),
+    frontDoorRequests: { sent: 0, failed: 0 },
     boundaries: new Set(),
     accounts: new Map(),
     resources: new Map(),
     secrets: new Map(),
+    secretValues: new Map(),
     grants: new Set(),
     accountQuota: 100,
+    billingLinked: 0,
+    billingLimit: { limit: 5, recorded: false },
     connectionProblems: [],
+    accountProblems: new Map(),
+    clusters: new Map(),
+    clusterProblems: new Map(),
+    machines: new Map(),
+    podClusters: new Map(),
+    podPools: new Map(),
+    running: new Map(),
   };
 }
 
@@ -45,6 +75,7 @@ export function createFakeProvider(
   id: Provider = 'gcp',
 ): CloudProvider & { world: FakeWorld } {
   const { targets, metrics } = createFakeTargets(world);
+  const kubernetes = createFakeTargets(world, { kubernetes: true });
   return {
     id,
     name: 'Simulated',
@@ -53,6 +84,14 @@ export function createFakeProvider(
     world,
     targets,
     metrics,
+    clusters: createFakeClusters(world),
+    frontDoor: createFakeFrontDoor(world),
+    adopt: createFakeAdopt(world),
+    runtimes: {
+      'gke-autopilot': kubernetes,
+      'gke-standard': kubernetes,
+      'attached-cluster': kubernetes,
+    },
     connection: {
       async verify(connection) {
         const problems = [...world.connectionProblems];
@@ -61,6 +100,10 @@ export function createFakeProvider(
           principal: problems.length === 0 ? `fake-control@${connection.name}` : null,
           problems,
         };
+      },
+      async verifyAccount(_connection, account) {
+        const problems = world.accountProblems.get(account.externalId) ?? [];
+        return { ok: problems.length === 0, name: `Simulated ${account.externalId}`, problems };
       },
     },
     org: {
@@ -83,6 +126,14 @@ export function createFakeProvider(
         }
         return { externalId: input.externalId };
       },
+      async billing() {
+        const created = [...world.resources.keys()].filter((key) => key.startsWith('account/'));
+        return {
+          account: 'SIMULATED-BILLING',
+          linked: world.billingLinked + created.length,
+          ...world.billingLimit,
+        };
+      },
       async checkQuota(_connection, count) {
         return count > world.accountQuota
           ? [
@@ -96,7 +147,11 @@ export function createFakeProvider(
         return world.resources.get(resourceKey(resource)) ?? null;
       },
       async apply(_connection, resource) {
-        const observed = { ...resource.spec };
+        const spec = resource.spec as Record<string, unknown>;
+        const observed: Record<string, unknown> = { ...spec };
+        if (resource.kind === 'registry_access' && spec['access'] === 'push') {
+          observed['location'] = `fake.registry/${resource.account}/${String(spec['repository'])}`;
+        }
         world.resources.set(resourceKey(resource), observed);
         world.log.push(`apply ${resourceKey(resource)}`);
         return observed;
@@ -124,18 +179,23 @@ export function createFakeProvider(
         const versions = world.secrets.get(key) ?? [];
         versions.push(createHash('sha256').update(input.value).digest('hex'));
         world.secrets.set(key, versions);
+        world.secretValues.set(key, [...(world.secretValues.get(key) ?? []), input.value]);
         return { version: String(versions.length) };
       },
       async grantAccess(_connection, input) {
         world.grants.add(`secret ${input.account}/${input.name} ${input.principal}`);
       },
-    },
-    runners: {
-      async ensurePool(_connection, input) {
-        return { ref: `pools/${input.account}/${input.name}` };
+      async accessVersion(_connection, input) {
+        const value = world.secretValues
+          .get(`${input.account}/${input.name}`)
+          ?.at(Number(input.version) - 1);
+        if (value === undefined) {
+          throw new Error(`${input.name} has no version ${input.version} in ${input.account}`);
+        }
+        return value;
       },
-      async scale() {},
     },
+    runners: createFakeMachines(world),
     access: {
       async grant(_connection, input) {
         world.grants.add(`${input.role} ${input.account} ${input.principal}`);

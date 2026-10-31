@@ -17,10 +17,10 @@ import type { RecordedResource } from './tree.ts';
 /* Reads and writes of connections, plans and what the reconciler recorded. */
 
 const CONNECTION_COLUMNS = `id, provider, name, status, principal, boundary_ref, layout, config,
-  last_checked_at, last_error, created_at`;
+  last_checked_at, last_error, problems, created_at`;
 
-const PLAN_COLUMNS = `id, connection_id, layout, spec_hash, desired, tree, counts, blockers, status,
-  attempts, created_at`;
+const PLAN_COLUMNS = `id, connection_id, layout, spec_hash, desired, tree, counts, blockers,
+  warnings, billing, status, attempts, last_error, created_at`;
 
 export const toRecord = (row: ConnectionRow): ConnectionRecord => ({
   id: row.id,
@@ -43,16 +43,41 @@ export async function requireConnection(sql: SqlClient, id: string): Promise<Con
   return row;
 }
 
+/** How a sign-in choice is stored: the credential kinds the Google Cloud clients read. */
+function credentialsOf(body: Extract<ConnectCloud, { provider: 'gcp' }>) {
+  switch (body.signIn) {
+    case 'vm':
+      return { kind: 'metadata' };
+    case 'application_default':
+      return { kind: 'application_default' };
+    case 'workload_identity_file':
+      return { kind: 'external_account', config: body.credentialFile ?? {} };
+  }
+}
+
 /** Config is everything the body says except its name and layout; never a secret. */
+export function configOf(body: ConnectCloud): Record<string, unknown> {
+  const config: Record<string, unknown> = { ...body };
+  for (const key of ['provider', 'name', 'layout', 'signIn', 'credentialFile']) delete config[key];
+  return body.provider === 'gcp' ? { ...config, credentials: credentialsOf(body) } : config;
+}
+
 export async function insertConnection(
   sql: SqlClient,
   body: ConnectCloud,
   createdBy: string | null,
 ): Promise<ConnectionRow> {
-  const { provider, name, layout, ...config } = body;
+  const { provider, name, layout } = body;
+  const config = configOf(body);
+  // The folder bootstrap.sh made is the boundary from the start: Pipelines never makes one.
+  const boundary =
+    body.provider === 'gcp' && body.mode === 'managed' && body.folderId
+      ? `folders/${body.folderId}`
+      : null;
   const [row] = await sql<ConnectionRow[]>`
-    insert into cloud_connections (provider, name, layout, config, created_by)
-    values (${provider}, ${name}, ${layout}, ${JSON.stringify(config)}::jsonb, ${createdBy})
+    insert into cloud_connections (provider, name, layout, config, boundary_ref, created_by)
+    values (${provider}, ${name}, ${layout}, ${JSON.stringify(config)}::jsonb, ${boundary},
+      ${createdBy})
     returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
   if (!row) throw new Error('insert returned nothing');
   return row;
@@ -68,7 +93,26 @@ export async function recordCheck(
     set status = ${check.ok ? 'connected' : 'failed'},
       principal = coalesce(${check.principal}, principal),
       last_error = ${check.ok ? null : check.problems.join(' ')},
+      problems = ${JSON.stringify(check.problems)}::jsonb,
       last_checked_at = now(), updated_at = now()
+    where id = ${id}
+    returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
+  if (!row) throw new NotFoundError('No cloud connection has that id');
+  return row;
+}
+
+/** Sets or clears one key of a connection's config, keeping the rest. */
+export async function setConfigValue(
+  sql: SqlClient,
+  id: string,
+  key: 'registry' | 'ciAccountId',
+  value: string | null,
+): Promise<ConnectionRow> {
+  const [row] = await sql<ConnectionRow[]>`
+    update cloud_connections
+    set config = case when ${value}::text is null then config - ${key}::text
+        else config || jsonb_build_object(${key}::text, ${value}::text) end,
+      updated_at = now()
     where id = ${id}
     returning ${sql.unsafe(CONNECTION_COLUMNS)}`;
   if (!row) throw new NotFoundError('No cloud connection has that id');
@@ -79,7 +123,11 @@ export async function recordBoundary(sql: SqlClient, id: string, ref: string): P
   await sql`update cloud_connections set boundary_ref = ${ref}, updated_at = now() where id = ${id}`;
 }
 
-/** The environments on this connection's provider, and the catalog the layouts split by. */
+/**
+ * The environments on this connection's provider, and the catalog the layouts split by. An
+ * environment that deploys into a project someone attached is left out: a landing zone never
+ * takes over a project a person chose.
+ */
 export async function zoneInput(
   sql: SqlClient,
   connection: ConnectionRow,
@@ -87,10 +135,15 @@ export async function zoneInput(
   environmentKeys: readonly string[] | undefined,
 ): Promise<ZoneInput> {
   const environments = await sql<ZoneEnvironmentRow[]>`
-    select id, key, name, class from pipeline_environments
-    where archived_at is null and provider = ${connection.provider}
-      and (${environmentKeys ? sql`key = any(${environmentKeys as string[]}::text[])` : sql`true`})
-    order by position, id`;
+    select e.id, e.key, e.name, e.class from pipeline_environments e
+    where e.archived_at is null and e.provider = ${connection.provider}
+      and (${environmentKeys ? sql`e.key = any(${environmentKeys as string[]}::text[])` : sql`true`})
+      and not exists (
+        select 1 from cloud_accounts a
+        where a.origin = 'attached' and (a.id = e.cloud_account_id or a.id in (
+          select m.cloud_account_id from pipeline_environment_accounts m
+          where m.environment_id = e.id)))
+    order by e.position, e.id`;
   if (environmentKeys && environments.length < new Set(environmentKeys).size) {
     throw new NotFoundError(`Some of those environments do not exist on ${connection.provider}`);
   }
@@ -143,14 +196,18 @@ export async function recordedResources(
 
 export async function insertPlan(
   sql: SqlClient,
-  plan: Omit<PlanRow, 'id' | 'status' | 'attempts' | 'created_at'> & { createdBy: string | null },
+  plan: Omit<PlanRow, 'id' | 'status' | 'attempts' | 'last_error' | 'created_at'> & {
+    createdBy: string | null;
+  },
 ): Promise<PlanRow> {
   const [row] = await sql<PlanRow[]>`
     insert into cloud_landing_zone_plans
-      (connection_id, layout, spec_hash, desired, tree, counts, blockers, created_by)
+      (connection_id, layout, spec_hash, desired, tree, counts, blockers, warnings, billing,
+        created_by)
     values (${plan.connection_id}, ${plan.layout}, ${plan.spec_hash},
       ${JSON.stringify(plan.desired)}::jsonb, ${JSON.stringify(plan.tree)}::jsonb,
-      ${JSON.stringify(plan.counts)}::jsonb, ${plan.blockers}::text[], ${plan.createdBy})
+      ${JSON.stringify(plan.counts)}::jsonb, ${plan.blockers}::text[], ${plan.warnings}::text[],
+      ${plan.billing === null ? null : JSON.stringify(plan.billing)}::jsonb, ${plan.createdBy})
     returning ${sql.unsafe(PLAN_COLUMNS)}`;
   if (!row) throw new Error('insert returned nothing');
   return row;

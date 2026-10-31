@@ -1,7 +1,9 @@
 import type { SettingsRegistry } from '@bemmoly/core';
 import { awsProvider } from './aws.ts';
 import type { CloudProvider } from './contract.ts';
+import { simulatedFacts } from './fake/export.ts';
 import { createFakeProvider, createFakeWorld, type FakeWorld } from './fake/index.ts';
+import { exportFiles } from './gcp/export/index.ts';
 import { createGcpProvider, type GcpProviderOptions } from './gcp/index.ts';
 import { createLocalProvider } from './local/index.ts';
 import { comingSoonProvider, createProviderRegistry, type ProviderRegistry } from './registry.ts';
@@ -28,6 +30,8 @@ function simulatedGcp(world: FakeWorld | undefined): CloudProvider {
     ...createFakeProvider(world, 'gcp'),
     name: 'Google Cloud',
     description: 'Simulated: nothing is created in Google Cloud',
+    // Google Cloud's own files, with facts the simulator makes up from the names.
+    export: { files: exportFiles, read: async (_connection, records) => simulatedFacts(records) },
   };
 }
 

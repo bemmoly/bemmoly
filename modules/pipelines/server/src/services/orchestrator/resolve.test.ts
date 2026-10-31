@@ -26,6 +26,40 @@ function definition(value: unknown) {
 }
 
 describe('resolvePipeline', () => {
+  it('keeps every deploy setting a release needs, public access included', async () => {
+    const resolved = await resolvePipeline(
+      definition({
+        build: { dockerfile: 'Dockerfile' },
+        deploy: {
+          kind: 'container-service',
+          port: 3000,
+          public: true,
+          resources: { memory: '512Mi' },
+        },
+      }),
+      lookup,
+      options,
+    );
+    expect(resolved.deploy).toMatchObject({
+      port: 3000,
+      public: true,
+      resources: { memory: '512Mi' },
+    });
+  });
+
+  it('names the image after the registry and pushes it when there is one', async () => {
+    const pipeline = definition({ extends: 'acme/node-service@3' });
+    const env = async (registry: string | null) =>
+      (await resolvePipeline(pipeline, lookup, { ...options, registry })).jobs[0]?.steps[0]?.env;
+    expect(await env('us-central1-docker.pkg.dev/acme-ci/apps/')).toMatchObject({
+      BEMMOLY_BUILD_IMAGE: 'us-central1-docker.pkg.dev/acme-ci/apps/checkout-api',
+      BEMMOLY_BUILD_PUSH: 'true',
+    });
+    const local = await env(null);
+    expect(local?.['BEMMOLY_BUILD_IMAGE']).toBe('bemmoly-local/checkout-api');
+    expect(local).not.toHaveProperty('BEMMOLY_BUILD_PUSH');
+  });
+
   it('fills a template from with, keeps its locked step and stores what will run', async () => {
     const resolved = await resolvePipeline(
       definition({ extends: 'acme/node-service@3', with: { port: 8081 } }),

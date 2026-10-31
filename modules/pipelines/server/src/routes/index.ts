@@ -16,6 +16,12 @@ import { historyRoutes } from './history.routes.ts';
 import { releasesRoutes } from './releases.routes.ts';
 import { shippingRoutes } from './shipping.routes.ts';
 import { streamsRoutes } from './streams.routes.ts';
+import { variablesRoutes } from './variables.routes.ts';
+import { runtimesRoutes } from './runtimes.routes.ts';
+import { frontDoorsRoutes } from './front-doors.routes.ts';
+import { exportsRoutes } from './exports.routes.ts';
+import { deploySettingsRoutes } from './deploy-settings.routes.ts';
+import { adoptionRoutes } from './adoption.routes.ts';
 
 export { runnerRoutes } from './runner.routes.ts';
 
@@ -41,5 +47,11 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(runsRoutes(controllers.runs));
     await app.register(jobsRoutes(controllers.jobs));
     await app.register(capacityRoutes(controllers.capacity));
+    await app.register(variablesRoutes(controllers.variables));
+    await app.register(runtimesRoutes(controllers.runtimes));
+    await app.register(frontDoorsRoutes(controllers.frontDoors));
+    await app.register(exportsRoutes(controllers.exports));
+    await app.register(deploySettingsRoutes(controllers.deploySettings));
+    await app.register(adoptionRoutes(controllers.adoption));
   };
 }

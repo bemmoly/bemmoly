@@ -2,13 +2,15 @@ import type { RequestContext, SendJobOptions, SqlClient } from '@bemmoly/core';
 import { ConflictError, NotFoundError, ProviderError, ValidationError } from '@bemmoly/shared';
 import type { z } from 'zod';
 import type {
-  ApplyLandingZoneBody,
   cloudAccountsResponseSchema,
   cloudResourcesResponseSchema,
-  LandingZonePlan,
-  LandingZonePlanBody,
   Layout,
 } from '../../../../shared/clouds.ts';
+import type {
+  ApplyLandingZoneBody,
+  LandingZonePlan,
+  LandingZonePlanBody,
+} from '../../../../shared/landing-zones.ts';
 import type { Provider } from '../../../../shared/common.ts';
 import type { ConnectionRow } from '../../models/clouds.ts';
 import { authorizePipelines, personOf } from '../deps.ts';
@@ -29,7 +31,9 @@ import {
   toRecord,
   zoneInput,
 } from './store.ts';
-import { previewTree, statusOf, type RecordedResource } from './tree.ts';
+import { accountsAdded, billingOf, billingWarning } from './billing.ts';
+import { keptAccounts, keptWarning, moveWarnings } from './switching.ts';
+import { previewTree } from './tree.ts';
 
 /*
  * Plan and apply. A plan is built from what Pipelines recorded, so previewing never touches
@@ -58,9 +62,14 @@ async function blockersFor(
   provider: CloudProvider,
   row: ConnectionRow,
   zone: DesiredZone,
-  recorded: ReadonlyMap<string, RecordedResource>,
+  creating: number,
 ): Promise<string[]> {
   if (!provider.landingZone) return [`${provider.name} landing zones are coming soon`];
+  if (row.config['mode'] === 'attached') {
+    return [
+      `${row.name} uses projects you already have, so it creates none. Attach projects to it instead, or connect Google Cloud again to let Pipelines create them`,
+    ];
+  }
   const blockers: string[] = [];
   if (row.status !== 'connected') {
     blockers.push(
@@ -70,13 +79,6 @@ async function blockersFor(
   if (!zone.accounts.some((account) => account.purpose === 'workload')) {
     blockers.push(`Add an environment on ${provider.name} before planning its landing zone`);
   }
-  const creating = zone.resources.filter(
-    (resource) =>
-      resource.kind === 'account' &&
-      statusOf(resource, recorded) === 'create' &&
-      zone.accounts.find((account) => account.externalId === resource.account)?.purpose !==
-        'control',
-  ).length;
   if (provider.org && row.status === 'connected' && creating > 0) {
     try {
       blockers.push(...(await provider.org.checkQuota(toRecord(row), creating)));
@@ -87,6 +89,22 @@ async function blockersFor(
     }
   }
   return blockers;
+}
+
+/** The billing headroom, or a blocker saying it could not be read; null where none applies. */
+async function billingFor(
+  provider: CloudProvider,
+  row: ConnectionRow,
+  adding: number,
+  blockers: string[],
+) {
+  if (row.config['mode'] === 'attached' || row.status !== 'connected') return null;
+  try {
+    return await billingOf(provider, toRecord(row), adding);
+  } catch (error) {
+    blockers.push(`Bemmoly could not count the projects on the billing account. ${message(error)}`);
+    return null;
+  }
 }
 
 const stored = (zone: DesiredZone, environmentKeys: string[] | undefined): StoredZone => ({
@@ -114,7 +132,11 @@ export function createZones(deps: ZonesDeps) {
       const provider = await providerFor(deps.providers, row.provider as Provider);
       const zone = await declare(row, body.layout ?? (row.layout as Layout), body.environments);
       const recorded = await recordedResources(sql, row.id);
-      const { root, counts } = previewTree(zone, Boolean(row.boundary_ref), recorded);
+      const kept = await keptAccounts(sql, row.id, zone);
+      const { root, counts } = previewTree(zone, Boolean(row.boundary_ref), recorded, kept);
+      const adding = accountsAdded(zone, recorded);
+      const blockers = await blockersFor(provider, row, zone, adding);
+      const billing = await billingFor(provider, row, adding, blockers);
       const plan = await insertPlan(sql, {
         connection_id: row.id,
         layout: zone.layout,
@@ -122,9 +144,24 @@ export function createZones(deps: ZonesDeps) {
         desired: stored(zone, body.environments),
         tree: root,
         counts,
-        blockers: await blockersFor(provider, row, zone, recorded),
+        blockers,
+        warnings: [
+          ...billingWarning(billing, 'project'),
+          ...(await moveWarnings(sql, row.id, zone)),
+          ...keptWarning(kept),
+        ],
+        billing,
         createdBy: personOf(ctx.actor),
       });
+      return toPlan(plan);
+    },
+
+    async planById(ctx: RequestContext, id: string, planId: string): Promise<LandingZonePlan> {
+      await authorizePipelines(ctx);
+      const plan = await findPlan(deps.sql(), planId);
+      if (!plan || plan.connection_id !== id) {
+        throw new NotFoundError('No landing zone plan has that id');
+      }
       return toPlan(plan);
     },
 

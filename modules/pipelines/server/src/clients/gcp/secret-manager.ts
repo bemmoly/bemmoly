@@ -3,9 +3,9 @@ import type { GcpHttp } from './http.ts';
 import { policySchema, type IamPolicy } from './policy.ts';
 
 /*
- * Secret Manager v1, write side only: create a secret, add a version, grant access. There is
- * deliberately no call that reads a version's payload; Pipelines never sees a value again
- * once it has been written through.
+ * Secret Manager v1: create a secret, add a version, grant access, and read one version. The
+ * read exists for CI jobs only: their secrets are read when a runner collects them, held in
+ * memory for that answer, and never stored. Deploys never read a value; Cloud Run does.
  */
 
 const BASE = 'https://secretmanager.googleapis.com/v1';
@@ -40,6 +40,27 @@ export function createSecretManagerClient(http: GcpHttp) {
         schema: z.object({ name: z.string(), state: z.string().optional() }),
       });
       return answer.name.split('/').pop() ?? answer.name;
+    },
+
+    /**
+     * A version's number without its value: "latest" answers the number it points at now, so
+     * a reference to it can be pinned.
+     */
+    async versionNumber(projectId: string, secret: string, version: string): Promise<string> {
+      const answer = await http.send({
+        url: `${BASE}/${secretName(projectId, secret)}/versions/${version}`,
+        schema: z.object({ name: z.string() }),
+      });
+      return answer.name.split('/').pop() ?? version;
+    },
+
+    /** One version's value, decoded. The caller keeps it in memory and nowhere else. */
+    async accessVersion(projectId: string, secret: string, version: string): Promise<string> {
+      const answer = await http.send({
+        url: `${BASE}/${secretName(projectId, secret)}/versions/${version}:access`,
+        schema: z.object({ name: z.string(), payload: z.object({ data: z.string() }) }),
+      });
+      return Buffer.from(answer.payload.data, 'base64').toString('utf8');
     },
 
     getPolicy(projectId: string, secret: string): Promise<IamPolicy> {

@@ -9,6 +9,7 @@ import { expandJobs, type ExpandApplication, type JobPlan } from '../orchestrato
 import { resolvePipeline } from '../orchestrator/resolve.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { cancelJobsOf } from './cancel.ts';
+import { registryOf } from './registry.ts';
 import { definitionOf, templateLookup } from './templates.ts';
 
 /*
@@ -77,6 +78,13 @@ async function testSeconds(tx: SqlExecutor, applicationIds: string[]) {
   return new Map(rows.map((row) => [row.application_id, Number(row.seconds)]));
 }
 
+/** Each application's folder, for `${{ app.path }}` in its build args. */
+async function folders(tx: SqlExecutor, applicationIds: string[]) {
+  const rows = await tx<{ id: string; path: string }[]>`
+    select id, path from pipeline_applications where id = any(${applicationIds}::uuid[])`;
+  return new Map(rows.map((row) => [row.id, row.path]));
+}
+
 async function insertJobs(tx: SqlExecutor, runId: string, plans: JobPlan[], input: StartRunInput) {
   const poolOf = await poolIds(tx, plans, input.defaultPoolKey);
   for (const plan of plans) {
@@ -128,10 +136,10 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
     if (existing) return { id: existing.id, number: Number(existing.number), created: false };
   }
   const lookup = templateLookup(tx);
-  const seconds = await testSeconds(
-    tx,
-    input.applications.map((application) => application.id),
-  );
+  const registry = await registryOf(tx);
+  const ids = input.applications.map((application) => application.id);
+  const seconds = await testSeconds(tx, ids);
+  const paths = await folders(tx, ids);
   const expandable: ExpandApplication[] = [];
   for (const application of input.applications) {
     const definition = application.resolved ? null : definitionOf(application.pipeline);
@@ -144,8 +152,10 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
       application.resolved ??
       (await resolvePipeline(definition!, lookup, {
         application: application.key,
+        path: paths.get(application.id) ?? '',
         defaultTimeoutMinutes: input.defaultTimeoutMinutes,
         inputs: input.inputs ?? {},
+        registry,
       }).catch((error: unknown) => {
         // In a monorepo run the reason must say which application's pipeline is wrong.
         if (error instanceof ValidationError && input.applications.length > 1) {

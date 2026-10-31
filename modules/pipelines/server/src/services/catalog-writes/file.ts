@@ -5,6 +5,11 @@ import {
   type ApplicationFile,
   type ApplicationFileInput,
 } from '../../../../shared/application-yaml.ts';
+import {
+  REPOSITORY_FILE_PATH,
+  repositoryFileSchema,
+  type RepositoryFile,
+} from '../../../../shared/repository-yaml.ts';
 
 /*
  * `.bemmoly/application.yaml` as text: written for pull requests (UI edits, discovery) and
@@ -14,7 +19,10 @@ import {
 
 export type FileRead = { ok: true; file: ApplicationFile } | { ok: false; error: string };
 
-export function readApplicationFile(content: string): FileRead {
+export type RawRead = { ok: true; values: Record<string, unknown> } | { ok: false; error: string };
+
+/** The YAML as a mapping, unchecked, for merging with the repository file first. */
+export function readYamlMapping(content: string): RawRead {
   let raw: unknown;
   try {
     raw = parse(content, { maxAliasCount: 50 });
@@ -22,14 +30,38 @@ export function readApplicationFile(content: string): FileRead {
     const message = error instanceof Error ? error.message.split('\n', 1)[0] : String(error);
     return { ok: false, error: `The YAML does not parse: ${message}` };
   }
-  const parsed = applicationFileSchema.safeParse(raw);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    const where = issue?.path.length ? `${issue.path.join('.')}: ` : '';
-    return { ok: false, error: `${where}${issue?.message ?? 'The file is not valid'}` };
+  if (raw === null || raw === undefined) return { ok: true, values: {} };
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    return { ok: false, error: 'The file must be a mapping of settings, such as name: orders' };
   }
+  return { ok: true, values: raw as Record<string, unknown> };
+}
+
+function firstIssue(issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>): string {
+  const issue = issues[0];
+  const where = issue?.path.length ? `${issue.path.map(String).join('.')}: ` : '';
+  return `${where}${issue?.message ?? 'The file is not valid'}`;
+}
+
+export function readApplicationFile(content: string): FileRead {
+  const raw = readYamlMapping(content);
+  if (!raw.ok) return raw;
+  const parsed = applicationFileSchema.safeParse(raw.values);
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error.issues) };
   return { ok: true, file: parsed.data };
 }
+
+export type RepositoryRead = { ok: true; file: RepositoryFile } | { ok: false; error: string };
+
+export function readRepositoryFile(content: string): RepositoryRead {
+  const raw = readYamlMapping(content);
+  if (!raw.ok) return raw;
+  const parsed = repositoryFileSchema.safeParse(raw.values);
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error.issues) };
+  return { ok: true, file: parsed.data };
+}
+
+export const isRepositoryFile = (path: string) => path === REPOSITORY_FILE_PATH;
 
 /** The file for an application, leaving out what equals the defaults so it stays short. */
 export function writeApplicationFile(file: ApplicationFileInput): string {

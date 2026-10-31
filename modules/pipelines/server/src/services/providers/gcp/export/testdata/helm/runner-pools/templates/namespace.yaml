@@ -1,0 +1,9 @@
+{{- if .Values.pool }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    pipelines.bemmoly.dev/pool: {{ .Values.pool }}
+{{- end }}

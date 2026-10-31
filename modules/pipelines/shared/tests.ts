@@ -10,6 +10,7 @@ import {
   slugSchema,
   teamRefSchema,
 } from './common.ts';
+import { settingsSourceSchema } from './repository-yaml.ts';
 import { inputTypeSchema, scalarSchema, scheduleSpecSchema } from './pipeline-spec.ts';
 
 /*
@@ -50,6 +51,10 @@ export const applicationPipelineSchema = z.object({
   schedules: z.array(scheduleSchema),
   /** The definition as written, for "view the pipeline". */
   definition: z.unknown().nullable(),
+  /** Which file defines it and where each setting came from; null when made in Pipelines. */
+  settings: settingsSourceSchema.nullable().default(null),
+  /** A library: its pipeline checks it but builds no image and deploys nothing. */
+  library: z.boolean().default(false),
 });
 
 export const testStateFilterSchema = z.enum(['flaky', 'quarantined', 'all']);

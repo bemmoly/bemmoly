@@ -39,6 +39,8 @@ case "$*" in
     [ -f "$s/project" ] || exit 1
     case "$*" in *projectNumber*) echo 424242 ;; *) echo 1001 ;; esac ;;
   'projects create '*) touch "$s/project" ;;
+  'projects get-iam-policy '*) show project-roles ;;
+  'projects add-iam-policy-binding '*) add project-roles "${role}" ;;
   'services list '*) show services ;;
   'services enable '*) for a in "${@:3}"; do [[ "${a}" == --* ]] || add services "${a}"; done ;;
   'iam service-accounts describe '*) [ -f "$s/sa" ] ;;
@@ -143,6 +145,35 @@ roles/resourcemanager.projectIamAdmin'
   [ "${status}" -eq 0 ]
   for role in ${PROVISIONING}; do grep -qxF "${role}" "${FAKE_STATE}/folder-roles"; done
   [ -z "$(changes | grep -v add-iam-policy-binding)" ]
+}
+
+@test "it ends with the values to paste into Connect, and grants the platform project's roles" {
+  bootstrap
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == *"Create projects for me"* ]]
+  [[ "${output}" == *"Folder ID:         1001"* ]]
+  [[ "${output}" == *"Billing account:   0123AB-4567CD-89EF01"* ]]
+  [[ "${output}" == *"Control project:   bemmoly-control-123456789012"* ]]
+  [[ "${output}" == *"Sign in with:      The VM Bemmoly runs on"* ]]
+  grep -qx roles/artifactregistry.admin "${FAKE_STATE}/project-roles"
+  grep -qx roles/logging.configWriter "${FAKE_STATE}/project-roles"
+  : >"${FAKE_LOG}"
+  bootstrap
+  [[ "${output}" == *"holds its roles on project bemmoly-control-123456789012"* ]]
+  [ -z "$(changes)" ]
+}
+
+@test "--member grants the roles to a person for a laptop install" {
+  bootstrap --mode none --member user:keerthi@acme.dev
+  [ "${status}" -eq 0 ]
+  grep -q 'folders add-iam-policy-binding 1001 --member=user:keerthi@acme.dev --role=roles/resourcemanager.projectCreator' "${FAKE_LOG}"
+  grep -q 'billing accounts add-iam-policy-binding 0123AB-4567CD-89EF01 --member=user:keerthi@acme.dev --role=roles/billing.user' "${FAKE_LOG}"
+  lacks 'member=serviceAccount:' "${FAKE_LOG}"
+  [[ "${output}" == *"Sign in with:      My gcloud sign-in on this machine"* ]]
+  [[ "${output}" == *"Granted to:        user:keerthi@acme.dev"* ]]
+  run sh "${BOOTSTRAP}" --member keerthi@acme.dev
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"--member must be user:"* ]]
 }
 
 @test "--lock before the bootstrap says to run it first" {

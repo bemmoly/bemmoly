@@ -1,8 +1,10 @@
-import type { LandingZoneNode, Layout } from '../../../../shared/clouds.ts';
+import type { Layout } from '../../../../shared/clouds.ts';
+import type { LandingZoneNode } from '../../../../shared/landing-zones.ts';
 import type { DesiredResource } from '../providers/contract.ts';
 import type { DesiredAccount, DesiredZone } from './layout.ts';
 import { resourceHash } from './layout.ts';
 import { keyOf } from './order.ts';
+import { describeResource } from './zone/index.ts';
 
 /*
  * The preview a person reads before Apply: the folder, then each account with what will be
@@ -19,10 +21,17 @@ export interface RecordedResource {
 }
 
 const LAYOUT_WORDS: Record<Layout, string> = {
-  'per-environment': 'One account per environment',
-  'per-domain-environment': 'One account per domain and environment',
-  'per-group-environment': 'One account per group and environment',
+  starter: 'Starter: platform, non-production and production',
+  'per-environment': 'Standard: one per environment',
+  'per-domain-environment': 'Enterprise: one per domain and environment',
+  'per-group-environment': 'One per group and environment',
 };
+
+/** An account Pipelines made that the layout no longer declares. */
+export interface KeptAccount {
+  externalId: string;
+  name: string;
+}
 
 export function statusOf(
   resource: DesiredResource,
@@ -33,43 +42,6 @@ export function statusOf(
   if (row.status === 'drifted') return 'drifted';
   if (row.status === 'ready' && row.specHash === resourceHash(resource)) return 'exists';
   return row.everReconciled ? 'update' : 'create';
-}
-
-function describe(resource: DesiredResource): { name: string; note: string | null } {
-  const spec = resource.spec as Record<string, unknown>;
-  switch (resource.kind) {
-    case 'service_api':
-      return { name: 'Services', note: (spec['features'] as string[]).join(', ') };
-    case 'network':
-      return {
-        name: 'Network',
-        note: `${String(spec['name'])}, ${String(spec['subnets'])} subnets`,
-      };
-    case 'deployer_identity':
-      return { name: 'Deployer identity', note: 'every deploy acts as it' };
-    case 'runtime_identity':
-      return spec['purpose'] === 'build'
-        ? { name: 'Build identity', note: 'pushes images to the registry' }
-        : { name: 'Runtime identity', note: 'what applications run as' };
-    case 'registry_access':
-      return spec['access'] === 'push'
-        ? { name: 'Registry', note: `${String(spec['repository'])} in ${String(spec['region'])}` }
-        : { name: 'Registry pull', note: `from ${String(spec['registryAccount'])}` };
-    case 'secret_store':
-      return {
-        name: 'Secret store',
-        note: `readable by ${(spec['readers'] as string[]).join(', ')}`,
-      };
-    case 'logging':
-      return { name: 'Logs', note: `kept ${String(spec['retentionDays'])} days` };
-    case 'budget':
-      return {
-        name: 'Budget',
-        note: `${String(spec['monthly'])} ${String(spec['currency'])} a month`,
-      };
-    case 'account':
-      return { name: resource.name, note: null };
-  }
 }
 
 const worst = (statuses: Status[]): Status => {
@@ -89,7 +61,7 @@ function accountNode(
     .filter((resource) => resource.kind !== 'account')
     .map((resource) => ({
       kind: 'resource' as const,
-      ...describe(resource),
+      ...describeResource(resource),
       status: statusOf(resource, recorded),
       children: [],
     }));
@@ -110,6 +82,7 @@ export function previewTree(
   zone: DesiredZone,
   boundaryExists: boolean,
   recorded: ReadonlyMap<string, RecordedResource>,
+  kept: readonly KeptAccount[] = [],
 ): { root: LandingZoneNode; counts: { folders: number; accounts: number; resources: number } } {
   const children: LandingZoneNode[] = [];
   const folders = new Map<string, LandingZoneNode>();
@@ -132,11 +105,22 @@ export function previewTree(
     folder.status = statuses.every((status) => status === 'create') ? 'create' : worst(statuses);
     folder.note = `${folder.children.length} accounts`;
   }
+  const status = boundaryExists ? worst(children.map((child) => child.status)) : 'create';
+  // Kept accounts are listed last and never change the folder's status: nothing happens to them.
+  for (const account of kept) {
+    children.push({
+      kind: 'account',
+      name: account.externalId,
+      note: account.name,
+      status: 'kept',
+      children: [],
+    });
+  }
   const root: LandingZoneNode = {
     kind: 'folder',
     name: zone.folderName,
     note: LAYOUT_WORDS[zone.layout],
-    status: boundaryExists ? worst(children.map((child) => child.status)) : 'create',
+    status,
     children,
   };
   return {

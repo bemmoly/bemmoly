@@ -1,0 +1,71 @@
+{{- if .Values.application }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+  annotations:
+    pipelines.bemmoly.dev/release: {{ .Values.release | quote }}
+spec:
+  selector:
+    matchLabels:
+      pipelines.bemmoly.dev/revision: {{ .Values.revision }}
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.serviceAccount }}
+      serviceAccountName: {{ .Values.serviceAccount }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.application }}
+          image: {{ .Values.image | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
+          volumeMounts:
+            - name: bemmoly-secrets
+              mountPath: /var/run/secrets/bemmoly
+              readOnly: true
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            requests:
+              {{- toYaml . | nindent 14 }}
+            limits:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+          {{- with .Values.probes.readiness }}
+          readinessProbe:
+            httpGet:
+              path: {{ . }}
+              port: {{ $.Values.port }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
+          {{- end }}
+          {{- with .Values.probes.liveness }}
+          livenessProbe:
+            httpGet:
+              path: {{ . }}
+              port: {{ $.Values.port }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
+          {{- end }}
+      {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
+      volumes:
+        - name: bemmoly-secrets
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.revision }}
+      {{- end }}
+{{- end }}

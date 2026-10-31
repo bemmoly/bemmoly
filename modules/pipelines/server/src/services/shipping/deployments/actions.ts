@@ -1,8 +1,10 @@
 import { ConflictError } from '@bemmoly/shared';
 import type { DeploymentRow } from '../../../models/shipping.ts';
+import type { DeployVariable } from '../../providers/contract.ts';
 import { LEASE_MS, type ShippingEngineDeps } from '../engine-deps.ts';
 import { loadRelease } from '../load.ts';
 import { recordDeploymentEvent } from '../record.ts';
+import { deploymentPlanSchema } from '../../rollout/plan.ts';
 import { artifactOf, resolveTarget } from '../targets.ts';
 import { createRolloutEngine } from './engine.ts';
 
@@ -69,12 +71,14 @@ export async function rollbackFinished(
   if (current?.deployment_id !== row.id) {
     throw new ConflictError('A newer deployment runs here now; roll that one back instead');
   }
-  const [known] = await sql<{ revision: string }[]>`
-    select revision from pipeline_deployments
+  const [known] = await sql<{ revision: string; variables: DeployVariable[] | null }[]>`
+    select revision, variables from pipeline_deployments
     where application_id = ${row.application_id} and environment_id = ${row.environment_id}
       and release_id = ${target} and state = 'succeeded' and revision is not null
     order by finished_at desc nulls last limit 1`;
   const now = deps.now();
+  // Back on the runtime the rolled-back deploy ran on, where its predecessor still is.
+  const runtime = deploymentPlanSchema.parse(row.plan ?? {}).runtime;
   const plan = {
     steps: [],
     holdMinutes: 0,
@@ -82,6 +86,7 @@ export async function rollbackFinished(
     sampleSeconds: 60,
     autoRollback: false,
     checks: [],
+    ...(runtime ? { runtime } : {}),
   };
   const id = await sql.begin(async (tx) => {
     const [created] = await tx<{ id: string }[]>`
@@ -102,15 +107,34 @@ export async function rollbackFinished(
       deps.providers,
       row.application_id,
       row.environment_id,
+      { runtime },
     );
     if (!provider.targets) throw new Error(`${provider.name} cannot deploy yet`);
+    const targets = provider.targets;
+    const remember = async (variables: DeployVariable[] | null | undefined) => {
+      if (!variables) return;
+      await sql`update pipeline_deployments set variables = ${JSON.stringify(variables)}::jsonb
+        where id = ${id}`;
+    };
+    const redeploy = async (variables: DeployVariable[] | undefined) => {
+      await remember(variables);
+      const release = artifactOf(await loadRelease(sql, target));
+      const { revision: made } = await targets.deploy(where, release, variables);
+      await targets.shift(where, { revision: made, percent: 100, stable: row.revision });
+      return made;
+    };
     let revision = known?.revision ?? null;
     if (revision) {
-      await provider.targets.rollback(where, revision);
+      try {
+        await targets.rollback(where, revision);
+        await remember(known?.variables);
+      } catch (error) {
+        // The revision is gone: the release goes out again with the variables it ran with.
+        if (!known?.variables) throw error;
+        revision = await redeploy(known.variables);
+      }
     } else {
-      revision = (await provider.targets.deploy(where, artifactOf(await loadRelease(sql, target))))
-        .revision;
-      await provider.targets.shift(where, { revision, percent: 100, stable: row.revision });
+      revision = await redeploy(await deps.variables?.(row.application_id, row.environment_id));
     }
     await sql.begin((tx) =>
       recordDeploymentEvent(

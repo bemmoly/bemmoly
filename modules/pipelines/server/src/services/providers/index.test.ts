@@ -12,10 +12,12 @@ const settings = (values: { simulate?: boolean; local?: boolean }) => ({
 });
 
 describe('the default providers', () => {
-  it('offer Google Cloud with every part but runners, access and cost', () => {
+  it('offer Google Cloud with every part but access and cost', () => {
     const [gcp, ...rest] = createDefaultProviders({ simulate: false });
     expect(gcp?.id).toBe('gcp');
-    expect(gcp?.comingSoon).toEqual(['runners', 'access', 'cost']);
+    expect(gcp?.comingSoon).toEqual(['access', 'cost']);
+    expect(gcp?.runners?.launch).toBeDefined();
+    expect(gcp?.runners?.ensurePool).toBeDefined();
     expect(gcp?.targets?.kinds).toEqual(['container-service']);
     expect(rest.map((provider) => provider.id)).toEqual(['aws', 'kubernetes', 'azure']);
   });
@@ -37,8 +39,9 @@ describe('the default providers', () => {
     expect(gcp.runners).toBeDefined();
     const same = providersFromSettings(settings({ simulate: true }));
     expect(await same()).toBe(await same());
+    expect(gcp.runners?.ensurePool).toBeDefined();
     expect(
-      (await providersFromSettings(settings({ simulate: false }))()).get('gcp').runners,
-    ).toBeUndefined();
+      (await providersFromSettings(settings({ simulate: false }))()).get('gcp').description,
+    ).not.toMatch(/^Simulated/);
   });
 });

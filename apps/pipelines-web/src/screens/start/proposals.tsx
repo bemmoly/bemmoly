@@ -1,5 +1,9 @@
 import { useT } from '@bemmoly/core-web';
-import type { DiscoveryProposal, DiscoverySignal } from '@bemmoly/module-pipelines/shared';
+import type {
+  DiscoveryProposal,
+  DiscoverySignal,
+  ProposalsPage,
+} from '@bemmoly/module-pipelines/shared';
 import {
   Button,
   Checkbox,
@@ -17,6 +21,7 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
 import { Panel } from '../../parts/screen.tsx';
+import { RepositoryFiles } from './repository-file.tsx';
 
 const SIGNAL = {
   dockerfile: 'pipelines.signal.dockerfile',
@@ -33,6 +38,7 @@ const SIGNAL = {
   bazel: 'pipelines.signal.bazel',
   backstage: 'pipelines.signal.backstage',
   'application-yaml': 'pipelines.signal.applicationYaml',
+  'shared-dockerfile': 'pipelines.signal.sharedDockerfile',
 } as const satisfies Record<DiscoverySignal, string>;
 
 /** Every group as "domain/group", for proposals that found no group of their own. */
@@ -57,9 +63,16 @@ function useGroupOptions() {
 /**
  * What the scan found: deployable things with the signals that gave them away and the owner
  * CODEOWNERS or a Backstage file names. Accepting adds them to the catalog and opens one pull
- * request per repository with their application.yaml.
+ * request per repository with their application.yaml, or one repository file for those that
+ * share a Dockerfile, shown here before accepting.
  */
-export function Proposals({ items }: { items: readonly DiscoveryProposal[] }) {
+export function Proposals({
+  items,
+  repositoryFiles = [],
+}: {
+  items: readonly DiscoveryProposal[];
+  repositoryFiles?: ProposalsPage['repositoryFiles'];
+}) {
   const t = useT(pipelinesText);
   const toast = useToast();
   const client = useQueryClient();
@@ -171,6 +184,7 @@ export function Proposals({ items }: { items: readonly DiscoveryProposal[] }) {
         rowKey={(item) => item.id}
         density="sm"
       />
+      <RepositoryFiles files={repositoryFiles} />
       <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-end">
         {needsGroup && (
           <Field
