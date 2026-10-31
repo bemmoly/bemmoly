@@ -102,9 +102,9 @@ export function createFakeAdopt(world: FakeAdoptWorld): AdoptPart {
         .map(([, service]) => service)
         .sort((a, b) => a.name.localeCompare(b.name));
     },
-    async readService(_connection, place, name) {
+    async hasService(_connection, place, name) {
       inProject(place);
-      return world.running.get(runningKey(place.account, name)) ?? null;
+      return world.running.has(runningKey(place.account, name));
     },
     async runtimePrincipal(target) {
       const cluster = target.placement?.cluster;

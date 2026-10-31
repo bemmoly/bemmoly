@@ -335,14 +335,6 @@
     },
     {
       "method": "GET",
-      "url": "https://secretmanager.googleapis.com/v1/projects/acme-shop-stage/secrets/cart-db-password/versions/latest",
-      "response": {
-        "name": "projects/771205334230/secrets/cart-db-password/versions/3",
-        "state": "ENABLED"
-      }
-    },
-    {
-      "method": "GET",
       "url": "https://run.googleapis.com/v2/projects/acme-shop-stage/locations/europe-west1/services/billing-api",
       "status": 404,
       "response": {
