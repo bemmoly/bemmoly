@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { buildArgsSchema, buildOverrideSchema } from './build-args.ts';
 import { runtimeSchema, slugSchema } from './common.ts';
 
 /*
@@ -95,6 +96,8 @@ export const buildSpecSchema = z.object({
   platforms: z.array(z.string()).default(['linux/amd64']),
   /** The runner pool that builds the image; the organisation's default when absent. */
   pool: slugSchema.optional(),
+  /** `--build-arg` values; see build-args.ts for what they may name. */
+  args: buildArgsSchema.default({}),
 });
 
 /** A step runs as a container: an image and a command, or an action it `uses`. */
@@ -171,6 +174,8 @@ export const pipelineExtendsSchema = z.object({
   /** Added after the template's steps; locked template steps always stay. */
   test: z.array(pipelineStepSpecSchema).optional(),
   deploy: deploySpecSchema.partial().optional(),
+  /** Changes to the template's build, such as a Dockerfile or build args. */
+  build: buildOverrideSchema.optional(),
   /** More inputs for the run form, beside the template's. */
   inputs: z.record(z.string(), templateInputSchema).default({}),
   schedules: z.array(scheduleSpecSchema).max(20).optional(),
