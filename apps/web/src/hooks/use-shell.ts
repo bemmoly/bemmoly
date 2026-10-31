@@ -1,4 +1,11 @@
-import { inSidebarOrder, moduleName, openCreate, type ScreenAction } from '@bemmoly/core-web';
+import {
+  inSidebarOrder,
+  moduleName,
+  openCreate,
+  productsOf,
+  type Product,
+  type ScreenAction,
+} from '@bemmoly/core-web';
 import type { ModuleManifest, SidebarLink } from '@bemmoly/shared';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo } from 'react';
@@ -32,6 +39,7 @@ export function useShell() {
   const workspace = useWorkspace();
   const { data = [] } = useModules();
   const modules = useMemo(() => inSidebarOrder(data), [data]);
+  const products = useMemo(() => productsOf(data), [data]);
   const { unreadCount } = useInbox();
   const signOut = useSignOut();
   const openPalette = useUiStore((state) => state.openPalette);
@@ -69,6 +77,11 @@ export function useShell() {
     /** C and the New button: the first module's first create entry (Work's new issue). */
     primaryCreate: creates[0] ?? null,
     primary,
+    /** Every product the person can use, for the switcher and the start page. */
+    products,
+    /** A product with its own app loads it; anything else is a route here. */
+    openProduct: (path: string, product?: Product) =>
+      product?.ownApp ? window.location.assign(path) : go(path),
     /** Mode is always the person's own: Light, Dark or Match system. */
     mode: { value: look.preference, set: personal.setMode },
     canInvite: me.can('workspace.roles.manage'),

@@ -39,6 +39,8 @@ import { previewPromotion } from './promotions/preview.ts';
 import { requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
+import { promoteAutomatically } from './promotions/automatic.ts';
+import { deployRuntimeSchema } from '../../../../shared/common.ts';
 import { resolveTarget } from './targets.ts';
 
 export type { ShippingEngineDeps, Waker } from './engine-deps.ts';
@@ -62,7 +64,15 @@ async function setting(settings: Settings, key: string, fallback: number): Promi
 }
 
 export function createShippingService(deps: ShippingEngineDeps & { settings?: Settings }) {
-  const engine = createShippingEngine(deps);
+  const core = createShippingEngine(deps);
+  // The minute sweep also starts what the paths auto-promote, after moving what is due.
+  const engine = {
+    ...core,
+    async sweep(limit?: number) {
+      const moved = await core.sweep(limit);
+      return moved + (await promoteAutomatically(deps, await rolloutSettings()));
+    },
+  };
   const { sql } = deps;
   const present = (row: PromotionRow, ctx: RequestContext) =>
     presentPromotion(sql, deps.access, row, personOf(ctx.actor), deps.now());
@@ -174,11 +184,14 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
       await authorizePipelines(ctx);
       const row = await getDeploymentRow(sql, id);
       // No connection means no metrics source: the screen then says the checks are waiting.
+      const [pinned] = await sql<{ runtime: string | null }[]>`
+        select plan ->> 'runtime' as runtime from pipeline_deployments where id = ${id}`;
       const hasMetrics = await resolveTarget(
         sql,
         deps.providers,
         row.application_id,
         row.environment_id,
+        { runtime: deployRuntimeSchema.safeParse(pinned?.runtime).data },
       ).then(
         (resolved) => Boolean(resolved.provider.metrics),
         () => false,

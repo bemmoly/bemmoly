@@ -131,35 +131,31 @@ export function createLocalRuntime(config: LocalConfig) {
     return existingOrCreated(target, false);
   }
 
-  async function existingOrCreated(
-    target: DeployTarget,
-    create: boolean,
-  ): Promise<{ client: SplitterClient; url: string } | null> {
-    const name = splitterName(target);
-    let found = await running(name);
-    if (!found && !create) return null;
-    if (!found) {
-      await ensureImage(config.nodeImage);
-      await docker.ensureNetwork(NETWORK, { [LABEL]: 'true' });
-      await docker.create({
-        name,
-        image: config.nodeImage,
-        cmd: ['node', '-e', SPLITTER_PROGRAM],
-        env: {
-          LOAD_RPS: String(config.syntheticRps),
-          ADMIN_TOKEN: randomBytes(24).toString('hex'),
-        },
-        labels: labelsFor(target, 'splitter'),
-        network: NETWORK,
-        publish: [SPLITTER_PUBLIC, SPLITTER_ADMIN],
-      });
-      await docker.start(name);
-      found = await docker.inspect(name);
-    }
+  /** A fresh splitter with its own random admin token, so its admin port never runs open. */
+  async function createSplitter(target: DeployTarget, name: string) {
+    await ensureImage(config.nodeImage);
+    await docker.ensureNetwork(NETWORK, { [LABEL]: 'true' });
+    await docker.create({
+      name,
+      image: config.nodeImage,
+      cmd: ['node', '-e', SPLITTER_PROGRAM],
+      env: {
+        LOAD_RPS: String(config.syntheticRps),
+        ADMIN_TOKEN: randomBytes(24).toString('hex'),
+      },
+      labels: labelsFor(target, 'splitter'),
+      network: NETWORK,
+      publish: [SPLITTER_PUBLIC, SPLITTER_ADMIN],
+    });
+    await docker.start(name);
+    return docker.inspect(name);
+  }
+
+  async function answering(name: string, found: DockerInspect | null, token: string) {
     const admin = found ? publishedPort(found, SPLITTER_ADMIN) : null;
     const pub = found ? publishedPort(found, SPLITTER_PUBLIC) : null;
     if (!admin || !pub) throw new Error(`${name} has no published ports`);
-    const client = createSplitterClient(`http://127.0.0.1:${admin}`, adminToken(found));
+    const client = createSplitterClient(`http://127.0.0.1:${admin}`, token);
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
         await client.routes();
@@ -169,6 +165,34 @@ export function createLocalRuntime(config: LocalConfig) {
       }
     }
     throw new Error(`${name} did not start answering`);
+  }
+
+  async function existingOrCreated(
+    target: DeployTarget,
+    create: boolean,
+  ): Promise<{ client: SplitterClient; url: string } | null> {
+    const name = splitterName(target);
+    const found = await running(name);
+    if (!found && !create) return null;
+    if (!found) {
+      const made = await createSplitter(target, name);
+      return answering(name, made, adminToken(made) ?? '');
+    }
+    const token = adminToken(found);
+    if (token) return answering(name, found, token);
+    // A splitter made before admin tokens runs an open admin port: replace it, keeping the
+    // routes it serves (that open port still answers without a token), so traffic carries on.
+    const admin = publishedPort(found, SPLITTER_ADMIN);
+    const routes = admin
+      ? await createSplitterClient(`http://127.0.0.1:${admin}`, '')
+          .routes()
+          .catch(() => [])
+      : [];
+    await docker.remove(name);
+    const made = await createSplitter(target, name);
+    const fresh = await answering(name, made, adminToken(made) ?? '');
+    if (routes.length > 0) await fresh.client.setRoutes(routes);
+    return fresh;
   }
 
   /**

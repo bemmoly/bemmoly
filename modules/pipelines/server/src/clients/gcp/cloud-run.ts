@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import type { GcpHttp } from './http.ts';
+import { GcpApiError, type GcpHttp } from './http.ts';
 import { operationSchema, waitForOperation, type PollOptions } from './operations.ts';
+import { policySchema, withBinding } from './policy.ts';
 
 /* Cloud Run Admin v2: services, their revisions and the traffic split between them. */
 
@@ -25,6 +26,7 @@ const trafficStatusSchema = trafficTargetSchema.extend({ uri: z.string().optiona
 const serviceSchema = z.object({
   name: z.string(),
   uri: z.string().optional(),
+  urls: z.array(z.string()).default([]),
   etag: z.string().optional(),
   latestReadyRevision: z.string().optional(),
   latestCreatedRevision: z.string().optional(),
@@ -37,6 +39,16 @@ const revisionSchema = z.object({
   name: z.string(),
   conditions: z.array(conditionSchema).default([]),
   createTime: z.string().optional(),
+});
+
+const servicesPageSchema = z.object({
+  services: z.array(serviceSchema).default([]),
+  nextPageToken: z.string().optional(),
+});
+
+/** Cloud Run's v1 view of a revision: the one place it says which digest a tag resolved to. */
+const knativeRevisionSchema = z.object({
+  status: z.object({ imageDigest: z.string().optional() }).default({}),
 });
 
 export type RunService = z.infer<typeof serviceSchema>;
@@ -57,6 +69,38 @@ export function createCloudRunClient(http: GcpHttp, poll: PollOptions) {
   return {
     getService(name: string): Promise<RunService | null> {
       return http.find({ url: `${BASE}/${name}`, schema: serviceSchema });
+    },
+
+    /** Every service in one project and region, page by page. */
+    async listServices(projectId: string, region: string): Promise<RunService[]> {
+      const services: RunService[] = [];
+      let pageToken: string | undefined;
+      do {
+        const page = await http.send({
+          url: `${BASE}/projects/${projectId}/locations/${region}/services`,
+          query: { pageSize: 100, ...(pageToken ? { pageToken } : {}) },
+          schema: servicesPageSchema,
+        });
+        services.push(...page.services);
+        pageToken = page.nextPageToken || undefined;
+      } while (pageToken);
+      return services;
+    },
+
+    /**
+     * The image a revision runs, by digest ("…/cart-api@sha256:…"), even when it was deployed
+     * by tag: v2 keeps the tag as written, v1 says what it resolved to.
+     */
+    async revisionDigest(
+      projectId: string,
+      region: string,
+      revision: string,
+    ): Promise<string | null> {
+      const found = await http.find({
+        url: `https://${region}-run.googleapis.com/apis/serving.knative.dev/v1/namespaces/${projectId}/revisions/${revision}`,
+        schema: knativeRevisionSchema,
+      });
+      return found?.status.imageDigest ?? null;
     },
 
     async createService(
@@ -91,8 +135,36 @@ export function createCloudRunClient(http: GcpHttp, poll: PollOptions) {
       return finish(operation);
     },
 
+    /** Lets anyone call the service; a no-op when it is public already. */
+    async allowPublicInvoker(name: string): Promise<void> {
+      const policy = await http.send({ url: `${BASE}/${name}:getIamPolicy`, schema: policySchema });
+      const changed = withBinding(policy, 'roles/run.invoker', 'allUsers');
+      if (!changed) return;
+      await http.send({
+        method: 'POST',
+        url: `${BASE}/${name}:setIamPolicy`,
+        body: { policy: changed },
+        schema: policySchema,
+      });
+    },
+
     getRevision(name: string): Promise<RunRevision | null> {
       return http.find({ url: `${BASE}/${name}`, schema: revisionSchema });
+    },
+
+    /** The whole service and every revision; gone already counts as deleted. */
+    async deleteService(name: string): Promise<void> {
+      try {
+        const operation = await http.send({
+          method: 'DELETE',
+          url: `${BASE}/${name}`,
+          schema: operationSchema,
+        });
+        await waitForOperation(http, BASE, operation, poll);
+      } catch (error) {
+        if (error instanceof GcpApiError && error.status === 404) return;
+        throw error;
+      }
     },
 
     async deleteRevision(name: string): Promise<void> {

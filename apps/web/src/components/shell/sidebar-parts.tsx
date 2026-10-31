@@ -1,4 +1,11 @@
-import { RAIL_BUTTON, useFrame, useT } from '@bemmoly/core-web';
+import {
+  productAt,
+  ProductSwitcher,
+  RAIL_BUTTON,
+  START_PATH,
+  useFrame,
+  useT,
+} from '@bemmoly/core-web';
 import {
   Avatar,
   BrandBlock,
@@ -49,6 +56,25 @@ function WorkspaceMenuItems({ shell }: { shell: Shell }) {
   );
 }
 
+/** The grid button: back to the start page, or across to another product. */
+function Products({ shell, rail }: { shell: Shell; rail: boolean }) {
+  const { pathname } = useFrame();
+  return (
+    <ProductSwitcher
+      products={shell.products}
+      currentId={productAt(shell.products, pathname)?.id}
+      onOpen={shell.openProduct}
+      startPath={START_PATH}
+      side={rail ? 'right' : 'bottom'}
+      className={
+        rail
+          ? RAIL_BUTTON
+          : 'grid size-7.5 shrink-0 cursor-pointer place-items-center rounded-control border-0 bg-card p-0 text-tx-2 shadow-e1 hover:text-tx focus-ring aria-expanded:text-tx'
+      }
+    />
+  );
+}
+
 function CollapseButton({ label }: { label: string }) {
   const { toggleSidebar, mode } = useFrame();
   return (
@@ -94,6 +120,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
             <Icon name="search" size={17} />
           </button>
         </Tooltip>
+        <Products shell={shell} rail />
         <span className="mt-0.5 mb-2">
           <NewButton shell={shell} />
         </span>
@@ -130,6 +157,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
           <span className="flex-1">{t('shell.sidebar.search')}</span>
           <Kbd keys="Mod+K" />
         </button>
+        <Products shell={shell} rail={false} />
         <NewButton shell={shell} />
       </div>
     </>

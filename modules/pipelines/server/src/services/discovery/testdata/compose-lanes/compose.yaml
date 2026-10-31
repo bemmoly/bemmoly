@@ -1,0 +1,15 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+      args:
+        APP: api
+  worker:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+      args:
+        APP: worker
+  db:
+    image: postgres:18

@@ -8,6 +8,7 @@ declare module '@bemmoly/core' {
     'pipelines.history.rewindDays': number;
     'pipelines.runners.defaultPool': string;
     'pipelines.providers.simulate': boolean;
+    'pipelines.providers.local': boolean;
   }
 }
 
@@ -47,6 +48,15 @@ export function definePipelinesSettings(settings: SettingsRegistry): void {
    */
   settings.define({
     key: 'pipelines.providers.simulate',
+    schema: z.boolean(),
+    default: false,
+  });
+  /**
+   * Offers "This machine": deploys drive the Docker socket of the host the server runs on,
+   * which on a shared install is the server's own machine, so only a laptop demo turns it on.
+   */
+  settings.define({
+    key: 'pipelines.providers.local',
     schema: z.boolean(),
     default: false,
   });

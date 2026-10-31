@@ -29,7 +29,9 @@ import {
 /** Tier 1: one approval from its team, a canary in Prod, no deploy window to wait for. */
 export const DEMO_APP = 'pricing-svc';
 
-const SETTINGS: ReadonlyArray<[string, number]> = [
+/** The local provider is off on every install until this demo turns it on; undo turns it off. */
+const SETTINGS: ReadonlyArray<[string, number | boolean]> = [
+  ['pipelines.providers.local', true],
   ['pipelines.rollout.holdMinutes', 1],
   ['pipelines.rollout.watchMinutes', 1],
   ['pipelines.rollout.sampleSeconds', 10],
@@ -59,7 +61,7 @@ export function demoShipping(sql: SqlClient): {
   const shipping = createShippingService({
     sql,
     settings: settings as never,
-    providers: createProviderRegistry(createDefaultProviders({ simulate: false })),
+    providers: createProviderRegistry(createDefaultProviders({ simulate: false, local: true })),
     access: createShippingAccess(createAccessEngine({ database: sql })),
     webhook: createWebhookCaller(async () => null),
     now: () => new Date(),

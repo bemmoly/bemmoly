@@ -7,7 +7,7 @@ import {
   writeApplicationFile,
 } from './file.ts';
 import { ownerRefOf, teamSlug } from './owners.ts';
-import { editFile, summarise } from './repo-change.ts';
+import { editEntry, editFile, summarise } from './repo-change.ts';
 
 const FILE = `# Owned by Payments since 2024
 name: checkout-api
@@ -100,5 +100,32 @@ describe('owners and summaries', () => {
   it('says what an edit changes', () => {
     expect(summarise(['owner'])).toBe('Changes owner');
     expect(summarise(['owner', 'tier', 'dependsOn'])).toBe('Changes owner, tier and dependencies');
+  });
+});
+
+describe('a central entry in the repository file', () => {
+  const REPOSITORY = `defaults:
+  group: shop # every service
+applications:
+  - name: orders
+    path: services/orders
+  - name: billing
+    path: services/billing
+`;
+
+  it('changes only its own entry and keeps the rest of the file', () => {
+    const edited = editEntry(REPOSITORY, 'billing', { tier: 1, labels: ['pci'], owner: null });
+    expect(edited).toBe(`defaults:
+  group: shop # every service
+applications:
+  - name: orders
+    path: services/orders
+  - name: billing
+    path: services/billing
+    tier: 1
+    labels:
+      - pci
+`);
+    expect(editEntry(REPOSITORY, 'missing', { tier: 1 })).toBeNull();
   });
 });

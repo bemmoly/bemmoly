@@ -39,3 +39,4 @@ export {
   type FileTargetDefinition,
 } from './files.ts';
 export { createModuleObjects, type ModuleObjects } from './objects.ts';
+export type { StartRegistry, StartSourceDefinition } from './start.ts';

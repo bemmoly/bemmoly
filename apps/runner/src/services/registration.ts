@@ -23,6 +23,8 @@ export interface RegistrationDeps {
   dataDir: string;
   url: string;
   poolToken: string | undefined;
+  /** One-job mode: registers for one job only, and the registration is never saved. */
+  launchToken?: string | undefined;
   name: string;
   version: string;
   labels: string[];
@@ -45,8 +47,28 @@ export async function forgetRegistration(dataDir: string): Promise<void> {
   await rm(path.join(dataDir, FILE), { force: true });
 }
 
+async function registerForOneJob(deps: RegistrationDeps, launchToken: string) {
+  const answer = await deps.client.register({
+    launchToken,
+    name: deps.name,
+    version: deps.version,
+    labels: deps.labels,
+  });
+  deps.logger.info(
+    { runnerId: answer.runnerId, pool: answer.pool.key },
+    'registered for one job with the control plane',
+  );
+  return {
+    runnerId: answer.runnerId,
+    runnerToken: answer.runnerToken,
+    url: deps.url,
+    heartbeatSeconds: answer.heartbeatSeconds,
+  };
+}
+
 /** Registers with the pool token and saves the runner token, readable by this user only. */
 export async function register(deps: RegistrationDeps): Promise<Registration> {
+  if (deps.launchToken) return registerForOneJob(deps, deps.launchToken);
   if (!deps.poolToken) {
     throw new ValidationError(
       'This runner is not registered yet: pass --pool-token (or BEMMOLY_POOL_TOKEN) from the pool settings',
@@ -78,5 +100,6 @@ export async function register(deps: RegistrationDeps): Promise<Registration> {
 
 /** The saved registration if there is one, else a new one. */
 export async function ensureRegistration(deps: RegistrationDeps): Promise<Registration> {
+  if (deps.launchToken) return register(deps);
   return (await loadRegistration(deps.dataDir, deps.url)) ?? register(deps);
 }

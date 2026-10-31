@@ -1,5 +1,5 @@
 import { ValidationError } from '@bemmoly/shared';
-import { MANAGED_LABEL, ensureFolder, ensureProject } from './org.ts';
+import { MANAGED_LABEL, ensureBilling, ensureFolder, ensureProject, folderOf } from './org.ts';
 import { FEATURE_APIS, projectNumberOf, type ZoneKind } from './zone-kind.ts';
 
 /* The project itself and what sits on it directly: APIs, network, log retention, budget. */
@@ -10,11 +10,14 @@ const wantedLabels = (labels: Readonly<Record<string, string>>) => ({
 });
 
 export const accountKind: ZoneKind<'account'> = {
-  expected: (spec) => ({
-    displayName: spec.displayName.slice(0, 30),
-    labels: wantedLabels(spec.labels),
-    billing: true,
-  }),
+  expected: (spec) =>
+    spec.adopt
+      ? { billing: true }
+      : {
+          displayName: spec.displayName.slice(0, 30),
+          labels: wantedLabels(spec.labels),
+          billing: true,
+        },
   async read({ context, resource, spec }) {
     const project = await context.control.resourceManager.getProject(resource.account);
     if (!project || project.state === 'DELETE_REQUESTED') return null;
@@ -29,12 +32,20 @@ export const accountKind: ZoneKind<'account'> = {
     };
   },
   async apply({ context, connection, resource, spec }) {
-    if (!connection.boundaryRef) {
+    if (spec.adopt) {
+      if (!(await context.control.resourceManager.getProject(resource.account))) {
+        throw new ValidationError(
+          `Project ${resource.account} does not exist. Run deploy/gcp/bootstrap.sh, which creates it, or connect again naming the control project it printed`,
+        );
+      }
+      await ensureBilling(context, resource.account);
+      return;
+    }
+    const folder = folderOf(context, connection);
+    if (!folder) {
       throw new ValidationError(`Create the ${context.config.folderName} folder first`);
     }
-    const parent = spec.folder
-      ? await ensureFolder(context, connection.boundaryRef, spec.folder)
-      : connection.boundaryRef;
+    const parent = spec.folder ? await ensureFolder(context, folder, spec.folder) : folder;
     await ensureProject(context, {
       projectId: resource.account,
       name: spec.displayName,

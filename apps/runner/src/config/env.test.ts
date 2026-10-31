@@ -60,6 +60,41 @@ describe('runner configuration', () => {
     ).toThrow(/only with --local/);
   });
 
+  it('runs one job with a launch token, sharing its own volumes with steps when asked', () => {
+    const config = loadRunnerConfig(
+      [],
+      {
+        BEMMOLY_URL: 'https://ci.example.com',
+        BEMMOLY_LAUNCH_TOKEN: 'l'.repeat(20),
+        BEMMOLY_RUNNER_VOLUMES_FROM: 'self',
+      },
+      never,
+    );
+    expect(config).toMatchObject({
+      launchToken: 'l'.repeat(20),
+      once: true,
+      volumesFrom: hostname(),
+    });
+    expect(config.poolToken).toBeUndefined();
+    expect(() =>
+      loadRunnerConfig(
+        [
+          '--url',
+          'http://x.test',
+          '--pool-token',
+          'p'.repeat(20),
+          '--launch-token',
+          'l'.repeat(20),
+        ],
+        {},
+        never,
+      ),
+    ).toThrow(/not both/);
+    expect(() =>
+      loadRunnerConfig(['--url', 'http://x.test', '--local', '--volumes-from', 'self'], {}, never),
+    ).toThrow(/leave out --local/);
+  });
+
   it('fails fast with a plain message on a missing address or an unknown flag', () => {
     expect(() => loadRunnerConfig([], {}, never)).toThrow(/--url/);
     expect(() => loadRunnerConfig(['--url', 'ftp://x.test'], {}, never)).toThrow(ValidationError);
@@ -90,5 +125,37 @@ describe('split configuration', () => {
       BEMMOLY_JOB_TOKEN: 'tok',
     });
     expect(config.BEMMOLY_API_URL).toBe('http://localhost:5616');
+  });
+});
+
+describe('a runner in a pod Pipelines started', () => {
+  const pod = {
+    control: '/bemmoly/control',
+    logs: '/bemmoly/work/logs',
+    steps: { 'node:24': 'step-0' },
+    builder: 'build',
+  };
+
+  it('reads where its steps run from the pod layout Pipelines set', () => {
+    const config = loadRunnerConfig(
+      [],
+      {
+        BEMMOLY_URL: 'https://ci.example.com',
+        BEMMOLY_LAUNCH_TOKEN: 'l'.repeat(20),
+        BEMMOLY_RUNNER_POD: JSON.stringify(pod),
+      },
+      never,
+    );
+    expect(config).toMatchObject({ pod, once: true, launchToken: 'l'.repeat(20) });
+  });
+
+  it('stops at a layout that is not JSON or asks for local steps too', () => {
+    const env = { BEMMOLY_URL: 'https://ci.example.com', BEMMOLY_LAUNCH_TOKEN: 'l'.repeat(20) };
+    expect(() => loadRunnerConfig([], { ...env, BEMMOLY_RUNNER_POD: '{' }, never)).toThrow(
+      /BEMMOLY_RUNNER_POD is not JSON/,
+    );
+    expect(() =>
+      loadRunnerConfig(['--local'], { ...env, BEMMOLY_RUNNER_POD: JSON.stringify(pod) }, never),
+    ).toThrow(ValidationError);
   });
 });

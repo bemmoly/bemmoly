@@ -118,6 +118,8 @@ export default defineConfig(
       'apps/web/src/pages/settings/profile-page.tsx',
       // Pipelines' web app was written against its catalog from the first line.
       'apps/pipelines-web/src/**/*.tsx',
+      // People's web chunk, likewise.
+      'modules/people/web/src/**/*.tsx',
     ],
     ignores: ['**/*.test.tsx'],
     rules: { 'bemmoly/no-literal-ui-strings': 'error', 'bemmoly/logical-properties': 'error' },

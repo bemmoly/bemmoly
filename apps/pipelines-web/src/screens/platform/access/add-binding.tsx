@@ -116,6 +116,7 @@ export function AddBinding({
         }}
       >
         <SegmentedControl
+          aria-label={t('pipelines.access.who')}
           options={[
             { value: 'team', label: t('pipelines.access.forTeam') },
             { value: 'user', label: t('pipelines.access.forPerson') },

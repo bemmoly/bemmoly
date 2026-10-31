@@ -23,11 +23,16 @@ export type Feature = (typeof FEATURES)[number];
 const labelsSchema = z.record(z.string(), z.string());
 
 export const SPEC_SCHEMAS = {
-  /** A project or account; `folder` groups it under the boundary (a domain, say). */
+  /**
+   * A project or account; `folder` groups it under the boundary (a domain, say). An adopted
+   * one was made by someone else (the bootstrap's control project): Pipelines checks it is
+   * there and billed, and changes nothing else about it.
+   */
   account: z.object({
     displayName: z.string(),
     folder: z.string().nullable(),
     labels: labelsSchema,
+    adopt: z.boolean().default(false),
   }),
   service_api: z.object({ features: z.array(z.enum(FEATURES)) }),
   network: z.object({ name: z.string(), subnets: z.enum(['auto', 'custom']) }),
@@ -54,3 +59,6 @@ export const SPEC_SCHEMAS = {
 } satisfies Record<CloudResourceKind, z.ZodType>;
 
 export type SpecOf<Kind extends CloudResourceKind> = z.infer<(typeof SPEC_SCHEMAS)[Kind]>;
+
+/** A spec as a layout writes it, before defaults are filled in. */
+export type SpecInputOf<Kind extends CloudResourceKind> = z.input<(typeof SPEC_SCHEMAS)[Kind]>;

@@ -1,42 +1,66 @@
 import { GcpApiError } from '../../../clients/gcp/index.ts';
 import type { ConnectionCheck, ConnectionPart, ConnectionRecord } from '../contract.ts';
+import { createAttachCheck } from './attach.ts';
 import type { GcpContexts } from './context.ts';
+import { folderOf } from './org.ts';
 
 /*
- * The connection check: who Bemmoly is in Google Cloud, whether it may create folders and
- * projects where it needs to, and whether it may link projects to the billing account. Each
- * failure becomes one sentence saying what to grant or change, never a raw API error.
+ * The connection check: who Bemmoly is in Google Cloud, and whether it holds exactly the
+ * permissions managed mode needs on the folder bootstrap.sh made and on the billing account.
+ * Each permission missing becomes one sentence naming the role to grant and where, never a
+ * raw API error. Connections made before the folder grant are checked on their organisation.
  */
 
-const FOLDER_PERMISSIONS = ['resourcemanager.folders.create', 'resourcemanager.projects.create'];
-const BILLING_PERMISSIONS = ['billing.resourceAssociations.create'];
+/** Each permission the folder grant gives, and the role that holds it. */
+const FOLDER_GRANTS = [
+  {
+    permission: 'resourcemanager.projects.create',
+    role: 'Project Creator (roles/resourcemanager.projectCreator)',
+    why: 'so it can create projects there',
+  },
+  {
+    permission: 'resourcemanager.folders.create',
+    role: 'Folder Creator (roles/resourcemanager.folderCreator)',
+    why: 'so the Enterprise layout can make a folder per domain',
+  },
+] as const;
+
+const BILLING_PERMISSION = 'billing.resourceAssociations.create';
+const BILLING_ROLE = 'Billing Account User (roles/billing.user)';
 
 const reasonOf = (error: unknown) =>
   error instanceof GcpApiError
     ? `Google Cloud answered ${error.status}: ${error.message}`
     : String(error);
 
+function placeOf(contexts: GcpContexts, connection: ConnectionRecord) {
+  const context = contexts(connection);
+  const { config } = context;
+  const folder = folderOf(context, connection);
+  if (folder) return { resource: folder, where: `folder ${folder.replace(/^folders\//, '')}` };
+  return {
+    resource: `organizations/${config.organizationId}`,
+    where: `organization ${config.organizationId}`,
+  };
+}
+
 async function folderProblems(
   contexts: GcpContexts,
   connection: ConnectionRecord,
   who: string,
 ): Promise<string[]> {
-  const { config, control } = contexts(connection);
-  const resource = connection.boundaryRef ?? `organizations/${config.organizationId}`;
-  const where = connection.boundaryRef
-    ? `the ${config.folderName} folder`
-    : `organization ${config.organizationId}`;
+  const { control } = contexts(connection);
+  const { resource, where } = placeOf(contexts, connection);
   try {
-    const held = await control.resourceManager.testPermissions(resource, FOLDER_PERMISSIONS);
-    const missing = FOLDER_PERMISSIONS.filter((permission) => !held.includes(permission));
-    if (missing.length === 0) return [];
-    return [
-      `Grant ${who} Folder Creator and Project Creator on ${where}; it cannot create folders or projects there yet`,
-    ];
+    const wanted = FOLDER_GRANTS.map((grant) => grant.permission);
+    const held = await control.resourceManager.testPermissions(resource, wanted);
+    return FOLDER_GRANTS.filter((grant) => !held.includes(grant.permission)).map(
+      (grant) => `Grant ${who} ${grant.role} on ${where}, ${grant.why}`,
+    );
   } catch (error) {
     if (error instanceof GcpApiError && (error.status === 403 || error.status === 404)) {
       return [
-        `${who} cannot see ${where}. Check the organization ID and grant it Folder Viewer there`,
+        `${who} cannot see ${where}. Check the ID bootstrap.sh printed, and grant it Folder Viewer (roles/resourcemanager.folderViewer) there`,
       ];
     }
     return [`Bemmoly could not check ${where}. ${reasonOf(error)}`];
@@ -54,18 +78,20 @@ async function billingProblems(
     const account = await control.billing.getAccount(id);
     if (!account)
       return [
-        `${who} cannot see billing account ${id}. Grant it Billing Account User on that account`,
+        `${who} cannot see billing account ${id}. Grant it ${BILLING_ROLE} on that billing account`,
       ];
     if (!account.open) return [`Billing account ${id} is closed. Choose an open billing account`];
-    const held = await control.billing.testPermissions(id, BILLING_PERMISSIONS);
-    if (held.length < BILLING_PERMISSIONS.length) {
-      return [`Grant ${who} Billing Account User on ${id} so new projects can be linked to it`];
+    const held = await control.billing.testPermissions(id, [BILLING_PERMISSION]);
+    if (!held.includes(BILLING_PERMISSION)) {
+      return [
+        `Grant ${who} ${BILLING_ROLE} on billing account ${id}, so new projects can be linked to it`,
+      ];
     }
     return [];
   } catch (error) {
     if (error instanceof GcpApiError && error.status === 403) {
       return [
-        `${who} cannot see billing account ${id}. Grant it Billing Account User on that account`,
+        `${who} cannot see billing account ${id}. Grant it ${BILLING_ROLE} on that billing account`,
       ];
     }
     return [`Bemmoly could not check billing account ${id}. ${reasonOf(error)}`];
@@ -83,10 +109,15 @@ export function createGcpConnection(contexts: GcpContexts): ConnectionPart {
           ok: false,
           principal: null,
           problems: [
-            'Bemmoly could not get a Google Cloud token. On Google Cloud, attach a service account to the VM; elsewhere, upload Bemmoly’s keys to a workload identity pool. ' +
+            'Bemmoly could not get a Google Cloud token. On Google Cloud, attach a service account to the VM; on a laptop, run gcloud auth application-default login; elsewhere, upload Bemmoly’s keys to a workload identity pool. ' +
               reasonOf(error),
           ],
         };
+      }
+      // An attached connection creates nothing, so folders and billing are not its concern;
+      // each project it deploys into is checked when it is attached.
+      if (contexts(connection).config.mode === 'attached') {
+        return { ok: true, principal, problems: [] };
       }
       const who = principal ?? 'The workload identity pool principal';
       const problems = [
@@ -95,5 +126,6 @@ export function createGcpConnection(contexts: GcpContexts): ConnectionPart {
       ];
       return { ok: problems.length === 0, principal, problems };
     },
+    verifyAccount: createAttachCheck(contexts),
   };
 }

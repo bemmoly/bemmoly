@@ -26,7 +26,9 @@ afterEach(async () => {
   await rm(dataDir, { recursive: true, force: true });
 });
 
-function agentFor(options: { once?: boolean; poolToken?: string } = {}): Agent {
+function agentFor(
+  options: { once?: boolean; poolToken?: string; launchToken?: string } = {},
+): Agent {
   const client = new ControlPlaneClient({ url: server.url, logger, retry: FAST_RETRY });
   return new Agent({
     client,
@@ -38,7 +40,8 @@ function agentFor(options: { once?: boolean; poolToken?: string } = {}): Agent {
       logger,
       dataDir,
       url: server.url,
-      poolToken: options.poolToken ?? 'pool-token-0123456789',
+      poolToken: options.launchToken ? undefined : (options.poolToken ?? 'pool-token-0123456789'),
+      launchToken: options.launchToken,
       name: 'test-runner',
       version: '1.1.0',
       labels: ['linux'],
@@ -203,6 +206,19 @@ describe('the agent', () => {
     const file = path.join(dataDir, 'registration.json');
     expect(JSON.parse(await readFile(file, 'utf8'))).toMatchObject({ url: server.url });
     expect((await stat(file)).mode & 0o777).toBe(0o600);
+  });
+
+  it('in one-job mode registers with the launch token, runs one job, saves nothing and exits', async () => {
+    server.jobs.push(makeJob({ steps: [makeStep('a', 'true')] }));
+    server.jobs.push(makeJob({ steps: [makeStep('b', 'true')] }));
+    const agent = agentFor({ once: true, launchToken: 'launch-token-0123456789' });
+    await agent.run();
+    expect(agent.outcomes).toEqual(['passed']);
+    expect(server.of('/register').map((call) => call.body)).toEqual([
+      expect.objectContaining({ launchToken: 'launch-token-0123456789' }),
+    ]);
+    expect((server.of('/register')[0]?.body as { poolToken?: string }).poolToken).toBeUndefined();
+    await expect(stat(path.join(dataDir, 'registration.json'))).rejects.toThrow();
   });
 
   it('registers again once when the control plane no longer knows its token', async () => {

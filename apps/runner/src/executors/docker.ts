@@ -1,4 +1,8 @@
-import { isImageReference, type ResolvedStep } from '@bemmoly/module-pipelines/shared';
+import {
+  DEFAULT_STEP_IMAGE,
+  isImageReference,
+  type ResolvedStep,
+} from '@bemmoly/module-pipelines/shared';
 import { NotFoundError, ProviderError } from '@bemmoly/shared';
 import type { DockerEngine } from '../clients/docker-engine.ts';
 import { LineSplitter, dim } from '../utils/lines.ts';
@@ -10,8 +14,7 @@ import {
   type StepRunOptions,
 } from './types.ts';
 
-/** The image a step runs in when the pipeline names none. */
-export const DEFAULT_STEP_IMAGE = 'alpine:3.20';
+export { DEFAULT_STEP_IMAGE };
 const PULL_TIMEOUT_MS = 20 * 60_000;
 /** A step may run as long as its job; the job's own timeout stops it before this does. */
 const WAIT_TIMEOUT_MS = 24 * 60 * 60_000;
@@ -25,9 +28,16 @@ export class DockerExecutor implements StepExecutor {
   private cancelled = false;
 
   private readonly engine: DockerEngine;
+  private readonly volumesFrom: string | undefined;
 
-  constructor(engine: DockerEngine) {
+  /**
+   * `volumesFrom` names the runner's own container when the runner runs beside its steps on
+   * one daemon (a Cloud Build step): a host path means nothing there, so the step shares the
+   * runner's volumes and works in the workspace at the same path the runner sees.
+   */
+  constructor(engine: DockerEngine, volumesFrom?: string) {
     this.engine = engine;
+    this.volumesFrom = volumesFrom;
   }
 
   async run(step: ResolvedStep, options: StepRunOptions): Promise<StepResult> {
@@ -50,11 +60,13 @@ export class DockerExecutor implements StepExecutor {
         Image: image,
         Cmd: ['sh', '-c', step.run ?? ''],
         Env: Object.entries(containerEnv(options.env)).map(([key, value]) => `${key}=${value}`),
-        WorkingDir: '/workspace',
+        WorkingDir: this.volumesFrom ? options.workspace : '/workspace',
         Tty: false,
         Labels: { 'dev.bemmoly.runner': 'step' },
         HostConfig: {
-          Binds: [`${options.workspace}:/workspace`],
+          ...(this.volumesFrom
+            ? { VolumesFrom: [this.volumesFrom] }
+            : { Binds: [`${options.workspace}:/workspace`] }),
           ExtraHosts: ['host.docker.internal:host-gateway'],
         },
       },

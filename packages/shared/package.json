@@ -7,10 +7,13 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./ai-insights": "./src/schemas/ai/insights.ts",
     "./ai-answers": "./src/ai-answers.ts",
+    "./ai-insights": "./src/schemas/ai/insights.ts",
     "./i18n/*": "./src/i18n/*",
-    "./webhooks": "./src/schemas/webhooks/index.ts"
+    "./people": "./src/schemas/people/index.ts",
+    "./webhooks": "./src/schemas/webhooks/index.ts",
+    "./approvals": "./src/schemas/approvals/index.ts",
+    "./custom-fields": "./src/schemas/custom-fields/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

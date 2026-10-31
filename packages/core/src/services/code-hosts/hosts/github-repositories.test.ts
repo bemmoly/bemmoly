@@ -86,3 +86,32 @@ describe('a GitHub App installation’s repositories', () => {
     expect(api.listRepositories).toBeUndefined();
   });
 });
+
+describe('a checkout token from a GitHub App', () => {
+  it('asks for one that can only read the one repository, fresh each time', async () => {
+    const asked: unknown[] = [];
+    const fetch: typeof globalThis.fetch = async (input, init) => {
+      const url = new URL(input instanceof Request ? input.url : String(input));
+      if (init?.method === 'POST' && url.pathname === '/app/installations/2002/access_tokens') {
+        asked.push(JSON.parse(String(init.body)));
+        return new Response(
+          JSON.stringify({ token: `read-${asked.length}`, expires_at: '2026-10-29T12:00:00Z' }),
+          { status: 201, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response('{}', { status: 404 });
+    };
+    const api = githubHost.api(connection('app'), { policy: 'any', fetch });
+    expect(await api.readToken?.('acme/shop')).toEqual({
+      username: 'x-access-token',
+      token: 'read-1',
+      expiresAt: '2026-10-29T12:00:00Z',
+    });
+    expect((await api.readToken?.('acme/shop'))?.token).toBe('read-2');
+    expect(asked[0]).toEqual({ repositories: ['shop'], permissions: { contents: 'read' } });
+  });
+
+  it('is never offered on a saved personal token', () => {
+    expect(githubHost.api(connection('token'), { policy: 'any' }).readToken).toBeUndefined();
+  });
+});

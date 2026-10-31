@@ -16,6 +16,8 @@ import {
   processAuthorizationCache,
   SYSTEM_SETTINGS,
   type Actor,
+  type ApprovalsWired,
+  type CustomFieldsService,
   type BemmolyModule,
   type CodeHosts,
   type CollabHost,
@@ -38,6 +40,7 @@ import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 import { wireOutgoingWebhooks } from './webhooks.ts';
+import { wireSuiteServices } from './approvals.ts';
 
 export interface BootOptions {
   env: Env;
@@ -110,6 +113,8 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   let objects: DataKernel['objectStore'] | undefined;
   // Bound once code hosts are wired below; modules ask for it only at request time.
   let codeHostDirectory: CodeHosts['directory'] | undefined = undefined;
+  let approvals: ApprovalsWired['service'] | undefined = undefined;
+  let customFields: CustomFieldsService | undefined = undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -121,6 +126,8 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     files: () => files,
     objects: () => objects,
     codeHosts: () => codeHostDirectory,
+    approvals: () => approvals,
+    customFields: () => customFields,
     publicUrl: env.BEMMOLY_PUBLIC_URL,
     ...(env.BEMMOLY_PDF_URL
       ? {
@@ -232,6 +239,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireOutgoingWebhooks({ env, database, kernel, identity, logger })
       : undefined;
+  const suite = database && kernel ? wireSuiteServices({ database, kernel, identity }) : undefined;
+  const people = suite?.people;
+  approvals = suite?.approvals;
+  customFields = suite?.customFields;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -265,6 +276,8 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...(imports ? { imports: imports.service } : {}),
             ...(codeHosts ? { codeHosts } : {}),
             ...(webhooks ? { webhooks: webhooks.service } : {}),
+            ...(people ? { people } : {}),
+            ...(approvals ? { approvals } : {}),
             ...(collab ? { collab } : {}),
           },
         }

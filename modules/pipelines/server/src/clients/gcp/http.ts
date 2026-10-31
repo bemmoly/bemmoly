@@ -20,6 +20,11 @@ export type GcpTransport = (url: string, init: GcpTransportInit) => Promise<Resp
 /** Hands out a current access token; implementations cache and refresh. */
 export interface GcpTokenSource {
   token(): Promise<string>;
+  /**
+   * The project a person's own credentials bill API quota to. Google refuses some APIs for
+   * user credentials without one; service accounts never need it.
+   */
+  quotaProject?(): Promise<string | null>;
 }
 
 export class GcpApiError extends Error {
@@ -62,14 +67,29 @@ export interface GcpHttpOptions {
 
 export const GCP_TIMEOUT_MS = 20_000;
 
+interface ErrorDetail {
+  reason?: string;
+  violations?: Array<{ description?: string }>;
+}
+
+/**
+ * Google's error body. A quota refusal says only "Precondition check failed." in its message
+ * and puts what ran out in the details' violations, so those are kept in the message too.
+ */
 const errorEnvelope = (text: string): { message: string; reason: string | null } => {
   try {
     const parsed = JSON.parse(text) as {
-      error?: { message?: string; status?: string; details?: Array<{ reason?: string }> };
+      error?: { message?: string; status?: string; details?: ErrorDetail[] };
     };
-    const reason = parsed.error?.details?.find((detail) => detail.reason)?.reason;
+    const details = parsed.error?.details ?? [];
+    const reason = details.find((detail) => detail.reason)?.reason;
+    const violations = details
+      .flatMap((detail) => detail.violations ?? [])
+      .map((violation) => violation.description)
+      .filter((description): description is string => Boolean(description));
+    const message = parsed.error?.message ?? text.slice(0, 300);
     return {
-      message: parsed.error?.message ?? text.slice(0, 300),
+      message: [message, ...violations].join(' '),
       reason: reason ?? parsed.error?.status ?? null,
     };
   } catch {
@@ -85,10 +105,11 @@ export function urlWithQuery(url: string, query: GcpQuery = {}): string {
   return target.toString();
 }
 
-const defaultTransport: GcpTransport = (url, init) => fetch(url, init);
+/** Google over the network, as every client uses it unless a test passes its own. */
+export const fetchTransport: GcpTransport = (url, init) => fetch(url, init);
 
 export function createGcpHttp(options: GcpHttpOptions): GcpHttp {
-  const transport = options.transport ?? defaultTransport;
+  const transport = options.transport ?? fetchTransport;
   const timeoutMs = options.timeoutMs ?? GCP_TIMEOUT_MS;
 
   async function raw(request: GcpRequest<unknown>): Promise<{ status: number; text: string }> {
@@ -97,6 +118,8 @@ export function createGcpHttp(options: GcpHttpOptions): GcpHttp {
       accept: 'application/json',
       authorization: `Bearer ${await options.tokens.token()}`,
     };
+    const quotaProject = await options.tokens.quotaProject?.();
+    if (quotaProject) headers['x-goog-user-project'] = quotaProject;
     if (request.body !== undefined) headers['content-type'] = 'application/json';
     const response = await transport(url, {
       method: request.method ?? 'GET',

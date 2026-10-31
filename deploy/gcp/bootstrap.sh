@@ -8,6 +8,7 @@
 # (bemmoly-control@) with folder-scoped roles and billing.user and billing.costsManager on the
 # billing account, and then installs the control plane on a VM, prints the Helm command for
 # an existing GKE cluster, or sets up workload identity federation for one running elsewhere.
+# It ends by printing the values to paste into Pipelines › Connect › Create projects for me.
 # Every gcloud command is printed before it runs; a second run only fills in what is missing.
 # Run with --help for the options. MIT licensed.
 set -eu
@@ -34,6 +35,9 @@ Options:
                            OIDC provider holding it, so a control plane outside Google Cloud
                            signs in without key files (implies --mode none)
   --wif-issuer URL         the control plane's OIDC issuer, with --wif-jwks
+  --member PRINCIPAL       who gets the folder and billing roles instead of the control
+                           identity, such as user:you@example.com for a laptop install that
+                           signs in with your own gcloud credentials
   --dry-run                print every command; change nothing
   --lock                   remove the folder's provisioning roles once the landing zones are
                            in place; deploys keep working through each environment's deployer
@@ -48,7 +52,7 @@ EOF
 
 parse_args() {
   ORG='' BILLING='' FOLDER_NAME=Bemmoly PROJECT='' REGION=us-central1 MODE=''
-  WIF_JWKS='' WIF_ISSUER='' DRY_RUN='' LOCK='' ASSUME_YES=''
+  WIF_JWKS='' WIF_ISSUER='' DRY_RUN='' LOCK='' ASSUME_YES='' MEMBER=''
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --*=*)
@@ -57,7 +61,7 @@ parse_args() {
         set -- "${flag}" "${value}" "$@"
         continue
         ;;
-      --org | --billing | --folder-name | --control-project | --region | --mode | --wif-jwks | --wif-issuer)
+      --org | --billing | --folder-name | --control-project | --region | --mode | --wif-jwks | --wif-issuer | --member)
         if [ "$#" -lt 2 ] || [ -z "$2" ]; then die "$1 needs a value" 'See --help for the options.'; fi
         ;;
     esac
@@ -70,6 +74,7 @@ parse_args() {
       --mode) MODE="$2" && shift ;;
       --wif-jwks) WIF_JWKS="$2" && shift ;;
       --wif-issuer) WIF_ISSUER="$2" && shift ;;
+      --member) MEMBER="$2" && shift ;;
       --dry-run) DRY_RUN=1 ;;
       --lock) LOCK=lock ;;
       --unlock) LOCK=unlock ;;
@@ -100,6 +105,10 @@ validate_args() {
   elif [ -n "${WIF_ISSUER}" ]; then
     die '--wif-issuer needs --wif-jwks' 'Pass both, or neither.'
   fi
+  case "${MEMBER}" in
+    '' | user:?*@?* | serviceAccount:?*@?* | group:?*@?*) ;;
+    *) die "--member must be user:, serviceAccount: or group: and an email (got ${MEMBER})" 'For example --member user:you@example.com.' ;;
+  esac
 }
 
 lock_or_unlock() {
@@ -126,14 +135,36 @@ bootstrap() {
   ensure_service_account
   grant_folder_roles "${PROVISIONING_ROLES} ${DEPLOY_ROLES}"
   grant_billing_roles
+  grant_project_roles
   if [ -n "${WIF_JWKS}" ]; then ensure_wif; fi
   case "${MODE}" in vm) ensure_vm ;; helm) print_helm ;; esac
-  say ''
-  say "  Folder:            folders/${FOLDER_ID} (${FOLDER_NAME})"
-  say "  Control project:   ${PROJECT}"
-  say "  Control identity:  ${SA_EMAIL}"
-  say ''
+  print_connect
   say 'Once the landing zones are in place, run this again with --lock to remove the provisioning roles.'
+}
+
+# The values Pipelines › Platform › Clouds › Connect a cloud › Create projects for me asks for.
+print_connect() {
+  if [ -n "${MEMBER}" ]; then
+    sign_in='My gcloud sign-in on this machine'
+  elif [ -n "${WIF_JWKS}" ]; then
+    sign_in='A workload identity file (create it for the audience above)'
+  else
+    case "${MODE}" in
+      vm | helm) sign_in='The VM Bemmoly runs on' ;;
+      none) sign_in='A workload identity file' ;;
+    esac
+  fi
+  say ''
+  say 'Paste these into Pipelines › Platform › Clouds › Connect a cloud › Create projects for me:'
+  say ''
+  say "  Folder ID:         ${FOLDER_ID}"
+  say "  Billing account:   ${BILLING}"
+  say "  Control project:   ${PROJECT}"
+  say "  Default region:    ${REGION}"
+  say "  Sign in with:      ${sign_in}"
+  say ''
+  say "  Granted to:        $(grantee)"
+  say ''
 }
 
 main() {

@@ -1,0 +1,503 @@
+<title>Pipelines Journeys</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Bemmoly Pipelines positioning and user journeys: from a startup's first deploy to an enterprise fleet, on the company's own cloud, with every part detachable and every choice reversible.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the Pipelines proposal family (product-design.html, architecture.html): a reading column
+   beside a sticky contents rail, Bemmoly tokens and IBM Plex. New parts: the parts strip with its
+   seams, journey step lists, the control levels, and status chips that tie each idea to the code. */
+:root{
+  --canvas:#ffffff;--side:#f7f8fa;--sunken:#f5f6f8;--card:#ffffff;
+  --hover:rgba(22,27,38,.045);--line:#e3e6ec;--line-2:#eef0f3;
+  --tx:#161b26;--tx-2:#4b5264;--tx-3:#697181;
+  --acc:#2356c9;--acc-fill:#2356c9;--acc-50:#eef2fd;--acc-100:#dfe7fb;--on-acc:#fff;
+  --red-tx:#c43c41;--red-50:#fdeeee;--amber-tx:#ac5d04;--amber-50:#fff6e6;--green-tx:#177e43;--green-50:#e8f5ee;
+  --mod:#0e9bb0;--mod-50:#e6f6f8;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#111418;--side:#0c0f13;--sunken:#0e1115;--card:#181c22;--hover:rgba(255,255,255,.05);
+    --line:#2a2f38;--line-2:#20242b;--tx:#e8ebf1;--tx-2:#a8b0be;--tx-3:#858c9a;
+    --acc:#7b95ec;--acc-fill:#4a68d0;--acc-50:rgba(123,149,236,.14);--acc-100:rgba(123,149,236,.24);
+    --red-tx:#ec6266;--red-50:rgba(229,72,77,.14);--amber-tx:#e8901f;--amber-50:rgba(217,119,6,.14);--green-tx:#4cc487;--green-50:rgba(63,182,122,.14);
+    --mod:#3cc3d6;--mod-50:rgba(60,195,214,.13);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#111418;--side:#0c0f13;--sunken:#0e1115;--card:#181c22;--hover:rgba(255,255,255,.05);
+  --line:#2a2f38;--line-2:#20242b;--tx:#e8ebf1;--tx-2:#a8b0be;--tx-3:#858c9a;
+  --acc:#7b95ec;--acc-fill:#4a68d0;--acc-50:rgba(123,149,236,.14);--acc-100:rgba(123,149,236,.24);
+  --red-tx:#ec6266;--red-50:rgba(229,72,77,.14);--amber-tx:#e8901f;--amber-50:rgba(217,119,6,.14);--green-tx:#4cc487;--green-50:rgba(63,182,122,.14);
+  --mod:#3cc3d6;--mod-50:rgba(60,195,214,.13);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--tx);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+a:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunken);border:1px solid var(--line-2);padding:0 4px;border-radius:4px}
+.doc{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;max-width:1240px;margin:0 auto;padding-block:40px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.toc{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;font-size:13px;max-height:calc(100vh - 48px);overflow:auto}
+.toc .brand{margin:0 8px 18px}
+.toc .brand b{display:block;font-weight:600;font-size:13px}.toc .brand span{display:block;color:var(--tx-3);font-size:12px}
+.toc a{display:block;color:var(--tx-2);padding:4px 8px;border-radius:6px;line-height:1.4}
+.toc a:hover{background:var(--hover);color:var(--tx);text-decoration:none}
+.toc h4{margin:14px 8px 4px;font-size:11px;font-weight:600;color:var(--tx-3);letter-spacing:.02em}
+main{min-width:0}
+h1{font-size:36px;line-height:1.15;letter-spacing:-.02em;font-weight:600;margin:0 0 12px;text-wrap:balance;max-width:24ch}
+.lede{font-size:17px;line-height:1.55;color:var(--tx-2);max-width:66ch;margin:0 0 18px}
+h2{font-size:24px;line-height:1.25;letter-spacing:-.015em;font-weight:600;margin:72px 0 12px;padding-top:24px;border-top:1px solid var(--line);text-wrap:balance;scroll-margin-top:16px}
+h3{font-size:16px;font-weight:600;margin:30px 0 8px;text-wrap:balance;scroll-margin-top:16px}
+p,li{max-width:72ch}p{margin:10px 0}
+ul,ol{padding-left:22px;margin:8px 0}li{margin:4px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--tx-2);border:1px solid var(--line);border-radius:4px;padding:1px 8px;background:var(--card);white-space:nowrap}
+.chip.acc{color:var(--acc);background:var(--acc-50);border-color:transparent}
+.st{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:0 6px;white-space:nowrap;vertical-align:1px;letter-spacing:.01em}
+.st.have{color:var(--green-tx);background:var(--green-50)}
+.st.part{color:var(--amber-tx);background:var(--amber-50)}
+.st.new{color:var(--acc);background:var(--acc-50)}
+.st.no{color:var(--red-tx);background:var(--red-50)}
+.tablewrap{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--card)}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font-weight:600;color:var(--tx-2);background:var(--sunken);font-size:12px;white-space:nowrap}
+td b{font-weight:600}
+tr:last-child td{border-bottom:0}
+td.def{white-space:nowrap}
+.yes{color:var(--green-tx);font-weight:600}.some{color:var(--amber-tx);font-weight:600}.none{color:var(--tx-3)}
+.note{border:1px solid var(--line);background:var(--sunken);border-radius:8px;padding:12px 16px;margin:16px 0;max-width:84ch}
+.note b{font-weight:600}
+.thesis{font-size:20px;line-height:1.45;font-weight:500;letter-spacing:-.01em;max-width:52ch;margin:18px 0;padding-left:16px;border-left:3px solid var(--acc);text-wrap:pretty}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 28px;margin:18px 0;padding:0;list-style:none;counter-reset:r}
+.rules li{max-width:none;margin:0;padding:12px 0 0;border-top:2px solid var(--line);counter-increment:r;min-width:0}
+.rules li b{display:block;font-weight:600;margin-bottom:2px}
+.rules li span{color:var(--tx-2);font-size:13.5px}
+
+/* the parts strip: five parts, the seams between them carry the contract */
+.parts{display:grid;grid-template-columns:repeat(9,auto);align-items:stretch;margin:20px 0 8px;overflow-x:auto;padding-bottom:4px}
+.part{min-width:118px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px 12px}
+.part b{display:block;font-size:13px;font-weight:600}
+.part span{display:block;font-size:12px;color:var(--tx-3);line-height:1.4}
+.seam{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:86px;padding:0 6px;text-align:center}
+.seam i{display:block;width:100%;height:0;border-top:2px dashed var(--mod)}
+.seam span{font:500 11px/1.3 var(--mono);color:var(--mod);margin-top:6px}
+.partnote{font-size:12.5px;color:var(--tx-3);margin:0 0 14px}
+
+/* control levels */
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.level{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.level .dial{display:flex;gap:3px}
+.level .dial i{display:block;height:4px;flex:1;border-radius:2px;background:var(--line)}
+.level .dial i.on{background:var(--acc)}
+.level h3{margin:4px 0 0;font-size:15px}
+.level p{margin:0;font-size:13px;color:var(--tx-2)}
+.level dl{margin:4px 0 0;font-size:12.5px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px}
+.level dt{color:var(--tx-3)}.level dd{margin:0;color:var(--tx-2)}
+
+/* journeys */
+.persona{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--tx-2);margin:6px 0 4px}
+.persona b{color:var(--tx);font-weight:600}
+.steps{list-style:none;padding:0;margin:14px 0;counter-reset:s;max-width:84ch}
+.steps>li{position:relative;max-width:none;margin:0;padding:0 0 16px 40px;counter-increment:s}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--sans);color:var(--acc);background:var(--acc-50)}
+.steps>li::after{content:"";position:absolute;left:11px;top:28px;bottom:2px;border-left:2px solid var(--line-2)}
+.steps>li:last-child::after{display:none}
+.steps .when{font:500 11.5px/1 var(--mono);color:var(--tx-3);margin-left:6px}
+.steps .made{display:block;font-size:12.5px;color:var(--tx-3);margin-top:3px}
+.steps .made b{color:var(--tx-2);font-weight:600}
+.hidden-list{font-size:13px;color:var(--tx-2)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.cols>div{min-width:0;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--card)}
+.cols h3{margin:0 0 6px;font-size:14px}
+.cols p,.cols li{color:var(--tx-2);font-size:13.5px}
+.cols p{margin:4px 0}
+.tree{font:12.5px/1.85 var(--mono);background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:12px 16px;overflow-x:auto;white-space:pre;margin:14px 0}
+.tree .c{color:var(--tx-3)}
+.tree .k{color:var(--acc)}
+.src{font-size:12.5px;color:var(--tx-3)}
+.src li{max-width:none}
+@media (max-width: 900px){
+  .doc{grid-template-columns:minmax(0,1fr);gap:0}
+  .toc{display:none}
+  h1{font-size:28px}
+  .thesis{font-size:18px}
+  .rules,.levels,.cols{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <div class="brand"><b>Bemmoly Pipelines</b><span>Positioning and journeys</span></div>
+  <a href="#position">Where Pipelines stands</a>
+  <a href="#rules">Rules for every decision</a>
+  <a href="#parts">The parts, and how they come apart</a>
+  <h4>What a company chooses</h4>
+  <a href="#control">How much Pipelines controls</a>
+  <a href="#layout">Projects and clusters</a>
+  <a href="#runtime">Where each service runs</a>
+  <a href="#registry">Registry and storage</a>
+  <a href="#builds">Who supplies the build machines</a>
+  <a href="#switch">Switch any time</a>
+  <h4>Journeys</h4>
+  <a href="#j-startup">A startup's first hour</a>
+  <a href="#j-grow">Growing to 40 engineers</a>
+  <a href="#j-enterprise">An enterprise attaches</a>
+  <a href="#j-move">Moving clouds</a>
+  <h4>Context</h4>
+  <a href="#market">The market</a>
+  <a href="#build">What this changes in the build</a>
+  <a href="#decisions">Decisions for you</a>
+  <a href="#sources">Sources</a>
+</nav>
+
+<main>
+<h1>From a startup's first deploy to a thousand services</h1>
+<p class="lede">This page sets out where Bemmoly Pipelines stands in the market and the choices a company makes when it adopts it. It then walks through four journeys, from three engineers to five hundred, and says what each one needs from the code on main today.</p>
+<div class="meta">
+  <span class="chip acc">Proposal for review</span>
+  <span class="chip">29 October 2026</span>
+  <span class="chip">Builds on product-design.html and architecture.html</span>
+  <span class="chip">Google Cloud first, AWS next</span>
+</div>
+
+<div class="note"><b>Why this page exists.</b> The first build, merged on 17 October, follows the earlier proposals closely. An audit on 29 October found that it never answered the questions here. It has no way to attach projects a company already has, no per-service choice between Cloud Run and GKE, no cluster management, and no journey that starts small and grows. Shipping also runs only on demo data today. Chips like <span class="st have">Exists</span> <span class="st part">Partly built</span> <span class="st new">New</span> mark what each idea needs from the code.</div>
+
+<h2 id="position">Where Pipelines stands</h2>
+<p class="thesis">Pipelines builds, releases and deploys a company's software on the company's own cloud. A startup uses it like a hosted platform in its first hour. A five-hundred-engineer company runs it as its delivery platform. Nothing in between needs a migration, every part works alone, and every choice can be changed later.</p>
+<p>The market splits into four kinds of product, and each one is strong at one end and weak at the other:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Kind</th><th>Examples</th><th>Good for a startup</th><th>Breaks for an enterprise</th><th>What Pipelines takes</th></tr></thead>
+<tbody>
+<tr><td><b>Push and forget</b></td><td>Vercel, Render, GitLab Auto DevOps</td><td>Minutes to Prod, previews, rollback included</td><td>Locked to the vendor's runtime. SSO and audit cost extra. Leaving means a rewrite</td><td>The first-hour journey and previews, on the company's own cloud</td></tr>
+<tr><td><b>Pipeline as code</b></td><td>GitHub Actions, GitLab CI, CodePipeline</td><td>Familiar and flexible</td><td>No record of what is running where. YAML sprawls across hundreds of repositories</td><td>Plain scripts as steps, and keeping a company's CI if it wants</td></tr>
+<tr><td><b>Promotion orchestrator</b></td><td>Octopus, Harness CD, Cloud Deploy, Kargo</td><td>Too many concepts before the first deploy. Needs separate CI and existing infrastructure</td><td>Strong here: one release moves through gated environments with audit</td><td>Immutable releases, gates, approvals and the environment model, hidden until needed</td></tr>
+<tr><td><b>Your cloud, managed for you</b></td><td>Qovery, Porter, Northflank, Encore, Ravion</td><td>A PaaS experience without leaving their own cloud account</td><td>Work inside one project or account. Coarse roles. SSO, audit and self-hosting in the top tiers. A closed service holds admin rights to the company's cloud</td><td>Creating and running the cloud underneath, kept in the company's hands</td></tr>
+</tbody></table></div>
+<p><b>The gap.</b> No product covers every step from code to running service on the company's own cloud, is open source and self-hosted, and grows from three engineers to five hundred without changing systems. Harness comes closest on coverage, but it asks for many concepts on day one and is priced for enterprises. The managed-cloud platforms come closest on the first hour, but none of them creates a project per environment, and they stop at small teams. Pipelines can own that space because the kernel already gives it teams, SSO, audit and access for free.</p>
+
+<h2 id="rules">Rules for every decision</h2>
+<ul class="rules">
+  <li><b>Their cloud, their bill.</b><span>Builds, images, logs, caches and services all live in the company's own accounts. Bemmoly never runs their workloads and never charges for them.</span></li>
+  <li><b>Start as a platform, grow without migrating.</b><span>The startup path writes real, readable files. Going off the default path means editing a file, never switching to a different system.</span></li>
+  <li><b>Every part works alone.</b><span>Build, release, deliver, clouds and the catalog each work without the others, joined by stated contracts.</span></li>
+  <li><b>No one-way doors.</b><span>Every choice is a setting. Changing it produces a plan that shows what moves, what it costs and any downtime. Everything Pipelines creates can be exported as Terraform and Helm.</span></li>
+  <li><b>Hide it until it is needed.</b><span>Approvals, policies, canaries, tiers and runner pools appear when something calls for them, such as a second team or a first Prod target.</span></li>
+  <li><b>Governance is never a paid extra.</b><span>SSO, audit, teams and access come from the kernel and are on from the first day, at any size.</span></li>
+</ul>
+
+<h2 id="parts">The parts, and how they come apart</h2>
+<p>Pipelines is five parts. Each seam between them is a contract that another tool can fill, so a company can take only the parts it wants.</p>
+<div class="parts" role="img" aria-label="Five parts in a row: Build, Release, Deliver, Clouds, Catalog and access, joined by the contracts image digest, release, target and owner.">
+  <div class="part"><b>Build</b><span>Runs and tests code on runners</span></div>
+  <div class="seam"><i></i><span>image digest</span></div>
+  <div class="part"><b>Release</b><span>An immutable image plus config</span></div>
+  <div class="seam"><i></i><span>release id</span></div>
+  <div class="part"><b>Deliver</b><span>Promote, gate, deploy, verify, roll back</span></div>
+  <div class="seam"><i></i><span>target</span></div>
+  <div class="part"><b>Clouds</b><span>Projects, clusters, registry, identities</span></div>
+  <div class="seam"><i></i><span>owner</span></div>
+  <div class="part"><b>Catalog and access</b><span>Who owns what, who may do what</span></div>
+</div>
+<p class="partnote">The dashed seams are the contracts other tools can fill.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Use only</th><th>What fills the other side</th><th>The contract</th><th>Today</th></tr></thead>
+<tbody>
+<tr><td><b>Build</b></td><td>Any deploy tool reads the image Pipelines pushed</td><td>An image by digest in the company's registry, plus a status on the commit</td><td><span class="st part">Partly built</span> runs work, images are never pushed</td></tr>
+<tr><td><b>Release and Deliver</b></td><td>GitHub Actions, Jenkins, Buildkite or any CI</td><td>The GitHub Action or <code>bp release create</code>, signed with the CI's own token. Pipelines can also watch a registry for new images</td><td><span class="st have">Exists</span> registry watching is <span class="st new">New</span></td></tr>
+<tr><td><b>Deliver through Argo CD or Flux</b></td><td>The company's GitOps controller does the sync</td><td>Pipelines commits the release to an environment repository and reads health back</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>Clouds</b></td><td>Their own Terraform, Spacelift or HCP Terraform</td><td>A target definition: project, cluster or service, and the deployer identity. It can come from Terraform outputs</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>Catalog and access</b></td><td>Backstage or Port reads it</td><td>The catalog API and <code>.bemmoly/application.yaml</code> in each repository</td><td><span class="st have">Exists</span></td></tr>
+</tbody></table></div>
+<p>Deploy status always goes back to GitHub's deployments, so people who live in pull requests see what is out without opening Pipelines.</p>
+
+<h2 id="control">How much of the cloud Pipelines controls</h2>
+<p>The first choice is how much control to hand over. It is made per environment, not once for the whole company, so a company can let Pipelines build its non-production world while its platform team keeps Prod.</p>
+<div class="levels">
+  <div class="level">
+    <div class="dial" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <h3>Managed</h3>
+    <p>Pipelines creates and runs everything: projects, networks, clusters, the registry, identities, budgets and logging. It then deploys into them.</p>
+    <dl><dt>Grant</dt><dd>Roles on one Bemmoly folder, never the whole organization</dd><dt>Fits</dt><dd>Startups, and new areas inside an enterprise</dd><dt>Today</dt><dd><span class="st part">Partly built</span> landing zones, untested on a real account</dd></dl>
+  </div>
+  <div class="level">
+    <div class="dial" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
+    <h3>Attached</h3>
+    <p>The company already has projects and clusters. Pipelines deploys into them and leaves their structure alone.</p>
+    <dl><dt>Grant</dt><dd>A deployer role in each project, and namespace rights in each cluster</dd><dt>Fits</dt><dd>Enterprises whose platform team owns Terraform</dd><dt>Today</dt><dd><span class="st new">New</span></dd></dl>
+  </div>
+  <div class="level">
+    <div class="dial" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+    <h3>Deploy only</h3>
+    <p>Pipelines holds no cloud access. It writes releases to a GitOps repository, and the company's Argo CD or Flux applies them.</p>
+    <dl><dt>Grant</dt><dd>Write access to one repository, and read access to health</dd><dt>Fits</dt><dd>Teams already happy on Argo CD</dd><dt>Today</dt><dd><span class="st new">New</span></dd></dl>
+  </div>
+</div>
+<h3>Folder, not organization</h3>
+<p>You suggested giving Pipelines organization-level access. I recommend a narrower grant with the same effect. The setup script runs once with the admin's own sign-in, creates a folder named Bemmoly, and grants Pipelines roles on that folder only. Pipelines can then create any project it needs inside the folder, but it cannot see or change anything outside it. This keeps the "Pipelines does everything" experience and removes the scariest part of the security review.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Pipelines needs</th><th>Role</th><th>Granted on</th></tr></thead>
+<tbody>
+<tr><td>Create projects</td><td><code>roles/resourcemanager.projectCreator</code></td><td>The Bemmoly folder</td></tr>
+<tr><td>Create sub-folders, for the Enterprise layout</td><td><code>roles/resourcemanager.folderCreator</code></td><td>The Bemmoly folder</td></tr>
+<tr><td>Link new projects to billing</td><td><code>roles/billing.user</code></td><td>One billing account</td></tr>
+<tr><td>Everything inside a project it created</td><td>Owner, which Google gives a project's creator automatically. Pipelines then swaps it for the narrower roles each project needs</td><td>Each new project</td></tr>
+</tbody></table></div>
+<p>That is the whole managed grant. Two details shape the setup screen. Linking billing is a separate call after a project is created, and a new project's permissions can take minutes to settle, so each step waits and retries. A billing account can also link only a few projects until Google raises the limit. Setup counts the projects a layout needs and checks that headroom before it starts, and it says how to ask for more.</p>
+<p>In attached mode the grant is smaller still. For Cloud Run it is <code>roles/run.developer</code>, permission to act as the service's runtime account, and read access to the registry. For an existing GKE cluster it is <code>roles/container.clusterViewer</code> plus Kubernetes rights in named namespaces only. The broader GKE developer role is avoided because it reaches every cluster in the project.</p>
+<p>Pipelines signs in to Google Cloud without key files. It uses the service account of the VM it runs on, or workload identity federation with Pipelines' own public keys uploaded to Google, which works even when Bemmoly is not reachable from the internet. The federation pool lives in the company's control project, not in anything Bemmoly owns. That matters because organizations created since May 2024 restrict grants to their own domain by default. Setup reads the organization's policies first, names any that would block it, and says what to ask for, rather than failing halfway.</p>
+
+<h2 id="layout">Projects and clusters</h2>
+<p><b>The recommendation is a separate project per environment, and a separate cluster per environment inside its own project.</b> In Google Cloud the project is the boundary for access, billing, quotas and audit. Keeping Dev and Prod apart means a mistake, an upgrade or a quota problem in Dev cannot reach Prod. Google's own enterprise foundation blueprint does the same.</p>
+<p>A single cluster holding every environment is the pattern to avoid. Inside an environment's cluster, teams share it through namespaces, one namespace per group in the catalog, with that group's quotas and network rules. Services on Cloud Run need no cluster at all. A cluster exists only when a service in that environment chooses GKE.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Layout</th><th>Projects</th><th>Clusters, when a service needs one</th><th>Fits</th><th>Default for</th></tr></thead>
+<tbody>
+<tr><td><b>Starter</b></td><td>Three: platform, non-production and production</td><td>One per project. Dev and Staging share the non-production one as namespaces</td><td>A small team watching cost</td><td class="def">Under 20 engineers</td></tr>
+<tr><td><b>Standard</b></td><td>One per environment</td><td>One per environment and region</td><td>Most companies</td><td class="def">20 to 150 engineers</td></tr>
+<tr><td><b>Enterprise</b></td><td>One per domain and environment</td><td>A shared cluster per environment and region. Dedicated clusters for Tier 0 or regulated domains</td><td>Many teams with hard walls between them</td><td class="def">Over 150 engineers</td></tr>
+</tbody></table></div>
+<p>Standard and Enterprise also have two shared projects: a <b>control</b> project where Bemmoly itself runs, and a <b>CI</b> project for build machines, caches and the registry. Starter folds both into one <b>platform</b> project, to stay inside a new billing account's project limit. In every layout, no environment project can push images or change another.</p>
+<div class="tree" aria-label="Example: the Standard layout for a company called Acme"><span class="k">Acme</span> <span class="c">organization</span>
+└─ <span class="k">Bemmoly</span> <span class="c">folder, the only place Pipelines has rights</span>
+   ├─ acme-control   <span class="c">Bemmoly itself</span>
+   ├─ acme-ci        <span class="c">runner pool, shared registry, build caches</span>
+   ├─ acme-dev       <span class="c">Cloud Run services · GKE Autopilot cluster if needed</span>
+   ├─ acme-staging   <span class="c">same shape as Prod</span>
+   └─ acme-prod      <span class="c">its own deployer identity, its own audit log</span></div>
+<p>When Pipelines creates a cluster it also runs it. It enrolls the cluster in the Regular release channel and sets maintenance windows. It handles upgrades, Workload Identity and the gateway, and on GKE Standard it also manages node pools. When a cluster is attached, Pipelines only deploys into its namespaces and never touches the cluster itself.</p>
+<p><b>What a cluster costs.</b> Every GKE cluster carries a management fee of $0.10 an hour, about $73 a month. Google's free tier covers one zonal or Autopilot cluster per billing account. So a Starter company that moves one service to GKE pays the fee once, for its second cluster. The switch plan shows that figure before anything is created.</p>
+
+<h2 id="runtime">Where each service runs</h2>
+<p>Each service picks its runtime, so one company can run some services on Cloud Run and others on GKE. A service describes what it needs: its port, health check, CPU, memory, scaling and any long-running work. Pipelines suggests a runtime from that description and explains why. It warns before offering a runtime the service does not fit.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Runtime</th><th>Choose it when</th><th>What Pipelines runs for you</th><th>Today</th></tr></thead>
+<tbody>
+<tr><td><b>Cloud Run</b></td><td>The default. HTTP services, scheduled and one-off jobs, and pull-based workers through worker pools. GPUs and multi-region services are available too</td><td>Revisions, the canary itself (Cloud Run splits traffic but does not step it on its own), a tagged URL per preview, scaling to zero</td><td><span class="st part">Partly built</span> tested against recorded responses only</td></tr>
+<tr><td><b>GKE Autopilot</b></td><td>The service needs Kubernetes: stateful sets, a service mesh, operators, or tools that expect a cluster. Google's own recommended mode</td><td>The cluster, namespaces, the gateway and upgrades. Google runs the nodes and bills per pod</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>GKE Standard</b></td><td>The team needs control of the nodes: particular machine or GPU types, daemons on every node, committed-use pricing</td><td>Everything for Autopilot, plus node pools and their upgrades. Namespaces default to Google's Autopilot compute class, so most teams get Autopilot behavior even inside a Standard cluster</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>An attached cluster</b></td><td>The company already runs clusters, on any cloud or on its own hardware</td><td>Deploys into namespaces only</td><td><span class="st new">New</span></td></tr>
+</tbody></table></div>
+<p><b>The same runtime all the way to Prod.</b> By default a service uses the same runtime in every environment on its path, so what Staging tested is what Prod runs. Previews may differ, for example a cheap Cloud Run preview for a service that runs on GKE in Prod. Any other difference shows as a warning on the Promote screen.</p>
+<p>App Engine is not offered. Google is winding it down and points its users to Cloud Run.</p>
+<h3>The same choices on other clouds</h3>
+<p>The words a company picks are cloud-neutral, so the same choices carry to AWS and Azure. AWS closed App Runner to new customers in April 2026 and ended Proton in October, so its simple path is now ECS Express Mode.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Pipelines word</th><th>Google Cloud</th><th>AWS</th><th>Azure</th></tr></thead>
+<tbody>
+<tr><td>Boundary Pipelines works inside</td><td>Folder</td><td>Organizational unit</td><td>Management group</td></tr>
+<tr><td>Account per environment</td><td>Project</td><td>Account, through Control Tower's Account Factory when present</td><td>Subscription</td></tr>
+<tr><td>Serverless containers</td><td>Cloud Run</td><td>ECS Express Mode, or ECS on Fargate</td><td>Container Apps</td></tr>
+<tr><td>Kubernetes, nodes run for you</td><td>GKE Autopilot</td><td>EKS Auto Mode</td><td>AKS Automatic</td></tr>
+<tr><td>Kubernetes, your nodes</td><td>GKE Standard</td><td>EKS with managed node groups</td><td>AKS</td></tr>
+<tr><td>Functions</td><td>Cloud Run functions</td><td>Lambda</td><td>Azure Functions</td></tr>
+<tr><td>Registry</td><td>Artifact Registry</td><td>ECR</td><td>Container Registry</td></tr>
+<tr><td>Secrets</td><td>Secret Manager</td><td>Secrets Manager</td><td>Key Vault</td></tr>
+<tr><td>Sign-in without keys</td><td>Workload identity federation, keys can be uploaded</td><td>An OIDC provider and role trust. The issuer must be public, so Pipelines publishes its keys to static hosting</td><td>Workload ID federated credentials</td></tr>
+</tbody></table></div>
+
+<h2 id="registry">Registry and storage</h2>
+<p>An image is built once and deployed by its digest everywhere, so Prod runs exactly the bytes that Staging tested.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Choice</th><th>How it works</th><th>Fits</th></tr></thead>
+<tbody>
+<tr><td><b>One shared registry</b> (default)</td><td>Artifact Registry in the CI project. Tags cannot be overwritten. Each environment project gets pull-only access</td><td>Almost everyone</td></tr>
+<tr><td><b>A separate Prod registry</b></td><td>At promotion to Prod, the image is copied into a Prod-only registry by digest. It is the same image, so nothing is rebuilt</td><td>Companies that want Prod to pull only from inside Prod</td></tr>
+<tr><td><b>Their own registry</b></td><td>Any OCI registry: ECR, GitHub's registry, Harbor, JFrog, Docker Hub. Pipelines stores references, never images</td><td>Companies that already have one</td></tr>
+</tbody></table></div>
+<p>Images that run anywhere are never cleaned up. Images that were never deployed expire after a set time, and scanning runs on push. Storage follows the same rule. Build caches, artifacts, logs and test results go to the company's own Cloud Storage or S3 bucket, with retention set per kind: years for Prod deploy evidence, two weeks for pull-request logs. Local disk is only for a laptop trial.</p>
+
+<h2 id="builds">Who supplies the build machines</h2>
+<p>The company does. Bemmoly never runs builds on its own machines. A company can mix these per team or per pipeline:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Option</th><th>How it works</th><th>Fits</th><th>Today</th></tr></thead>
+<tbody>
+<tr><td><b>Pipelines starts runners in their cloud</b></td><td>A runner pool in the CI project, on GKE Autopilot, that grows with the queue and shrinks to zero when idle</td><td>The default once builds are regular</td><td><span class="st no">Missing</span> pool sizes are saved but nothing starts runners</td></tr>
+<tr><td><b>The cloud's build service</b></td><td>Each job runs as a Cloud Build step, using the same runner image in a one-job mode, so pipelines behave the same</td><td>The first day, with no cluster at all</td><td><span class="st part">Partly built</span> a client exists, nothing calls it</td></tr>
+<tr><td><b>Machines they already have</b></td><td>The runner on a VM, a server or a laptop. It only connects out, so nothing needs to reach it</td><td>Special hardware, on-premises, trials</td><td><span class="st have">Exists</span> started by hand</td></tr>
+<tr><td><b>Their existing CI</b></td><td>GitHub Actions or another tool keeps building. Pipelines takes over from the built image</td><td>Years of build scripts</td><td><span class="st have">Exists</span></td></tr>
+</tbody></table></div>
+<p><b>Builds stay away from Prod.</b> The build identity can push to the registry and nothing else. Each environment deploys with its own identity. A compromised build can publish a bad image, but it cannot touch Prod, and that image still has to pass every gate on the way.</p>
+
+<h2 id="switch">Switch any time</h2>
+<p>Every choice on this page can be changed later. Changing one produces a plan first, showing what moves, the cost difference, whether there is downtime, and any step a person must do by hand. Three things make that possible:</p>
+<ul>
+  <li><b>A stable front door per service.</b> Each service gets a domain and a load balancer that Pipelines owns. Google's global load balancer can send weighted traffic to Cloud Run and to GKE at once, so moving between them is a canary: a small share on the new runtime, then more, then all. Going back is shifting the weight back.</li>
+  <li><b>The same image everywhere.</b> A move never needs a rebuild.</li>
+  <li><b>A neutral service description.</b> The service's own file does not change when its runtime does.</li>
+</ul>
+<div class="tablewrap"><table>
+<thead><tr><th>Switch</th><th>How it goes</th><th>Downtime</th></tr></thead>
+<tbody>
+<tr><td>Build machines</td><td>The next run uses the new choice</td><td>None</td></tr>
+<tr><td>Registry</td><td>Images in use are copied by digest, then deploys pull from the new registry</td><td>None</td></tr>
+<tr><td>Cloud Run to GKE, or back</td><td>A traffic shift through the front door. Going to Cloud Run is offered only if the service fits it</td><td>None</td></tr>
+<tr><td>Layout, such as splitting non-production into Dev and Staging</td><td>New projects are created and services redeployed there. Traffic moves, then the old ones are drained</td><td>None for stateless services</td></tr>
+<tr><td>Managed to attached</td><td>Pipelines gives up its folder roles and keeps only each project's deployer</td><td>None</td></tr>
+<tr><td>Attached to managed</td><td>Pipelines adopts existing projects as they are and recreates nothing</td><td>None</td></tr>
+<tr><td>Leaving Pipelines</td><td>Everything it created exports as Terraform and Helm, and keeps running without it</td><td>None</td></tr>
+</tbody></table></div>
+<div class="note"><b>Data is the exception.</b> Databases, buckets and queues cannot move by shifting traffic. When a switch involves one, the plan lists it and leaves that step to its owner. Pipelines never moves data on its own.</div>
+
+<h2 id="j-startup">A startup's first hour</h2>
+<div class="persona"><span><b>Who</b> Three engineers, one of them a recent graduate</span><span><b>Has</b> A Google Cloud account with a card, two GitHub repositories with Dockerfiles</span><span><b>Goal</b> Both apps in Prod today</span></div>
+<ol class="steps">
+  <li>Run one command in Cloud Shell, as the account's admin. <span class="when">about 8 min</span><span class="made"><b>Checks</b> the billing account can link three projects. <b>Creates</b> the Bemmoly folder, the platform project with a small VM running Bemmoly, and the non-production and production projects.</span></li>
+  <li>Sign in with Google, then install the GitHub App on the two repositories. <span class="when">2 min</span></li>
+  <li>Pipelines reads both repositories and proposes two applications on Cloud Run, with their ports and health checks found in the code. Accept both. <span class="when">2 min</span><span class="made"><b>Opens</b> one pull request per repository adding a short <code>.bemmoly/application.yaml</code>.</span></li>
+  <li>Merge the pull requests. The first builds run on Cloud Build, because no cluster exists yet. <span class="when">5 min</span><span class="made"><b>Pushes</b> each image to the shared registry, then deploys it to Dev with a URL.</span></li>
+  <li>Open a pull request with a change. Its preview URL appears on the pull request within minutes, and it is deleted when the pull request closes.</li>
+  <li>Press Promote to Prod. The first time, Pipelines offers to require one approval for Prod. They can skip it. <span class="when">5 min</span><span class="made"><b>Rolls out</b> gradually and rolls back on its own if errors rise.</span></li>
+</ol>
+<p class="hidden-list"><b>Hidden from them:</b> tiers, policies, runner pools, teams, canary settings and the release map. Each appears when something calls for it.</p>
+<p><b>Done means</b> an empty Google Cloud account reaches a Prod deploy in under 45 minutes, on a real account, recorded end to end.</p>
+
+<h2 id="j-grow">Growing to 40 engineers</h2>
+<div class="persona"><span><b>Who</b> The same company a year later, four teams</span><span><b>Has</b> 25 services on Cloud Run, the Starter layout</span><span><b>Goal</b> More safety, faster builds, one service that needs Kubernetes</span></div>
+<ol class="steps">
+  <li>A second team signs in through SSO. Pipelines suggests teams and owners from CODEOWNERS, and turns on approvals for Prod now that more than one team ships.</li>
+  <li>The realtime team's service needs a sidecar and steady background work. They change its runtime to GKE Autopilot. <span class="made"><b>Plans</b> an Autopilot cluster in each project, a namespace for the group, and a traffic shift from Cloud Run through the front door. It shows the monthly cost difference before anything happens.</span></li>
+  <li>Builds now run all day and Cloud Build minutes add up. Pipelines suggests a runner pool and shows the saving. They accept. <span class="made"><b>Creates</b> an Autopilot runner pool in the CI project, with a warm cache, that scales to zero at night.</span></li>
+  <li>They want Staging separate from Dev. They switch the layout to Standard. <span class="made"><b>Creates</b> a Staging project, redeploys Staging there, and drains the shared one.</span></li>
+  <li>Pipelines asks each team to set tiers. The payments services become Tier 0, which adds a second approver and a canary in Prod.</li>
+</ol>
+<p>None of these steps changed a service's own file except the runtime line, and none needed a new system.</p>
+
+<h2 id="j-enterprise">An enterprise attaches what it has</h2>
+<div class="persona"><span><b>Who</b> 500 engineers, 50 teams, a platform team</span><span><b>Has</b> 300 projects made with Terraform, GKE Standard clusters, GitHub Actions in 800 repositories</span><span><b>Goal</b> One way to release to Prod, with audit, without moving builds first</span></div>
+<ol class="steps">
+  <li>The platform team installs Bemmoly on an existing cluster with Helm, and connects SSO and SCIM so teams sync from the identity provider.</li>
+  <li>They attach their existing projects to environments. Pipelines writes the grants it needs as a Terraform module, so the change goes through their own review and their own apply. <span class="made"><b>Needs</b> a deployer role per project, and namespace rights per cluster, nothing more.</span></li>
+  <li>Discovery reads all 800 repositories and proposes the catalog: domains, groups, applications and owners. Teams review and accept their own.</li>
+  <li>A campaign opens one pull request per repository adding the release step to each GitHub Actions workflow. Builds stay where they are.</li>
+  <li>Security sets policies: Tier 0 needs two approvers, nothing ships in a freeze, and only people may approve, never tokens or agents. Every refusal says why and who to ask.</li>
+  <li>A new product line starts. The platform team marks a new folder as managed, and Pipelines creates its projects in the Enterprise layout. The old world stays attached.</li>
+  <li>Months later, teams that want faster builds move them onto Pipelines' runners, one pipeline at a time.</li>
+</ol>
+
+<h2 id="j-move">Moving clouds</h2>
+<p>This is the case behind Pipelines: a company moving from AWS to Google Cloud, service by service. It needs the AWS provider, so it lands after Google Cloud is proven.</p>
+<ol class="steps">
+  <li>Attach the existing AWS accounts in deploy-only or attached mode. Pipelines starts deploying there without changing anything.</li>
+  <li>Add Google Cloud environments to the same release path, so one release can go to both.</li>
+  <li>Move each service by shifting traffic between the two clouds at the front door, with a canary and a way back.</li>
+  <li>Retire each AWS environment once nothing points at it. Data stores move on their owners' plans, which Pipelines lists but never runs.</li>
+</ol>
+
+<h2 id="market">The market</h2>
+<p>The earlier benchmark in <code>benchmark.md</code> compared features. This round compared journeys: how each product gets someone to their first Prod deploy, and where it breaks as the company grows.</p>
+<h3>Who covers which step</h3>
+<p>Native coverage, from vendors' own documentation. Partial means through an extension, a paid tier or a script.</p>
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>Build</th><th>Release</th><th>Environment infra</th><th>Deploy</th><th>Verify</th><th>Roll back</th><th>Fits a startup</th><th>Fits 500 engineers</th></tr></thead>
+<tbody>
+<tr><td><b>GitHub Actions</b></td><td class="yes">Yes</td><td class="some">Partial</td><td class="none">No</td><td class="some">Scripted</td><td class="none">No</td><td class="none">No</td><td class="yes">Yes</td><td class="some">No inventory of what runs where</td></tr>
+<tr><td><b>GitLab</b></td><td class="yes">Yes</td><td class="some">Partial</td><td class="some">Partial</td><td class="yes">Yes</td><td class="some">Partial</td><td class="some">Partial</td><td class="some">Needs a cluster</td><td class="some">Templates are a cliff</td></tr>
+<tr><td><b>Harness</b></td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">OpenTofu</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="none">Many concepts first</td><td class="yes">Yes</td></tr>
+<tr><td><b>Octopus</b></td><td class="none">No</td><td class="yes">Yes</td><td class="some">Partial</td><td class="yes">Yes</td><td class="some">Partial</td><td class="some">Partial</td><td class="none">Needs CI and infra</td><td class="yes">Yes</td></tr>
+<tr><td><b>Argo CD and Kargo</b></td><td class="none">No</td><td class="yes">Yes</td><td class="some">Paid tier</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="none">Kubernetes first</td><td class="some">Kubernetes only</td></tr>
+<tr><td><b>Cloud Deploy</b></td><td class="none">No</td><td class="yes">Yes</td><td class="none">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="some">Needs existing infra</td><td class="some">Google Cloud only</td></tr>
+<tr><td><b>Vercel, Render</b></td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">They are the infra</td><td class="yes">Yes</td><td class="some">Partial</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="none">Their hosting only</td></tr>
+<tr><td><b>Qovery, Porter, Northflank</b></td><td class="yes">Yes</td><td class="some">Partial</td><td class="some">One project or account</td><td class="yes">Yes</td><td class="some">Partial</td><td class="yes">Yes</td><td class="some">Yes, at a price</td><td class="some">Coarse roles, top-tier SSO</td></tr>
+<tr><td><b>Bemmoly Pipelines, planned</b></td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes, or attach</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">First hour like a platform</td><td class="yes">Policies, audit, attach</td></tr>
+</tbody></table></div>
+<h3>Your cloud, managed for you</h3>
+<p>These are the closest products to the managed mode on this page. They converge on one journey: sign in with GitHub, run a script that creates one role in the cloud, see a cost estimate, wait 20 to 45 minutes while the vendor builds a network and a cluster, then deploy.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Product</th><th>Runtimes</th><th>What it is given</th><th>Creates or attaches</th><th>Price and licence</th></tr></thead>
+<tbody>
+<tr><td><b>Qovery</b></td><td>Kubernetes only. On Google Cloud, GKE Autopilot only</td><td>A service account key for one project</td><td>Creates the cluster. Attaching an existing one needs the Enterprise plan</td><td>$299 to $2,999 a month. Engine open source, control plane hosted</td></tr>
+<tr><td><b>Porter</b></td><td>EKS, GKE Standard, AKS</td><td>Keyless federation on Google Cloud and Azure, a role on AWS</td><td>Creates the network and cluster</td><td>$13 per vCPU-month and $6 per GB-month of requested resources. Closed</td></tr>
+<tr><td><b>Northflank</b></td><td>Managed Kubernetes on six clouds</td><td>A service account in one project</td><td>Creates, or imports a cluster, though its docs advise against importing Prod</td><td>$0.02083 per node vCPU-hour. Closed</td></tr>
+<tr><td><b>Encore</b></td><td>Cloud Run and GKE, Fargate and EKS</td><td>An organization-level service account, the only one in this group</td><td>Provisions inside the account from the application's code</td><td>$49 per member and $99 per environment a month. Framework open source</td></tr>
+<tr><td><b>Ravion</b>, formerly Flightcontrol</td><td>AWS only: Fargate, Lambda, ECS on EC2</td><td>A CloudFormation role</td><td>Creates, and can import existing resources into Terraform state</td><td>Free for one user. Closed</td></tr>
+<tr><td><b>Humanitec</b></td><td>EKS, GKE, AKS, ECS, VMs</td><td>A runner inside the company's network that applies OpenTofu</td><td>Attaches to what exists</td><td>Unpublished, enterprise. Closed orchestrator</td></tr>
+</tbody></table></div>
+<p>Three things stand out:</p>
+<ul>
+  <li><b>None creates a project or account per environment.</b> Almost all of them work inside a single project or account, which is where an enterprise's separation between Dev and Prod starts.</li>
+  <li><b>The category is unstable.</b> In about two years, Argonaut, Coherence and Zeet stopped or pivoted, Flightcontrol rebranded, and Zeabur is shutting down after a breach. A hosted service that holds admin rights to a company's cloud is a real risk. An open-source control plane in the company's own project removes it.</li>
+  <li><b>Demand is moving.</b> Heroku stopped new feature work in February 2026, and AWS closed App Runner and Proton. Teams on those platforms are looking for a home on their own cloud.</li>
+</ul>
+<h3>What to copy</h3>
+<ul>
+  <li><b>Render's blueprint file.</b> The easy path writes a real file the team can read and edit, so growing never means starting over.</li>
+  <li><b>Harness's model of service, environment and infrastructure.</b> It is the clearest answer to "where does this run", but Pipelines keeps it out of sight until a company needs it.</li>
+  <li><b>Kargo's registry watching.</b> A team can adopt only promotions by letting Pipelines notice new images, without touching its CI.</li>
+  <li><b>Cloud Deploy's parallel targets.</b> One environment can deploy to several targets at once, such as two regions.</li>
+  <li><b>env zero's guardrails on self-service.</b> Preview and test environments carry a time to live and a budget cap.</li>
+  <li><b>Octopus's default environments, trimmed.</b> Start with a preview and Prod, and add Staging when a second long-lived environment is needed. Three environments on day one is heavy for three engineers.</li>
+  <li><b>Porter's cost estimate before anything is created,</b> and its automatic quota requests.</li>
+  <li><b>Qovery's rules that stop idle environments,</b> for previews and test environments.</li>
+  <li><b>Ravion's import of existing resources into Terraform state,</b> for attached mode and for export.</li>
+  <li><b>Plural's scan for deprecated Kubernetes APIs before every upgrade,</b> for clusters Pipelines runs.</li>
+  <li><b>Northflank's release flows,</b> where a promotion can back up a database before it deploys.</li>
+</ul>
+<h3>Where to be different</h3>
+<ul>
+  <li><b>Open source and self-hosted, with nothing held back.</b> Vercel, Octopus and Akuity put SSO, audit or self-hosting in their top tiers. Pipelines keeps them in every install.</li>
+  <li><b>One system across the whole row.</b> Only Harness and the hosted platforms span build to rollback today, in opposite ways. Pipelines does it on the company's own cloud, with the easy path on top of the full model.</li>
+  <li><b>No one-way doors.</b> Every choice can be switched with a plan, and everything exports. Most products in this space lock the runtime in at the start.</li>
+  <li><b>A project per environment, and a runtime per service.</b> No managed-cloud product in this group does both.</li>
+</ul>
+<h3>Google's own tools</h3>
+<p>Two Google products overlap. <b>Cloud Deploy</b> promotes releases to Cloud Run and GKE, with canaries and automatic repair, but it assumes the infrastructure exists and works only on Google Cloud. <b>Application Design Center</b>, generally available since December 2025, designs and deploys Terraform-backed application templates and registers them in <b>App Hub</b>. It is the closest Google comes to the managed mode. Pipelines should register what it deploys in App Hub, so a company's Google console shows the same applications, rather than compete with it.</p>
+
+<h2 id="build">What this changes in the build</h2>
+<p>The audit on 29 October found that today's code covers the catalog, runs on your own runners, bring-your-CI and access well. Everything after the release works only on demo data. This is the work, in order, with the major version once the first three journeys pass on a real account.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Work</th><th>What it adds</th><th>Today</th></tr></thead>
+<tbody>
+<tr><td><b>Environments and targets you can create</b></td><td>The choice model on this page as API and screens: control level per environment, layout, runtime per service, registry, build machines and storage</td><td><span class="st no">Missing</span> only the seed writes environments</td></tr>
+<tr><td><b>Attached mode</b></td><td>Attach existing projects and clusters, with the grants written as a Terraform module</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>GKE as a runtime</b></td><td>Autopilot and Standard, cluster creation and day-two upgrades, namespaces per group, deploys into attached clusters</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>Image push and the shared registry</b></td><td>Runners push by digest, environments pull, an optional copy into a Prod registry</td><td><span class="st no">Missing</span></td></tr>
+<tr><td><b>Runner pools that start themselves</b></td><td>Autopilot pools that scale to zero, and the Cloud Build one-job mode</td><td><span class="st part">Partly built</span></td></tr>
+<tr><td><b>The front door and switch plans</b></td><td>A load balancer per service, weighted moves between runtimes, and a plan screen for every switch</td><td><span class="st new">New</span></td></tr>
+<tr><td><b>Secrets done properly</b></td><td>Values in Secret Manager in the environment's project, never in Pipelines' database</td><td><span class="st no">Missing</span> stored as plain text today</td></tr>
+<tr><td><b>A real Google Cloud run</b></td><td>The provider tests run against a sandbox organization, and the startup journey is recorded end to end</td><td><span class="st no">Missing</span> recorded responses only</td></tr>
+<tr><td><b>Export</b></td><td>Everything Pipelines created, as Terraform and Helm</td><td><span class="st new">New</span></td></tr>
+</tbody></table></div>
+<p><b>Done means three journeys pass on real accounts:</b> a startup reaches Prod from an empty account in under 45 minutes; a service moves from Cloud Run to GKE and back with no failed requests; and an existing project and cluster are attached and deployed to without Pipelines creating anything.</p>
+
+<h2 id="decisions">Decisions for you</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Decision</th><th>Recommendation</th><th>The alternative and its cost</th></tr></thead>
+<tbody>
+<tr><td><b>How much access in managed mode</b></td><td>Roles on one Bemmoly folder, created once by the admin</td><td>Organization-wide roles: slightly simpler setup, but Pipelines could change every project the company has, and security reviews will stall</td></tr>
+<tr><td><b>Default runtime</b></td><td>Cloud Run, with a fit check that suggests GKE when a service needs it</td><td>GKE Autopilot by default: one model for everything, but a cluster on day one and a higher floor cost</td></tr>
+<tr><td><b>Default layout by size</b></td><td>Starter under 20 engineers, Standard up to 150, Enterprise above</td><td>Standard for everyone: simpler to explain, but three projects and possibly three clusters for a tiny team</td></tr>
+<tr><td><b>Namespace boundary inside a cluster</b></td><td>One per group in the catalog</td><td>Per team: follows reorganizations badly. Per application: hundreds of namespaces and repeated policy</td></tr>
+<tr><td><b>First-day builds</b></td><td>Cloud Build running the runner image, then a suggested runner pool once builds are regular</td><td>A runner pool from the start: faster and cached, but a cluster before the first build</td></tr>
+<tr><td><b>Databases and other data stores</b></td><td>Out of scope for 2.0. Pipelines lists them in plans but does not create or move them</td><td>Managing Cloud SQL and buckets: closer to a full platform, but much larger and riskier</td></tr>
+<tr><td><b>What 2.0 contains</b></td><td>The startup and growing journeys on Google Cloud, and the attach journey. AWS follows in 2.x</td><td>Wait for AWS too: the cloud-moving story is complete, but the release slips by months</td></tr>
+</tbody></table></div>
+
+<h2 id="sources">Sources</h2>
+<p class="src">Vendor and cloud documentation and pricing pages, read on 29 October 2026. Claims that could not be confirmed from a vendor's own pages are left out of the tables above. Some pricing comes from vendor pricing pages that change often.</p>
+<ul class="src">
+  <li>GitHub: <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments">deployments and environments</a>, <a href="https://github.blog/changelog/2025-12-16-coming-soon-simpler-pricing-and-a-better-experience-for-github-actions/">2026 pricing update</a></li>
+  <li>GitLab: <a href="https://docs.gitlab.com/topics/autodevops/">Auto DevOps</a>, <a href="https://docs.gitlab.com/user/clusters/agent/">agent for Kubernetes</a></li>
+  <li>Harness: <a href="https://developer.harness.io/continuous-delivery/new-to-continuous-delivery/getting-started">CD getting started</a>, <a href="https://developer.harness.io/internal-developer-portal/use-idp/self-service-workflows/overview">IDP workflows</a></li>
+  <li>Octopus: <a href="https://octopus.com/docs/getting-started/first-deployment">first deployment</a>, <a href="https://octopus.com/pricing/overview">pricing</a></li>
+  <li>Kargo and Akuity: <a href="https://kargo.io/">kargo.io</a>, <a href="https://akuity.io/pricing">pricing</a></li>
+  <li>Google Cloud Deploy: <a href="https://docs.cloud.google.com/deploy/docs/overview">overview</a>, <a href="https://docs.cloud.google.com/deploy/docs/deploy-app-parallel">parallel deploys</a></li>
+  <li>AWS: <a href="https://aws.amazon.com/codecatalyst">CodeCatalyst</a>, <a href="https://aws.amazon.com/codepipeline/pricing/">CodePipeline pricing</a></li>
+  <li>Infrastructure platforms: <a href="https://spacelift.io/pricing">Spacelift</a>, <a href="https://developer.hashicorp.com/terraform/cloud-docs/workspaces/no-code-provisioning/provisioning">HCP Terraform no-code</a>, <a href="https://www.pulumi.com/product/pulumi-deployments">Pulumi Deployments</a></li>
+  <li>Hosted platforms: <a href="https://vercel.com/docs/git">Vercel</a>, <a href="https://render.com/docs/blueprint-spec">Render blueprints</a>, <a href="https://render.com/docs/preview-environments">Render previews</a>, <a href="https://www.heroku.com/blog/an-update-on-heroku/">Heroku update</a></li>
+  <li>Managed-cloud platforms: <a href="https://www.qovery.com/pricing">Qovery</a>, <a href="https://docs.porter.run/cloud-accounts/connecting-a-cloud-account.md">Porter</a>, <a href="https://northflank.com/pricing">Northflank</a>, <a href="https://encore.dev/docs/platform/deploy/own-cloud">Encore</a>, <a href="https://www.ravion.com/?from=flightcontrol">Ravion</a>, <a href="https://humanitec.com/product">Humanitec</a>, <a href="https://www.plural.sh/pricing">Plural</a>, <a href="https://zeabur.com/blogs/zeabur-is-shutting-down">Zeabur</a></li>
+  <li>Cloud Run: <a href="https://docs.cloud.google.com/run/docs/release-notes">release notes</a>, <a href="https://docs.cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration">rollouts and rollbacks</a>, <a href="https://docs.cloud.google.com/run/docs/reference/iam/roles">IAM roles</a></li>
+  <li>GKE: <a href="https://docs.cloud.google.com/kubernetes-engine/docs/concepts/choose-cluster-mode">choose a cluster mode</a>, <a href="https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-classes-standard-clusters">Autopilot in Standard clusters</a>, <a href="https://cloud.google.com/kubernetes-engine/pricing">pricing</a>, <a href="https://docs.cloud.google.com/kubernetes-engine/docs/concepts/release-channels">release channels</a>, <a href="https://docs.cloud.google.com/kubernetes-engine/docs/concepts/access-control">access control</a></li>
+  <li>Google Cloud access: <a href="https://docs.cloud.google.com/resource-manager/docs/creating-managing-projects">creating projects</a>, <a href="https://docs.cloud.google.com/billing/docs/how-to/modify-project">billing a project</a>, <a href="https://docs.cloud.google.com/resource-manager/docs/secure-by-default-organizations">secure-by-default organizations</a>, <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation-with-other-providers">workload identity federation</a></li>
+  <li>Google overlaps: <a href="https://cloud.google.com/blog/products/application-development/application-design-center-now-ga">Application Design Center</a>, <a href="https://docs.cloud.google.com/app-hub/docs/overview">App Hub</a>, <a href="https://docs.cloud.google.com/appengine/docs/standard/lifecycle/support-schedule">App Engine schedule</a></li>
+  <li>AWS: <a href="https://docs.aws.amazon.com/apprunner/latest/dg/apprunner-availability-change.html">App Runner availability</a>, <a href="https://aws.amazon.com/about-aws/whats-new/2025/11/announcing-amazon-ecs-express-mode/">ECS Express Mode</a>, <a href="https://docs.aws.amazon.com/eks/latest/userguide/automode.html">EKS Auto Mode</a>, <a href="https://docs.aws.amazon.com/proton/latest/userguide/proton-end-of-support.html">Proton end of support</a>, <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html">IAM OIDC providers</a></li>
+  <li>Azure: <a href="https://learn.microsoft.com/en-us/azure/container-apps/overview">Container Apps</a>, <a href="https://learn.microsoft.com/en-us/azure/aks/intro-aks-automatic">AKS Automatic</a></li>
+</ul>
+</main>
+</div>

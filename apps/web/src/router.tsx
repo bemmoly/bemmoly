@@ -9,6 +9,7 @@ import {
   inboxRoute,
   moduleDeepRoute,
   moduleRoute,
+  startRoute,
 } from './router/app-routes.tsx';
 import { publicRoutes } from './router/public-routes.tsx';
 import { rootRoute } from './router/root.tsx';
@@ -18,6 +19,7 @@ const routeTree = rootRoute.addChildren([
   ...publicRoutes,
   appRoute.addChildren([
     homeRoute,
+    startRoute,
     inboxRoute,
     settingsTree,
     devMailboxRoute,

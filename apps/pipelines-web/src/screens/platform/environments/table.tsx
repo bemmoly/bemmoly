@@ -1,11 +1,27 @@
 import { useT } from '@bemmoly/core-web';
 import type { Environment } from '@bemmoly/module-pipelines/shared';
-import { Table, Tag, type TableColumn } from '@bemmoly/ui';
+import { IconButton, Menu, MenuItem, Table, Tag, type TableColumn } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 
-/** Every environment left to right: its cloud, region and what it asks of a deploy. */
-export function EnvironmentsTable({ items }: { items: readonly Environment[] }) {
+/**
+ * Every environment left to right: its cloud, region and what it asks of a deploy. Edit,
+ * Adopt services (once it has a project), Copy configuration and Archive sit in each row's
+ * menu, shown on hover and focus.
+ */
+export function EnvironmentsTable({
+  items,
+  onEdit,
+  onArchive,
+  onAdopt,
+  onCopy,
+}: {
+  items: readonly Environment[];
+  onEdit?: (environment: Environment) => void;
+  onArchive?: (environment: Environment) => void;
+  onAdopt?: (environment: Environment) => void;
+  onCopy?: (environment: Environment) => void;
+}) {
   const t = useT(pipelinesText);
   const columns: TableColumn<Environment>[] = [
     {
@@ -64,6 +80,50 @@ export function EnvironmentsTable({ items }: { items: readonly Environment[] }) 
       ),
     },
   ];
+  if (onEdit && onArchive) {
+    columns.push({
+      key: 'menu',
+      header: '',
+      width: '40px',
+      align: 'end',
+      reveal: true,
+      render: (env) => (
+        <Menu
+          align="end"
+          trigger={(props) => (
+            <IconButton
+              {...props}
+              size="sm"
+              variant="ghost"
+              icon="more"
+              label={t('pipelines.environments.rowMenu', { name: env.name })}
+            />
+          )}
+        >
+          <MenuItem icon={<Icon name="edit" size={14} />} onSelect={() => onEdit(env)}>
+            {t('pipelines.environments.edit')}
+          </MenuItem>
+          {onAdopt && env.cloudAccount && (
+            <MenuItem icon={<Icon name="import" size={14} />} onSelect={() => onAdopt(env)}>
+              {t('pipelines.adopt.open')}
+            </MenuItem>
+          )}
+          {onCopy && (
+            <MenuItem icon={<Icon name="copy" size={14} />} onSelect={() => onCopy(env)}>
+              {t('pipelines.copy.open')}
+            </MenuItem>
+          )}
+          <MenuItem
+            tone="danger"
+            icon={<Icon name="archive" size={14} />}
+            onSelect={() => onArchive(env)}
+          >
+            {t('pipelines.environments.archive')}
+          </MenuItem>
+        </Menu>
+      ),
+    });
+  }
   return (
     <Table
       label={t('pipelines.platform.environments')}

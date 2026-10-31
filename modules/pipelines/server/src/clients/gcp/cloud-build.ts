@@ -13,7 +13,9 @@ const BASE = 'https://cloudbuild.googleapis.com/v1';
 const buildSchema = z.object({
   id: z.string(),
   status: z.string(),
+  statusDetail: z.string().optional(),
   logUrl: z.string().optional(),
+  failureInfo: z.object({ type: z.string().optional(), detail: z.string().optional() }).optional(),
   results: z
     .object({
       images: z.array(z.object({ name: z.string(), digest: z.string() })).default([]),
@@ -24,32 +26,61 @@ const buildSchema = z.object({
 export type CloudBuild = z.infer<typeof buildSchema>;
 
 export interface BuildRequest {
-  steps: Array<{ name: string; args: string[]; env?: string[] }>;
+  steps: Array<{ name: string; args?: string[]; env?: string[] }>;
   images?: string[];
+  /** `projects/<project>/serviceAccounts/<email>`. */
   serviceAccount?: string;
   timeout?: string;
   tags?: string[];
+  /** User substitutions, `_NAME` keys; steps read them as `$_NAME` in their env. */
+  substitutions?: Record<string, string>;
+  /** "E2_HIGHCPU_8"; left out for Cloud Build's default. */
+  machineType?: string;
 }
+
+const buildsUrl = (projectId: string, region: string) =>
+  `${BASE}/projects/${projectId}/locations/${region}/builds`;
 
 export function createCloudBuildClient(http: GcpHttp) {
   return {
-    /** Starts a build and answers its id. */
-    async createBuild(projectId: string, region: string, build: BuildRequest): Promise<string> {
+    /** Starts a build and answers its id and log address. */
+    async createBuild(
+      projectId: string,
+      region: string,
+      build: BuildRequest,
+    ): Promise<{ id: string; logUrl: string | null }> {
+      const { machineType, ...rest } = build;
       const operation = await http.send({
         method: 'POST',
-        url: `${BASE}/projects/${projectId}/locations/${region}/builds`,
-        body: { ...build, options: { logging: 'CLOUD_LOGGING_ONLY' } },
+        url: buildsUrl(projectId, region),
+        body: {
+          ...rest,
+          // A build that names its own service account must send logs to Cloud Logging only.
+          options: { logging: 'CLOUD_LOGGING_ONLY', ...(machineType ? { machineType } : {}) },
+        },
         schema: operationSchema,
       });
       const started = z
-        .object({ build: z.object({ id: z.string() }) })
+        .object({ build: z.object({ id: z.string(), logUrl: z.string().optional() }) })
         .parse(operation.metadata ?? {});
-      return started.build.id;
+      return { id: started.build.id, logUrl: started.build.logUrl ?? null };
+    },
+
+    /** The build, or null when Cloud Build no longer has it. */
+    findBuild(projectId: string, region: string, id: string): Promise<CloudBuild | null> {
+      return http.find({ url: `${buildsUrl(projectId, region)}/${id}`, schema: buildSchema });
     },
 
     getBuild(projectId: string, region: string, id: string): Promise<CloudBuild> {
+      return http.send({ url: `${buildsUrl(projectId, region)}/${id}`, schema: buildSchema });
+    },
+
+    /** Cancels a queued or working build; Cloud Build answers the build as it now is. */
+    cancelBuild(projectId: string, region: string, id: string): Promise<CloudBuild> {
       return http.send({
-        url: `${BASE}/projects/${projectId}/locations/${region}/builds/${id}`,
+        method: 'POST',
+        url: `${buildsUrl(projectId, region)}/${id}:cancel`,
+        body: { projectId, id },
         schema: buildSchema,
       });
     },

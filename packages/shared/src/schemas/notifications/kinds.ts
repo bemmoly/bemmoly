@@ -17,6 +17,8 @@ export const KERNEL_NOTIFICATION_KINDS = [
   'break_glass_changed',
   'webhook_disabled',
   'import_finished',
+  'approval_requested',
+  'approval_decided',
 ] as const;
 
 export type KernelNotificationKind = (typeof KERNEL_NOTIFICATION_KINDS)[number];
@@ -52,6 +54,8 @@ export const IMMEDIATE_KINDS: readonly string[] = [
   'break_glass_changed',
   'webhook_disabled',
   'import_finished',
+  'approval_requested',
+  'approval_decided',
 ];
 
 export function defaultChannelFor(kind: string): NotificationChannel {

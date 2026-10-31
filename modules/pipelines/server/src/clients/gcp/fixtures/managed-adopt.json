@@ -1,0 +1,56 @@
+{
+  "recorded": "Hand-written from the Google Cloud REST reference (shapes and field names as documented); not captured from a live organisation. Replace with a capture from a sandbox: see README.md beside this file.",
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/bemmoly-control-583920174411",
+      "response": {
+        "name": "projects/771205334200",
+        "parent": "folders/417302018845",
+        "projectId": "bemmoly-control-583920174411",
+        "state": "ACTIVE",
+        "displayName": "Bemmoly control",
+        "createTime": "2026-10-29T09:14:33.120Z",
+        "updateTime": "2026-10-29T09:14:35.004Z",
+        "etag": "W/\"5c1f3b2a9e7d4f11\"",
+        "labels": {
+          "application": "bemmoly"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/projects/bemmoly-control-583920174411/billingInfo",
+      "response": {
+        "name": "projects/bemmoly-control-583920174411/billingInfo",
+        "projectId": "bemmoly-control-583920174411",
+        "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+        "billingEnabled": true
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/bemmoly-control-gone",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Project bemmoly-control-gone not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/bemmoly-control-gone",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Project bemmoly-control-gone not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    }
+  ]
+}

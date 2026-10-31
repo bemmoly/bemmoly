@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  deployRuntimeSchema,
   environmentClassSchema,
   idSchema,
   keysetPageSchema,
@@ -37,6 +38,8 @@ export const environmentSchema = z.object({
   position: z.number().int(),
   cloudAccount: z.object({ id: idSchema, externalId: z.string(), name: z.string() }).nullable(),
   protection: environmentProtectionSchema,
+  /** What applications run on here unless they choose otherwise. */
+  defaultRuntime: deployRuntimeSchema.default('cloud-run'),
 });
 
 export const environmentRefSchema = z.object({

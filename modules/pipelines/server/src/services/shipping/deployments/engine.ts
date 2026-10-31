@@ -70,8 +70,18 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
       await sql`update pipeline_deployments set previous_revision = null where id = ${row.id}`;
     }
     const baseline = await measureBaseline(provider, target, stable, now);
-    const { revision } = await parts.deploy(target, artifactOf(release));
-    const plan = { ...step.plan, ...(baseline ? { baseline } : {}) };
+    // Recorded before the deploy, so a roll back can redeploy exactly this set.
+    const variables = await deps.variables?.(row.application_id, row.environment_id);
+    if (variables) {
+      await sql`update pipeline_deployments set variables = ${JSON.stringify(variables)}::jsonb
+        where id = ${row.id}`;
+    }
+    const { revision } = await parts.deploy(target, artifactOf(release), variables);
+    const plan = {
+      ...step.plan,
+      ...(baseline ? { baseline } : {}),
+      ...(target.placement ? { runtime: target.placement.runtime } : {}),
+    };
     await write(
       row,
       {
@@ -174,13 +184,14 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
         );
         return;
       }
+      const plan = deploymentPlanSchema.parse(row.plan ?? {});
       const resolved = await resolveTarget(
         sql,
         deps.providers,
         row.application_id,
         row.environment_id,
+        { runtime: plan.runtime },
       );
-      const plan = deploymentPlanSchema.parse(row.plan ?? {});
       await rollBack({ row, plan, ...resolved, now }, reason, automatic);
     },
 
@@ -211,7 +222,15 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
       const plan = deploymentPlanSchema.parse(row.plan ?? {});
       let resolved: { provider: CloudProvider; target: DeployTarget };
       try {
-        resolved = await resolveTarget(sql, deps.providers, row.application_id, row.environment_id);
+        resolved = await resolveTarget(
+          sql,
+          deps.providers,
+          row.application_id,
+          row.environment_id,
+          {
+            runtime: plan.runtime,
+          },
+        );
       } catch (error) {
         await write(
           row,

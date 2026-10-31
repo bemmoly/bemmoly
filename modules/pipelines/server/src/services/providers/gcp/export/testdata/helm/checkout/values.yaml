@@ -1,0 +1,32 @@
+# Defaults. Each file under values/ is one application in one environment, or the group's
+# Gateway; install each as its own release so applications release and roll back alone.
+application: ""
+revision: ""
+release: ""
+image: ""
+port: 8080
+scaling:
+  min: 1
+  max: 10
+  cpuTarget: 70
+disruptionBudget: null
+resources: {}
+probes:
+  readiness: ""
+  liveness: ""
+  timeoutSeconds: 5
+serviceAccount: ""
+secretsAs: env
+env: []
+secrets: []
+stableService: ""
+route:
+  hostname: ""
+  parent:
+    name: bemmoly
+    namespace: ""
+gateway:
+  create: false
+# The front door's endpoint group for this revision, when a front door routes to it.
+frontDoor:
+  neg: ""

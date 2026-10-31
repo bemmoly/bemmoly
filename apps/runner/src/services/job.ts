@@ -13,7 +13,7 @@ import { dim } from '../utils/lines.ts';
 import { SecretMasker } from '../utils/mask.ts';
 import { nowIso } from '../utils/time.ts';
 import { uploadArtifacts } from './artifacts.ts';
-import { IMAGE_ID_FILE } from './build-step.ts';
+import { IMAGE_ID_FILE, IMAGE_PLATFORM_FILE } from './build-step.ts';
 import { checkout, cloneCredentials } from './checkout.ts';
 import { ErrorLineCatcher, prepareStep } from './job-step.ts';
 import { collectJUnit } from './junit.ts';
@@ -128,9 +128,14 @@ export class JobRun {
 
   /** The image a `bemmoly/build` step made, by platform, when there was one. */
   private async builtImage(): Promise<Record<string, string> | undefined> {
-    const id = await readFile(path.join(this.workspace, IMAGE_ID_FILE), 'utf8').catch(() => '');
-    const digest = id.trim();
-    return /^sha256:[0-9a-f]{64}$/.test(digest) ? { 'linux/amd64': digest } : undefined;
+    const read = (file: string) =>
+      readFile(path.join(this.workspace, file), 'utf8').then(
+        (text) => text.trim(),
+        () => '',
+      );
+    const digest = await read(IMAGE_ID_FILE);
+    const platform = (await read(IMAGE_PLATFORM_FILE)) || 'linux/amd64';
+    return /^sha256:[0-9a-f]{64}$/.test(digest) ? { [platform]: digest } : undefined;
   }
 
   private get workspace(): string {

@@ -2,10 +2,9 @@ import type {
   CloudAccount,
   CloudConnection,
   CloudResource,
-  LandingZoneNode,
-  LandingZonePlan,
   Layout,
 } from '../../../../shared/clouds.ts';
+import type { LandingZoneNode, LandingZonePlan } from '../../../../shared/landing-zones.ts';
 import type { DomainColor } from '../../../../shared/catalog.ts';
 import type { EnvironmentClass, Provider } from '../../../../shared/common.ts';
 import type { AccountRow, ConnectionRow, PlanRow, ResourceRow } from '../../models/clouds.ts';
@@ -19,16 +18,36 @@ const boundaryOf = (row: ConnectionRow) =>
     ? String(row.config['folderName'] ?? row.config['organizationalUnitName'] ?? row.boundary_ref)
     : null;
 
+const textOf = (value: unknown) => (typeof value === 'string' && value ? value : null);
+
+/** Connections made before attached mode existed are all managed ones. */
+const modeOf = (row: ConnectionRow): CloudConnection['mode'] =>
+  row.config['mode'] === 'attached' ? 'attached' : 'managed';
+
+const SIGN_INS = { metadata: 'vm', application_default: 'application_default' } as const;
+
+function signInOf(row: ConnectionRow): CloudConnection['signIn'] {
+  if (row.provider !== 'gcp') return null;
+  const kind = (row.config['credentials'] as { kind?: string } | undefined)?.kind ?? 'metadata';
+  return kind in SIGN_INS ? SIGN_INS[kind as keyof typeof SIGN_INS] : 'workload_identity_file';
+}
+
 export const toConnection = (row: ConnectionRow): CloudConnection => ({
   id: row.id,
   provider: row.provider as Provider,
   name: row.name,
+  mode: modeOf(row),
+  signIn: signInOf(row),
+  region: textOf(row.config['region']),
+  registry: textOf(row.config['registry']),
+  ciAccountId: textOf(row.config['ciAccountId']),
   status: row.status as CloudConnection['status'],
   principal: row.principal,
   boundary: boundaryOf(row),
   layout: row.layout as Layout,
   lastCheckedAt: isoOrNull(row.last_checked_at),
   lastError: row.last_error,
+  problems: Array.isArray(row.problems) ? row.problems.map(String) : [],
   createdAt: iso(row.created_at),
 });
 
@@ -49,6 +68,11 @@ export const toAccount = (row: AccountRow): CloudAccount => ({
   environmentClass: row.environment_class as EnvironmentClass | null,
   purpose: row.purpose as CloudAccount['purpose'],
   status: row.status as CloudAccount['status'],
+  origin: row.origin === 'attached' ? 'attached' : 'created',
+  deployerServiceAccount: textOf(row.config['deployerServiceAccount']),
+  runtimeServiceAccount: textOf(row.config['runtimeServiceAccount']),
+  problems: Array.isArray(row.problems) ? row.problems.map(String) : [],
+  lastCheckedAt: isoOrNull(row.last_checked_at),
 });
 
 export const toResource = (row: ResourceRow): CloudResource => ({
@@ -70,5 +94,9 @@ export const toPlan = (row: PlanRow): LandingZonePlan => ({
   root: row.tree as LandingZoneNode,
   counts: row.counts,
   blockers: row.blockers,
+  warnings: row.warnings ?? [],
+  billing: row.billing ?? null,
+  status: row.status as LandingZonePlan['status'],
+  lastError: row.last_error,
   specHash: row.spec_hash,
 });

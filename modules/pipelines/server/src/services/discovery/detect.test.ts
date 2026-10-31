@@ -20,6 +20,7 @@ describe('discovery in a pnpm and Turborepo monorepo', () => {
         runtime: 'kubernetes',
         owner: { raw: '@acme/payments', source: 'codeowners' },
         system: null,
+        sharedBuild: null,
       },
       expect.objectContaining({
         path: 'apps/web',

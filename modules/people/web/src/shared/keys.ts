@@ -1,0 +1,20 @@
+/** Every People query key, under one root so a write can refresh them all. */
+export const peopleKeys = {
+  all: () => ['people'] as const,
+  directory: (query: object = {}) => ['people', 'directory', query] as const,
+  profile: (userId: string) => ['people', 'profile', userId] as const,
+  fieldDefinitions: () => ['people', 'fields'] as const,
+  levels: () => ['people', 'levels'] as const,
+  teams: () => ['people', 'teams'] as const,
+  locations: () => ['people', 'locations'] as const,
+  costCentres: () => ['people', 'cost-centres'] as const,
+  policies: (archived = false) => ['people', 'policies', archived] as const,
+  requests: (query: object) => ['people', 'leave', 'requests', query] as const,
+  balances: (userId?: string) => ['people', 'leave', 'balances', userId ?? 'me'] as const,
+  absences: (query: object) => ['people', 'leave', 'absences', query] as const,
+  approvals: () => ['people', 'leave', 'approvals'] as const,
+  templates: () => ['people', 'templates'] as const,
+  journeys: (query: object = {}) => ['people', 'journeys', query] as const,
+  journey: (id: string) => ['people', 'journey', id] as const,
+  myTasks: () => ['people', 'my-tasks'] as const,
+};

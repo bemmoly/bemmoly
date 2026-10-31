@@ -4,7 +4,9 @@ import {
   accessDecisionSchema,
   bindingsResponseSchema,
   capacitySchema,
+  cloudAccountSchema,
   cloudAccountsResponseSchema,
+  cloudConnectionSchema,
   connectionsResponseSchema,
   discoveryStatusSchema,
   idSchema,
@@ -19,6 +21,7 @@ import {
   sweepQueuedSchema,
   type AcceptProposalsBody,
   type ApplyLandingZoneBody,
+  type AttachAccountBody,
   type CapacityQuery,
   type CheckAccessBody,
   type ConnectCloudBody,
@@ -27,7 +30,9 @@ import {
   type InsightsQuery,
   type LandingZonePlanBody,
   type ListBindingsQuery,
+  type UpdateConnectionBody,
   type UpdatePolicyBody,
+  type UpdatePoolBody,
 } from '@bemmoly/module-pipelines/shared';
 import { z } from 'zod';
 import { toQuery } from './query.ts';
@@ -46,6 +51,8 @@ export const platformKeys = {
   accounts: (connection: string) => ['pipelines', 'platform', 'accounts', connection] as const,
   plan: (connection: string, body: LandingZonePlanBody) =>
     ['pipelines', 'platform', 'plan', connection, body] as const,
+  planById: (connection: string, plan: string) =>
+    ['pipelines', 'platform', 'plans', connection, plan] as const,
   insights: (query: InsightsQuery) => ['pipelines', 'insights', query] as const,
   proposals: () => ['pipelines', 'platform', 'proposals'] as const,
   discovery: () => ['pipelines', 'platform', 'discovery'] as const,
@@ -73,19 +80,38 @@ export function platformEndpoints(http: Http) {
         method: 'POST',
         body,
       }),
+    /** Where its runners come from, its size, and a Cloud Build pool's settings. */
+    updatePool: (key: string, body: UpdatePoolBody) =>
+      http.request(`${base}/pools/${key}`, runnerPoolSchema, { method: 'PATCH', body }),
     rotatePoolToken: (key: string) =>
       http.request(`${base}/pools/${key}/tokens`, poolTokenSchema, { method: 'POST' }),
     providers: () => http.request(`${base}/clouds/providers`, providersResponseSchema),
     connections: () => http.request(`${base}/clouds`, connectionsResponseSchema),
     connect: (body: ConnectCloudBody) =>
       http.request(`${base}/clouds`, created, { method: 'POST', body }),
-    checkConnection: (id: string) => http.send(`${base}/clouds/${id}/check`, { method: 'POST' }),
+    checkConnection: (id: string) =>
+      http.request(`${base}/clouds/${id}/check`, cloudConnectionSchema, { method: 'POST' }),
+    /** Where runners push the images they build; null keeps them on the runner. */
+    updateConnection: (id: string, body: UpdateConnectionBody) =>
+      http.request(`${base}/clouds/${id}`, cloudConnectionSchema, { method: 'PATCH', body }),
     accounts: (id: string) =>
       http.request(`${base}/clouds/${id}/accounts`, cloudAccountsResponseSchema),
+    /** A project that exists already; the answer carries what its check found. */
+    attachAccount: (id: string, body: AttachAccountBody) =>
+      http.request(`${base}/clouds/${id}/accounts`, cloudAccountSchema, { method: 'POST', body }),
+    recheckAccount: (id: string, accountId: string) =>
+      http.request(`${base}/clouds/${id}/accounts/${accountId}/check`, cloudAccountSchema, {
+        method: 'POST',
+      }),
+    detachAccount: (id: string, accountId: string) =>
+      http.send(`${base}/clouds/${id}/accounts/${accountId}`, { method: 'DELETE' }),
     plan: (id: string, body: LandingZonePlanBody) =>
       http.request(`${base}/clouds/${id}/plan`, landingZonePlanSchema, { method: 'POST', body }),
     apply: (id: string, body: ApplyLandingZoneBody) =>
       http.send(`${base}/clouds/${id}/apply`, { method: 'POST', body }),
+    /** One plan and how its apply is going. */
+    planById: (id: string, plan: string) =>
+      http.request(`${base}/clouds/${id}/plans/${plan}`, landingZonePlanSchema),
     proposals: () =>
       http.request(`${base}/discovery/proposals`, proposalsPageSchema, {
         query: { limit: 200 },
