@@ -12,6 +12,7 @@ import type { FrontDoorPart } from './front-door-contract.ts';
 import type { ExportPart } from './export-contract.ts';
 import type { AccessPart, CostPart } from './planned-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
+import type { ResolvedDeploySettings, ServiceAddress } from './deploy-settings-contract.ts';
 
 /*
  * The provider model (architecture §14). Everything cloud-specific sits behind these
@@ -74,6 +75,8 @@ export interface ReleaseArtifact {
   imageRepository: string | null;
   imageDigests: Readonly<Record<string, string>>;
   resolvedConfig: Readonly<Record<string, unknown>>;
+  /** Resolved for the target; absent, the provider resolves the file's alone. */
+  settings?: ResolvedDeploySettings;
 }
 
 /**
@@ -107,7 +110,7 @@ export interface TargetsPart {
     target: DeployTarget,
     release: ReleaseArtifact,
     variables?: readonly DeployVariable[],
-  ): Promise<{ revision: string }>;
+  ): Promise<{ revision: string; address?: ServiceAddress }>;
   /** `percent` of traffic to `revision`, the rest to `stable` (or nothing when null). */
   shift(
     target: DeployTarget,
@@ -283,3 +286,4 @@ export function partAvailability(provider: CloudProvider, part: ProviderPart): P
 }
 
 export type * from './cluster-contract.ts';
+export type * from './deploy-settings-contract.ts';
