@@ -42,6 +42,18 @@ export function createSecretManagerClient(http: GcpHttp) {
       return answer.name.split('/').pop() ?? answer.name;
     },
 
+    /**
+     * A version's number without its value: "latest" answers the number it points at now, so
+     * a reference to it can be pinned.
+     */
+    async versionNumber(projectId: string, secret: string, version: string): Promise<string> {
+      const answer = await http.send({
+        url: `${BASE}/${secretName(projectId, secret)}/versions/${version}`,
+        schema: z.object({ name: z.string() }),
+      });
+      return answer.name.split('/').pop() ?? version;
+    },
+
     /** One version's value, decoded. The caller keeps it in memory and nowhere else. */
     async accessVersion(projectId: string, secret: string, version: string): Promise<string> {
       const answer = await http.send({
