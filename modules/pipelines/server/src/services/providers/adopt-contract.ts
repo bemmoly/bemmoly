@@ -45,12 +45,8 @@ export interface RunningService {
 
 export interface AdoptPart {
   listServices(connection: ConnectionRecord, place: ServicePlace): Promise<RunningService[]>;
-  /** One service by name; null when there is none. */
-  readService(
-    connection: ConnectionRecord,
-    place: ServicePlace,
-    name: string,
-  ): Promise<RunningService | null>;
+  /** Whether a service of that name runs there, reading nothing else about it. */
+  hasService(connection: ConnectionRecord, place: ServicePlace, name: string): Promise<boolean>;
   /** Who the target's revisions run as: whom a secret copied there must be readable by. */
   runtimePrincipal(target: DeployTarget): Promise<string>;
 }

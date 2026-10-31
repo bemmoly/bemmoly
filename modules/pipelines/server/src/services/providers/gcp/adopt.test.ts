@@ -96,11 +96,9 @@ describe('Cloud Run services that already run', () => {
     });
   });
 
-  it('reads one service by name, and none that is not there', async () => {
-    expect((await adopt?.readService(connection, place, 'cart-api'))?.revision).toBe(
-      'cart-api-00012-vqd',
-    );
-    expect(await adopt?.readService(connection, place, 'billing-api')).toBeNull();
+  it('says whether a service of a name runs there, reading nothing more', async () => {
+    expect(await adopt?.hasService(connection, place, 'cart-api')).toBe(true);
+    expect(await adopt?.hasService(connection, place, 'billing-api')).toBe(false);
   });
 
   it('names who a target runs as, on Cloud Run and on GKE', async () => {

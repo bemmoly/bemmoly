@@ -22,7 +22,7 @@ export async function refuseTakeover(
     limit 1`;
   if (known) return;
   const configured = target.connection.config['region'];
-  const found = await provider.adopt.readService(
+  const found = await provider.adopt.hasService(
     target.connection,
     {
       account: target.account.externalId,
