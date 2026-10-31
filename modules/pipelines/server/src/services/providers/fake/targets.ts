@@ -1,10 +1,12 @@
 import type { Health } from '../../../../../shared/common.ts';
+import { settingsOf } from '../../deploy-settings/resolve.ts';
 import type {
   DeployTarget,
   DeployVariable,
   MetricName,
   MetricsPart,
   ReleaseArtifact,
+  ResolvedDeploySettings,
   RevisionWeight,
   TargetsPart,
 } from '../contract.ts';
@@ -13,7 +15,19 @@ import type {
  * Deterministic deploys and metrics for tests and the demo simulator. A release's
  * resolved config can script how its revision behaves: `fake.errorRate` (a fraction) and
  * `fake.latencyMs`, optionally per environment, so a test makes a canary fail by building a release that says so.
+ * A revision keeps the settings it was deployed with and, on a cluster, the objects GKE would
+ * have been given, in neutral words, so tests check scaling and secrets without a cluster.
  */
+
+/** What a revision on a cluster would run as: its autoscaler, budget, secrets and probes. */
+export interface FakeClusterObjects {
+  autoscaler: { min: number; max: number; cpuTarget: number };
+  disruptionBudget: { maxUnavailable: number } | null;
+  /** "secret/<revision>" when synced into a Kubernetes Secret, "files" when mounted. */
+  secrets: string | null;
+  readiness: string | null;
+  liveness: string | null;
+}
 
 export interface FakeRevision {
   release: ReleaseArtifact;
@@ -23,6 +37,8 @@ export interface FakeRevision {
   latencyMs: number;
   /** Health reads left before it reports healthy and takes requests: a pod starting. */
   warming: number;
+  settings: ResolvedDeploySettings;
+  cluster: FakeClusterObjects | null;
 }
 
 export interface FakeTarget {
@@ -48,6 +64,27 @@ export const kubernetesKeyOf = (target: DeployTarget) => {
   if (!cluster) throw new Error(`${keyOf(target)} has no cluster to deploy into`);
   return `${cluster.name}/${target.placement?.namespace ?? 'default'}/${keyOf(target)}`;
 };
+
+function clusterObjectsOf(
+  settings: ResolvedDeploySettings,
+  revision: string,
+  variables: readonly DeployVariable[],
+): FakeClusterObjects {
+  const { min, max, cpuTarget } = settings.scaling;
+  const secrets = variables.some((variable) => variable.kind === 'secret');
+  return {
+    autoscaler: {
+      min: Math.max(1, min),
+      max: Math.max(1, min, max ?? 1),
+      cpuTarget: cpuTarget ?? 70,
+    },
+    disruptionBudget:
+      settings.maxUnavailable === null ? null : { maxUnavailable: settings.maxUnavailable },
+    secrets: !secrets ? null : settings.secretsAs === 'env' ? `secret/${revision}` : 'files',
+    readiness: settings.healthcheck.ready ?? settings.healthcheck.path,
+    liveness: settings.healthcheck.path,
+  };
+}
 
 const numberOr = (value: unknown, fallback: number) =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -96,15 +133,28 @@ export function createFakeTargets(
             numberOr(release.resolvedConfig[name], fallback),
           ),
         );
+      const settings = settingsOf(release, target);
       state.revisions.set(revision, {
         release,
         variables,
         errorRate: config('fake.errorRate', 0.002),
         latencyMs: config('fake.latencyMs', 120),
         warming: world.revisionWarmup,
+        settings,
+        cluster: options.kubernetes ? clusterObjectsOf(settings, revision, variables) : null,
       });
       record(target, `deploy ${release.version}`);
-      return { revision };
+      const publicUrl = `https://${target.application.key}.${target.environment.key}.fake.test`;
+      const namespace = target.placement?.namespace ?? 'default';
+      return {
+        revision,
+        address: {
+          url: options.kubernetes
+            ? `http://${target.application.key}.${namespace}.svc.cluster.local:${settings.port ?? 8080}`
+            : publicUrl,
+          publicUrl,
+        },
+      };
     },
     async shift(target, { revision, percent, stable }) {
       known(target, revision);
