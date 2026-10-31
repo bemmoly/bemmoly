@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared';
 import type { StepExecutor, StepResult, StepRunOptions } from '../executors/types.ts';
 import { isInside } from '../utils/glob.ts';
+import { buildArgFlags } from './build-args.ts';
 
 export { BUILD_ACTION, isBuildAction } from '@bemmoly/module-pipelines/shared';
 
@@ -48,7 +49,8 @@ export function buildTag(job: ClaimedJob, step?: ResolvedStep): string {
 
 /**
  * The shell command for a `bemmoly/build` step, run with the docker CLI against the runner's
- * daemon. The step's `with` values arrive as BEMMOLY_BUILD_DOCKERFILE and BEMMOLY_BUILD_CONTEXT.
+ * daemon. The step's `with` values arrive as BEMMOLY_BUILD_DOCKERFILE and BEMMOLY_BUILD_CONTEXT,
+ * its build args as BEMMOLY_BUILD_ARGS.
  * With BEMMOLY_BUILD_PUSH the image is built for the deploy platform (a laptop on ARM would
  * otherwise build an image Cloud Run cannot start), pushed with this machine's own docker
  * credentials, and reported by its registry digest instead of its local id.
@@ -56,16 +58,17 @@ export function buildTag(job: ClaimedJob, step?: ResolvedStep): string {
 export function buildCommand(job: ClaimedJob, step: ResolvedStep): string {
   const { dockerfile, context } = buildPaths(step);
   const tag = quote(buildTag(job, step));
+  const args = buildArgFlags(step);
   if (step.env['BEMMOLY_BUILD_PUSH'] !== 'true') {
     return [
-      `docker build -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
+      `docker build -f ${quote(dockerfile)}${args} -t ${tag} ${quote(context)}`,
       `mkdir -p .bemmoly`,
       `docker image inspect --format '{{.Id}}' ${tag} > ${IMAGE_ID_FILE}`,
     ].join(' && ');
   }
   const platform = quote(pushPlatform(step));
   return [
-    `docker build --platform ${platform} -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
+    `docker build --platform ${platform} -f ${quote(dockerfile)}${args} -t ${tag} ${quote(context)}`,
     `mkdir -p .bemmoly`,
     // The log is kept to read the digest from; it is printed so the push shows in the job log.
     `{ docker push ${tag} > ${PUSH_LOG} 2>&1; pushed=$?; cat ${PUSH_LOG}; [ "$pushed" -eq 0 ]; }`,
