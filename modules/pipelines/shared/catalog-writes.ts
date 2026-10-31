@@ -150,6 +150,7 @@ export const discoverySignalSchema = z.enum([
   'bazel',
   'backstage',
   'application-yaml',
+  'shared-dockerfile',
 ]);
 
 export const proposalStateSchema = z.enum(['proposed', 'accepted', 'dismissed']);
@@ -174,6 +175,15 @@ export const discoveryProposalSchema = z.object({
     .nullable(),
   /** From a Backstage system or an existing application.yaml; the person can change it. */
   group: groupPathSchema.nullable(),
+  /** The Dockerfile and args it shares with other folders; it then goes in repository.yaml. */
+  sharedBuild: z
+    .object({
+      dockerfile: z.string(),
+      context: z.string(),
+      args: z.record(z.string(), z.string()),
+    })
+    .nullable()
+    .default(null),
   state: proposalStateSchema,
   applicationKey: slugSchema.nullable(),
   createdAt: isoDateTimeSchema,
@@ -185,6 +195,10 @@ export const listProposalsQuerySchema = keysetQuerySchema.extend({
 });
 export const proposalsPageSchema = keysetPageSchema(discoveryProposalSchema).extend({
   total: z.number().int(),
+  /** The repository file accepting would propose, per repository with shared builds. */
+  repositoryFiles: z
+    .array(z.object({ repository: z.string(), path: z.string(), content: z.string() }))
+    .default([]),
 });
 
 export const acceptProposalsBodySchema = z.object({

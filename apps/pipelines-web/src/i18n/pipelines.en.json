@@ -1350,5 +1350,6 @@
   "pipelines.export.elsewhere": "Not in any directory",
   "pipelines.application.export": "Export",
   "pipelines.application.exportTip": "Download this application's services as Terraform and Helm",
-  "pipelines.application.exportFailed": "The export did not download"
+  "pipelines.application.exportFailed": "The export did not download",
+  "pipelines.signal.sharedDockerfile": "Shared Dockerfile"
 }

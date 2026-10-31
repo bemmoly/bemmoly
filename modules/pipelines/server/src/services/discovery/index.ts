@@ -13,7 +13,7 @@ import type { CatalogWritesService } from '../catalog-writes/index.ts';
 import type { RepositoryTree } from '../code/repository-reader.ts';
 import { requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
 import { acceptProposals } from './accept.ts';
-import { PROPOSAL_FROM, PROPOSAL_SELECT, toProposal } from './present.ts';
+import { PROPOSAL_FROM, PROPOSAL_SELECT, proposedRepositoryFiles, toProposal } from './present.ts';
 import { scanRepository, type ScanResult } from './scan.ts';
 import {
   discoveryStatus,
@@ -140,6 +140,10 @@ export function createDiscoveryService(deps: DiscoveryDeps, writes: CatalogWrite
         items: page.rows.map(toProposal),
         nextCursor: page.nextCursor,
         total: count?.total ?? 0,
+        repositoryFiles: await proposedRepositoryFiles(
+          db,
+          page.rows.map((row) => row.repository_id),
+        ),
       };
     },
 
