@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { buildArgsSchema, buildOverrideSchema } from './build-args.ts';
 import { runtimeSchema, slugSchema } from './common.ts';
+import { deploySettingsSchema, secretsAsSchema } from './deploy-settings.ts';
 
 /*
  * Pipeline definitions (architecture §7). The platform team publishes templates (golden
@@ -147,10 +148,17 @@ export const deploySpecSchema = z.object({
     .object({
       path: z.string().startsWith('/').default('/healthz'),
       timeoutSeconds: z.number().int().min(1).max(300).default(5),
+      /** Readiness, when it differs from the liveness `path`. */
+      ready: z.string().startsWith('/').optional(),
     })
     .optional(),
   /** Anyone on the internet may call it; otherwise callers need an identity token. */
   public: z.boolean().optional(),
+  /** Instances or replicas, and what the autoscaler aims for (shared/deploy-settings.ts). */
+  scaling: deploySettingsSchema.shape.scaling,
+  secretsAs: secretsAsSchema.optional(),
+  /** Settings for one environment by its key, over the ones above. */
+  environments: z.record(slugSchema, deploySettingsSchema).optional(),
 });
 
 /** A template file, e.g. acme/pipeline-templates/node-service.yaml at tag v3. */
