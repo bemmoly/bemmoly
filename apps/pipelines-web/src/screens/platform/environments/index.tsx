@@ -17,13 +17,16 @@ import { EnvironmentDialog } from './environment-dialog.tsx';
 import { Paths } from './paths.tsx';
 import { EnvironmentsTable } from './table.tsx';
 import { FrontDoors } from './front-doors.tsx';
+import { AdoptDialog } from '../adopt/adopt-dialog.tsx';
+import { CopyDialog } from '../adopt/copy-dialog.tsx';
 
 /**
  * Platform › Environments: the path each tier takes through the environments, and what each
  * environment asks of a deploy. Prod is marked with the shield and the word Protected.
  * Environments are created here, each in a ready project, and edited or archived from their
  * row; a fresh install starts on the empty state, which says why they are needed. Each
- * environment's front door is turned on and given a domain below them.
+ * environment's front door is turned on and given a domain below them. From a row, the
+ * services already running in its project are adopted, and configuration is copied into it.
  */
 export default function EnvironmentsArea() {
   const t = useT(pipelinesText);
@@ -34,6 +37,8 @@ export default function EnvironmentsArea() {
   const groups = groupReadyAccounts(clouds.items);
   const [editing, setEditing] = useState<Environment | 'new' | null>(null);
   const [archiving, setArchiving] = useState<Environment | null>(null);
+  const [adopting, setAdopting] = useState<Environment | null>(null);
+  const [copying, setCopying] = useState<Environment | null>(null);
   const items = environments.data?.items ?? [];
   const create = (
     <Button variant="primary" onClick={() => setEditing('new')}>
@@ -95,7 +100,13 @@ export default function EnvironmentsArea() {
             ) : !environments.data ? (
               <RowsSkeleton columns={3} rows={5} />
             ) : (
-              <EnvironmentsTable items={items} onEdit={setEditing} onArchive={setArchiving} />
+              <EnvironmentsTable
+                items={items}
+                onEdit={setEditing}
+                onArchive={setArchiving}
+                onAdopt={setAdopting}
+                onCopy={setCopying}
+              />
             )}
           </Panel>
           {environments.data && <FrontDoors environments={items} />}
@@ -109,6 +120,10 @@ export default function EnvironmentsArea() {
         />
       )}
       <ArchiveConfirm environment={archiving} onClose={() => setArchiving(null)} />
+      {adopting && <AdoptDialog environment={adopting} onClose={() => setAdopting(null)} />}
+      {copying && (
+        <CopyDialog environment={copying} environments={items} onClose={() => setCopying(null)} />
+      )}
     </Area>
   );
 }
