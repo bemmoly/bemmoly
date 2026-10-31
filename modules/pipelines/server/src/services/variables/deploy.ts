@@ -3,12 +3,14 @@ import { ValidationError } from '@bemmoly/shared';
 import type { DeployVariable } from '../providers/contract.ts';
 import type { ProviderSourceOrRegistry } from '../shipping/engine-deps.ts';
 import { moveSecret, selectUnmoved } from './move.ts';
+import { fillForDeploy } from './references.ts';
 
 /*
  * The variables one deploy runs with: the environment's own value for a name wins over the one
  * for every environment. A secret is named by where it lives and its version, never by value.
  * A value still waiting to move into the store is moved first, so it never reaches a revision
- * as plain text.
+ * as plain text. A plain value naming another application's address gets that address here
+ * (references.ts).
  */
 
 interface DeployRow {
@@ -37,7 +39,7 @@ export async function variablesForDeploy(
     where v.application_id = ${applicationId}
       and (v.environment_id = ${environmentId} or v.environment_id is null)
     order by v.name, v.environment_id nulls last`;
-  return rows.map((row): DeployVariable => {
+  const variables = rows.map((row): DeployVariable => {
     if (row.kind === 'plain') return { name: row.name, kind: 'plain', value: row.value ?? '' };
     if (!row.secret_ref || !row.account) {
       throw new ValidationError(
@@ -52,4 +54,15 @@ export async function variablesForDeploy(
       version: String(row.version),
     };
   });
+  const [where] = await sql<{ environment_key: string; application_key: string }[]>`
+    select e.key as environment_key, a.key as application_key
+    from pipeline_environments e, pipeline_applications a
+    where e.id = ${environmentId} and a.id = ${applicationId}`;
+  if (!where) return variables;
+  return fillForDeploy(
+    sql,
+    { id: environmentId, key: where.environment_key },
+    where.application_key,
+    variables,
+  );
 }
