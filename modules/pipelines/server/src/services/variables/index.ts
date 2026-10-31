@@ -14,6 +14,7 @@ import { ciSecretValues } from './ci.ts';
 import { variablesForDeploy } from './deploy.ts';
 import { moveUnmovedSecrets } from './move.ts';
 import { selectEnvironmentRefs, selectVariables } from './read.ts';
+import { withResolved } from './references.ts';
 import { createVariableWrites, type VariableTarget } from './writes.ts';
 
 export const MOVE_SECRETS_JOB = 'pipelines.variables-move';
@@ -64,11 +65,9 @@ export function createVariablesService(
       const canChange = person
         ? (await access.decideFor(ctx, person, 'change_variables', { application: app.id })).allowed
         : true;
-      return {
-        items: await selectVariables(sql(), app.id, query),
-        environments: await selectEnvironmentRefs(sql(), query.environment),
-        canChange,
-      };
+      const environments = await selectEnvironmentRefs(sql(), query.environment);
+      const items = await selectVariables(sql(), app.id, query);
+      return { items: await withResolved(sql(), items, environments), environments, canChange };
     },
 
     async set(
