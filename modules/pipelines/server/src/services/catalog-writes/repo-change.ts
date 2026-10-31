@@ -1,7 +1,8 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { isBemmolyError, ProviderError } from '@bemmoly/shared';
-import { parseDocument } from 'yaml';
+import { isMap, isSeq, parseDocument } from 'yaml';
 import type { CatalogChange } from '../../../../shared/catalog-writes.ts';
+import { REPOSITORY_FILE_PATH } from '../../../../shared/repository-yaml.ts';
 import type { CatalogChangeRow } from '../../models/catalog-writes.ts';
 import { iso } from '../../utils/time.ts';
 import type { PullRequestOpener } from '../code/pull-requests.ts';
@@ -54,6 +55,30 @@ export function editFile(content: string, fields: Record<string, unknown>): stri
   return document.toString({ lineWidth: 100 });
 }
 
+/**
+ * Applies `fields` to one application's entry in the repository file's central list, or
+ * null when the list has no entry with that name.
+ */
+export function editEntry(
+  content: string,
+  name: string,
+  fields: Record<string, unknown>,
+): string | null {
+  const document = parseDocument(content);
+  const list = document.get('applications');
+  const entry = isSeq(list)
+    ? list.items.find((item) => isMap(item) && item.get('name') === name)
+    : undefined;
+  if (!isMap(entry)) return null;
+  for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined) continue;
+    const empty = value === null || (Array.isArray(value) && value.length === 0);
+    if (empty) entry.delete(key);
+    else entry.set(key, document.createNode(value));
+  }
+  return document.toString({ lineWidth: 100 });
+}
+
 async function newContent(input: RepositoryChangeInput, ports: ChangePorts) {
   if (input.content !== undefined) return { content: input.content, reason: null };
   const tree = await ports.repositories
@@ -66,7 +91,13 @@ async function newContent(input: RepositoryChangeInput, ports: ChangePorts) {
       reason: `${input.filePath} could not be read from ${input.repository.fullName}`,
     };
   }
-  return { content: editFile(current, input.fields), reason: null };
+  if (input.filePath !== REPOSITORY_FILE_PATH) {
+    return { content: editFile(current, input.fields), reason: null };
+  }
+  const edited = editEntry(current, input.applicationKey, input.fields);
+  return edited === null
+    ? { content: null, reason: `${input.applicationKey} is not in the list in ${input.filePath}` }
+    : { content: edited, reason: null };
 }
 
 export async function openRepositoryChange(
