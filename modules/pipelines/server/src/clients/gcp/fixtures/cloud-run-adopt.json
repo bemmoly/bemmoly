@@ -151,7 +151,7 @@
             ]
           }
         ],
-        "nextPageToken": "Cg5jaGVja291dC1hcGk"
+        "nextPageToken": "page-2"
       }
     },
     {
@@ -208,7 +208,7 @@
     },
     {
       "method": "GET",
-      "url": "https://run.googleapis.com/v2/projects/acme-shop-stage/locations/europe-west1/services?pageSize=100&pageToken=Cg5jaGVja291dC1hcGk",
+      "url": "https://run.googleapis.com/v2/projects/acme-shop-stage/locations/europe-west1/services?pageSize=100&pageToken=page-2",
       "response": {
         "services": [
           {
