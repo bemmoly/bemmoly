@@ -1,0 +1,7 @@
+name: market-web
+pipeline:
+  build:
+    dockerfile: apps/market-web/Dockerfile
+    context: apps/market-web
+    args:
+      SERVICE: null
