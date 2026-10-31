@@ -138,10 +138,9 @@ export function createGcpAdopt(contexts: GcpContexts): AdoptPart {
       return found;
     },
 
-    async readService(connection, place, name) {
-      const { context, run } = open(connection, place);
-      const service = await run.getService(runServiceName(place.account, place.region, name));
-      return service ? running(context, run, place, service) : null;
+    async hasService(connection, place, name) {
+      const { run } = open(connection, place);
+      return (await run.getService(runServiceName(place.account, place.region, name))) !== null;
     },
 
     async runtimePrincipal(target) {
