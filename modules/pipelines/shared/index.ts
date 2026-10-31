@@ -43,3 +43,5 @@ export * from './autopilot.ts';
 export * from './exports.ts';
 export * from './build-args.ts';
 export * from './repository-yaml.ts';
+export * from './deploy-settings.ts';
+export * from './app-references.ts';
