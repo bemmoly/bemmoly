@@ -82,7 +82,25 @@ export function ValueCell({
     );
   }
   const text = (
-    <span className="min-w-0 truncate font-mono text-12 text-tx">{variable.value ?? ''}</span>
+    <span className="flex min-w-0 flex-col leading-card">
+      <span className="min-w-0 truncate font-mono text-12 text-tx">{variable.value ?? ''}</span>
+      {row.resolved.map((value) => (
+        <span
+          key={value.environment}
+          className={`min-w-0 truncate text-11 ${value.problem ? 'text-amber-tx' : 'text-tx-3'}`}
+        >
+          {value.problem
+            ? t('pipelines.variables.resolvedProblem', {
+                environment: value.environment,
+                problem: value.problem,
+              })
+            : t('pipelines.variables.resolvedValue', {
+                environment: value.environment,
+                value: value.value ?? '',
+              })}
+        </span>
+      ))}
+    </span>
   );
   if (!canChange || row.inherited) return text;
   return (
