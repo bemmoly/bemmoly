@@ -56,16 +56,18 @@ export async function scanRepository(
       await tx`
         insert into pipeline_discovery_proposals
           (repository_id, path, key, name, description, signals, runtime, owner_raw,
-           owner_source, owner_team_id, group_path, commit_sha)
+           owner_source, owner_team_id, group_path, commit_sha, shared_build)
         values (${repo.id}::uuid, ${app.path}, ${app.key}, ${app.name}, ${app.description},
           ${app.signals}::text[], ${app.runtime}, ${app.owner?.raw ?? null},
           ${app.owner?.source ?? null}, ${team?.id ?? null}::uuid,
-          ${await groupPath(tx, app.system)}, ${tree.commitSha})
+          ${await groupPath(tx, app.system)}, ${tree.commitSha},
+          ${app.sharedBuild ? JSON.stringify(app.sharedBuild) : null}::jsonb)
         on conflict (repository_id, path) do update set
           key = excluded.key, name = excluded.name, description = excluded.description,
           signals = excluded.signals, runtime = excluded.runtime, owner_raw = excluded.owner_raw,
           owner_source = excluded.owner_source, owner_team_id = excluded.owner_team_id,
-          group_path = excluded.group_path, commit_sha = excluded.commit_sha, updated_at = now()
+          group_path = excluded.group_path, commit_sha = excluded.commit_sha,
+          shared_build = excluded.shared_build, updated_at = now()
         where pipeline_discovery_proposals.state = 'proposed'`;
     }
     const paths = detected.map((app) => app.path);
