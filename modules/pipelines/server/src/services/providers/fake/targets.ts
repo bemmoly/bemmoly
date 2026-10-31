@@ -9,7 +9,9 @@ import type {
   ResolvedDeploySettings,
   RevisionWeight,
   TargetsPart,
+  RunningService,
 } from '../contract.ts';
+import { runningKey } from './adopt.ts';
 
 /*
  * Deterministic deploys and metrics for tests and the demo simulator. A release's
@@ -53,6 +55,8 @@ export interface FakeTargetsWorld {
   log: string[];
   /** How many health reads a new revision answers "unknown" before it is up. */
   revisionWarmup: number;
+  /** Services deployed by hand (adopt.ts): their revision serves until Pipelines deploys. */
+  running: Map<string, RunningService>;
 }
 
 export const keyOf = (target: DeployTarget) =>
@@ -111,6 +115,12 @@ export function createFakeTargets(
     targetOf(target).calls.push(call);
     world.log.push(`${call} ${keyFor(target)}`);
   };
+  /** The revision a hand-deployed service runs, on the default runtime only. */
+  const handRevision = (target: DeployTarget) =>
+    options.kubernetes || !target.account
+      ? null
+      : (world.running.get(runningKey(target.account.externalId, target.application.key))
+          ?.revision ?? null);
   const known = (target: DeployTarget, revision: string): FakeRevision => {
     const found = targetOf(target).revisions.get(revision);
     if (!found) throw new Error(`No revision ${revision} in ${keyFor(target)}`);
@@ -164,7 +174,7 @@ export function createFakeTargets(
       record(target, `shift ${revision} ${percent}`);
     },
     async rollback(target, previousRevision) {
-      known(target, previousRevision);
+      if (previousRevision !== handRevision(target)) known(target, previousRevision);
       targetOf(target).traffic = [{ revision: previousRevision, percent: 100 }];
       record(target, `rollback ${previousRevision}`);
     },
@@ -178,8 +188,10 @@ export function createFakeTargets(
       return found.errorRate >= 0.01 ? 'degraded' : 'healthy';
     },
     async describe(target) {
+      const traffic = targetOf(target).traffic;
+      const hand = handRevision(target);
       return {
-        traffic: [...targetOf(target).traffic],
+        traffic: traffic.length === 0 && hand ? [{ revision: hand, percent: 100 }] : [...traffic],
         url: `https://${target.application.key}.${target.environment.key}.fake.test`,
       };
     },

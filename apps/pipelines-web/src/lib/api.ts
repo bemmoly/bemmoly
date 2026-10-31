@@ -5,6 +5,7 @@ import { environmentEndpoints } from '../api/environments.ts';
 import { frontDoorEndpoints } from '../api/front-doors.ts';
 import { exportEndpoints } from '../api/exports.ts';
 import { deploySettingsEndpoints } from '../api/deploy-settings.ts';
+import { adoptionEndpoints } from '../api/adoption.ts';
 import { pipelinesEndpoints } from '../api/pipelines.ts';
 import { platformEndpoints } from '../api/platform.ts';
 import { runtimeEndpoints } from '../api/runtimes.ts';
@@ -30,6 +31,7 @@ export const api = {
   frontDoors: frontDoorEndpoints(client.http),
   exports: exportEndpoints(client.http),
   deploySettings: deploySettingsEndpoints(client.http),
+  adoption: adoptionEndpoints(client.http),
 };
 
 export type Api = typeof api;

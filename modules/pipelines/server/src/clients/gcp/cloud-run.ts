@@ -26,6 +26,7 @@ const trafficStatusSchema = trafficTargetSchema.extend({ uri: z.string().optiona
 const serviceSchema = z.object({
   name: z.string(),
   uri: z.string().optional(),
+  urls: z.array(z.string()).default([]),
   etag: z.string().optional(),
   latestReadyRevision: z.string().optional(),
   latestCreatedRevision: z.string().optional(),
@@ -38,6 +39,16 @@ const revisionSchema = z.object({
   name: z.string(),
   conditions: z.array(conditionSchema).default([]),
   createTime: z.string().optional(),
+});
+
+const servicesPageSchema = z.object({
+  services: z.array(serviceSchema).default([]),
+  nextPageToken: z.string().optional(),
+});
+
+/** Cloud Run's v1 view of a revision: the one place it says which digest a tag resolved to. */
+const knativeRevisionSchema = z.object({
+  status: z.object({ imageDigest: z.string().optional() }).default({}),
 });
 
 export type RunService = z.infer<typeof serviceSchema>;
@@ -58,6 +69,38 @@ export function createCloudRunClient(http: GcpHttp, poll: PollOptions) {
   return {
     getService(name: string): Promise<RunService | null> {
       return http.find({ url: `${BASE}/${name}`, schema: serviceSchema });
+    },
+
+    /** Every service in one project and region, page by page. */
+    async listServices(projectId: string, region: string): Promise<RunService[]> {
+      const services: RunService[] = [];
+      let pageToken: string | undefined;
+      do {
+        const page = await http.send({
+          url: `${BASE}/projects/${projectId}/locations/${region}/services`,
+          query: { pageSize: 100, ...(pageToken ? { pageToken } : {}) },
+          schema: servicesPageSchema,
+        });
+        services.push(...page.services);
+        pageToken = page.nextPageToken || undefined;
+      } while (pageToken);
+      return services;
+    },
+
+    /**
+     * The image a revision runs, by digest ("…/cart-api@sha256:…"), even when it was deployed
+     * by tag: v2 keeps the tag as written, v1 says what it resolved to.
+     */
+    async revisionDigest(
+      projectId: string,
+      region: string,
+      revision: string,
+    ): Promise<string | null> {
+      const found = await http.find({
+        url: `https://${region}-run.googleapis.com/apis/serving.knative.dev/v1/namespaces/${projectId}/revisions/${revision}`,
+        schema: knativeRevisionSchema,
+      });
+      return found?.status.imageDigest ?? null;
     },
 
     async createService(

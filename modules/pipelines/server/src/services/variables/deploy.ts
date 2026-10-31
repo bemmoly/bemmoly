@@ -39,9 +39,18 @@ export async function variablesForDeploy(
     where v.application_id = ${applicationId}
       and (v.environment_id = ${environmentId} or v.environment_id is null)
     order by v.name, v.environment_id nulls last`;
+  const [where] = await sql<{ environment_key: string; application_key: string }[]>`
+    select e.key as environment_key, a.key as application_key
+    from pipeline_environments e, pipeline_applications a
+    where e.id = ${environmentId} and a.id = ${applicationId}`;
   const variables = rows.map((row): DeployVariable => {
     if (row.kind === 'plain') return { name: row.name, kind: 'plain', value: row.value ?? '' };
-    if (!row.secret_ref || !row.account) {
+    if (!row.secret_ref) {
+      throw new ValidationError(
+        `${where?.application_key ?? 'This application'}'s ${row.name} needs a value in ${where?.environment_key ?? 'this environment'}: set it in Variables, then deploy`,
+      );
+    }
+    if (!row.account) {
       throw new ValidationError(
         `The project ${row.name} lived in is gone. Set ${row.name} again, then deploy`,
       );
@@ -54,10 +63,6 @@ export async function variablesForDeploy(
       version: String(row.version),
     };
   });
-  const [where] = await sql<{ environment_key: string; application_key: string }[]>`
-    select e.key as environment_key, a.key as application_key
-    from pipeline_environments e, pipeline_applications a
-    where e.id = ${environmentId} and a.id = ${applicationId}`;
   if (!where) return variables;
   return fillForDeploy(
     sql,

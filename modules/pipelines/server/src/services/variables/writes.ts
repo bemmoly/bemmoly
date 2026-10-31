@@ -1,4 +1,4 @@
-import type { RequestContext, SqlClient } from '@bemmoly/core';
+import type { RequestContext, SqlClient, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
 import type { SetVariableBody, Variable } from '../../../../shared/variables.ts';
 import type { AccessEngine } from '../access/engine.ts';
@@ -65,31 +65,37 @@ async function one(sql: SqlClient, at: VariableTarget): Promise<Variable> {
   return match;
 }
 
+/**
+ * Stores one variable as given. A secret names where its value lives, never the value; one
+ * with no `ref` waits for someone to set its value, and `problem` says so.
+ */
+export async function upsertVariable(
+  sql: SqlExecutor,
+  at: VariableTarget,
+  by: string | null,
+  row:
+    | { kind: 'plain'; value: string }
+    | { kind: 'secret'; ref: string | null; accountId: string | null; version: number },
+  problem: string | null = null,
+): Promise<void> {
+  const plain = row.kind === 'plain';
+  await sql`
+    insert into pipeline_variables
+      (application_id, environment_id, name, kind, value, secret_ref, secret_account_id,
+       version, problem, updated_by)
+    values (${at.application.id}, ${at.environment?.id ?? null}, ${at.name}, ${row.kind},
+      ${plain ? row.value : null}, ${plain ? null : row.ref},
+      ${plain ? null : row.accountId}, ${plain ? 1 : row.version}, ${problem}, ${by})
+    on conflict (application_id, environment_id, name) do update set
+      kind = excluded.kind, value = excluded.value, secret_ref = excluded.secret_ref,
+      secret_account_id = excluded.secret_account_id,
+      version = case when excluded.kind = 'plain' and pipeline_variables.kind = 'plain'
+        then pipeline_variables.version + 1 else excluded.version end,
+      problem = excluded.problem, updated_by = excluded.updated_by, updated_at = now()`;
+}
+
 export function createVariableWrites(deps: VariableWritesDeps) {
   const { sql } = deps;
-
-  async function upsert(
-    at: VariableTarget,
-    by: string,
-    row:
-      | { kind: 'plain'; value: string }
-      | { kind: 'secret'; ref: string; accountId: string; version: number },
-  ) {
-    const plain = row.kind === 'plain';
-    await sql`
-      insert into pipeline_variables
-        (application_id, environment_id, name, kind, value, secret_ref, secret_account_id,
-         version, problem, updated_by)
-      values (${at.application.id}, ${at.environment?.id ?? null}, ${at.name}, ${row.kind},
-        ${plain ? row.value : null}, ${plain ? null : row.ref},
-        ${plain ? null : row.accountId}, ${plain ? 1 : row.version}, null, ${by})
-      on conflict (application_id, environment_id, name) do update set
-        kind = excluded.kind, value = excluded.value, secret_ref = excluded.secret_ref,
-        secret_account_id = excluded.secret_account_id,
-        version = case when excluded.kind = 'plain' and pipeline_variables.kind = 'plain'
-          then pipeline_variables.version + 1 else excluded.version end,
-        problem = null, updated_by = excluded.updated_by, updated_at = now()`;
-  }
 
   return {
     async set(ctx: RequestContext, at: VariableTarget, body: SetVariableBody): Promise<Variable> {
@@ -97,7 +103,7 @@ export function createVariableWrites(deps: VariableWritesDeps) {
       const by = requirePerson(ctx.actor);
       if (body.kind === 'plain') {
         await checkReferences(sql, body.value);
-        await upsert(at, by, { kind: 'plain', value: body.value });
+        await upsertVariable(sql, at, by, { kind: 'plain', value: body.value });
         return one(sql, at);
       }
       const home = at.environment
@@ -109,7 +115,7 @@ export function createVariableWrites(deps: VariableWritesDeps) {
         name: ref,
         value: body.value,
       });
-      await upsert(at, by, {
+      await upsertVariable(sql, at, by, {
         kind: 'secret',
         ref,
         accountId: home.accountId,

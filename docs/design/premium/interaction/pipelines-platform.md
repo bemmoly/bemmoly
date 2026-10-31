@@ -95,6 +95,46 @@ the contract has no environment writes yet.
 one sentence on what it costs, repeats the chosen one's sentence under the field, and in Edit
 counts the applications following the default and names those that chose otherwise.
 
+### Adopt services
+
+**Primary job.** Bring the Cloud Run services an environment already runs into Pipelines as
+they run, after seeing what each would import. Opened from the row's ··· › Adopt services…,
+shown once the environment has a project. **Top three actions**: tick or untick a service
+(Space on its checkbox); choose the application it becomes (the As application select, which
+also ticks it); Adopt N services (the footer's primary button, ⌘ Enter). Keeping or dropping
+an offered reference is the fourth.
+
+**States.** Opening reads the project and region and changes nothing in Google Cloud; until
+the answer comes, two skeleton cards. No services: one empty state naming the project and
+region. Each service is a card: its name and address, the application (matched by name, a
+neutral tag when it is adopted already, Pipelines already deploys it, or nothing matches),
+release zero's image by digest, every variable (a secret as its location and version with the
+lock, never a value), an address of another adopted service offered as a ticked
+`${{ apps.<key>.url }}` reference, and the settings it runs with. What stops one (no digest,
+a secret in a project not attached) is one amber line, and its checkbox stays off. A refusal
+or a server sentence shows in the dialog's ActionError. Done says how many were adopted and
+that the next deploy rolls forward from what each runs now. Phone: the cards stack full width.
+
+### Copy configuration
+
+**Primary job.** Copy one environment's configuration into this one, item by item, translated
+to where each application runs here. Opened from the row's ··· › Copy configuration….
+**Top three actions**: choose Copy from (the environment just before this one at first);
+untick an item (Space on its checkbox); Copy N items (primary, ⌘ Enter). Choosing one
+application, and each secret's Needs a value or Copy value, come next.
+
+**States.** The plan loads as two skeleton cards. Each application is a card: its runtimes
+("Cloud Run to GKE Autopilot"), how many items are the same already, then every item that
+differs: a variable before and after (a reference says it is filled in where the application
+runs), a secret with its location and a two-segment choice, and a setting as the value the
+next deploy here would use before and after. A setting the runtime here lacks is shown
+dropped, without a tick; a minimum lower than a Prod default starts unticked and says Prod
+keeps its own. For a Prod target, one neutral band explains why secrets start as needing a
+value. Nothing differs: one empty state. The runtime choice, addresses and deployments are
+named as never copied. Done says how many items were copied; a secret left needing a value
+shows "Needs a value" with Set value… in the application's Variables, and a deploy there stops
+with one sentence until it is set.
+
 ## Clusters
 
 **Primary job.** Give an environment the one cluster its applications on GKE deploy into, and
