@@ -66,6 +66,7 @@ export interface ProposalRow {
   owner_team_id: string | null;
   owner_team_name: string | null;
   group_path: string | null;
+  shared_build: { dockerfile: string; context: string; args: Record<string, string> } | null;
   state: 'proposed' | 'accepted' | 'dismissed';
   application_key: string | null;
   created_at: Date;
