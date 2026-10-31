@@ -3,7 +3,7 @@ import type { ApplicationFile } from '../../../../shared/application-yaml.ts';
 import type { RepositoryInput } from '../../../../shared/catalog-writes.ts';
 import { REPOSITORY_FILE_PATH } from '../../../../shared/repository-yaml.ts';
 import { findOwner } from './owners.ts';
-import { planCatalogFiles, type CatalogFile, type PlannedApplication } from './plan.ts';
+import { planCatalogFiles, whereIs, type CatalogFile, type PlannedApplication } from './plan.ts';
 import { upsertRepository, type RepositoryRecord } from './repositories.ts';
 import { storable } from '../runs/templates.ts';
 import { refreshSchedules } from '../triggers/schedules.ts';
@@ -75,7 +75,7 @@ async function applyFile(
     return null;
   };
   const { group, error } = await resolveGroup(sql, file);
-  if (!group) return fail(error ?? 'No group');
+  if (!group) return fail(`${whereIs(planned, 'group')}${error ?? 'No group'}`);
   const [existing] = await sql<
     {
       id: string;
@@ -101,7 +101,7 @@ async function applyFile(
   if (file.owner && !owner) {
     problems.push({
       path,
-      message: `No team matches ${file.owner}; ${file.name} has no owner until it does.`,
+      message: `${whereIs(planned, 'owner')}No team matches ${file.owner}; ${file.name} has no owner until it does.`,
       applied: true,
     });
   }
