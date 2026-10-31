@@ -284,6 +284,12 @@ create, first in Dev, then in Prod, with a canary and a roll back there, while e
 stays on Cloud Run. [Move it with no failed requests](front-door.md) then puts a front door in
 front of Prod and moves it between Cloud Run and GKE as a traffic shift.
 
+## Next: a monorepo
+
+[Run a monorepo with one repository file](monorepo.md) describes many applications in one
+`.bemmoly/repository.yaml`: a shared Dockerfile with build args, path filters that wake only
+what a push touches, and libraries that are only checked.
+
 ## Next: take it with you
 
 [Export what Pipelines made](export.md) downloads everything here as Terraform and Helm, then
