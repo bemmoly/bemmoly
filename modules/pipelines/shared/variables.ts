@@ -30,8 +30,12 @@ export const variableSchema = z.object({
   value: z.string().nullable(),
   /** A secret's version in the store; for a plain variable, how many times it was set. */
   version: z.number().int().nullable(),
-  /** "moving": a value from before secrets existed, waiting to be written to the store. */
-  state: z.enum(['set', 'moving']),
+  /**
+   * "moving": a value from before secrets existed, waiting to be written to the store.
+   * "needed": a secret copied from another environment without its value; a deploy there
+   * stops until someone sets one.
+   */
+  state: z.enum(['set', 'moving', 'needed']),
   /** What stops it moving or mounting, in one sentence; null when nothing does. */
   problem: z.string().nullable(),
   /** Where a secret lives: "acme-shop-prod / bemmoly-shop-API_KEY-prod". */
