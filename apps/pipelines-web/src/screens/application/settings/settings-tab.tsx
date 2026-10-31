@@ -38,10 +38,18 @@ function EnvironmentSettings({
       header: t('pipelines.deploySettings.value'),
       width: 'minmax(0,1fr)',
       render: (entry) =>
-        entry.applies ? (
-          <span className="truncate font-mono text-12 text-tx">
-            {entry.value === null ? t('pipelines.deploySettings.runtimeDecides') : entry.value}
+        entry.applies && entry.value === null ? (
+          <span className="truncate text-12 text-tx-3">
+            {t('pipelines.deploySettings.runtimeDecides')}
           </span>
+        ) : entry.applies && entry.field === 'secretsAs' ? (
+          <span className="truncate text-12 text-tx">
+            {entry.value === 'files'
+              ? t('pipelines.deploySettings.secretsFiles')
+              : t('pipelines.deploySettings.secretsEnv')}
+          </span>
+        ) : entry.applies ? (
+          <span className="truncate font-mono text-12 text-tx">{entry.value}</span>
         ) : (
           <span className="truncate text-12 text-tx-3">
             {t('pipelines.deploySettings.notHere', { runtime: t(RUNTIME_NAME[item.runtime]) })}
