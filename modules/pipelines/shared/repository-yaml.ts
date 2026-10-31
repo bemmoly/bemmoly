@@ -48,11 +48,14 @@ export const repositoryDefaultsSchema = z.strictObject({
   owner: ownerRefSchema.optional(),
 });
 
-/** One application in the central list; its other fields are checked once merged. */
+/**
+ * One application in the central list; its other fields are checked once merged. `build`
+ * here is the pipeline's build, and null turns the shared one off (a library).
+ */
 export const repositoryEntrySchema = z.looseObject({
   name: slugSchema,
   path: folderSchema,
-  build: buildOverrideSchema.nullable().optional(),
+  build: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const repositoryFileSchema = z
