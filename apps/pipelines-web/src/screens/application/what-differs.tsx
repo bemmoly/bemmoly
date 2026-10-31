@@ -1,6 +1,7 @@
 import { useT } from '@bemmoly/core-web';
 import type { EnvironmentStripItem, ReleaseCompare } from '@bemmoly/module-pipelines/shared';
 import { Avatar, Badge, Button, KeyChip, Skeleton } from '@bemmoly/ui';
+import { ApiError } from '@bemmoly/api-client';
 import { Icon } from '@bemmoly/ui/icons';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { useCompare } from './use-application.ts';
@@ -60,6 +61,9 @@ export function WhatDiffers({
         <Skeleton width="40%" height={10} />
       </div>
     );
+  // Nothing deployed on one side yet (a new application): the server says so in words.
+  if (compare.isError && compare.error instanceof ApiError && compare.error.code === 'not_found')
+    return <p className="text-13 text-tx-2">{compare.error.message}</p>;
   if (compare.isError)
     return (
       <div className="flex items-center gap-3 text-13 text-tx-2">
