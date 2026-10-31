@@ -73,6 +73,7 @@ export {
   gatewayApiOn,
   gkeClusterName,
   secretManagerOn,
+  secretSyncOn,
   type ContainerClient,
   type GkeCluster,
   type GkeOperation,

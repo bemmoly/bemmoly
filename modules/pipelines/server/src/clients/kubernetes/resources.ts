@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 /*
  * The resources Pipelines writes into a cluster, by kind (a SecretProviderClass names secret
- * versions for GKE's Secret Manager add-on to mount, never a value): where each lives in the API and
+ * versions for GKE's Secret Manager add-on to mount or a SecretSync to copy into a Kubernetes
+ * Secret, never a value): where each lives in the API and
  * the loose shape every object shares. Specs and statuses stay records here; the code that
  * builds or reads one knows its fields. A runner pod's launch token is the one Secret
  * Pipelines writes, owned by the pod's Job so it goes when the Job does.
@@ -36,6 +37,24 @@ export const KINDS = {
     apiVersion: 'secrets-store.csi.x-k8s.io/v1',
     prefix: '/apis/secrets-store.csi.x-k8s.io/v1',
     plural: 'secretproviderclasses',
+    namespaced: true,
+  },
+  HorizontalPodAutoscaler: {
+    apiVersion: 'autoscaling/v2',
+    prefix: '/apis/autoscaling/v2',
+    plural: 'horizontalpodautoscalers',
+    namespaced: true,
+  },
+  PodDisruptionBudget: {
+    apiVersion: 'policy/v1',
+    prefix: '/apis/policy/v1',
+    plural: 'poddisruptionbudgets',
+    namespaced: true,
+  },
+  SecretSync: {
+    apiVersion: 'secret-sync.gke.io/v1',
+    prefix: '/apis/secret-sync.gke.io/v1',
+    plural: 'secretsyncs',
     namespaced: true,
   },
   Gateway: {

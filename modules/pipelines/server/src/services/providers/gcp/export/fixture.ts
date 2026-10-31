@@ -99,7 +99,7 @@ export const EXPORT_RECORDS: ExportRecords = {
   services: [
     {
       application: 'checkout-api',
-      environment: { key: 'prod', region: null },
+      environment: { key: 'prod', class: 'prod', region: null },
       account: { externalId: PROD, config: {} },
       placement: { runtime: 'cloud-run', cluster: null, namespace: 'checkout' },
       release: releaseOf('checkout-api', 'v1.43.0', {
@@ -123,7 +123,7 @@ export const EXPORT_RECORDS: ExportRecords = {
     },
     {
       application: 'payments-worker',
-      environment: { key: 'prod', region: null },
+      environment: { key: 'prod', class: 'prod', region: null },
       account: { externalId: PROD, config: {} },
       placement: {
         runtime: 'gke-autopilot',
