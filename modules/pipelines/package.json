@@ -18,6 +18,7 @@
     "demo:live": "node --env-file-if-exists=../../apps/server/.env scripts/demo-live.ts",
     "bench:dispatch": "node --env-file-if-exists=../../apps/server/.env scripts/dispatch-benchmark.ts",
     "demo:local": "node --env-file-if-exists=../../apps/server/.env scripts/local-demo.ts",
+    "demo:monorepo": "node --env-file-if-exists=../../apps/server/.env scripts/monorepo-demo.ts",
     "capture:gcp": "node scripts/capture-gcp-fixtures.ts"
   },
   "dependencies": {

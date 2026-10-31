@@ -9,6 +9,14 @@ const POLL_MS = 2_000;
 /** "No sweep yet", as a value a sweep's start can differ from. */
 const NEVER = 'never';
 
+/** When the last sweep started, NEVER before the first, null before the status loads. */
+const lastStartOf = (status: DiscoveryStatus | undefined): string | null =>
+  status ? (status.lastSweep?.startedAt ?? NEVER) : null;
+
+/** Asked for, and no sweep newer than the one seen at the time has started yet. */
+const isWaiting = (waitingPast: string | null, lastStart: string | null): boolean =>
+  waitingPast !== null && (lastStart === null || lastStart === waitingPast);
+
 export interface Discovery {
   status: DiscoveryStatus | null;
   /** A sweep is running, or one was asked for and has not started yet. */
@@ -35,12 +43,12 @@ export function useDiscovery(
     queryFn: () => api.platform.discovery(),
     retry: false,
     refetchInterval: (query): number | false =>
-      query.state.data?.scanning || waiting ? POLL_MS : false,
+      query.state.data?.scanning || isWaiting(waitingPast, lastStartOf(query.state.data))
+        ? POLL_MS
+        : false,
   });
-  const lastStart: string | null = status.data ? (status.data.lastSweep?.startedAt ?? NEVER) : null;
-  // Asked for, and no sweep newer than the one seen at the time has started yet.
-  const waiting: boolean =
-    waitingPast !== null && (lastStart === null || lastStart === waitingPast);
+  const lastStart = lastStartOf(status.data);
+  const waiting = isWaiting(waitingPast, lastStart);
   const scan = useMutation({
     mutationFn: () => api.platform.scanAll(),
     onMutate: () => setWaitingPast(lastStart ?? NEVER),

@@ -4,6 +4,7 @@ import type { RepositoryTree } from '../code/repository-reader.ts';
 import { applicationPathOf, isApplicationFile } from '../catalog-writes/file.ts';
 import { dirOf, ownersOf, parseCodeowners } from './globs.ts';
 import { recordOf, stringOf, yamlDocumentsOf, yamlOf } from './manifests.ts';
+import { detectSharedBuilds, templated, type FoundBuild } from './shared-build.ts';
 import { detectWorkspaceMembers } from './workspaces.ts';
 
 /*
@@ -24,6 +25,8 @@ export interface DetectedApplication {
   owner: { raw: string; source: 'codeowners' | 'backstage' } | null;
   /** A Backstage system, which usually names a group. */
   system: string | null;
+  /** The Dockerfile and args it shares with other folders, for the repository file. */
+  sharedBuild: FoundBuild | null;
 }
 
 export interface Candidate {
@@ -148,6 +151,7 @@ export async function detectApplications(
   const found = new Candidates(cataloged);
   await detectManifests(tree, found);
   await detectWorkspaceMembers(tree, found);
+  const shared = await detectSharedBuilds(tree, found);
   foldCharts(found);
 
   let rules: ReturnType<typeof parseCodeowners> = [];
@@ -165,6 +169,7 @@ export async function detectApplications(
     for (let n = 2; used.has(key); n += 1) key = `${slugOf(name).slice(0, 60)}-${n}`;
     used.add(key);
     const codeowner = ownersOf(rules, path)[0];
+    const build = shared.get(path);
     apps.push({
       path,
       key,
@@ -174,6 +179,7 @@ export async function detectApplications(
       runtime: candidate.runtime ?? 'container-service',
       owner: candidate.owner ?? (codeowner ? { raw: codeowner, source: 'codeowners' } : null),
       system: candidate.system,
+      sharedBuild: build ? templated(build, { key, path }) : null,
     });
   }
   return apps;

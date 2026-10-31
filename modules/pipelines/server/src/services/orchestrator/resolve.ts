@@ -12,6 +12,7 @@ import type {
   ScheduleSpec,
   TemplateRef,
 } from '../../../../shared/pipeline-spec.ts';
+import { buildJob, mergeBuild } from './build-job.ts';
 import { resolveInputValues, type InputDeclarations } from './inputs.ts';
 import { interpolate, interpolateRecord } from './interpolate.ts';
 import { cellKey, cellName, expandMatrix, type MatrixCell } from './matrix.ts';
@@ -28,6 +29,8 @@ export type TemplateLookup = (ref: TemplateRef) => Promise<PipelineTemplate | nu
 
 export interface ResolveOptions {
   application: string | null;
+  /** The application's folder, for `${{ app.path }}` in build args; "" for the root. */
+  path?: string;
   defaultTimeoutMinutes: number;
   /** Where the build pushes its image; null keeps it on the runner's machine. */
   registry?: string | null;
@@ -101,7 +104,7 @@ async function layersOf(definition: PipelineDefinition, lookup: TemplateLookup):
     declared: { ...template.inputs, ...definition.inputs },
     passed: definition.with,
     checkout: template.checkout,
-    build: template.build,
+    build: mergeBuild(template.build, definition.build),
     test: mergeTests(template.test, definition.test ?? []),
     deploy: deploy as DeploySpec | null,
     schedules: definition.schedules ?? template.schedules,
@@ -126,54 +129,6 @@ function resolveStep(
     origin: spec.origin,
     junit: spec.junit ?? null,
     artifacts: spec.artifacts,
-  };
-}
-
-/** "us-central1-docker.pkg.dev/acme-ci/apps/checkout-api", or a local name. */
-function imageName(application: string, registry: string | null): string {
-  return registry
-    ? `${registry.replace(/\/+$/, '')}/${application}`
-    : `bemmoly-local/${application}`;
-}
-
-function buildJob(
-  build: BuildSpec,
-  application: string | null,
-  timeout: number,
-  registry: string | null,
-): ResolvedJob {
-  return {
-    key: 'build',
-    name: 'Build',
-    kind: 'build',
-    needs: [],
-    steps: [
-      {
-        key: 'build',
-        name: 'Build image',
-        image: null,
-        run: null,
-        uses: 'bemmoly/build',
-        env: {
-          BEMMOLY_BUILD_DOCKERFILE: build.dockerfile,
-          BEMMOLY_BUILD_CONTEXT: build.context,
-          BEMMOLY_BUILD_PLATFORMS: build.platforms.join(','),
-          // The image a passing build becomes a release of, pushed when there is a registry.
-          ...(application ? { BEMMOLY_BUILD_IMAGE: imageName(application, registry) } : {}),
-          ...(application && registry ? { BEMMOLY_BUILD_PUSH: 'true' } : {}),
-        },
-        secrets: [],
-        locked: true,
-        origin: 'template',
-        junit: null,
-        artifacts: [],
-      },
-    ],
-    pool: build.pool ?? null,
-    shards: null,
-    timeoutMinutes: timeout,
-    application,
-    matrix: null,
   };
 }
 
@@ -237,7 +192,8 @@ export async function resolvePipeline(
       ? [
           buildJob(
             layers.build,
-            options.application,
+            { name: options.application, path: options.path ?? '' },
+            inputs,
             options.defaultTimeoutMinutes,
             options.registry ?? null,
           ),

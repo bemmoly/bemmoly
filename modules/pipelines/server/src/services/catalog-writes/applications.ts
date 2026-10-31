@@ -9,6 +9,7 @@ import type { WritableApplicationRow } from '../../models/catalog-writes.ts';
 import type { AccessEngine } from '../access/index.ts';
 import type { CatalogService } from '../catalog/index.ts';
 import { personOf, requirePerson } from '../deps.ts';
+import { REPOSITORY_FILE_PATH } from '../../../../shared/repository-yaml.ts';
 import { applicationFilePath, writeApplicationFile } from './file.ts';
 import {
   applicationByKey,
@@ -226,7 +227,7 @@ export function createApplicationWrites(
             (application_id, repository_id, kind, state, summary, file_path, reason, created_by)
           values (${row.id}::uuid, ${row.repository_id}::uuid, 'archive', 'pending',
             ${`Removes ${key} from the catalog`}, ${row.file_path},
-            ${`Delete ${row.file_path} in ${row.repository_full_name}; the next push to ${row.repository_default_branch ?? 'main'} archives ${key}.`},
+            ${`${row.file_path === REPOSITORY_FILE_PATH ? `Remove ${key} from the list in` : 'Delete'} ${row.file_path} in ${row.repository_full_name}; the next push to ${row.repository_default_branch ?? 'main'} archives ${key}.`},
             ${requirePerson(ctx.actor)}::uuid)
           returning id`;
         return { change: change?.id ?? null };

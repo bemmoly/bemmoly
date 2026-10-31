@@ -20,6 +20,7 @@ import { WhatDiffers } from './what-differs.tsx';
 import { RecentRuns } from './recent-runs.tsx';
 import { VariablesTab } from './variables/variables-tab.tsx';
 import { RuntimeCard } from './runtime-card.tsx';
+import { SettingsCard } from './settings-card.tsx';
 import { FrontDoorCard } from './front-door-card.tsx';
 import { ExportButton } from './export-button.tsx';
 
@@ -253,6 +254,7 @@ export default function ApplicationScreen() {
                   <Skeleton width="40%" height={14} />
                 </div>
               )}
+              <SettingsCard application={key} />
               <RuntimeCard application={key} />
               <FrontDoorCard application={key} />
             </div>

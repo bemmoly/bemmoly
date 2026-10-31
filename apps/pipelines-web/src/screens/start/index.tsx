@@ -114,7 +114,10 @@ export default function StartScreen() {
       </Panel>
       {proposals.data && proposals.data.items.length > 0 && (
         <div id="proposals">
-          <Proposals items={proposals.data.items} />
+          <Proposals
+            items={proposals.data.items}
+            repositoryFiles={proposals.data.repositoryFiles}
+          />
         </div>
       )}
     </Screen>

@@ -27,6 +27,21 @@ describe('affectedApplications', () => {
     expect(affectedApplications(candidates, ['apps/api/README.md'])).toEqual(['root']);
   });
 
+  it('always counts an application’s own folder, beside shared paths', () => {
+    const monorepo = [
+      { key: 'orders', path: 'services/orders', paths: ['packages/**'] },
+      { key: 'billing', path: 'services/billing', paths: ['packages/**'] },
+      { key: 'money', path: 'packages/money', paths: ['packages/**'] },
+    ];
+    expect(affectedApplications(monorepo, ['packages/money/src/round.ts'])).toEqual([
+      'orders',
+      'billing',
+      'money',
+    ]);
+    expect(affectedApplications(monorepo, ['services/orders/src/main.ts'])).toEqual(['orders']);
+    expect(affectedApplications(monorepo, ['docs/readme.md'])).toEqual([]);
+  });
+
   it('builds everything when the code host did not say what changed', () => {
     expect(affectedApplications(candidates, null)).toEqual(['web', 'api', 'root']);
   });

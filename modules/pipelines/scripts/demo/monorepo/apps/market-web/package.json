@@ -1,0 +1,6 @@
+{
+  "name": "@acme/market-web",
+  "scripts": {
+    "start": "vite preview"
+  }
+}
