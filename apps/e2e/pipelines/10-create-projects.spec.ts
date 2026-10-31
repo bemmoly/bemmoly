@@ -70,4 +70,12 @@ test('create projects for me: check the grant, apply Starter, preview a switch',
   await expect(page).toHaveURL(/\/platform\/clouds/);
   await expect(page.getByText('Layout: Starter')).toBeVisible();
   await expectLoaded(page);
+
+  // Applying named the simulated registry on the connection, so every later run would push
+  // there. Clear it, so the walkthrough's own runs keep their images on the runner.
+  const cleared = await page.request.patch(`/api/v1/pipelines/clouds/${connectionId}`, {
+    data: { registry: null },
+    headers: { origin: state.baseURL },
+  });
+  expect(cleared.ok()).toBe(true);
 });
