@@ -9,6 +9,9 @@ finds the other by name in both.
 Plan on about an hour. Each step says what you should see, so you can tell where something went
 wrong.
 
+Stage already running on Cloud Run, deployed some other way? [Adopt it as it runs](adopt-and-copy.md),
+then copy its configuration to a fresh Prod.
+
 ## What you need
 
 - **Everything from [Ship your own project](your-own-project.md)** working: the project

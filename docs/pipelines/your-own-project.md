@@ -296,6 +296,12 @@ what a push touches, and libraries that are only checked.
 for cost, and runs Prod on GKE Autopilot from the same definition, with deploy settings per
 environment and services that find each other by name.
 
+## Next: adopt what already runs
+
+[Adopt Stage as it runs, copy it to a fresh Prod](adopt-and-copy.md) brings Cloud Run services
+deployed by hand or by another CI into Pipelines without changing them, then copies their
+configuration to a new Prod on GKE Autopilot.
+
 ## Next: take it with you
 
 [Export what Pipelines made](export.md) downloads everything here as Terraform and Helm, then
