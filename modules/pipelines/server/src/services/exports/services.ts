@@ -73,53 +73,82 @@ export async function currentServices(
     where c.release_id is not null and a.archived_at is null and e.archived_at is null
       and (${application ?? null}::text is null or a.key = ${application ?? null})
     order by a.key, e.position, e.key`;
+  // One resolution per service, a few queries each: run them a few at a time, and load each
+  // release once, since environments often serve the same one.
+  const releases = new Map<string, ReturnType<typeof loadRelease>>();
+  const release = (id: string) => {
+    if (!releases.has(id)) releases.set(id, loadRelease(sql, id));
+    return releases.get(id)!;
+  };
+  const outcomes: Outcome[] = new Array(rows.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < rows.length) {
+      const index = next++;
+      outcomes[index] = await serviceOf(sql, providers, rows[index]!, release);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, rows.length) }, worker));
+
   const byConnection = new Map<string, ExportService[]>();
   const leftOut: string[] = [];
-  for (const row of rows) {
-    const where = `${row.application} in ${row.environment}`;
-    if (!row.revision) {
-      leftOut.push(`${where}: Pipelines has no record of the revision serving it.`);
+  for (const outcome of outcomes) {
+    if ('leftOut' in outcome) {
+      leftOut.push(outcome.leftOut);
       continue;
     }
-    const variables = variablesSchema.safeParse(row.variables ?? []);
-    if (!variables.success) {
-      leftOut.push(`${where}: the variables its last deploy ran with could not be read.`);
-      continue;
+    const id = outcome.connectionId;
+    byConnection.set(id, [...(byConnection.get(id) ?? []), outcome.service]);
+  }
+  return { byConnection, leftOut };
+}
+
+const CONCURRENCY = 8;
+
+type Outcome = { leftOut: string } | { connectionId: string; service: ExportService };
+
+async function serviceOf(
+  sql: SqlClient,
+  providers: ProviderSourceOrRegistry,
+  row: CurrentRow,
+  release: (id: string) => ReturnType<typeof loadRelease>,
+): Promise<Outcome> {
+  const where = `${row.application} in ${row.environment}`;
+  if (!row.revision) {
+    return { leftOut: `${where}: Pipelines has no record of the revision serving it.` };
+  }
+  const variables = variablesSchema.safeParse(row.variables ?? []);
+  if (!variables.success) {
+    return { leftOut: `${where}: the variables its last deploy ran with could not be read.` };
+  }
+  const plan = planSchema.parse(row.plan ?? {});
+  try {
+    const { target } = await resolveTarget(sql, providers, row.application_id, row.environment_id, {
+      runtime: plan.runtime,
+      frontDoor: false,
+    });
+    if (!target.account || !target.placement) {
+      return { leftOut: `${where}: it deploys to no project, so there is nothing to export.` };
     }
-    const plan = planSchema.parse(row.plan ?? {});
-    try {
-      const { target } = await resolveTarget(
-        sql,
-        providers,
-        row.application_id,
-        row.environment_id,
-        { runtime: plan.runtime, frontDoor: false },
-      );
-      if (!target.account || !target.placement) {
-        leftOut.push(`${where}: it deploys to no project, so there is nothing to export.`);
-        continue;
-      }
-      const artifact = artifactOf(await loadRelease(sql, row.release_id));
-      // The settings as they stand now, which the next deploy there would also take.
-      const { settings } = await resolutionFor(sql, target, artifact);
-      const release = { ...artifact, settings };
-      const service: ExportService = {
+    const artifact = artifactOf(await release(row.release_id));
+    // The settings as they stand now, which the next deploy there would also take.
+    const { settings } = await resolutionFor(sql, target, artifact);
+    return {
+      connectionId: target.connection.id,
+      service: {
         application: row.application,
         environment: { key: row.environment, class: target.environment.class, region: row.region },
         account: { externalId: target.account.externalId, config: target.account.config ?? {} },
         placement: target.placement,
-        release,
+        release: { ...artifact, settings },
         revision: row.revision,
         variables: variables.data,
         moving: row.state !== 'idle' || row.latest_release_id !== row.release_id,
-      };
-      const id = target.connection.id;
-      byConnection.set(id, [...(byConnection.get(id) ?? []), service]);
-    } catch (error) {
-      // A target that cannot resolve says why in a sentence; anything else is a real fault.
-      if (!isBemmolyError(error)) throw error;
-      leftOut.push(`${where}: ${(error as Error).message.replace(/\.?$/, '.')}`);
-    }
+      },
+    };
+  } catch (error) {
+    // A target that cannot resolve says why in a sentence; anything else is a real fault.
+    if (!isBemmolyError(error)) throw error;
+    return { leftOut: `${where}: ${(error as Error).message.replace(/\.?$/, '.')}` };
   }
-  return { byConnection, leftOut };
 }
