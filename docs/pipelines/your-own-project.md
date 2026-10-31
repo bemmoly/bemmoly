@@ -290,6 +290,12 @@ front of Prod and moves it between Cloud Run and GKE as a traffic shift.
 `.bemmoly/repository.yaml`: a shared Dockerfile with build args, path filters that wake only
 what a push touches, and libraries that are only checked.
 
+## Next: Stage on Cloud Run, Prod on GKE
+
+[Stage on Cloud Run, Prod on GKE](stage-and-prod.md) keeps Stage on Cloud Run at zero instances,
+for cost, and runs Prod on GKE Autopilot from the same definition, with deploy settings per
+environment and services that find each other by name.
+
 ## Next: take it with you
 
 [Export what Pipelines made](export.md) downloads everything here as Terraform and Helm, then
