@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { isoDateTimeSchema, personRefSchema, slugSchema } from './common.ts';
 import { environmentRefSchema } from './environments.ts';
+import { resolvedValueSchema } from './app-references.ts';
 
 /*
  * An application's variables and secrets, for every environment or one:
@@ -37,6 +38,11 @@ export const variableSchema = z.object({
   location: z.string().nullable(),
   updatedBy: personRefSchema.nullable(),
   updatedAt: isoDateTimeSchema,
+  /**
+   * A plain value naming other applications' addresses, filled in per environment it reaches
+   * (shared/app-references.ts). Empty when the value names none.
+   */
+  resolved: z.array(resolvedValueSchema).default([]),
 });
 
 export const variablesResponseSchema = z.object({

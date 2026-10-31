@@ -44,6 +44,7 @@ function present(row: VariableRow): Variable {
     location: row.secret_ref ? `${row.account ?? 'a detached project'} / ${row.secret_ref}` : null,
     updatedBy: row.user_id && row.user_name ? { id: row.user_id, name: row.user_name } : null,
     updatedAt: iso(row.updated_at),
+    resolved: [],
   };
 }
 
