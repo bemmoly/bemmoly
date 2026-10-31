@@ -2,6 +2,7 @@ import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared'
 import type { Executors, StepExecutor } from '../executors/index.ts';
 import { stripAnsi } from '../utils/lines.ts';
 import type { SecretMasker } from '../utils/mask.ts';
+import { buildArgsProblem } from './build-args.ts';
 import { kanikoCommand, kanikoProblem } from './build-kaniko.ts';
 import { BUILD_ACTION, BuildExecutor, buildCommand, isBuildAction } from './build-step.ts';
 
@@ -52,6 +53,8 @@ export function prepareStep(
   allowBuildPaths: readonly string[] = [],
 ): PreparedStep | { refusal: string } {
   if (step.uses) {
+    const argsProblem = isBuildAction(step.uses) ? buildArgsProblem(step) : null;
+    if (argsProblem) return { refusal: argsProblem };
     if (isBuildAction(step.uses) && executors.builder) {
       const builder = executors.builder();
       if (!builder) {

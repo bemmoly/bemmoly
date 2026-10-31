@@ -1,4 +1,5 @@
 import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared';
+import { buildArgFlags } from './build-args.ts';
 import { buildTag, IMAGE_ID_FILE, IMAGE_PLATFORM_FILE, pushPlatform } from './build-step.ts';
 
 /*
@@ -28,7 +29,7 @@ export function kanikoCommand(job: ClaimedJob, step: ResolvedStep): string {
   const dockerfile = step.env['BEMMOLY_BUILD_DOCKERFILE'] || 'Dockerfile';
   const context = step.env['BEMMOLY_BUILD_CONTEXT'] || '.';
   // Kaniko reads paths from its own working folder, so both are made absolute first.
-  const paths = `--dockerfile "$PWD"/${quote(dockerfile)} --context dir://"$PWD"/${quote(context)}`;
+  const paths = `--dockerfile "$PWD"/${quote(dockerfile)} --context dir://"$PWD"/${quote(context)}${buildArgFlags(step)}`;
   if (step.env['BEMMOLY_BUILD_PUSH'] !== 'true') {
     return `${KANIKO} ${paths} --no-push --cleanup`;
   }
