@@ -45,3 +45,5 @@ export * from './build-args.ts';
 export * from './repository-yaml.ts';
 export * from './deploy-settings.ts';
 export * from './app-references.ts';
+export * from './adoption.ts';
+export * from './config-copy.ts';

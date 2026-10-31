@@ -18,7 +18,7 @@ import { environmentRefSchema } from './environments.ts';
  * A release is one built image plus its configuration, created once and never changed.
  */
 
-export const releaseSourceSchema = z.enum(['runners', 'external']);
+export const releaseSourceSchema = z.enum(['runners', 'external', 'adopted']);
 export const digestSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/, 'Digests look like sha256:…');
 
 export const releaseTestSummarySchema = z.object({
