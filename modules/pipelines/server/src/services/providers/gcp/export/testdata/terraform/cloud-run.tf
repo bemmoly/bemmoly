@@ -10,6 +10,9 @@ resource "google_cloud_run_v2_service" "checkout_api_prod" {
   template {
     revision        = "checkout-api-v1-43-0-a1c9e3f"
     service_account = google_service_account.acme_prod_7f3a_runtime.email
+    scaling {
+      min_instance_count = 0
+    }
     containers {
       image = "us-central1-docker.pkg.dev/bemmoly-control-583920174411/apps/checkout-api@sha256:4f1c2a9e0b7d6c5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e"
       ports {
@@ -22,6 +25,13 @@ resource "google_cloud_run_v2_service" "checkout_api_prod" {
         }
       }
       startup_probe {
+        timeout_seconds = 5
+        period_seconds  = 10
+        http_get {
+          path = "/healthz"
+        }
+      }
+      liveness_probe {
         timeout_seconds = 5
         period_seconds  = 10
         http_get {
