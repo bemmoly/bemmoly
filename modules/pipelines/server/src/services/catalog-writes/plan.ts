@@ -11,7 +11,7 @@ import {
   readRepositoryFile,
   readYamlMapping,
 } from './file.ts';
-import { layersFor, mergeLayers } from './merge.ts';
+import { layersFor, mergeLayers, type Location } from './merge.ts';
 
 /*
  * What a push's catalog files mean, before anything is written: which applications to apply
@@ -38,6 +38,7 @@ export interface PlannedApplication {
   content: string;
   file: ApplicationFile;
   fields: Record<string, SettingOrigin>;
+  locations: Record<string, Location>;
 }
 
 export interface PlanProblem {
@@ -112,7 +113,14 @@ export function planCatalogFiles(files: readonly CatalogFile[], complete: boolea
       plan.problems.push({ path: merged.file, message: merged.error, applied: false });
       continue;
     }
-    plan.applications.push({ path, folder, content, file: merged.file, fields: merged.fields });
+    plan.applications.push({
+      path,
+      folder,
+      content,
+      file: merged.file,
+      fields: merged.fields,
+      locations: merged.locations,
+    });
   }
   const central = complete ? [...entries.values()] : fallBack;
   for (const entry of central) {
@@ -128,6 +136,7 @@ export function planCatalogFiles(files: readonly CatalogFile[], complete: boolea
       content: repositoryInput?.content ?? '',
       file: merged.file,
       fields: merged.fields,
+      locations: merged.locations,
     });
   }
   if (complete && repositoryInput) {
@@ -135,4 +144,16 @@ export function planCatalogFiles(files: readonly CatalogFile[], complete: boolea
     plan.keepCentral = [...entries.values()].map((entry) => entry.value.name);
   }
   return plan;
+}
+
+/**
+ * "applications.2.group: " for a setting from the repository file, with the file named when
+ * the application is defined in its own; "" for a setting in its own file, which the
+ * problem's path already names.
+ */
+export function whereIs(planned: PlannedApplication, field: string): string {
+  const location = planned.locations[field];
+  if (!location || location.file !== REPOSITORY_FILE_PATH) return '';
+  const elsewhere = planned.path === REPOSITORY_FILE_PATH ? '' : ` in ${REPOSITORY_FILE_PATH}`;
+  return `${location.field}${elsewhere}: `;
 }

@@ -228,6 +228,28 @@ describe('a monorepo with a repository file', () => {
     expect((await services.runs.pipeline(member, 'orders')).library).toBe(false);
   });
 
+  it('names the entry and field when a central application cannot apply', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const result = await harness.services.catalogWrites.applyApplicationFiles(system, {
+      repository: { fullName: REPOSITORY, defaultBranch: 'main' },
+      commitSha: 'e1',
+      complete: true,
+      files: [
+        {
+          path: REPO_FILE,
+          content: `${repositoryFile(['orders', 'invoices', 'shipping'])}  - { name: returns, path: services/returns, group: refunds }\n`,
+        },
+      ],
+    });
+    expect(result.problems).toEqual([
+      {
+        path: REPO_FILE,
+        message: 'applications.4.group: No group called "refunds". Create it in the catalog first.',
+        applied: false,
+      },
+    ]);
+  });
+
   it('archives an application that leaves the central list', async (ctx) => {
     if (!harness) return ctx.skip(reason);
     const result = await sync(['orders', 'invoices'], 'f2');
