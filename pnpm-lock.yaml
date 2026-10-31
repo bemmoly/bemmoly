@@ -803,8 +803,8 @@ importers:
         specifier: 6.2.12
         version: 6.2.12
       nodemailer:
-        specifier: 10.0.14
-        version: 10.0.14
+        specifier: 10.1.4
+        version: 10.1.4
       openid-client:
         specifier: 6.8.8
         version: 6.8.8
@@ -6753,6 +6753,10 @@ packages:
 
   nodemailer@10.0.14:
     resolution: {integrity: sha512-eJoLFKg55fesSlzUekmfOv/SBXh4KUYT8oiQc2RLP0tfG0rbNMJBK7wgHJwXTJwqyKlSJMz9UzDZ4v+aHEvo8g==}
+    engines: {node: '>=20.0.0'}
+
+  nodemailer@10.1.4:
+    resolution: {integrity: sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==}
     engines: {node: '>=20.0.0'}
 
   non-error@0.1.0:
@@ -13766,6 +13770,8 @@ snapshots:
       asn1: 0.2.6
 
   nodemailer@10.0.14: {}
+
+  nodemailer@10.1.4: {}
 
   non-error@0.1.0: {}
 
