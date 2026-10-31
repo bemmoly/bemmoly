@@ -1,0 +1,6 @@
+{
+  "name": "@acme/storefront",
+  "scripts": {
+    "start": "vite preview"
+  }
+}

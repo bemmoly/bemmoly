@@ -33,6 +33,7 @@ const SIGNAL = {
   bazel: 'pipelines.signal.bazel',
   backstage: 'pipelines.signal.backstage',
   'application-yaml': 'pipelines.signal.applicationYaml',
+  'shared-dockerfile': 'pipelines.signal.sharedDockerfile',
 } as const satisfies Record<DiscoverySignal, string>;
 
 /** Every group as "domain/group", for proposals that found no group of their own. */
