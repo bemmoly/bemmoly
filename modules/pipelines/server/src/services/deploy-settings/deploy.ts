@@ -6,6 +6,7 @@ import type {
   ReleaseArtifact,
   TargetsPart,
 } from '../providers/contract.ts';
+import { refuseTakeover } from '../adoption/takeover.ts';
 import { recordAddress } from './addresses.ts';
 import { fileLayersOf, resolveDeploySettings } from './resolve.ts';
 import { readDeploySettings } from './store.ts';
@@ -14,7 +15,8 @@ import { readDeploySettings } from './store.ts';
  * Every deploy, from a rollout, a roll back that redeploys or a runtime move, goes through
  * here: the settings are resolved for the target's environment and runtime and handed to the
  * provider with the release, and the address the provider answers with is recorded for other
- * applications' references. Settings that contradict themselves stop the deploy first.
+ * applications' references. Settings that contradict themselves stop the deploy first, and
+ * so does a first deploy onto a service someone else deployed (adoption/takeover.ts).
  */
 
 /** The settings a deploy of `release` to `target` runs with, and why it may not. */
@@ -48,6 +50,7 @@ export function withDeploySettings(
     async deploy(target, release, variables) {
       const resolution = await resolutionFor(sql, target, release);
       if (resolution.problem) throw new ValidationError(resolution.problem);
+      await refuseTakeover(sql, resolved.provider, target);
       const result = await inner.deploy(
         target,
         { ...release, settings: resolution.settings },
