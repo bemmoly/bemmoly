@@ -20,6 +20,7 @@ const variable = (name: string, environment: typeof dev | null, value = 'x'): Va
   location: null,
   updatedBy: null,
   updatedAt: '2026-10-29T10:00:00.000Z',
+  resolved: [],
 });
 
 describe('the rows of one view', () => {

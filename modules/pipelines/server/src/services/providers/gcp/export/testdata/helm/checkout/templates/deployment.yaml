@@ -9,7 +9,6 @@ metadata:
   annotations:
     pipelines.bemmoly.dev/release: {{ .Values.release | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       pipelines.bemmoly.dev/revision: {{ .Values.revision }}
@@ -31,7 +30,7 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.secrets }}
+          {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
           volumeMounts:
             - name: bemmoly-secrets
               mountPath: /var/run/secrets/bemmoly
@@ -44,15 +43,23 @@ spec:
             limits:
               {{- toYaml . | nindent 14 }}
           {{- end }}
-          {{- with .Values.healthcheck }}
+          {{- with .Values.probes.readiness }}
           readinessProbe:
             httpGet:
-              path: {{ .path }}
+              path: {{ . }}
               port: {{ $.Values.port }}
-            timeoutSeconds: {{ .timeoutSeconds }}
-            periodSeconds: {{ max 10 .timeoutSeconds }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
           {{- end }}
-      {{- if .Values.secrets }}
+          {{- with .Values.probes.liveness }}
+          livenessProbe:
+            httpGet:
+              path: {{ . }}
+              port: {{ $.Values.port }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
+          {{- end }}
+      {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
       volumes:
         - name: bemmoly-secrets
           csi:

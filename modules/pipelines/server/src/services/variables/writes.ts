@@ -6,6 +6,7 @@ import { requirePerson } from '../deps.ts';
 import type { ProviderSourceOrRegistry } from '../shipping/engine-deps.ts';
 import { environmentHome, secretIdOf, sharedHome, storedVersion } from './home.ts';
 import { selectVariables } from './read.ts';
+import { checkReferences } from './references.ts';
 
 /*
  * Setting and deleting one variable. A secret's value goes to the store in the same request
@@ -95,6 +96,7 @@ export function createVariableWrites(deps: VariableWritesDeps) {
       await authorizeChange(deps, ctx, at);
       const by = requirePerson(ctx.actor);
       if (body.kind === 'plain') {
+        await checkReferences(sql, body.value);
         await upsert(at, by, { kind: 'plain', value: body.value });
         return one(sql, at);
       }

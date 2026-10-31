@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ValidationError } from '@bemmoly/shared';
-import type { ReleaseArtifact } from '../contract.ts';
+import type { ReleaseArtifact, ResolvedDeploySettings } from '../contract.ts';
 
 /*
  * What a release asks of the container it runs in, as Cloud Run's template says it. The
@@ -48,25 +48,36 @@ export const portOf = (port: DeploySettings['port']) => {
 };
 
 /**
- * The first container of a revision: the image plus whatever the settings name. `env`, when
- * given, is the whole environment; values set by hand on an earlier revision do not carry over.
+ * The first container of a revision: the image plus the settings resolved for this
+ * environment. `env`, when given, is the whole environment; values set by hand on an earlier
+ * revision do not carry over. The startup probe waits for `ready` (or `path`), and the
+ * liveness probe restarts an instance whose `path` stops answering.
  */
 export function containerOf(
   release: ReleaseArtifact,
+  settings: ResolvedDeploySettings,
   base: Record<string, unknown> = {},
   env?: ReadonlyArray<Record<string, unknown>>,
+  mounts?: ReadonlyArray<Record<string, unknown>>,
 ): Record<string, unknown> {
-  const settings = deploySettingsOf(release);
-  const port = portOf(settings.port);
+  const port = settings.port;
   const limits = {
-    ...(settings.resources?.cpu !== undefined ? { cpu: String(settings.resources.cpu) } : {}),
-    ...(settings.resources?.memory ? { memory: settings.resources.memory } : {}),
+    ...(settings.resources.cpu !== null ? { cpu: settings.resources.cpu } : {}),
+    ...(settings.resources.memory !== null ? { memory: settings.resources.memory } : {}),
   };
   const baseResources = (base['resources'] as Record<string, unknown> | undefined) ?? {};
+  const { path, ready, timeoutSeconds } = settings.healthcheck;
+  // Cloud Run wants the timeout no longer than the period, and both at most 240s.
+  const timing = {
+    timeoutSeconds: Math.min(240, timeoutSeconds),
+    periodSeconds: Math.min(240, Math.max(10, timeoutSeconds)),
+  };
+  const startup = ready ?? path;
   return {
     ...base,
     image: imageOf(release),
     ...(env ? { env: [...env] } : {}),
+    ...(mounts && mounts.length > 0 ? { volumeMounts: [...mounts] } : {}),
     ...(port ? { ports: [{ containerPort: port }] } : {}),
     ...(Object.keys(limits).length > 0
       ? {
@@ -76,15 +87,16 @@ export function containerOf(
           },
         }
       : {}),
-    ...(settings.healthcheck
-      ? {
-          startupProbe: {
-            httpGet: { path: settings.healthcheck.path },
-            // Cloud Run wants the timeout no longer than the period, and both at most 240s.
-            timeoutSeconds: Math.min(240, settings.healthcheck.timeoutSeconds),
-            periodSeconds: Math.min(240, Math.max(10, settings.healthcheck.timeoutSeconds)),
-          },
-        }
-      : {}),
+    ...(startup ? { startupProbe: { httpGet: { path: startup }, ...timing } } : {}),
+    ...(path ? { livenessProbe: { httpGet: { path }, ...timing } } : {}),
+  };
+}
+
+/** The revision's scaling, as Cloud Run's template says it. */
+export function scalingOf(settings: ResolvedDeploySettings) {
+  const { min, max, concurrency } = settings.scaling;
+  return {
+    scaling: { minInstanceCount: min, ...(max !== null ? { maxInstanceCount: max } : {}) },
+    ...(concurrency !== null ? { maxInstanceRequestConcurrency: concurrency } : {}),
   };
 }

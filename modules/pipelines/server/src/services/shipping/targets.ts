@@ -15,6 +15,7 @@ import type {
   Placement,
   ReleaseArtifact,
 } from '../providers/contract.ts';
+import { withDeploySettings } from '../deploy-settings/deploy.ts';
 import { withFrontDoor } from '../front-doors/wrap.ts';
 import { runtimeProblem } from '../runtimes/fit.ts';
 import type { ProviderSourceOrRegistry } from './engine-deps.ts';
@@ -27,7 +28,8 @@ import type { ProviderSourceOrRegistry } from './engine-deps.ts';
  * application file's, then the environment's default; a runtime other than the provider's
  * default swaps in that runtime's targets and metrics, deploying into the environment's
  * cluster in the namespace of the application's catalog group. Behind a front door, shifts
- * and roll backs move the front door's weights too (front-doors/wrap.ts).
+ * and roll backs move the front door's weights too (front-doors/wrap.ts), and every deploy
+ * carries the settings resolved for its environment (deploy-settings/deploy.ts).
  */
 
 interface TargetRow {
@@ -206,7 +208,10 @@ export async function resolveTarget(
       placement,
     },
   };
-  return options.frontDoor === false ? resolved : withFrontDoor(sql, resolved);
+  return withDeploySettings(
+    sql,
+    options.frontDoor === false ? resolved : await withFrontDoor(sql, resolved),
+  );
 }
 
 export function artifactOf(release: ReleaseRow): ReleaseArtifact {

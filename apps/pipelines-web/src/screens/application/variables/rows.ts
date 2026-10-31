@@ -1,4 +1,4 @@
-import type { Variable } from '@bemmoly/module-pipelines/shared';
+import type { ResolvedValue, Variable } from '@bemmoly/module-pipelines/shared';
 
 /*
  * What one view of the Variables tab lists. For every environment: the shared values. For one
@@ -13,6 +13,8 @@ export interface VariableRow {
   inherited: boolean;
   /** The shared value an environment's own one replaces there. */
   overrides: Variable | null;
+  /** Other applications' addresses filled in, for the environments this view shows. */
+  resolved: ResolvedValue[];
 }
 
 export function rowsFor(items: readonly Variable[], environment: string | null): VariableRow[] {
@@ -23,6 +25,7 @@ export function rowsFor(items: readonly Variable[], environment: string | null):
       variable,
       inherited: false,
       overrides: null,
+      resolved: variable.resolved,
     }));
   }
   const own = items.filter((item) => item.environment?.key === environment);
@@ -32,7 +35,8 @@ export function rowsFor(items: readonly Variable[], environment: string | null):
     const theirs = shared.find((item) => item.name === name) ?? null;
     const variable = mine ?? theirs;
     if (!variable) return [];
-    return [{ name, variable, inherited: !mine, overrides: mine ? theirs : null }];
+    const resolved = variable.resolved.filter((value) => value.environment === environment);
+    return [{ name, variable, inherited: !mine, overrides: mine ? theirs : null, resolved }];
   });
 }
 

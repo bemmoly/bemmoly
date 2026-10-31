@@ -61,6 +61,7 @@ const clusterAnswer = (overrides: Record<string, unknown> = {}): RecordedExchang
     networkConfig: { gatewayApiConfig: { channel: 'CHANNEL_STANDARD' } },
     workloadIdentityConfig: { workloadPool: `${PROJECT}.svc.id.goog` },
     secretManagerConfig: { enabled: true },
+    secretSyncConfig: { enabled: true },
     ...overrides,
   },
 });

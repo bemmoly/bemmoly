@@ -62,3 +62,45 @@ export function envOf(projectId: string, variables: readonly DeployVariable[]) {
         },
   );
 }
+
+/** Where a secret's file sits when secrets arrive as files: one directory per secret. */
+export const SECRET_FILES = '/var/run/secrets/bemmoly';
+
+const volumeOf = (name: string) =>
+  `secret-${name.toLowerCase().replace(/_/g, '-')}`.slice(0, 63).replace(/-+$/, '');
+
+/**
+ * Secrets as files on Cloud Run: each pinned version in its own volume, mounted at
+ * /var/run/secrets/bemmoly/<NAME>/<NAME>, with <NAME>_FILE in the environment saying where.
+ * Cloud Run mounts one secret per directory, so the file sits one level down.
+ */
+export function filesOf(projectId: string, variables: readonly DeployVariable[]) {
+  const secrets = variables.filter((v): v is SecretVariable => v.kind === 'secret');
+  const plain = variables.flatMap((v) =>
+    v.kind === 'plain' ? [{ name: v.name, value: v.value }] : [],
+  );
+  const taken = new Set(plain.map((entry) => entry.name));
+  const pointers = secrets
+    .map((secret) => ({
+      name: `${secret.name}_FILE`,
+      value: `${SECRET_FILES}/${secret.name}/${secret.name}`,
+    }))
+    .filter((entry) => !taken.has(entry.name));
+  return {
+    env: [...plain, ...pointers],
+    volumes: secrets.map((secret) => ({
+      name: volumeOf(secret.name),
+      secret: {
+        secret:
+          secret.account === projectId
+            ? secret.secret
+            : `projects/${secret.account}/secrets/${secret.secret}`,
+        items: [{ path: secret.name, version: secret.version }],
+      },
+    })),
+    mounts: secrets.map((secret) => ({
+      name: volumeOf(secret.name),
+      mountPath: `${SECRET_FILES}/${secret.name}`,
+    })),
+  };
+}

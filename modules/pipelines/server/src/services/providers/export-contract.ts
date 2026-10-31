@@ -1,4 +1,5 @@
 import type { CloudResourceKind } from '../../../../shared/clouds.ts';
+import type { EnvironmentClass } from '../../../../shared/common.ts';
 import type { ClusterRecord, Placement } from './cluster-contract.ts';
 import type { ConnectionRecord, DeployVariable, ReleaseArtifact } from './contract.ts';
 
@@ -29,7 +30,7 @@ export interface ExportResource {
 /** The release serving one application in one environment, as its last deploy left it. */
 export interface ExportService {
   application: string;
-  environment: { key: string; region: string | null };
+  environment: { key: string; class: EnvironmentClass; region: string | null };
   account: { externalId: string; config: Readonly<Record<string, unknown>> };
   placement: Placement;
   release: ReleaseArtifact;

@@ -1,46 +1,43 @@
 import { ConflictError } from '@bemmoly/shared';
 import type { Health } from '../../../../../shared/common.ts';
 import { KubernetesApiError, type KubernetesObject } from '../../../clients/kubernetes/index.ts';
-import type { DeployVariable, TargetsPart } from '../contract.ts';
+import { settingsOf } from '../../deploy-settings/resolve.ts';
+import type { TargetsPart } from '../contract.ts';
 import type { GcpContexts } from './context.ts';
-import type { GkeAccess, GkeHandle } from './gke-access.ts';
+import type { GkeAccess } from './gke-access.ts';
 import {
   backendsOf,
+  DEFAULT_CONTAINER_PORT,
   gatewayManifest,
-  GATEWAY_NAME,
   kubeRevisionOf,
   LABELS,
   MANAGED_BY,
   namespaceManifest,
-  revisionLabels,
   revisionManifests,
   routeManifest,
   type BackendWeight,
 } from './gke-manifests.ts';
-import {
-  grantPodSecrets,
-  mountsSecrets,
-  requireSecretsReady,
-  secretClassManifest,
-  secretsOf,
-  serviceAccountManifest,
-  workloadPrincipal,
-} from './gke-secrets.ts';
+import { clusterUrlOf, removeRevisionObjects, stableServiceManifest } from './gke-scaling.ts';
 
 /*
  * GKE as a deploy target, the same four moves as Cloud Run. A deploy adds a Deployment and a
  * Service for the revision and puts it on the application's HTTPRoute at weight 0; shift and
  * roll back rewrite the route's weights, which is where the split lives (§19). Revisions that
  * take no traffic are pruned on each deploy, keeping the two newest to roll back to. Secrets
- * are mounted by GKE's Secret Manager add-on at the versions the deploy was given (gke-secrets).
+ * reach pods through GKE's Secret Manager add-on at the versions the deploy was given, synced
+ * into a Secret or mounted as files (gke-secrets). Each revision scales on its own autoscaler,
+ * and the application's stable Service follows the revision taking most traffic (gke-scaling).
  */
 
 const IDLE_KEPT = 2;
 
-type Opened = GkeHandle & {
-  namespace: string;
-  record: { gateway: { namespace: string; name: string } | null };
-};
+import {
+  applyScaling,
+  followHeaviest,
+  gatewayUrl,
+  mountSecrets,
+  type Opened,
+} from './gke-steps.ts';
 
 const selectorOf = (application: string) =>
   `${LABELS.application}=${application},${LABELS.managedBy}=${MANAGED_BY}`;
@@ -97,44 +94,7 @@ async function removeRevision(
   revision: string,
   deployment: KubernetesObject | null,
 ) {
-  await handle.kube.remove('Deployment', revision, handle.namespace);
-  await handle.kube.remove('Service', revision, handle.namespace);
-  if (mountsSecrets(deployment?.spec)) {
-    await handle.kube.remove('SecretProviderClass', revision, handle.namespace);
-  }
-}
-
-/**
- * A revision's secrets: the pods' service account, read access for its Workload Identity
- * principal, and the class naming each version. Answers who the pods run as, or null.
- */
-async function mountSecrets(
-  contexts: GcpContexts,
-  handle: Opened & { record: { projectId: string; name: string; location: string } },
-  input: { application: string; revision: string; variables: readonly DeployVariable[] },
-  connection: Parameters<GcpContexts>[0],
-): Promise<string | null> {
-  const secrets = secretsOf(input.variables);
-  if (secrets.length === 0) return null;
-  requireSecretsReady(handle.cluster, handle.record.name, handle.record.location);
-  const labels = revisionLabels(input.application, input.revision);
-  await handle.kube.apply(
-    serviceAccountManifest(input.application, handle.namespace, {
-      [LABELS.application]: input.application,
-      [LABELS.managedBy]: MANAGED_BY,
-    }),
-  );
-  const principal = await workloadPrincipal(
-    contexts(connection),
-    handle.record.projectId,
-    handle.namespace,
-    input.application,
-  );
-  await grantPodSecrets(contexts(connection), principal, secrets);
-  await handle.kube.apply(
-    secretClassManifest({ revision: input.revision, namespace: handle.namespace, labels, secrets }),
-  );
-  return input.application;
+  await removeRevisionObjects(handle.kube, handle.namespace, revision, deployment?.spec);
 }
 
 function healthOf(status: Readonly<Record<string, unknown>> | undefined, replicas: number): Health {
@@ -154,13 +114,14 @@ export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): Targ
     async deploy(target, release, variables) {
       const handle = await access.target(target);
       const application = target.application.key;
+      const settings = settingsOf(release, target);
       const revision = kubeRevisionOf(application, release);
       await ensureNamespace(handle);
       if (!handle.record.gateway) await handle.kube.apply(gatewayManifest(handle.namespace));
       const serviceAccount = await mountSecrets(
         contexts,
         handle,
-        { application, revision, variables: variables ?? [] },
+        { application, revision, variables: variables ?? [], secretsAs: settings.secretsAs },
         target.connection,
       );
       const { deployment, service } = revisionManifests({
@@ -168,11 +129,13 @@ export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): Targ
         namespace: handle.namespace,
         revision,
         release,
+        settings,
         variables,
         serviceAccount,
       });
       await handle.kube.apply(deployment);
       await handle.kube.apply(service);
+      await applyScaling(handle, revision, application, settings);
       const current = await routeOf(handle, application);
       // A new route sends its (zero) traffic to the first revision, as Cloud Run does.
       let backends: BackendWeight[] = current ?? [{ revision, weight: 100 }];
@@ -182,13 +145,26 @@ export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): Targ
       const serving = backends.filter((backend) => backend.weight > 0).map((b) => b.revision);
       const pruned = await idleRevisions(handle, application, new Set([revision, ...serving]));
       const prunedNames = pruned.map((old) => old.metadata.name);
-      await writeRoute(
-        handle,
-        application,
-        backends.filter((backend) => !prunedNames.includes(backend.revision)),
+      const kept = backends.filter((backend) => !prunedNames.includes(backend.revision));
+      await writeRoute(handle, application, kept);
+      const port = settings.port ?? DEFAULT_CONTAINER_PORT;
+      const heaviest = [...kept].sort((a, b) => b.weight - a.weight)[0]?.revision ?? revision;
+      await handle.kube.apply(
+        stableServiceManifest({
+          application,
+          namespace: handle.namespace,
+          revision: heaviest,
+          port,
+        }),
       );
       for (const old of pruned) await removeRevision(handle, old.metadata.name, old);
-      return { revision };
+      return {
+        revision,
+        address: {
+          url: clusterUrlOf(application, handle.namespace, port),
+          publicUrl: await gatewayUrl(handle),
+        },
+      };
     },
 
     async shift(target, input) {
@@ -198,13 +174,14 @@ export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): Targ
         backends.push({ revision: input.stable, weight: 100 - input.percent });
       }
       await writeRoute(handle, target.application.key, backends);
+      await followHeaviest(handle, target.application.key, backends);
     },
 
     async rollback(target, previousRevision) {
       const handle = await access.target(target);
-      await writeRoute(handle, target.application.key, [
-        { revision: previousRevision, weight: 100 },
-      ]);
+      const backends = [{ revision: previousRevision, weight: 100 }];
+      await writeRoute(handle, target.application.key, backends);
+      await followHeaviest(handle, target.application.key, backends);
     },
 
     async health(target, revision) {
@@ -225,14 +202,7 @@ export function createGkeTargets(contexts: GcpContexts, access: GkeAccess): Targ
           percent: Math.round((backend.weight * 100) / total),
         }))
         .sort((a, b) => b.percent - a.percent);
-      // The owners' Gateway may sit where Pipelines may not read; only its own is looked up.
-      const gateway = handle.record.gateway
-        ? null
-        : await handle.kube.get('Gateway', GATEWAY_NAME, handle.namespace);
-      const addresses =
-        (gateway?.status?.['addresses'] as Array<{ value?: string }> | undefined) ?? [];
-      const address = addresses[0]?.value;
-      return { traffic, url: address ? `http://${address}` : null };
+      return { traffic, url: await gatewayUrl(handle) };
     },
 
     async retire(target, revision) {
