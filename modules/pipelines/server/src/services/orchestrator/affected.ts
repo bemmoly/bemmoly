@@ -2,10 +2,12 @@ import { matchesFilters } from '../../utils/glob.ts';
 
 /*
  * Which applications of a repository a change touches (monorepos, architecture §7). An
- * application with `paths:` filters is touched when a changed file matches them; without
- * filters, when a file under its folder changed; an application at the repository root is
- * touched by any change. When the code host did not say which files changed, every
- * application is: building too much is safe, missing one is not.
+ * application is touched when a file under its folder changed, or one its `paths:` filters
+ * match (the repository file's default paths are already in them); its folder is always one
+ * of its filters, so shared paths only ever add to it, and a `!` filter can still leave files
+ * out. An application at the repository root with no filters is touched by any change. When
+ * the code host did not say which files changed, every application is: building too much is
+ * safe, missing one is not.
  */
 
 export interface AffectedCandidate {
@@ -22,10 +24,11 @@ export function affectedApplications(
   if (changedPaths === null) return candidates.map((candidate) => candidate.key);
   return candidates
     .filter((candidate) => {
-      if (candidate.paths.length > 0) {
-        return changedPaths.some((path) => matchesFilters(path, candidate.paths));
-      }
       const folder = candidate.path.replace(/^\.?\/?/, '').replace(/\/$/, '');
+      if (candidate.paths.length > 0) {
+        const filters = folder ? [`${folder}/**`, ...candidate.paths] : candidate.paths;
+        return changedPaths.some((path) => matchesFilters(path, filters));
+      }
       if (!folder) return changedPaths.length > 0;
       return changedPaths.some((path) => path === folder || path.startsWith(`${folder}/`));
     })
