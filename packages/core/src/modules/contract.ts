@@ -1,11 +1,14 @@
 import type { PdfRenderer } from '../contracts/pdf.ts';
 import type { ModuleColor, ModuleSettingsInput, SidebarSectionInput } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
+import type { Approvals } from '../contracts/approvals.ts';
+import type { ModuleCustomFields } from '../contracts/custom-fields.ts';
 import type { AuditRecorder } from '../contracts/audit.ts';
 import type { Actor } from '../contracts/authz.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
 import type { ContainerMemberships } from '../contracts/memberships.ts';
+import type { PersonDirectory } from '../contracts/people.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { CodeRegistry } from './code.ts';
 import type { RequestContext } from '../services/authz/index.ts';
@@ -13,6 +16,7 @@ import type { CollabRegistry } from './collab.ts';
 import type { McpRegistry } from './mcp.ts';
 import type { FilesRegistry } from './files.ts';
 import type { ModuleObjects } from './objects.ts';
+import type { StartRegistry } from './start.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -92,14 +96,22 @@ export interface ModuleContext {
   objects: ModuleObjects;
   /** Consumers of verified code host activity (pull requests, branches, commits). */
   code: CodeRegistry;
+  /** Its part of the start page: `summaryForUser`. */
+  start: StartRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
   realtime: RealtimePublisher;
   /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */
   database?: SqlClient;
+  /** The approval engine (ADR 0051); requests start only on the module's own workflows. */
+  approvals?: Approvals;
+  /** Typed custom fields (ADR 0052) on the module's own entity types. */
+  customFields?: ModuleCustomFields;
   /** Writes the kernel's audit log; present whenever the database is. */
   audit?: AuditRecorder;
   /** Project and space membership; present whenever the database is. */
   memberships?: ContainerMemberships;
+  /** The person record and org data (ADR 0050); present whenever the database is. */
+  people?: PersonDirectory;
   /**
    * The context a job acts in as an actor that is not a request: an automation rule, say.
    * Its `authz` is the one requests get, so a job's writes are checked the same way.

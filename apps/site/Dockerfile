@@ -45,6 +45,7 @@ COPY packages/editor/CHANGELOG.md packages/editor/
 COPY packages/shared/CHANGELOG.md packages/shared/
 COPY packages/ui/CHANGELOG.md packages/ui/
 COPY modules/docs/CHANGELOG.md modules/docs/
+COPY modules/people/CHANGELOG.md modules/people/
 COPY modules/pipelines/CHANGELOG.md modules/pipelines/
 COPY modules/work/CHANGELOG.md modules/work/
 COPY deploy/CHANGELOG.md deploy/

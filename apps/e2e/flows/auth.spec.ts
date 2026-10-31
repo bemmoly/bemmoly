@@ -61,7 +61,7 @@ test.describe('sign-in', () => {
     await password.fill(person.password);
     await page.keyboard.press('Enter');
     await expect(page.getByRole('status').filter({ hasText: 'Signed in' })).toBeVisible();
-    await page.waitForURL((url) => url.pathname === '/');
+    await page.waitForURL((url) => url.pathname === '/start');
     await page.context().close();
   });
 
@@ -90,7 +90,7 @@ test.describe('sign-in', () => {
     await page.getByLabel('Email', { exact: true }).fill(person.email);
     await page.getByLabel('Password', { exact: true }).fill(person.password);
     await page.keyboard.press('Enter');
-    await page.waitForURL((url) => url.pathname === '/');
+    await page.waitForURL((url) => url.pathname === '/start');
     await page.goto('/login?reason=signed-out');
     // Still signed in: the sign-in page sends them on. Sign out for real.
     await page.waitForURL((url) => url.pathname === '/');

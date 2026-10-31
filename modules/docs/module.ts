@@ -17,6 +17,7 @@ import { createPageFiles } from './server/src/services/files/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { createConfluenceImporter } from './server/src/services/import/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
+import { createDocsStartSource } from './server/src/services/home/start.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
 import { registerDocsAi } from './server/src/services/ai/index.ts';
 import { registerDocsRetrieval } from './server/src/services/retrieval/index.ts';
@@ -92,6 +93,7 @@ export default defineModule({
     ctx.jobs.add(exportPdfJob(services.pdfExport));
     ctx.jobs.add(purgeExportsJob(services.pdfExport));
     registerDocsSearch(ctx.search, services.search);
+    ctx.start.add(createDocsStartSource(services.home));
     registerDocsRetrieval(ctx);
     registerDocsReferences(ctx, services.links);
     registerDocsAiTools(ctx.ai, services);

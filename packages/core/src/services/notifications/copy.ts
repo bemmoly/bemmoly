@@ -14,6 +14,8 @@ const VERBS: Readonly<Record<string, string>> = {
   break_glass_changed: 'changed the break-glass admins in',
   webhook_disabled: 'turned off a failing webhook:',
   import_finished: 'finished',
+  approval_requested: 'asked for your approval on',
+  approval_decided: 'decided on',
 };
 
 const LABELS: Readonly<Record<string, string>> = {
@@ -29,6 +31,8 @@ const LABELS: Readonly<Record<string, string>> = {
   break_glass_changed: 'Break-glass admin changes',
   webhook_disabled: 'Webhooks turned off after failures',
   import_finished: 'Finished imports',
+  approval_requested: 'Approvals waiting on you',
+  approval_decided: 'Decisions on your requests',
   [DIGEST_SCOPE]: 'The notification digest',
 };
 
@@ -62,6 +66,10 @@ export function reasonFor(kind: string, targetLabel: string, override?: string |
     case 'update_available':
     case 'webhook_disabled':
       return because('you administer this workspace');
+    case 'approval_requested':
+      return because(`${targetLabel} needs your approval`);
+    case 'approval_decided':
+      return because(`you asked for approval of ${targetLabel}`);
     case 'ai_budget':
       return because('you can configure AI for this workspace');
     case 'break_glass_changed':

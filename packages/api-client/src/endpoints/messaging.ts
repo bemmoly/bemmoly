@@ -10,6 +10,7 @@ import {
   readAllResponseSchema,
   searchQuerySchema,
   searchResponseSchema,
+  startSummariesResponseSchema,
   unsubscriptionPreviewSchema,
   updateNotificationPreferencesRequestSchema,
   updateNotificationRequestSchema,
@@ -72,5 +73,8 @@ export function messagingEndpoints(http: Http) {
       http.request('/api/v1/search', searchResponseSchema, {
         query: validated(searchQuerySchema, query),
       }),
+    /** The start page: what each module the person can open holds for them. */
+    startSummaries: async () =>
+      http.request('/api/v1/start-summaries', startSummariesResponseSchema),
   };
 }

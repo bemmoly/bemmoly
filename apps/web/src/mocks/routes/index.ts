@@ -21,9 +21,15 @@ import { importContainerRoutes } from './import-containers.ts';
 import { importRoutes } from './imports.ts';
 import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
+import { approvalRoutes } from './approvals.ts';
+import { orgRoutes } from './org.ts';
+import { peopleHrRoutes } from './people-hr.ts';
+import { peopleJourneyRoutes } from './people-hr-journeys.ts';
+import { peopleLeaveRoutes } from './people-hr-leave.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
 import { signInRoutes } from './sign-in.ts';
+import { startSummaryRoutes } from './start-summaries.ts';
 import { settingsRoutes } from './settings.ts';
 import { oauthDeviceRoutes } from './oauth-device.ts';
 import { oauthRoutes } from './oauth.ts';
@@ -52,9 +58,15 @@ export const ROUTES: readonly MockRoute[] = [
   ...signInRoutes,
   ...sessionRoutes,
   ...peopleRoutes,
+  ...orgRoutes,
+  ...approvalRoutes,
+  ...peopleHrRoutes,
+  ...peopleLeaveRoutes,
+  ...peopleJourneyRoutes,
   ...apiTokenRoutes,
   ...teamRoutes,
   ...settingsRoutes,
+  ...startSummaryRoutes,
   ...ssoRoutes,
   ...ssoBreakGlassRoutes,
   ...oauthRoutes,

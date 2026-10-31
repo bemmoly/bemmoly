@@ -90,6 +90,7 @@ export {
   type RetrievalService,
   type RetrievedChunk,
 } from './services/ai/index.ts';
+export * from './services/approvals/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
 export * from './services/files/index.ts';
@@ -103,6 +104,7 @@ export * from './services/import/index.ts';
 export * from './services/code-hosts/index.ts';
 export * from './services/system/index.ts';
 export * from './services/webhooks/index.ts';
+export * from './services/people/index.ts';
 export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
 export type { SystemControllerDependencies } from './controllers/system.controller.ts';
 export { maintenanceHook } from './middlewares/maintenance.ts';
@@ -187,3 +189,14 @@ export {
   serviceProviderUrls,
   type SsoDependencies,
 } from './services/sso/index.ts';
+export {
+  createCustomFieldsService,
+  CUSTOM_FIELDS_CAPABILITY,
+  fieldOrder,
+  fieldPredicate,
+  shadowOf,
+  type CompiledQuery,
+  type CustomFieldsDeps,
+  type CustomFieldsService,
+  type WriteOptions as CustomFieldWriteOptions,
+} from './services/custom-fields/index.ts';

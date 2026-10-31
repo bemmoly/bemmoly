@@ -81,8 +81,8 @@ test('? lists every shortcut, grouped', async ({ page }) => {
 
 test('New explains why it is empty and leads an admin to Modules', async ({ page }) => {
   const backend = await useMockBackend(page, 'ready');
-  // The seeded workspace has Work and Docs on; with both off, no module offers anything to create.
-  for (const id of ['work', 'docs']) {
+  // With every seeded module off, no module offers anything to create.
+  for (const id of ['work', 'docs', 'people']) {
     backend.api.dispatch('POST', `http://127.0.0.1/api/v1/admin/modules/${id}/disable`, {});
   }
   await page.goto('/');

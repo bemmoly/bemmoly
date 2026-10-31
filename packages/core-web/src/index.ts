@@ -144,6 +144,8 @@ export {
   type SidebarRegistry,
 } from './shell/module-sidebars.ts';
 export { knownIcon, moduleName, ModuleTile } from './shell/module-tile.tsx';
+export { ProductSwitcher, type ProductSwitcherProps } from './shell/product-switcher.tsx';
+export { productAt, productsOf, START_PATH, type Product } from './shell/products.ts';
 export {
   HeaderActions,
   HeaderPresence,
@@ -193,3 +195,4 @@ export {
 } from './shell/sidebar/sidebar-row.tsx';
 export { useSidebarFocusOwner, useSidebarTakeover } from './shell/sidebar-focus.ts';
 export { SwitcherMenu, type SwitcherItem, type SwitcherMenuProps } from './shell/switcher-menu.tsx';
+export * from './custom-fields/index.ts';

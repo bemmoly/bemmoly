@@ -35,6 +35,12 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
       ],
       ['workspace.audit.view', 'View the audit log', null, [1, 0, 0, 0, 0]],
       [
+        'workspace.people.manage',
+        'Manage people records',
+        'Employment, managers, locations and cost centres',
+        [1, 0, 0, 0, 0],
+      ],
+      [
         'workspace.settings.manage',
         'Manage workspace settings',
         'Details, backups, updates',
@@ -122,6 +128,36 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
         'docs.templates.manage',
         'Manage org templates',
         'Add, edit, order and archive',
+        [1, 0, 0, 0, 0],
+      ],
+    ],
+  },
+  {
+    group: 'People',
+    moduleId: 'people',
+    rows: [
+      [
+        'people.settings.manage',
+        'Manage People settings',
+        'Levels, leave policies, journey templates',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.journeys.manage',
+        'Run journeys',
+        'Start onboarding and offboarding, hand tasks on',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.leave.manage',
+        'Manage time off',
+        'See everyone’s time off and balances',
+        [1, 0, 0, 0, 0],
+      ],
+      [
+        'people.profiles.edit',
+        'Edit profiles',
+        'Company fields on anyone’s profile',
         [1, 0, 0, 0, 0],
       ],
     ],

@@ -8,6 +8,7 @@ import type { RealtimePublisher } from '../contracts/realtime.ts';
 import { collabDocumentName, type CollabTransactor } from './collab.ts';
 import type { CodeHostDirectory } from './code.ts';
 import { createCodeRegistry } from './code-registry.ts';
+import { createStartRegistry } from './start-registry.ts';
 import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -19,9 +20,11 @@ import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
 import { createDisabledAi } from '../services/ai/index.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
+import { lateServicesFor, type LateServices } from './late-services.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
+import { createPersonDirectory } from '../services/people/index.ts';
 
-export interface ModuleContextOptions {
+export interface ModuleContextOptions extends LateServices {
   events: EventBus;
   editorEnabled: boolean;
   /** Bound once the jobs service starts; sends before that fail loudly. */
@@ -273,8 +276,10 @@ export function createModuleContext(
     },
     objects: createModuleObjects(module.id, options.objects),
     code: createCodeRegistry(module.id, into, options.codeHosts),
+    start: createStartRegistry(module.id, into),
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
+    ...lateServicesFor(module.id, options),
     ...(options.pdf ? { pdf: options.pdf } : {}),
     ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
     ...(options.database
@@ -282,6 +287,7 @@ export function createModuleContext(
           database: options.database,
           audit: createAuditRecorder(options.database),
           memberships: createContainerMemberships(options.database),
+          people: createPersonDirectory(options.database),
         }
       : {}),
   };
