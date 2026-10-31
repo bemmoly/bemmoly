@@ -29,8 +29,19 @@ export interface Layer {
   values: Values;
 }
 
+/** Where a setting is written: "applications.2.group" in the repository file. */
+export interface Location {
+  file: string;
+  field: string;
+}
+
 export type Merged =
-  | { ok: true; file: ApplicationFile; fields: Record<string, SettingOrigin> }
+  | {
+      ok: true;
+      file: ApplicationFile;
+      fields: Record<string, SettingOrigin>;
+      locations: Record<string, Location>;
+    }
   | { ok: false; file: string; error: string };
 
 const LISTS = new Set(['paths', 'labels', 'dependsOn']);
@@ -113,7 +124,14 @@ export function mergeLayers(layers: readonly Layer[]): Merged {
   if (isPlain(merged.pipeline) && Object.keys(merged.pipeline).length === 0) delete merged.pipeline;
   const fields = originsOf(layers, merged);
   const parsed = applicationFileSchema.safeParse(merged);
-  if (parsed.success) return { ok: true, file: parsed.data, fields };
+  if (parsed.success) {
+    const locations: Record<string, Location> = {};
+    for (const [field, origin] of Object.entries(fields)) {
+      const layer = layers.find((candidate) => candidate.origin === origin);
+      if (layer) locations[field] = { file: layer.file, field: `${layer.prefix}${field}` };
+    }
+    return { ok: true, file: parsed.data, fields, locations };
+  }
   const issue = parsed.error.issues[0];
   const path = issue?.path.map(String) ?? [];
   const top = path[0] === 'pipeline' && path[1] === 'build' ? 'build' : path[0];
