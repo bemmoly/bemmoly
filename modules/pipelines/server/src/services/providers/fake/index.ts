@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Provider } from '../../../../../shared/common.ts';
 import type { CloudProvider, DesiredResource } from '../contract.ts';
+import { createFakeAdopt, type FakeAdoptWorld } from './adopt.ts';
 import { createFakeClusters, type FakeClustersWorld } from './clusters.ts';
 import { createFakeFrontDoor, type FakeFrontDoorsWorld } from './front-door.ts';
 import { createFakeMachines, type FakeMachinesWorld } from './machines.ts';
@@ -13,7 +14,12 @@ import { createFakeTargets, type FakeTargetsWorld } from './targets.ts';
  */
 
 export interface FakeWorld
-  extends FakeTargetsWorld, FakeClustersWorld, FakeMachinesWorld, FakeFrontDoorsWorld {
+  extends
+    FakeTargetsWorld,
+    FakeClustersWorld,
+    FakeMachinesWorld,
+    FakeFrontDoorsWorld,
+    FakeAdoptWorld {
   boundaries: Set<string>;
   accounts: Map<string, { name: string; labels: Readonly<Record<string, string>> }>;
   resources: Map<string, Record<string, unknown>>;
@@ -56,6 +62,7 @@ export function createFakeWorld(): FakeWorld {
     machines: new Map(),
     podClusters: new Map(),
     podPools: new Map(),
+    running: new Map(),
   };
 }
 
@@ -79,6 +86,7 @@ export function createFakeProvider(
     metrics,
     clusters: createFakeClusters(world),
     frontDoor: createFakeFrontDoor(world),
+    adopt: createFakeAdopt(world),
     runtimes: {
       'gke-autopilot': kubernetes,
       'gke-standard': kubernetes,

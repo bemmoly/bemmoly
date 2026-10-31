@@ -13,6 +13,7 @@ import type { ExportPart } from './export-contract.ts';
 import type { AccessPart, CostPart } from './planned-contract.ts';
 import type { RunnersPart } from './runners-contract.ts';
 import type { ResolvedDeploySettings, ServiceAddress } from './deploy-settings-contract.ts';
+import type { AdoptPart } from './adopt-contract.ts';
 
 /*
  * The provider model (architecture §14). Everything cloud-specific sits behind these
@@ -273,6 +274,8 @@ export interface CloudProvider {
   clusters?: ClustersPart;
   frontDoor?: FrontDoorPart;
   export?: ExportPart;
+  /** Services already running on the default runtime, to adopt. */
+  adopt?: AdoptPart;
   /**
    * Runtimes beyond the default one `targets` and `metrics` serve, such as GKE beside Cloud
    * Run. Target resolution swaps these in for the application's runtime in an environment.
@@ -287,3 +290,4 @@ export function partAvailability(provider: CloudProvider, part: ProviderPart): P
 
 export type * from './cluster-contract.ts';
 export type * from './deploy-settings-contract.ts';
+export type * from './adopt-contract.ts';
