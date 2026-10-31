@@ -129,7 +129,8 @@ export function createGkeClusters(contexts: GcpContexts, access: GkeAccess): Clu
       });
       critical.push(...rights.critical);
       // Only applications with secrets need these, so they warn rather than fail the check.
-      const secrets = secretsProblem(found, name, cluster.location);
+      // Secrets arrive as variables unless an application says files, so sync is checked too.
+      const secrets = secretsProblem(found, name, cluster.location, 'env');
       return {
         ok: critical.length === 0,
         mode: state.mode,

@@ -27,6 +27,8 @@ const clusterSchema = z.object({
     .default({}),
   /** GKE's Secret Manager add-on: the managed CSI driver that mounts secret versions. */
   secretManagerConfig: z.object({ enabled: z.boolean().optional() }).default({}),
+  /** The add-on's sync, which copies pinned versions into Kubernetes Secrets. */
+  secretSyncConfig: z.object({ enabled: z.boolean().optional() }).default({}),
   currentMasterVersion: z.string().optional(),
 });
 
@@ -103,3 +105,6 @@ export function createContainerClient(http: GcpHttp, poll: PollOptions) {
 }
 
 export type ContainerClient = ReturnType<typeof createContainerClient>;
+
+/** Secret sync is on: a SecretSync can copy secret versions into a Kubernetes Secret. */
+export const secretSyncOn = (cluster: GkeCluster) => cluster.secretSyncConfig.enabled === true;

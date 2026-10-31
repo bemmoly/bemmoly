@@ -5,12 +5,21 @@ revision: ""
 release: ""
 image: ""
 port: 8080
-replicas: 1
+scaling:
+  min: 1
+  max: 10
+  cpuTarget: 70
+disruptionBudget: null
 resources: {}
-healthcheck: null
+probes:
+  readiness: ""
+  liveness: ""
+  timeoutSeconds: 5
 serviceAccount: ""
+secretsAs: env
 env: []
 secrets: []
+stableService: ""
 route:
   hostname: ""
   parent:

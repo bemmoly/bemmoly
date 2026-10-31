@@ -42,6 +42,8 @@ export function clusterSpec(input: {
     workloadIdentityConfig: { workloadPool: `${input.projectId}.svc.id.goog` },
     networkConfig: { gatewayApiConfig: { channel: 'CHANNEL_STANDARD' } },
     secretManagerConfig: { enabled: true },
+    // Copies pinned secret versions into Kubernetes Secrets, so pods read them as variables.
+    secretSyncConfig: { enabled: true },
     ipAllocationPolicy: { useIpAliases: true },
   };
   if (input.mode === 'autopilot') return { ...shared, autopilot: { enabled: true } };

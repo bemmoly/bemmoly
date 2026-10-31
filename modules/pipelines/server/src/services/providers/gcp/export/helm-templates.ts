@@ -1,5 +1,6 @@
 import { GATEWAY_CLASS, GATEWAY_NAME, LABELS, SERVICE_PORT } from '../gke-manifests.ts';
 import { SECRETS_DRIVER, SECRET_MOUNT, SECRET_VOLUME } from '../gke-secrets.ts';
+import { SCALING_TEMPLATES } from './helm-scaling-templates.ts';
 
 /** GKE makes a standalone endpoint group for a Service port that names one here. */
 export const NEG_ANNOTATION = 'cloud.google.com/neg';
@@ -30,7 +31,6 @@ metadata:
   annotations:
     ${LABELS.release}: {{ .Values.release | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       ${LABELS.revision}: {{ .Values.revision }}
@@ -52,7 +52,7 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.secrets }}
+          {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
           volumeMounts:
             - name: ${SECRET_VOLUME}
               mountPath: ${SECRET_MOUNT}
@@ -65,15 +65,23 @@ spec:
             limits:
               {{- toYaml . | nindent 14 }}
           {{- end }}
-          {{- with .Values.healthcheck }}
+          {{- with .Values.probes.readiness }}
           readinessProbe:
             httpGet:
-              path: {{ .path }}
+              path: {{ . }}
               port: {{ $.Values.port }}
-            timeoutSeconds: {{ .timeoutSeconds }}
-            periodSeconds: {{ max 10 .timeoutSeconds }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
           {{- end }}
-      {{- if .Values.secrets }}
+          {{- with .Values.probes.liveness }}
+          livenessProbe:
+            httpGet:
+              path: {{ . }}
+              port: {{ $.Values.port }}
+            timeoutSeconds: {{ $.Values.probes.timeoutSeconds }}
+            periodSeconds: {{ max 10 $.Values.probes.timeoutSeconds }}
+          {{- end }}
+      {{- if and .Values.secrets (eq .Values.secretsAs "files") }}
       volumes:
         - name: ${SECRET_VOLUME}
           csi:
@@ -190,6 +198,7 @@ export const TEMPLATES: Readonly<Record<string, string>> = {
   'secretproviderclass.yaml': secretClass,
   'serviceaccount.yaml': serviceAccount,
   'gateway.yaml': gateway,
+  ...SCALING_TEMPLATES,
 };
 
 /** The chart's defaults: nothing renders until a values file names an application. */
@@ -200,12 +209,21 @@ revision: ""
 release: ""
 image: ""
 port: 8080
-replicas: 1
+scaling:
+  min: 1
+  max: 10
+  cpuTarget: 70
+disruptionBudget: null
 resources: {}
-healthcheck: null
+probes:
+  readiness: ""
+  liveness: ""
+  timeoutSeconds: 5
 serviceAccount: ""
+secretsAs: env
 env: []
 secrets: []
+stableService: ""
 route:
   hostname: ""
   parent:
