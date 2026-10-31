@@ -25,6 +25,7 @@ interface VariableRow {
 
 function present(row: VariableRow): Variable {
   const moving = row.kind === 'secret' && row.value !== null;
+  const needed = row.kind === 'secret' && row.value === null && row.secret_ref === null;
   return {
     name: row.name,
     kind: row.kind,
@@ -38,8 +39,8 @@ function present(row: VariableRow): Variable {
           }
         : null,
     value: row.kind === 'plain' ? row.value : null,
-    version: moving ? null : row.version,
-    state: moving ? 'moving' : 'set',
+    version: moving || needed ? null : row.version,
+    state: moving ? 'moving' : needed ? 'needed' : 'set',
     problem: row.problem,
     location: row.secret_ref ? `${row.account ?? 'a detached project'} / ${row.secret_ref}` : null,
     updatedBy: row.user_id && row.user_name ? { id: row.user_id, name: row.user_name } : null,

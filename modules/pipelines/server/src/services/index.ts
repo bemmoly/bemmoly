@@ -51,6 +51,8 @@ import { createFrontDoorsService } from './front-doors/index.ts';
 import { createMovesService } from './moves/index.ts';
 import { createExportsService } from './exports/index.ts';
 import { createDeploySettingsService } from './deploy-settings/index.ts';
+import { createAdoptionService } from './adoption/index.ts';
+import { createConfigCopyService } from './config-copy/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -205,6 +207,12 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     }),
     exports: createExportsService({ ...deps, providers }),
     deploySettings: createDeploySettingsService(deps),
+    adoption: createAdoptionService({
+      ...deps,
+      providers,
+      ...(input.now ? { now: input.now } : {}),
+    }),
+    configCopy: createConfigCopyService({ ...deps, providers }),
     machines: createMachinesService({
       ...deps,
       providers,
