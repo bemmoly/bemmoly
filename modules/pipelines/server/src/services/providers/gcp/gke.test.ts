@@ -45,9 +45,19 @@ const target: DeployTarget = {
 };
 
 const replay = createReplayTransport(loadFixture('gke-rollout'));
-const kubeRequests: Array<{ method: string; url: string; headers: Record<string, string> }> = [];
+const kubeRequests: Array<{
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  body: Record<string, unknown> | null;
+}> = [];
 const kubernetesTransport = (): KubernetesTransport => (url, init) => {
-  kubeRequests.push({ method: init.method, url, headers: init.headers });
+  kubeRequests.push({
+    method: init.method,
+    url,
+    headers: init.headers,
+    body: init.body ? (JSON.parse(init.body) as Record<string, unknown>) : null,
+  });
   return replay.transport(url, init);
 };
 const gcp = createGcpProvider({
@@ -99,6 +109,62 @@ describe('the GKE rollout replay', () => {
     );
     expect(deletes.some((call) => call.includes('v1-40-0') || call.includes('v1-41-0'))).toBe(
       false,
+    );
+  });
+});
+
+const applied = (kind: string, name: string) =>
+  kubeRequests.find(
+    (request) =>
+      request.method === 'PATCH' &&
+      request.body?.['kind'] === kind &&
+      request.url.includes(`/${name}?`),
+  )?.body;
+
+describe('scaling on GKE', () => {
+  it('leaves replicas to an autoscaler, two to ten in Prod at 70% CPU', () => {
+    const revision = 'checkout-api-v2-0-0-c4e8a10';
+    expect(applied('Deployment', revision)?.['spec']).not.toHaveProperty('replicas');
+    expect(applied('HorizontalPodAutoscaler', revision)?.['spec']).toEqual({
+      scaleTargetRef: { apiVersion: 'apps/v1', kind: 'Deployment', name: revision },
+      minReplicas: 2,
+      maxReplicas: 10,
+      metrics: [
+        {
+          type: 'Resource',
+          resource: { name: 'cpu', target: { type: 'Utilization', averageUtilization: 70 } },
+        },
+      ],
+    });
+  });
+
+  it('lets one Prod pod go at a time through an upgrade', () => {
+    const revision = 'checkout-api-v2-0-0-c4e8a10';
+    expect(applied('PodDisruptionBudget', revision)?.['spec']).toEqual({
+      maxUnavailable: 1,
+      selector: { matchLabels: { 'pipelines.bemmoly.dev/revision': revision } },
+    });
+  });
+
+  it('keeps the stable Service on the revision taking most traffic, not a 25% canary', () => {
+    const selectors = kubeRequests
+      .filter(
+        (request) => request.method === 'PATCH' && request.url.includes('/services/checkout-api?'),
+      )
+      .map((request) => (request.body?.['spec'] as { selector: Record<string, string> }).selector);
+    expect(selectors.length).toBeGreaterThan(3);
+    const revisions = selectors.map((selector) => selector['pipelines.bemmoly.dev/revision']);
+    expect(revisions).not.toContain('checkout-api-v2-0-0-c4e8a10');
+    expect(revisions.at(-1)).toBe('checkout-api-v1-42-0-b7d2e91');
+  });
+
+  it("removes a pruned revision's autoscaler and budget with it", () => {
+    const deletes = replay.calls.filter((call) => call.startsWith('DELETE'));
+    expect(deletes).toContain(
+      'DELETE /apis/autoscaling/v2/namespaces/checkout/horizontalpodautoscalers/checkout-api-v1-39-0-9a9a9a9',
+    );
+    expect(deletes).toContain(
+      'DELETE /apis/policy/v1/namespaces/checkout/poddisruptionbudgets/checkout-api-v1-39-0-9a9a9a9',
     );
   });
 });

@@ -1,6 +1,9 @@
 import { stringify } from 'yaml';
 import type { ExportFile, ExportFrontDoor, ExportService } from '../../export-contract.ts';
-import { deploySettingsOf, imageOf } from '../container.ts';
+import { settingsFor } from '../../../deploy-settings/resolve.ts';
+import type { ResolvedDeploySettings } from '../../deploy-settings-contract.ts';
+import { imageOf } from '../container.ts';
+import { stableServiceOf } from '../gke-scaling.ts';
 import { GATEWAY_NAME, kubeRevisionOf, routeHostOf } from '../gke-manifests.ts';
 import { gkeBackendName } from '../front-door-map.ts';
 import { containerEnv, secretsOf } from '../gke-secrets.ts';
@@ -16,39 +19,46 @@ import { DEFAULT_VALUES, TEMPLATES } from './helm-templates.ts';
 
 const DEFAULT_PORT = 8080;
 
-const portOf = (value: unknown): number => {
-  const port = typeof value === 'string' ? Number(value) : value;
-  return typeof port === 'number' && Number.isInteger(port) && port > 0 && port < 65536
-    ? port
-    : DEFAULT_PORT;
-};
+/** The settings a service's last deploy ran with, or the file's when none were recorded. */
+export const exportSettingsOf = (service: ExportService): ResolvedDeploySettings =>
+  settingsFor(service.release, {
+    environmentKey: service.environment.key,
+    environmentClass: service.environment.class,
+    runtime: service.placement.runtime,
+  });
 
 /** One application's values in one environment: what its last deploy there wrote. */
 export function valuesOf(service: ExportService, neg = ''): Record<string, unknown> {
   const { release, application } = service;
-  const settings = deploySettingsOf(release);
+  const settings = exportSettingsOf(service);
   const namespace = service.placement.namespace;
   const secrets = secretsOf(service.variables);
   const resources = {
-    ...(settings.resources?.cpu !== undefined ? { cpu: String(settings.resources.cpu) } : {}),
-    ...(settings.resources?.memory ? { memory: settings.resources.memory } : {}),
+    ...(settings.resources.cpu !== null ? { cpu: settings.resources.cpu } : {}),
+    ...(settings.resources.memory !== null ? { memory: settings.resources.memory } : {}),
   };
+  const { min, max, cpuTarget } = settings.scaling;
+  const { path, ready, timeoutSeconds } = settings.healthcheck;
   const gateway = service.placement.cluster?.gateway ?? { name: GATEWAY_NAME, namespace };
   return {
     application,
     revision: service.revision,
     release: release.version,
     image: imageOf(release),
-    port: portOf(settings.port),
-    replicas: 1,
+    port: settings.port ?? DEFAULT_PORT,
+    scaling: { min: Math.max(1, min), max: Math.max(1, min, max ?? 1), cpuTarget: cpuTarget ?? 70 },
+    disruptionBudget:
+      settings.maxUnavailable === null ? null : { maxUnavailable: settings.maxUnavailable },
     resources,
-    healthcheck: settings.healthcheck ?? null,
+    probes: { readiness: ready ?? path ?? '', liveness: path ?? '', timeoutSeconds },
     serviceAccount: secrets.length > 0 ? application : '',
-    env: containerEnv(service.variables),
+    secretsAs: settings.secretsAs,
+    env: containerEnv(service.variables, settings.secretsAs, service.revision),
     secrets: secrets.map((secret) => ({
       path: secret.name,
       resourceName: `projects/${secret.account}/secrets/${secret.secret}/versions/${secret.version}`,
     })),
+    stableService: stableServiceOf(application),
     route: {
       hostname: routeHostOf(application, namespace),
       parent: { name: gateway.name, namespace: gateway.namespace },

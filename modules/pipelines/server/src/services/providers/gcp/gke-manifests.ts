@@ -1,15 +1,16 @@
 import type { KubernetesManifest } from '../../../clients/kubernetes/index.ts';
 import type { ClusterGateway } from '../../../../../shared/clusters.ts';
-import type { DeployVariable, ReleaseArtifact } from '../contract.ts';
-import { deploySettingsOf, imageOf } from './container.ts';
+import type { DeployVariable, ReleaseArtifact, ResolvedDeploySettings } from '../contract.ts';
+import { imageOf } from './container.ts';
 import { containerEnv, secretsOf, secretsVolume } from './gke-secrets.ts';
 import { revisionIdOf } from './targets.ts';
 
 /*
  * What a deploy on GKE writes: a namespace per catalog group, one Gateway there unless the
- * cluster's owners named their own, a Deployment and a Service per revision, and one
- * HTTPRoute per application whose backend weights are the canary split. Each object is
- * labelled with the application and revision so pruning finds them again.
+ * cluster's owners named their own, a Deployment and a Service per revision (with its
+ * autoscaler and disruption budget, gke-scaling.ts), and one HTTPRoute per application whose
+ * backend weights are the canary split. Each object is labelled with the application and
+ * revision so pruning finds them again.
  */
 
 export const LABELS = {
@@ -24,7 +25,7 @@ export const GATEWAY_NAME = 'bemmoly';
 /** Google's global external Application Load Balancer, the one canary metrics come from. */
 export const GATEWAY_CLASS = 'gke-l7-global-external-managed';
 export const SERVICE_PORT = 80;
-const DEFAULT_CONTAINER_PORT = 8080;
+export const DEFAULT_CONTAINER_PORT = 8080;
 
 /** The host an application's route answers on, until the front door gives it a domain. */
 export const routeHostOf = (application: string, namespace: string) =>
@@ -38,13 +39,6 @@ export function kubeRevisionOf(application: string, release: ReleaseArtifact): s
   const revision = revisionIdOf(application, release);
   return /^[a-z]/.test(revision) ? revision : `r-${revision}`.slice(0, 63).replace(/-+$/, '');
 }
-
-const portOf = (value: unknown): number => {
-  const port = typeof value === 'string' ? Number(value) : value;
-  return typeof port === 'number' && Number.isInteger(port) && port > 0 && port < 65536
-    ? port
-    : DEFAULT_CONTAINER_PORT;
-};
 
 export function namespaceManifest(namespace: string): KubernetesManifest {
   return {
@@ -80,26 +74,37 @@ export const revisionLabels = (application: string, revision: string) => ({
 
 /**
  * `variables` are the whole environment when given; `serviceAccount` is who the pods run as,
- * named when they mount secrets.
+ * named when they read secrets. `replicas` is left to the revision's autoscaler. The readiness
+ * probe holds traffic until `ready` (or `path`) answers; the liveness probe restarts a pod
+ * whose `path` stops answering.
  */
 export function revisionManifests(input: {
   application: string;
   namespace: string;
   revision: string;
   release: ReleaseArtifact;
+  settings: ResolvedDeploySettings;
   variables?: readonly DeployVariable[] | undefined;
   serviceAccount?: string | null;
 }): { deployment: KubernetesManifest; service: KubernetesManifest } {
-  const { application, namespace, revision, release } = input;
-  const settings = deploySettingsOf(release);
-  const port = portOf(settings.port);
+  const { application, namespace, revision, release, settings } = input;
+  const port = settings.port ?? DEFAULT_CONTAINER_PORT;
   const labels = revisionLabels(application, revision);
   const limits = {
-    ...(settings.resources?.cpu !== undefined ? { cpu: String(settings.resources.cpu) } : {}),
-    ...(settings.resources?.memory ? { memory: settings.resources.memory } : {}),
+    ...(settings.resources.cpu !== null ? { cpu: settings.resources.cpu } : {}),
+    ...(settings.resources.memory !== null ? { memory: settings.resources.memory } : {}),
   };
-  const env = containerEnv(input.variables ?? []);
-  const secrets = secretsOf(input.variables ?? []).length > 0 ? secretsVolume(revision) : null;
+  const variables = input.variables ?? [];
+  const env = containerEnv(variables, settings.secretsAs, revision);
+  const mounted = settings.secretsAs === 'files' && secretsOf(variables).length > 0;
+  const secrets = mounted ? secretsVolume(revision) : null;
+  const { path, ready, timeoutSeconds } = settings.healthcheck;
+  const probe = (at: string) => ({
+    httpGet: { path: at, port },
+    timeoutSeconds,
+    periodSeconds: Math.max(10, timeoutSeconds),
+  });
+  const readiness = ready ?? path;
   const container = {
     name: application,
     image: imageOf(release),
@@ -108,15 +113,8 @@ export function revisionManifests(input: {
     ...(secrets ? { volumeMounts: [secrets.mount] } : {}),
     // Autopilot bills and schedules by requests, and sets limits equal to them.
     ...(Object.keys(limits).length > 0 ? { resources: { requests: limits, limits } } : {}),
-    ...(settings.healthcheck
-      ? {
-          readinessProbe: {
-            httpGet: { path: settings.healthcheck.path, port },
-            timeoutSeconds: settings.healthcheck.timeoutSeconds,
-            periodSeconds: Math.max(10, settings.healthcheck.timeoutSeconds),
-          },
-        }
-      : {}),
+    ...(readiness ? { readinessProbe: probe(readiness) } : {}),
+    ...(path ? { livenessProbe: probe(path) } : {}),
   };
   return {
     deployment: {
@@ -128,7 +126,6 @@ export function revisionManifests(input: {
         annotations: { [LABELS.release]: release.version },
       },
       spec: {
-        replicas: 1,
         selector: { matchLabels: { [LABELS.revision]: revision } },
         template: {
           metadata: { labels },

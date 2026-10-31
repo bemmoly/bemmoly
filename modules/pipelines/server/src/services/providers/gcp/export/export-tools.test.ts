@@ -15,7 +15,18 @@ import {
   revisionManifests,
   routeManifest,
 } from '../gke-manifests.ts';
-import { secretClassManifest, secretsOf, serviceAccountManifest } from '../gke-secrets.ts';
+import {
+  secretClassManifest,
+  secretsOf,
+  secretSyncManifest,
+  serviceAccountManifest,
+} from '../gke-secrets.ts';
+import {
+  autoscalerManifest,
+  disruptionBudgetManifest,
+  stableServiceManifest,
+} from '../gke-scaling.ts';
+import { exportSettingsOf } from './helm.ts';
 import type { PodPoolSite } from '../../runners-contract.ts';
 import { poolNamespaceManifest, runnerServiceAccountManifest } from '../autopilot-manifests.ts';
 import { gkeBackendName } from '../front-door-map.ts';
@@ -92,14 +103,19 @@ describe.runIf(has('helm'))('the Helm chart, with helm', { timeout: TOOL_MS }, (
     ]);
     expect(rendered.ok, rendered.output).toBe(true);
     const docs = parseAllDocuments(rendered.output).map((doc) => doc.toJSON() as object);
+    const settings = exportSettingsOf(service);
     const { deployment, service: kubeService } = revisionManifests({
       application,
       namespace,
       revision,
       release,
+      settings,
       variables,
       serviceAccount: application,
     });
+    const labels = revisionLabels(application, revision);
+    const budget = disruptionBudgetManifest({ revision, namespace, labels, settings });
+    if (!budget) throw new Error('a Prod service on GKE has a disruption budget');
     const expected = [
       serviceAccountManifest(application, namespace, {
         [LABELS.application]: application,
@@ -122,12 +138,17 @@ describe.runIf(has('helm'))('the Helm chart, with helm', { timeout: TOOL_MS }, (
         gateway: null,
         backends: [{ revision, weight: 100 }],
       }),
-      secretClassManifest({
+      secretClassManifest({ revision, namespace, labels, secrets: secretsOf(variables) }),
+      secretSyncManifest({
         revision,
         namespace,
-        labels: revisionLabels(application, revision),
+        labels,
+        serviceAccount: application,
         secrets: secretsOf(variables),
       }),
+      autoscalerManifest({ revision, namespace, labels, settings }),
+      budget,
+      stableServiceManifest({ application, namespace, revision, port: settings.port ?? 8080 }),
     ].map(asHelm);
     expect(docs).toHaveLength(expected.length);
     expect(docs).toEqual(expect.arrayContaining(expected));
