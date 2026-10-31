@@ -1351,5 +1351,15 @@
   "pipelines.application.export": "Export",
   "pipelines.application.exportTip": "Download this application's services as Terraform and Helm",
   "pipelines.application.exportFailed": "The export did not download",
-  "pipelines.signal.sharedDockerfile": "Shared Dockerfile"
+  "pipelines.signal.sharedDockerfile": "Shared Dockerfile",
+  "pipelines.settingsFrom.title": "Settings",
+  "pipelines.settingsFrom.library": "Library",
+  "pipelines.settingsFrom.libraryNote": "Checked on every push. It builds no image, so it makes no releases and never deploys.",
+  "pipelines.settingsFrom.definedIn": "Defined in",
+  "pipelines.settingsFrom.fromFile": "Its own file",
+  "pipelines.settingsFrom.fromCentral": "Central list",
+  "pipelines.settingsFrom.fromDefaults": "Defaults",
+  "pipelines.start.repositoryFileLabel": "Proposed repository file for {repository}",
+  "pipelines.start.repositoryFileTitle": "One repository file for {repository}",
+  "pipelines.start.repositoryFileNote": "These deployables share a Dockerfile, so the pull request adds {path} with the Dockerfile and build args in defaults and a short entry for each, instead of a file per folder."
 }
