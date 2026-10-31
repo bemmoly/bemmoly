@@ -13,7 +13,7 @@ import { placeOf, type GcpContexts } from './context.ts';
 import { cloudRunGroupName, nameOf, type frontDoorNames } from './front-door-map.ts';
 import type { GkeAccess } from './gke-access.ts';
 import { LABELS, MANAGED_BY } from './gke-manifests.ts';
-import { mountsSecrets } from './gke-secrets.ts';
+import { removeRevisionObjects, stableServiceOf } from './gke-scaling.ts';
 
 /*
  * The two ends of a front door's life: leaving a runtime once a move is done (the Cloud Run
@@ -47,13 +47,14 @@ export async function leaveRuntime(
     `${LABELS.application}=${application},${LABELS.managedBy}=${MANAGED_BY}`,
   );
   for (const deployment of deployments) {
-    const revision = deployment.metadata.name;
-    await handle.kube.remove('Deployment', revision, handle.namespace);
-    await handle.kube.remove('Service', revision, handle.namespace);
-    if (mountsSecrets(deployment.spec)) {
-      await handle.kube.remove('SecretProviderClass', revision, handle.namespace);
-    }
+    await removeRevisionObjects(
+      handle.kube,
+      handle.namespace,
+      deployment.metadata.name,
+      deployment.spec,
+    );
   }
+  await handle.kube.remove('Service', stableServiceOf(application), handle.namespace);
 }
 
 /** "…/regions/asia-south1/networkEndpointGroups/bm-run-shop" as a place and a name. */

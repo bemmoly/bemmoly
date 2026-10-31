@@ -6,6 +6,7 @@ import type { ExportService } from '../providers/export-contract.ts';
 import type { ProviderSourceOrRegistry } from '../shipping/engine-deps.ts';
 import { loadRelease } from '../shipping/load.ts';
 import { artifactOf, resolveTarget } from '../shipping/targets.ts';
+import { resolutionFor } from '../deploy-settings/deploy.ts';
 
 /*
  * What serves each application in each environment now: the release Pipelines counts as
@@ -98,10 +99,13 @@ export async function currentServices(
         leftOut.push(`${where}: it deploys to no project, so there is nothing to export.`);
         continue;
       }
-      const release = artifactOf(await loadRelease(sql, row.release_id));
+      const artifact = artifactOf(await loadRelease(sql, row.release_id));
+      // The settings as they stand now, which the next deploy there would also take.
+      const { settings } = await resolutionFor(sql, target, artifact);
+      const release = { ...artifact, settings };
       const service: ExportService = {
         application: row.application,
-        environment: { key: row.environment, region: row.region },
+        environment: { key: row.environment, class: target.environment.class, region: row.region },
         account: { externalId: target.account.externalId, config: target.account.config ?? {} },
         placement: target.placement,
         release,
