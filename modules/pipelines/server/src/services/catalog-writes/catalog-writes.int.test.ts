@@ -138,7 +138,7 @@ describe('catalog writes and application.yaml sync', () => {
       ],
     });
     expect(result.applied.sort()).toEqual(['lake-batch', 'lake-ingest']);
-    expect(result.problems).toEqual([
+    expect([...result.problems].sort((a, b) => a.path.localeCompare(b.path))).toEqual([
       expect.objectContaining({ path: 'batch/.bemmoly/application.yaml', applied: true }),
       expect.objectContaining({ path: 'broken/.bemmoly/application.yaml', applied: false }),
     ]);

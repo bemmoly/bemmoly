@@ -42,3 +42,4 @@ export * from './moves.ts';
 export * from './autopilot.ts';
 export * from './exports.ts';
 export * from './build-args.ts';
+export * from './repository-yaml.ts';
