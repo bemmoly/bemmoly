@@ -1,4 +1,5 @@
 import type { CloudProvider } from '../contract.ts';
+import { createGcpAdopt } from './adopt.ts';
 import { createGcpConnection } from './connection.ts';
 import { createGcpContexts, type GcpProviderOptions } from './context.ts';
 import { createGcpFrontDoor } from './front-door.ts';
@@ -57,6 +58,7 @@ export function createGcpProvider(options: GcpProviderOptions = {}): CloudProvid
       options.kubernetesTransport ? { kubernetesTransport: options.kubernetesTransport } : {},
     ),
     export: createGcpExport(contexts),
+    adopt: createGcpAdopt(contexts),
   };
 }
 
