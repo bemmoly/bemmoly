@@ -72,6 +72,48 @@ phone, and one view answers "what does a deploy here get". A secret's value show
 typed, in a monospaced box, so a pasted key can be checked; it is never shown again. Deleting
 asks first, since a secret cannot be brought back from here; saving a plain value offers Undo.
 
+## Settings tab
+
+**Primary job.** See how the application runs in each environment, apart from where, and
+change it there without a commit (`?tab=settings`).
+
+**What is on it.** A sentence on which value wins, then one card per environment: its name, its
+runtime, "One pod at a time may go during upgrades" where a disruption budget applies, Edit and
+(once something is set here) Clear, and a table of every setting with its value and where it came
+from (Set here, application.yaml for the environment, application.yaml, Default). A setting the
+runtime does not have says "Not on Cloud Run" or "Not on GKE Autopilot". Under the table, the
+release whose application.yaml was read.
+
+**Top three actions.**
+
+| Action | Mouse | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Change an environment's settings | Edit on its card (each field shows what an empty one falls back to) | Tab, Enter; Cmd+Enter saves | Tap |
+| Go back to the file and the defaults | Clear on its card, then confirm | Tab, Enter | Tap |
+| Read where a value came from | The From column | Tab through the table | Read |
+
+**States.** Loading: six skeleton rows. Error: "Deploy settings did not load" with Try again.
+Settings that contradict (min above max): the sentence in amber on the card, and saving is
+refused with it. No permission: the dialog shows the rule's sentence and whom to ask. Phone: the
+cards stack and the table keeps its three columns.
+
+**Choices recorded.** One card per environment, not a grid of environments by settings: five
+Prod regions do not fit a phone, and a card answers "what does a deploy here get". Saving
+replaces every setting made here, so the dialog starts from what is held and an empty field
+always means "follow the file".
+
+## Variable addresses
+
+**Primary job.** Let one service call another by name in every environment.
+
+**What is on it.** Under a plain value in the Add dialog, "Insert another application's address"
+(searchable, two choices per application: its address in the same environment and its public
+address) and a sentence saying callees deploy first. In the table, under such a value, one line
+per environment with the address filled in, or in amber why it cannot be yet.
+
+**Choices recorded.** The reference is text in the value, so it can sit inside a longer URL and
+the file, the API and the screen say the same thing.
+
 ## Where it runs
 
 **Primary job.** See and switch the runtime the application's next deploy uses in each

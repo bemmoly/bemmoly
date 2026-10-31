@@ -91,6 +91,10 @@ Paths by tier (stages in order, parallel environments stacked, what moves a rele
 how long it bakes) and every environment with its cloud, region and protection. Read only:
 the contract has no environment writes yet.
 
+**Runtime choice.** In New environment and Edit, "Applications run on" lists each runtime with
+one sentence on what it costs, repeats the chosen one's sentence under the field, and in Edit
+counts the applications following the default and names those that chose otherwise.
+
 ## Clusters
 
 **Primary job.** Give an environment the one cluster its applications on GKE deploy into, and

@@ -50,10 +50,11 @@ command changes nothing.
 for c in shop-dev shop-prod; do gcloud container clusters update "$c" --location "$REGION" --project "$PROJECT" --gateway-api=standard; done
 ```
 
-Turn on GKE's Secret Manager add-on too, so pods can read the application's secrets:
+Turn on GKE's Secret Manager add-on and its secret sync too, so pods can read the
+application's secrets as environment variables:
 
 ```sh
-for c in shop-dev shop-prod; do gcloud container clusters update "$c" --location "$REGION" --project "$PROJECT" --enable-secret-manager; done
+for c in shop-dev shop-prod; do gcloud container clusters update "$c" --location "$REGION" --project "$PROJECT" --enable-secret-manager --enable-secret-sync; done
 ```
 
 **You should see** `CHANNEL_STANDARD` from:
@@ -117,19 +118,25 @@ Cloud Run still serves Prod.
 Set a secret for Dev on the application's **Variables** tab, as in step 10 of
 [Ship your own project](your-own-project.md#10-secrets), then push and let it reach Dev.
 
-On GKE a secret is a file, not an environment variable. Kubernetes cannot fill a variable from a
-file, and Pipelines never puts a value into a Kubernetes Secret. GKE's Secret Manager add-on
-mounts each secret at the version the deploy recorded, at `/var/run/secrets/bemmoly/<NAME>`, and
-the variable `<NAME>_FILE` holds that path. Plain variables stay ordinary environment variables.
-Read `API_KEY` like this in Node:
+On GKE a secret reaches the pods as an environment variable by default, so code that reads
+`process.env.API_KEY` works unchanged. Pipelines never reads the value. Each revision gets a
+SecretProviderClass naming the secret at the version the deploy recorded, and a SecretSync that
+has GKE's Secret Manager add-on copy it into a Kubernetes Secret named after the revision. The
+container reads it with `secretKeyRef`. The value then also lives in the cluster, in etcd,
+readable by anyone who may read Secrets in that namespace.
+
+If that is not acceptable, set **Secrets as** to **Files** on the application's **Settings** tab
+(or `secretsAs: files` under `deploy` in `.bemmoly/application.yaml`). The add-on then mounts each
+secret at `/var/run/secrets/bemmoly/<NAME>`, `<NAME>_FILE` holds that path, and the value lives
+only in the pod's memory:
 
 ```js
 const apiKey = readFileSync(process.env.API_KEY_FILE, 'utf8');
 ```
 
-The pods run as a Kubernetes service account named after the application. At each deploy
-Pipelines grants that account's Workload Identity principal Secret Manager Secret Accessor on
-each secret the revision mounts, and nothing else.
+The pods, and the sync, run as a Kubernetes service account named after the application. At
+each deploy Pipelines grants that account's Workload Identity principal Secret Manager Secret
+Accessor on each secret the revision reads, and nothing else.
 
 **You should see** the revision's class name the secret by version, with no value:
 
@@ -141,15 +148,14 @@ kubectl -n "$GROUP" get secretproviderclass -o yaml | grep resourceName
 - resourceName: "projects/<PROJECT>/secrets/bemmoly-shop-API_KEY-dev/versions/1"
 ```
 
-And the file inside a pod, without printing it. Use the newest Deployment that
-`kubectl -n "$GROUP" get deploy` lists, and an image that has a shell:
+And the synced Secret holding one key per variable, without printing the value:
 
 ```sh
-kubectl -n "$GROUP" exec deploy/<newest> -- sh -c 'wc -c < "$API_KEY_FILE"'
+kubectl -n "$GROUP" get secret -o custom-columns=NAME:.metadata.name,KEYS:.data | grep "$APP"
 ```
 
-**You should see** the length of what you pasted. If the add-on is off, the deploy fails saying
-which command turns it on.
+**You should see** a Secret named after the newest revision with `API_KEY` among its keys. If the
+add-on or its sync is off, the deploy fails saying which command turns it on.
 
 ## 6. Switch Prod, and watch a canary on GKE
 
@@ -194,6 +200,12 @@ Clusters and delete them:
 ```sh
 for c in shop-dev shop-prod; do gcloud container clusters delete "$c" --location "$REGION" --project "$PROJECT" --quiet; done
 ```
+
+## Next: Stage on Cloud Run, Prod on GKE
+
+[Stage on Cloud Run, Prod on GKE](stage-and-prod.md) runs every application on Cloud Run at
+zero instances in Stage and on GKE Autopilot in Prod from the same definition, with scaling,
+health checks and service addresses set per environment.
 
 ## Next: move with no downtime
 
