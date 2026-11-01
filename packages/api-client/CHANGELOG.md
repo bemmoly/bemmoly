@@ -1,5 +1,11 @@
 # @bemmoly/api-client
 
+## 2.0.0
+
+### Patch Changes
+
+- @bemmoly/shared@2.0.0
+
 ## 1.6.1
 
 ### Patch Changes

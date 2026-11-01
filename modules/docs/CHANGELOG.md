@@ -1,5 +1,17 @@
 # @bemmoly/module-docs
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [f61eb12]
+  - @bemmoly/core@2.0.0
+  - @bemmoly/api-client@2.0.0
+  - @bemmoly/core-web@2.0.0
+  - @bemmoly/editor@2.0.0
+  - @bemmoly/shared@2.0.0
+  - @bemmoly/ui@2.0.0
+
 ## 1.6.1
 
 ### Patch Changes
