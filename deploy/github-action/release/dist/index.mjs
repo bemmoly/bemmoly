@@ -24719,6 +24719,12 @@ var personRefSchema = external_exports.object({
   avatarUrl: external_exports.string().nullable().optional()
 });
 var teamRefSchema = external_exports.object({ id: idSchema, name: external_exports.string() });
+var deployRuntimeSchema = external_exports.enum([
+  "cloud-run",
+  "gke-autopilot",
+  "gke-standard",
+  "attached-cluster"
+]);
 
 // ../../../modules/pipelines/shared/catalog.ts
 var domainColorSchema = external_exports.enum([
@@ -25070,7 +25076,9 @@ var environmentSchema = external_exports.object({
   /** Left to right on every screen that lays environments out. */
   position: external_exports.number().int(),
   cloudAccount: external_exports.object({ id: idSchema, externalId: external_exports.string(), name: external_exports.string() }).nullable(),
-  protection: environmentProtectionSchema
+  protection: environmentProtectionSchema,
+  /** What applications run on here unless they choose otherwise. */
+  defaultRuntime: deployRuntimeSchema.default("cloud-run")
 });
 var environmentRefSchema = external_exports.object({
   id: idSchema,
@@ -27057,7 +27065,9 @@ var createEnvironmentBodySchema = external_exports.object({
   region: regionSchema.nullable().default(null),
   /** Left to right; after the last environment when left out. */
   position: external_exports.number().int().min(0).max(1e4).optional(),
-  protection: protectionPatchSchema.optional()
+  protection: protectionPatchSchema.optional(),
+  /** Cloud Run when left out. */
+  defaultRuntime: deployRuntimeSchema.optional()
 });
 var updateEnvironmentBodySchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(80),
@@ -27065,7 +27075,8 @@ var updateEnvironmentBodySchema = external_exports.object({
   cloudAccountId: idSchema.nullable(),
   region: regionSchema.nullable(),
   position: external_exports.number().int().min(0).max(1e4),
-  protection: protectionPatchSchema
+  protection: protectionPatchSchema,
+  defaultRuntime: deployRuntimeSchema
 }).partial().refine((body) => Object.keys(body).length > 0, "Change at least one thing");
 var pathStepBodySchema = external_exports.object({
   environmentId: idSchema,
@@ -27179,7 +27190,12 @@ var applicationFileSchema = external_exports.object({
   dependsOn: external_exports.array(slugSchema).max(100).default([]),
   /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
   paths: external_exports.array(external_exports.string().min(1).max(300)).max(100).default([]),
-  pipeline: pipelineDefinitionSchema.optional()
+  pipeline: pipelineDefinitionSchema.optional(),
+  /**
+   * Where it runs, by environment key. A choice made in Pipelines wins over this, and this
+   * wins over the environment's default (shared/runtimes.ts).
+   */
+  runtimes: external_exports.record(slugSchema, deployRuntimeSchema).optional()
 });
 
 // ../../../modules/pipelines/shared/saved-views.ts
@@ -27341,6 +27357,84 @@ var variableTargetQuerySchema = external_exports.object({ environment: slugSchem
 var setVariableBodySchema = external_exports.object({
   kind: variableKindSchema,
   value: external_exports.string().min(1, "Give it a value").max(VARIABLE_VALUE_MAX)
+});
+
+// ../../../modules/pipelines/shared/clusters.ts
+var clusterModeSchema = external_exports.enum(["autopilot", "standard"]);
+var clusterOriginSchema = external_exports.enum(["created", "attached"]);
+var clusterStatusSchema = external_exports.enum(["creating", "ready", "failed"]);
+var clusterNameSchema = external_exports.string().trim().regex(/^[a-z]([-a-z0-9]{0,38}[a-z0-9])?$/, "Use lowercase letters, digits and dashes");
+var clusterLocationSchema = external_exports.string().trim().regex(/^[a-z]+-[a-z]+[0-9]+(-[a-z])?$/, "Name a region or zone such as us-central1");
+var clusterGatewaySchema = external_exports.object({ namespace: slugSchema, name: slugSchema });
+var clusterRefSchema = external_exports.object({
+  id: idSchema,
+  name: external_exports.string(),
+  mode: clusterModeSchema,
+  origin: clusterOriginSchema,
+  status: clusterStatusSchema
+});
+var clusterSchema = clusterRefSchema.extend({
+  connectionId: idSchema,
+  connectionName: external_exports.string(),
+  environment: environmentRefSchema,
+  projectId: external_exports.string(),
+  location: external_exports.string(),
+  /** "REGULAR" for the clusters Pipelines runs; whatever the owners chose for attached ones. */
+  releaseChannel: external_exports.string().nullable(),
+  gateway: clusterGatewaySchema.nullable(),
+  /** What the last check found, each a sentence saying what to grant or turn on. */
+  problems: external_exports.array(external_exports.string()),
+  lastCheckedAt: isoDateTimeSchema.nullable(),
+  createdAt: isoDateTimeSchema
+});
+var clustersResponseSchema = external_exports.object({ items: external_exports.array(clusterSchema) });
+var createClusterBodySchema = external_exports.object({
+  origin: external_exports.literal("created"),
+  environmentId: idSchema,
+  mode: clusterModeSchema.default("autopilot"),
+  /** "bemmoly-<environment>" when left out. */
+  name: clusterNameSchema.optional()
+});
+var attachClusterBodySchema = external_exports.object({
+  origin: external_exports.literal("attached"),
+  environmentId: idSchema,
+  projectId: projectIdSchema,
+  location: clusterLocationSchema,
+  name: clusterNameSchema,
+  gateway: clusterGatewaySchema.nullable().default(null)
+});
+var clusterBodySchema = external_exports.discriminatedUnion("origin", [
+  createClusterBodySchema,
+  attachClusterBodySchema
+]);
+var clusterParamsSchema = external_exports.object({ id: idSchema });
+
+// ../../../modules/pipelines/shared/runtimes.ts
+var runtimeSourceSchema = external_exports.enum(["pipelines", "file", "environment"]);
+var applicationRuntimeSchema = external_exports.object({
+  environment: environmentRefSchema,
+  /** What the next deploy uses. */
+  runtime: deployRuntimeSchema,
+  source: runtimeSourceSchema,
+  /** Chosen in Pipelines; null follows the file, then the environment. */
+  chosen: deployRuntimeSchema.nullable(),
+  /** What application.yaml names for this environment; null when it names nothing. */
+  file: deployRuntimeSchema.nullable(),
+  environmentDefault: deployRuntimeSchema,
+  /** The environment's cluster, when it has one. */
+  cluster: clusterRefSchema.nullable(),
+  /** Why the next deploy would fail, in one sentence saying what to do; null when it can go. */
+  problem: external_exports.string().nullable()
+});
+var applicationRuntimesResponseSchema = external_exports.object({
+  items: external_exports.array(applicationRuntimeSchema)
+});
+var setApplicationRuntimeBodySchema = external_exports.object({
+  runtime: deployRuntimeSchema.nullable()
+});
+var applicationRuntimeParamsSchema = external_exports.object({
+  key: slugSchema,
+  environment: slugSchema
 });
 
 // ../../../apps/pipelines-cli/src/clients/pipelines.ts
