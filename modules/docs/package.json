@@ -28,7 +28,7 @@
     "@tiptap/extension-collaboration-caret": "3.31.3",
     "@tiptap/pm": "3.31.3",
     "@tiptap/y-tiptap": "3.0.9",
-    "fastify": "5.12.5",
+    "fastify": "5.12.6",
     "react": "19.3.0",
     "y-protocols": "1.0.7",
     "yjs": "13.6.32",
@@ -44,8 +44,8 @@
     "pdfjs-dist": "6.3.289",
     "pino": "10.4.0",
     "react-dom": "19.3.0",
-    "testcontainers": "12.2.0",
+    "testcontainers": "12.2.1",
     "vite": "8.3.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }
