@@ -1,4 +1,9 @@
-import type { CapacityQuery, CreatePoolBody, StreamEvent } from '@bemmoly/module-pipelines/shared';
+import type {
+  CapacityQuery,
+  CreatePoolBody,
+  StreamEvent,
+  UpdatePoolBody,
+} from '@bemmoly/module-pipelines/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { platformKeys } from '../api/platform.ts';
@@ -32,6 +37,11 @@ export function usePoolWrites() {
   return {
     create: useMutation({
       mutationFn: (body: CreatePoolBody) => api.platform.createPool(body),
+      onSettled: settle,
+    }),
+    update: useMutation({
+      mutationFn: ({ key, body }: { key: string; body: UpdatePoolBody }) =>
+        api.platform.updatePool(key, body),
       onSettled: settle,
     }),
     rotate: useMutation({ mutationFn: (key: string) => api.platform.rotatePoolToken(key) }),

@@ -12,7 +12,8 @@ import {
   type EnvironmentPath,
 } from '../../../../shared/environments.ts';
 import type { Tier } from '../../../../shared/common.ts';
-import { requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
+import { personOf, requireAccess, requireDatabase, type PipelinesServiceDeps } from '../deps.ts';
+import { openFrontDoor } from '../front-doors/index.ts';
 import { selectEnvironments } from './read.ts';
 import { selectPath } from './paths.ts';
 
@@ -81,20 +82,24 @@ export function createEnvironmentWrites(deps: PipelinesServiceDeps) {
       try {
         await db`
           insert into pipeline_environments
-            (key, name, class, provider, cloud_account_id, region, position, protection)
+            (key, name, class, provider, cloud_account_id, region, position, protection,
+             default_runtime)
           values (${body.key}, ${body.name}, ${body.class}, ${body.provider},
             ${body.cloudAccountId}, ${body.region},
             coalesce(${body.position ?? null}::int,
               (select coalesce(max(position) + 1, 0) from pipeline_environments
                where archived_at is null)),
-            ${JSON.stringify(protection)}::jsonb)`;
+            ${JSON.stringify(protection)}::jsonb, ${body.defaultRuntime ?? 'cloud-run'})`;
       } catch (error) {
         if (isUniqueViolation(error)) {
           throw new ConflictError(`An environment called ${body.key} exists already`);
         }
         throw error;
       }
-      return one(db, body.key);
+      const created = await one(db, body.key);
+      // Prod moves between runtimes with no downtime from its first day.
+      if (body.class === 'prod') await openFrontDoor(db, created.id, personOf(ctx.actor));
+      return created;
     },
 
     async update(ctx: RequestContext, key: string, body: UpdateEnvironment): Promise<Environment> {
@@ -117,6 +122,7 @@ export function createEnvironmentWrites(deps: PipelinesServiceDeps) {
             cloud_account_id = case when ${body.cloudAccountId !== undefined}
               then ${body.cloudAccountId ?? null}::uuid else cloud_account_id end,
             protection = coalesce(${protection ? JSON.stringify(protection) : null}::jsonb, protection),
+            default_runtime = coalesce(${body.defaultRuntime ?? null}, default_runtime),
             updated_at = now()
           where id = ${current.id}`;
         // A project chosen here wins over one the landing zone mapped for every domain.

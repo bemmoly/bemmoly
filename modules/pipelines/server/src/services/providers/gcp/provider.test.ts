@@ -52,8 +52,13 @@ describe('the Google Cloud connection check', () => {
     const check = await parts(provider.connection).verify(connection);
     expect(check.ok).toBe(false);
     expect(check.problems).toEqual([
-      expect.stringContaining('Folder Creator and Project Creator on organization 583920174411'),
-      expect.stringContaining('Billing Account User'),
+      expect.stringContaining(
+        'Project Creator (roles/resourcemanager.projectCreator) on organization 583920174411',
+      ),
+      expect.stringContaining(
+        'Folder Creator (roles/resourcemanager.folderCreator) on organization 583920174411',
+      ),
+      expect.stringContaining('Billing Account User (roles/billing.user)'),
     ]);
     replay.verify({ allUsed: true });
   });
@@ -85,14 +90,16 @@ describe('Google Cloud folders and projects', () => {
     replay.verify({ allUsed: true });
   });
 
-  it('counts billing-linked projects against the quota', async () => {
+  it('blocks on a quota only when an admin recorded one', async () => {
     const { replay, provider } = replaying(loadFixture('org'));
     const org = parts(provider.org);
-    expect(await org.checkQuota(connection, 2)).toEqual([]);
-    const [problem] = await org.checkQuota(connection, 3);
+    expect(await org.checkQuota(connection, 30)).toEqual([]);
+    const recorded = { ...connection, config: { ...connection.config, projectQuota: 5 } };
+    expect(await org.checkQuota(recorded, 2)).toEqual([]);
+    const [problem] = await org.checkQuota(recorded, 3);
     expect(problem).toContain('needs 3 new projects');
     expect(problem).toContain('can pay for 2 more (3 of 5 in use)');
-    expect(problem).toContain('billing quota increase');
+    expect(problem).toContain('https://support.google.com/code/contact/billing_quota_increase');
     replay.verify();
   });
 
@@ -120,7 +127,7 @@ describe('the Google Cloud landing zone', () => {
     const observed = await zone.apply(connection, deployer);
     expect(observed).toEqual({
       name: 'deployer',
-      roles: ['roles/iam.serviceAccountUser', 'roles/monitoring.viewer', 'roles/run.developer'],
+      roles: ['roles/iam.serviceAccountUser', 'roles/monitoring.viewer', 'roles/run.admin'],
       impersonated: true,
     });
     expect(zone.diff(deployer, observed)).toEqual([]);

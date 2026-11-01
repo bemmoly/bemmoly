@@ -2,6 +2,8 @@ import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared'
 import type { Executors, StepExecutor } from '../executors/index.ts';
 import { stripAnsi } from '../utils/lines.ts';
 import type { SecretMasker } from '../utils/mask.ts';
+import { buildArgsProblem } from './build-args.ts';
+import { kanikoCommand, kanikoProblem } from './build-kaniko.ts';
 import { BUILD_ACTION, BuildExecutor, buildCommand, isBuildAction } from './build-step.ts';
 
 /** Words that mark a line as the error a person would want to read first. */
@@ -41,7 +43,8 @@ export interface PreparedStep {
 
 /**
  * Picks how a step runs: its `run` through the step executor, `bemmoly/build` through the docker
- * CLI on this machine, anything else refused with a message naming it.
+ * CLI on this machine (or through Kaniko beside the runner, in a pod with no daemon), anything
+ * else refused with a message naming it.
  */
 export function prepareStep(
   job: ClaimedJob,
@@ -50,6 +53,23 @@ export function prepareStep(
   allowBuildPaths: readonly string[] = [],
 ): PreparedStep | { refusal: string } {
   if (step.uses) {
+    const argsProblem = isBuildAction(step.uses) ? buildArgsProblem(step) : null;
+    if (argsProblem) return { refusal: argsProblem };
+    if (isBuildAction(step.uses) && executors.builder) {
+      const builder = executors.builder();
+      if (!builder) {
+        return {
+          refusal:
+            'This pod has no container for image builds. Run the job again, so its pod is made for its steps',
+        };
+      }
+      const problem = kanikoProblem(step);
+      if (problem) return { refusal: problem };
+      return {
+        executor: new BuildExecutor(builder, allowBuildPaths),
+        step: { ...step, run: kanikoCommand(job, step) },
+      };
+    }
     if (isBuildAction(step.uses)) {
       return {
         executor: new BuildExecutor(executors.host(), allowBuildPaths),

@@ -4,9 +4,11 @@ import { createBudgetsClient } from './budgets.ts';
 import { createCloudBuildClient } from './cloud-build.ts';
 import { createCloudRunClient } from './cloud-run.ts';
 import { createComputeClient } from './compute.ts';
+import { createContainerClient } from './container.ts';
 import { createGcpHttp, type GcpTokenSource, type GcpTransport } from './http.ts';
 import { createIamCredentialsClient } from './iam-credentials.ts';
 import { createIamClient } from './iam.ts';
+import { createLoadBalancingClient } from './load-balancing.ts';
 import { createLoggingClient } from './logging.ts';
 import { createMonitoringClient } from './monitoring.ts';
 import { DEFAULT_POLL, type PollOptions } from './operations.ts';
@@ -41,17 +43,38 @@ export function createGcpClients(options: GcpClientOptions) {
     monitoring: createMonitoringClient(http),
     cloudBuild: createCloudBuildClient(http),
     compute: createComputeClient(http, poll),
+    loadBalancing: createLoadBalancingClient(http, poll),
     logging: createLoggingClient(http),
+    container: createContainerClient(http, poll),
+    /** The identity these clients act as, for APIs outside Google's, such as a cluster's. */
+    tokens: options.tokens,
   };
 }
 
 export type GcpClients = ReturnType<typeof createGcpClients>;
 
-export { GcpApiError, type GcpTokenSource, type GcpTransport } from './http.ts';
+export { fetchTransport, GcpApiError, type GcpTokenSource, type GcpTransport } from './http.ts';
 export { createTokenSource, gcpCredentialsSchema, type GcpCredentials } from './auth.ts';
 export { impersonatedTokens } from './iam-credentials.ts';
 export { serviceAccountEmail } from './iam.ts';
-export { hasBinding, serviceAccountMember, withBinding, type IamPolicy } from './policy.ts';
+export type { GcpProject } from './resource-manager.ts';
+export {
+  hasBinding,
+  principalMember,
+  serviceAccountMember,
+  withBinding,
+  type IamPolicy,
+} from './policy.ts';
 export { LATEST_TARGET, REVISION_TARGET, runServiceName, type RunService } from './cloud-run.ts';
 export { dockerHostPath, parseDockerPath, repositoryName } from './artifact-registry.ts';
 export type { PollOptions } from './operations.ts';
+export { linkOf, type LoadBalancingClient, type Place } from './load-balancing.ts';
+export {
+  gatewayApiOn,
+  gkeClusterName,
+  secretManagerOn,
+  secretSyncOn,
+  type ContainerClient,
+  type GkeCluster,
+  type GkeOperation,
+} from './container.ts';

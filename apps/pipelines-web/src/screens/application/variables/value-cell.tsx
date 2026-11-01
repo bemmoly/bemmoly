@@ -8,7 +8,7 @@ import type { VariableRow } from './rows.ts';
 /**
  * A value as the table shows it. A plain one edits where it is shown: Enter saves, Escape
  * leaves it. A secret shows that it is set and never what it is; one still waiting to move into
- * the store says why.
+ * the store says why, and one copied without its value says it needs one.
  */
 export function ValueCell({
   row,
@@ -27,6 +27,21 @@ export function ValueCell({
   const [editing, setEditing] = useState<string | null>(null);
   const { variable } = row;
   if (variable.kind === 'secret') {
+    if (variable.state === 'needed') {
+      return (
+        <span className="flex min-w-0 items-center gap-2 text-12">
+          <span className="flex items-center gap-1.5 text-amber-tx">
+            <Icon name="warning" size={12} />
+            {t('pipelines.variables.needed')}
+          </span>
+          {canChange && !row.inherited && (
+            <Button size="xs" variant="ghost" onClick={onReplace}>
+              {t('pipelines.variables.setValue')}
+            </Button>
+          )}
+        </span>
+      );
+    }
     if (variable.state === 'moving') {
       return (
         <span className="flex min-w-0 flex-col text-12 leading-card">
@@ -82,7 +97,25 @@ export function ValueCell({
     );
   }
   const text = (
-    <span className="min-w-0 truncate font-mono text-12 text-tx">{variable.value ?? ''}</span>
+    <span className="flex min-w-0 flex-col leading-card">
+      <span className="min-w-0 truncate font-mono text-12 text-tx">{variable.value ?? ''}</span>
+      {row.resolved.map((value) => (
+        <span
+          key={value.environment}
+          className={`min-w-0 truncate text-11 ${value.problem ? 'text-amber-tx' : 'text-tx-3'}`}
+        >
+          {value.problem
+            ? t('pipelines.variables.resolvedProblem', {
+                environment: value.environment,
+                problem: value.problem,
+              })
+            : t('pipelines.variables.resolvedValue', {
+                environment: value.environment,
+                value: value.value ?? '',
+              })}
+        </span>
+      ))}
+    </span>
   );
   if (!canChange || row.inherited) return text;
   return (

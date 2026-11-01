@@ -1,6 +1,7 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
-import type { TemplateInput } from '../../../../shared/pipeline-spec.ts';
+import type { PipelineDefinition, TemplateInput } from '../../../../shared/pipeline-spec.ts';
+import { settingsSourceSchema } from '../../../../shared/repository-yaml.ts';
 import type { ApplicationPipeline, RunInputField } from '../../../../shared/tests.ts';
 import { isoOrNull } from '../../utils/time.ts';
 import { asWritten, definitionOf, templateLookup } from './templates.ts';
@@ -8,7 +9,8 @@ import { asWritten, definitionOf, templateLookup } from './templates.ts';
 /*
  * GET /applications/:key/pipeline: what "Run pipeline…" draws (one field per input, the
  * template's first, then the application's own) and the application's schedules with when
- * each next starts a run.
+ * each next starts a run. It also says where the application's settings come from, and
+ * whether it is a library: a pipeline with no build and no deploy only checks the code.
  */
 
 function field(name: string, input: TemplateInput, fromTemplate: boolean): RunInputField {
@@ -21,6 +23,11 @@ function field(name: string, input: TemplateInput, fromTemplate: boolean): RunIn
     options: input.options ?? null,
     fromTemplate,
   };
+}
+
+/** A pipeline written in place builds or deploys something; one extending a template asks it. */
+function shipsItself(definition: PipelineDefinition): boolean {
+  return 'extends' in definition ? true : Boolean(definition.build ?? definition.deploy);
 }
 
 export async function applicationPipeline(
@@ -36,18 +43,22 @@ export async function applicationPipeline(
       pipeline: unknown;
       pipeline_source: 'repository' | 'catalog' | null;
       default_branch: string | null;
+      settings_sources: unknown;
     }[]
   >`
-    select a.id, a.key, a.name, a.tier, a.pipeline, a.pipeline_source, p.default_branch
+    select a.id, a.key, a.name, a.tier, a.pipeline, a.pipeline_source, p.default_branch,
+      a.settings_sources
     from pipeline_applications a left join pipeline_repositories p on p.id = a.repository_id
     where a.key = ${key} and a.archived_at is null`;
   if (!app) throw new NotFoundError(`There is no application called ${key}`);
   const definition = definitionOf(app.pipeline);
   const inputs: RunInputField[] = [];
   let template: ApplicationPipeline['template'] = null;
+  let ships = definition !== null && shipsItself(definition);
   if (definition && 'extends' in definition) {
     template = definition.extends;
     const spec = await templateLookup(sql)(definition.extends);
+    ships = Boolean(spec?.build ?? spec?.deploy ?? definition.build);
     for (const [name, input] of Object.entries(spec?.inputs ?? {})) {
       if (definition.inputs[name]) continue;
       const passed = definition.with[name];
@@ -82,5 +93,7 @@ export async function applicationPipeline(
       nextRunAt: isoOrNull(row.next_run_at),
     })),
     definition: app.pipeline ? asWritten(app.pipeline) : null,
+    settings: settingsSourceSchema.safeParse(app.settings_sources).data ?? null,
+    library: definition !== null && !ships,
   };
 }

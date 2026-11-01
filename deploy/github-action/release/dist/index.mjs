@@ -24719,6 +24719,12 @@ var personRefSchema = external_exports.object({
   avatarUrl: external_exports.string().nullable().optional()
 });
 var teamRefSchema = external_exports.object({ id: idSchema, name: external_exports.string() });
+var deployRuntimeSchema = external_exports.enum([
+  "cloud-run",
+  "gke-autopilot",
+  "gke-standard",
+  "attached-cluster"
+]);
 
 // ../../../modules/pipelines/shared/catalog.ts
 var domainColorSchema = external_exports.enum([
@@ -24961,7 +24967,8 @@ var discoverySignalSchema = external_exports.enum([
   "gradle",
   "bazel",
   "backstage",
-  "application-yaml"
+  "application-yaml",
+  "shared-dockerfile"
 ]);
 var proposalStateSchema = external_exports.enum(["proposed", "accepted", "dismissed"]);
 var discoveryProposalSchema = external_exports.object({
@@ -24982,6 +24989,12 @@ var discoveryProposalSchema = external_exports.object({
   }).nullable(),
   /** From a Backstage system or an existing application.yaml; the person can change it. */
   group: groupPathSchema.nullable(),
+  /** The Dockerfile and args it shares with other folders; it then goes in repository.yaml. */
+  sharedBuild: external_exports.object({
+    dockerfile: external_exports.string(),
+    context: external_exports.string(),
+    args: external_exports.record(external_exports.string(), external_exports.string())
+  }).nullable().default(null),
   state: proposalStateSchema,
   applicationKey: slugSchema.nullable(),
   createdAt: isoDateTimeSchema
@@ -24991,7 +25004,9 @@ var listProposalsQuerySchema = keysetQuerySchema.extend({
   state: proposalStateSchema.default("proposed")
 });
 var proposalsPageSchema = keysetPageSchema(discoveryProposalSchema).extend({
-  total: external_exports.number().int()
+  total: external_exports.number().int(),
+  /** The repository file accepting would propose, per repository with shared builds. */
+  repositoryFiles: external_exports.array(external_exports.object({ repository: external_exports.string(), path: external_exports.string(), content: external_exports.string() })).default([])
 });
 var acceptProposalsBodySchema = external_exports.object({
   items: external_exports.array(
@@ -25070,7 +25085,9 @@ var environmentSchema = external_exports.object({
   /** Left to right on every screen that lays environments out. */
   position: external_exports.number().int(),
   cloudAccount: external_exports.object({ id: idSchema, externalId: external_exports.string(), name: external_exports.string() }).nullable(),
-  protection: environmentProtectionSchema
+  protection: environmentProtectionSchema,
+  /** What applications run on here unless they choose otherwise. */
+  defaultRuntime: deployRuntimeSchema.default("cloud-run")
 });
 var environmentRefSchema = external_exports.object({
   id: idSchema,
@@ -25139,6 +25156,73 @@ var overviewSchema = external_exports.object({
   }),
   /** The person, for "Good morning, Priya". */
   me: external_exports.object({ id: idSchema, name: external_exports.string(), firstName: external_exports.string() })
+});
+
+// ../../../modules/pipelines/shared/image-reference.ts
+var COMPONENT = "[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*";
+var DOMAIN_PART = "(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])";
+var DOMAIN = `${DOMAIN_PART}(?:\\.${DOMAIN_PART})*(?::[0-9]+)?`;
+var NAME = `(?:${DOMAIN}/)?${COMPONENT}(?:/${COMPONENT})*`;
+var TAG = "\\w[\\w.-]{0,127}";
+var DIGEST = "[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,}";
+var REFERENCE = new RegExp(`^${NAME}(?::${TAG})?(?:@${DIGEST})?$`);
+var REPOSITORY = new RegExp(`^${NAME}$`);
+var MAX_LENGTH = 255;
+function isImageReference(value) {
+  return value.length <= MAX_LENGTH && REFERENCE.test(value);
+}
+
+// ../../../modules/pipelines/shared/machines.ts
+var cloudBuildMachineSchema = external_exports.enum([
+  "default",
+  "e2-medium",
+  "e2-highcpu-8",
+  "e2-highcpu-32",
+  "n1-highcpu-8",
+  "n1-highcpu-32"
+]);
+var cloudBuildPoolBodySchema = external_exports.object({
+  /** The cloud account (project) builds run in: the CI project, or an attached one. */
+  account: idSchema,
+  region: external_exports.string().trim().regex(/^[a-z]+(?:-[a-z]+)*\d+$/, "Use a region such as us-central1 or asia-south1"),
+  image: external_exports.string().trim().refine(isImageReference, "Use an image such as us-docker.pkg.dev/acme-ci/bemmoly/runner:1"),
+  machine: cloudBuildMachineSchema.default("default"),
+  /** The service account builds run as; it needs nothing beyond writing logs and pushing. */
+  serviceAccount: external_exports.email(
+    "Use the build service account email, such as builder@acme-ci.iam.gserviceaccount.com"
+  )
+});
+var cloudBuildPoolSchema = external_exports.object({
+  account: external_exports.object({ id: idSchema, externalId: external_exports.string(), name: external_exports.string() }),
+  region: external_exports.string(),
+  image: external_exports.string(),
+  machine: cloudBuildMachineSchema,
+  serviceAccount: external_exports.string()
+});
+var machineStateSchema = external_exports.enum([
+  "starting",
+  "running",
+  "finished",
+  "failed",
+  "cancelled"
+]);
+var poolMachineSchema = external_exports.object({
+  id: idSchema,
+  jobId: idSchema,
+  runId: idSchema,
+  /** "checkout-api · Build". */
+  what: external_exports.string(),
+  state: machineStateSchema,
+  /** The cloud's id for it: a Cloud Build build id. */
+  ref: external_exports.string().nullable(),
+  logUrl: external_exports.string().nullable(),
+  startedAt: isoDateTimeSchema
+});
+var jobMachineSchema = external_exports.object({
+  state: machineStateSchema,
+  ref: external_exports.string().nullable(),
+  logUrl: external_exports.string().nullable(),
+  error: external_exports.string().nullable()
 });
 
 // ../../../modules/pipelines/shared/runs.ts
@@ -25218,7 +25302,9 @@ var jobSchema = external_exports.object({
   readyAt: isoDateTimeSchema.nullable(),
   startedAt: isoDateTimeSchema.nullable(),
   finishedAt: isoDateTimeSchema.nullable(),
-  steps: external_exports.array(stepSchema)
+  steps: external_exports.array(stepSchema),
+  /** The machine Pipelines started for this job, such as a Cloud Build build; else null. */
+  machine: jobMachineSchema.nullable()
 });
 var runSummarySchema = external_exports.object({
   id: idSchema,
@@ -25402,6 +25488,136 @@ var logAppendedSchema = external_exports.object({
 });
 var jobParamsSchema = external_exports.object({ id: idSchema });
 
+// ../../../modules/pipelines/shared/build-args.ts
+var EXPRESSION = /\$\{\{\s*([^}]*?)\s*\}\}/g;
+var ALLOWED_EXPRESSION = /^(app\.(name|path)|inputs\.[a-zA-Z_][a-zA-Z0-9_]*)$/;
+var SECRET_NAME = /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY|ACCESS_?KEY|(^|_)KEY$)/i;
+function looksLikeSecretName(name) {
+  return SECRET_NAME.test(name);
+}
+var BUILD_ARG_NAME = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
+var buildArgsSchema = external_exports.record(external_exports.string(), external_exports.string().max(2e3)).superRefine((args, ctx) => {
+  const names = Object.keys(args);
+  if (names.length > 50) {
+    ctx.addIssue({ code: "custom", message: "A build takes at most 50 args" });
+  }
+  for (const [name, value] of Object.entries(args)) {
+    if (!BUILD_ARG_NAME.test(name)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: "Name build args with letters, digits and underscores, such as SERVICE"
+      });
+      continue;
+    }
+    const expressions = [...value.matchAll(EXPRESSION)].map((match) => match[1] ?? "");
+    const unknown2 = expressions.find((expression) => !ALLOWED_EXPRESSION.test(expression));
+    if (unknown2 !== void 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: `Build args take \${{ app.name }}, \${{ app.path }} or \${{ inputs.<name> }}, not \${{ ${unknown2} }}`
+      });
+    } else if (looksLikeSecretName(name) && expressions.some((expression) => !expression.startsWith("app."))) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: `${name} looks like a secret and build args stay in the image history, so mount the secret in a step instead`
+      });
+    }
+  }
+});
+var buildOverrideSchema = external_exports.object({
+  dockerfile: external_exports.string().optional(),
+  context: external_exports.string().optional(),
+  platforms: external_exports.array(external_exports.string()).optional(),
+  pool: slugSchema.optional(),
+  args: buildArgsSchema.optional()
+});
+
+// ../../../modules/pipelines/shared/deploy-settings.ts
+var secretsAsSchema = external_exports.enum(["env", "files"]);
+var cpuSchema = external_exports.union([
+  external_exports.number().positive().max(64),
+  external_exports.string().trim().regex(/^\d+(\.\d+)?m?$/, "Write CPU as 1, 0.5 or 500m")
+]);
+var memorySchema = external_exports.string().trim().regex(/^\d+(\.\d+)?(Ki|Mi|Gi|Ti|K|M|G|T)?$/, "Write memory as 512Mi or 2Gi");
+var pathSchema = external_exports.string().trim().startsWith("/", "A path starts with /").max(300);
+var deploySettingsSchema = external_exports.object({
+  scaling: external_exports.object({
+    /** Instances on Cloud Run, replicas on GKE. */
+    min: external_exports.number().int().min(0).max(1e3),
+    max: external_exports.number().int().min(1).max(1e3),
+    /** Cloud Run only: requests one instance takes at once. */
+    concurrency: external_exports.number().int().min(1).max(1e3),
+    /** GKE only: the CPU use, in percent of requests, the autoscaler aims for. */
+    cpuTarget: external_exports.number().int().min(1).max(100)
+  }).partial().optional(),
+  resources: external_exports.object({ cpu: cpuSchema, memory: memorySchema }).partial().optional(),
+  port: external_exports.number().int().min(1).max(65535).optional(),
+  healthcheck: external_exports.object({
+    /** Liveness: a failing answer restarts the instance or pod. */
+    path: pathSchema,
+    /** Readiness: no traffic until it answers. The liveness path when absent. */
+    ready: pathSchema
+  }).partial().optional(),
+  secretsAs: secretsAsSchema.optional()
+});
+var DEPLOY_SETTING_FIELDS = [
+  "scaling.min",
+  "scaling.max",
+  "scaling.concurrency",
+  "scaling.cpuTarget",
+  "resources.cpu",
+  "resources.memory",
+  "port",
+  "healthcheck.path",
+  "healthcheck.ready",
+  "secretsAs"
+];
+var deploySettingFieldSchema = external_exports.enum(DEPLOY_SETTING_FIELDS);
+var deploySettingSourceSchema = external_exports.enum([
+  "pipelines",
+  "file-environment",
+  "file",
+  "default"
+]);
+var deploySettingValueSchema = external_exports.union([external_exports.number(), external_exports.string()]).nullable();
+var deploySettingEntrySchema = external_exports.object({
+  field: deploySettingFieldSchema,
+  /** What the next deploy uses; null when nothing sets it and the runtime has no default. */
+  value: deploySettingValueSchema,
+  source: deploySettingSourceSchema,
+  /** False when this runtime has no such setting, such as concurrency on GKE. */
+  applies: external_exports.boolean()
+});
+var applicationDeploySettingsSchema = external_exports.object({
+  environment: environmentRefSchema,
+  runtime: deployRuntimeSchema,
+  /** The settings made in Pipelines here, exactly as stored. */
+  settings: deploySettingsSchema,
+  effective: external_exports.array(deploySettingEntrySchema),
+  /** GKE keeps all but one replica up through upgrades when it runs two or more. */
+  disruptionBudget: external_exports.boolean(),
+  /** The release whose application.yaml the file values were read from; null before one. */
+  release: external_exports.object({ id: external_exports.string(), version: external_exports.string() }).nullable(),
+  /** Why the next deploy would refuse these settings, in one sentence; null when fine. */
+  problem: external_exports.string().nullable()
+});
+var applicationDeploySettingsResponseSchema = external_exports.object({
+  items: external_exports.array(applicationDeploySettingsSchema)
+});
+var deploySettingsParamsSchema = external_exports.object({ key: slugSchema, environment: slugSchema });
+var environmentRuntimeItemSchema = external_exports.object({
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  runtime: deployRuntimeSchema,
+  /** "environment" follows the default; the others override it. */
+  source: external_exports.enum(["pipelines", "file", "environment"])
+});
+var environmentRuntimesResponseSchema = external_exports.object({
+  items: external_exports.array(environmentRuntimeItemSchema)
+});
+
 // ../../../modules/pipelines/shared/pipeline-spec.ts
 var scalarSchema = external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean()]);
 var templateRefSchema = external_exports.string().trim().regex(
@@ -25450,7 +25666,9 @@ var buildSpecSchema = external_exports.object({
   context: external_exports.string().default("."),
   platforms: external_exports.array(external_exports.string()).default(["linux/amd64"]),
   /** The runner pool that builds the image; the organisation's default when absent. */
-  pool: slugSchema.optional()
+  pool: slugSchema.optional(),
+  /** `--build-arg` values; see build-args.ts for what they may name. */
+  args: buildArgsSchema.default({})
 });
 var pipelineStepSpecSchema = external_exports.object({
   name: external_exports.string().min(1).max(120),
@@ -25485,10 +25703,17 @@ var deploySpecSchema = external_exports.object({
   secrets: external_exports.record(envNameSchema, external_exports.string().min(1)).default({}),
   healthcheck: external_exports.object({
     path: external_exports.string().startsWith("/").default("/healthz"),
-    timeoutSeconds: external_exports.number().int().min(1).max(300).default(5)
+    timeoutSeconds: external_exports.number().int().min(1).max(300).default(5),
+    /** Readiness, when it differs from the liveness `path`. */
+    ready: external_exports.string().startsWith("/").optional()
   }).optional(),
   /** Anyone on the internet may call it; otherwise callers need an identity token. */
-  public: external_exports.boolean().optional()
+  public: external_exports.boolean().optional(),
+  /** Instances or replicas, and what the autoscaler aims for (shared/deploy-settings.ts). */
+  scaling: deploySettingsSchema.shape.scaling,
+  secretsAs: secretsAsSchema.optional(),
+  /** Settings for one environment by its key, over the ones above. */
+  environments: external_exports.record(slugSchema, deploySettingsSchema).optional()
 });
 var pipelineTemplateSchema = external_exports.object({
   inputs: external_exports.record(external_exports.string(), templateInputSchema).default({}),
@@ -25506,6 +25731,8 @@ var pipelineExtendsSchema = external_exports.object({
   /** Added after the template's steps; locked template steps always stay. */
   test: external_exports.array(pipelineStepSpecSchema).optional(),
   deploy: deploySpecSchema.partial().optional(),
+  /** Changes to the template's build, such as a Dockerfile or build args. */
+  build: buildOverrideSchema.optional(),
   /** More inputs for the run form, beside the template's. */
   inputs: external_exports.record(external_exports.string(), templateInputSchema).default({}),
   schedules: external_exports.array(scheduleSpecSchema).max(20).optional()
@@ -25550,10 +25777,17 @@ var resolvedPipelineSchema = external_exports.object({
 // ../../../modules/pipelines/shared/runner.ts
 var registerRunnerBodySchema = external_exports.object({
   /** The pool's registration token; hashed at rest and rotatable. */
-  poolToken: external_exports.string().min(16).max(200),
+  poolToken: external_exports.string().min(16).max(200).optional(),
+  /**
+   * A one-time token for one job, which Pipelines hands to a machine it starts for that job.
+   * It registers once; the runner it makes claims that job alone and ends with it.
+   */
+  launchToken: external_exports.string().min(16).max(200).optional(),
   name: external_exports.string().min(1).max(120),
   version: external_exports.string().min(1).max(40),
   labels: external_exports.array(external_exports.string().max(60)).max(50).default([])
+}).refine((body) => body.poolToken === void 0 !== (body.launchToken === void 0), {
+  message: "Send a pool token or a launch token"
 });
 var registerRunnerResponseSchema = external_exports.object({
   runnerId: idSchema,
@@ -25679,6 +25913,86 @@ var runnerStepParamsSchema = external_exports.object({
   position: external_exports.coerce.number().int().min(0)
 });
 
+// ../../../modules/pipelines/shared/application-yaml.ts
+var ownerRefSchema = external_exports.string().trim().regex(/^team\/[a-z0-9][a-z0-9-]{0,62}$/, 'Owners look like "team/payments"');
+var applicationFileSchema = external_exports.object({
+  name: slugSchema,
+  /** The group's key; the group names its domain, so `domain` is only a cross-check. */
+  group: slugSchema,
+  domain: slugSchema.optional(),
+  owner: ownerRefSchema.optional(),
+  tier: tierSchema.default(2),
+  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).default([]),
+  lifecycle: lifecycleSchema.default("production"),
+  runtime: runtimeSchema.optional(),
+  description: external_exports.string().max(2e3).optional(),
+  /** Application keys this one calls; feeds coordinated releases and "include callers". */
+  dependsOn: external_exports.array(slugSchema).max(100).default([]),
+  /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
+  paths: external_exports.array(external_exports.string().min(1).max(300)).max(100).default([]),
+  pipeline: pipelineDefinitionSchema.optional(),
+  /**
+   * Where it runs, by environment key. A choice made in Pipelines wins over this, and this
+   * wins over the environment's default (shared/runtimes.ts).
+   */
+  runtimes: external_exports.record(slugSchema, deployRuntimeSchema).optional()
+});
+
+// ../../../modules/pipelines/shared/repository-yaml.ts
+var folderSchema = external_exports.string().trim().max(300).refine(
+  (path) => !path.startsWith("/") && !path.split("/").some((part) => part === ".."),
+  "Use a folder inside the repository, such as services/orders"
+).transform((path) => path.replace(/^\.\/?/, "").replace(/\/+$/, ""));
+var pathFilterSchema = external_exports.array(external_exports.string().min(1).max(300)).max(100);
+var repositoryDefaultsSchema = external_exports.strictObject({
+  build: buildOverrideSchema.optional(),
+  /** Added to every application's own `paths`. */
+  paths: pathFilterSchema.optional(),
+  /** Steps or `extends`, as application.yaml writes them; checked once merged. */
+  pipeline: external_exports.record(external_exports.string(), external_exports.unknown()).optional(),
+  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).optional(),
+  group: slugSchema.optional(),
+  domain: slugSchema.optional(),
+  owner: ownerRefSchema.optional()
+});
+var repositoryEntrySchema = external_exports.looseObject({
+  name: slugSchema,
+  path: folderSchema,
+  build: external_exports.record(external_exports.string(), external_exports.unknown()).nullable().optional()
+});
+var repositoryFileSchema = external_exports.strictObject({
+  defaults: repositoryDefaultsSchema.default({}),
+  applications: external_exports.array(repositoryEntrySchema).max(500).default([])
+}).superRefine((file2, ctx) => {
+  const names = /* @__PURE__ */ new Set();
+  const paths = /* @__PURE__ */ new Set();
+  file2.applications.forEach((entry, index) => {
+    if (names.has(entry.name)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["applications", index, "name"],
+        message: `${entry.name} is listed twice; application names are unique`
+      });
+    }
+    if (paths.has(entry.path)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["applications", index, "path"],
+        message: `Two applications use the folder "${entry.path}"; give each its own`
+      });
+    }
+    names.add(entry.name);
+    paths.add(entry.path);
+  });
+});
+var settingOriginSchema = external_exports.enum(["file", "central", "defaults"]);
+var settingsSourceSchema = external_exports.object({
+  /** The file that defines it: its own application.yaml, or the repository file. */
+  file: external_exports.string(),
+  /** Top-level settings by name, with `build` for the pipeline's build. */
+  fields: external_exports.record(external_exports.string(), settingOriginSchema)
+});
+
 // ../../../modules/pipelines/shared/tests.ts
 var runInputFieldSchema = external_exports.object({
   name: external_exports.string(),
@@ -25704,7 +26018,11 @@ var applicationPipelineSchema = external_exports.object({
   inputs: external_exports.array(runInputFieldSchema),
   schedules: external_exports.array(scheduleSchema),
   /** The definition as written, for "view the pipeline". */
-  definition: external_exports.unknown().nullable()
+  definition: external_exports.unknown().nullable(),
+  /** Which file defines it and where each setting came from; null when made in Pipelines. */
+  settings: settingsSourceSchema.nullable().default(null),
+  /** A library: its pipeline checks it but builds no image and deploys nothing. */
+  library: external_exports.boolean().default(false)
 });
 var testStateFilterSchema = external_exports.enum(["flaky", "quarantined", "all"]);
 var testStatusSchema = external_exports.object({
@@ -25759,7 +26077,7 @@ var listFailuresQuerySchema = external_exports.object({
 var failureGroupsSchema = external_exports.object({ items: external_exports.array(failureGroupSchema) });
 
 // ../../../modules/pipelines/shared/releases.ts
-var releaseSourceSchema = external_exports.enum(["runners", "external"]);
+var releaseSourceSchema = external_exports.enum(["runners", "external", "adopted"]);
 var digestSchema = external_exports.string().regex(/^sha256:[0-9a-f]{64}$/, "Digests look like sha256:\u2026");
 var releaseTestSummarySchema = external_exports.object({
   total: external_exports.number().int().min(0),
@@ -26672,149 +26990,6 @@ var forYouSchema = external_exports.object({
   onCall: onCallSchema.nullable()
 });
 
-// ../../../modules/pipelines/shared/capacity.ts
-var poolHostingSchema = external_exports.enum(["kubernetes", "vm", "local", "cloud-build", "codebuild"]);
-var runnerPoolSchema = external_exports.object({
-  id: idSchema,
-  key: slugSchema,
-  name: external_exports.string(),
-  hosting: poolHostingSchema,
-  /** "GKE Autopilot · asia-south1". */
-  location: external_exports.string().nullable(),
-  labels: external_exports.array(external_exports.string()),
-  busy: external_exports.number().int().min(0),
-  max: external_exports.number().int().min(0),
-  minRunners: external_exports.number().int().min(0),
-  maxRunners: external_exports.number().int().min(0),
-  warmRunners: external_exports.number().int().min(0),
-  /** "40 to 240 pods", "0 to 30, at limit". */
-  scaling: external_exports.string(),
-  atLimit: external_exports.boolean(),
-  queued: external_exports.number().int().min(0)
-});
-var capacityStatsSchema = external_exports.object({
-  running: external_exports.number().int(),
-  slots: external_exports.number().int(),
-  queued: external_exports.number().int(),
-  oldestWaitSeconds: external_exports.number().int().nullable(),
-  waitP95Seconds: external_exports.number().int().nullable(),
-  /** Target for the p95 wait, from settings. */
-  waitTargetSeconds: external_exports.number().int(),
-  buildMinutesToday: external_exports.number().int(),
-  /** Share of build minutes saved by caches, 0 to 1. */
-  cacheSavedRatio: external_exports.number().min(0).max(1).nullable(),
-  cacheSavedMinutes: external_exports.number().int().nullable()
-});
-var concurrencyPointSchema = external_exports.object({
-  start: isoDateTimeSchema,
-  jobs: external_exports.number().int().min(0)
-});
-var teamShareSchema = external_exports.object({
-  team: teamRefSchema,
-  running: external_exports.number().int().min(0),
-  /** Guaranteed slots from the team's weight. */
-  share: external_exports.number().int().min(0),
-  weight: external_exports.number().int().min(1),
-  /** Using idle capacity beyond its share; returned at the next dispatch. */
-  borrowing: external_exports.boolean(),
-  waitP95Seconds: external_exports.number().int().nullable()
-});
-var queueItemSchema = external_exports.object({
-  jobId: idSchema,
-  glyph: glyphStateSchema,
-  /** "route-planner · PR #9921". */
-  what: external_exports.string(),
-  /** "Logistics core is over its share", "linux-x64-large at its limit". */
-  why: external_exports.string(),
-  waitingSeconds: external_exports.number().int().min(0)
-});
-var capacityQuerySchema = external_exports.object({
-  range: external_exports.enum(["now", "7d", "30d"]).default("now")
-});
-var capacitySchema = external_exports.object({
-  stats: capacityStatsSchema,
-  pools: external_exports.array(runnerPoolSchema),
-  /** Concurrent jobs per 30 minutes over the range, with the peak. */
-  concurrency: external_exports.array(concurrencyPointSchema),
-  peak: external_exports.object({ jobs: external_exports.number().int(), at: isoDateTimeSchema }).nullable(),
-  teams: external_exports.array(teamShareSchema),
-  queue: external_exports.array(queueItemSchema)
-});
-var createPoolBodySchema = external_exports.object({
-  key: slugSchema,
-  name: external_exports.string().trim().min(1).max(80),
-  hosting: poolHostingSchema,
-  location: external_exports.string().max(120).optional(),
-  labels: external_exports.array(external_exports.string().max(60)).max(20).default([]),
-  minRunners: external_exports.number().int().min(0).default(0),
-  maxRunners: external_exports.number().int().min(1).max(1e4),
-  warmRunners: external_exports.number().int().min(0).default(0),
-  cloudAccount: idSchema.optional()
-}).refine((body) => body.maxRunners >= body.minRunners, {
-  message: "The most runners must be at least the fewest",
-  path: ["maxRunners"]
-});
-var updatePoolBodySchema = external_exports.object({
-  name: external_exports.string().trim().min(1).max(80).optional(),
-  location: external_exports.string().max(120).optional(),
-  labels: external_exports.array(external_exports.string().max(60)).max(20).optional(),
-  minRunners: external_exports.number().int().min(0).optional(),
-  maxRunners: external_exports.number().int().min(1).max(1e4).optional(),
-  warmRunners: external_exports.number().int().min(0).optional()
-});
-var teamShareBodySchema = external_exports.object({ weight: external_exports.number().int().min(1).max(1e3) });
-var poolKeyParamsSchema = external_exports.object({ key: slugSchema });
-var poolShareParamsSchema = external_exports.object({ key: slugSchema, teamId: idSchema });
-var poolTokenSchema = external_exports.object({ token: external_exports.string(), rotatedAt: isoDateTimeSchema });
-var createdPoolSchema = external_exports.object({ pool: runnerPoolSchema, token: poolTokenSchema });
-
-// ../../../modules/pipelines/shared/insights.ts
-var insightsRangeSchema = external_exports.enum(["30d", "90d", "180d"]);
-var insightsBreakdownSchema = external_exports.enum(["scope", "team"]);
-var insightsQuerySchema = external_exports.object({
-  scope: scopePathSchema.optional(),
-  range: insightsRangeSchema.default("90d"),
-  by: insightsBreakdownSchema.default("scope")
-});
-var insightsMeasureSchema = external_exports.object({
-  /** Null when nothing reached Prod in the range, so there is nothing to measure. */
-  value: external_exports.number().nullable(),
-  previous: external_exports.number().nullable(),
-  weeks: external_exports.array(external_exports.object({ start: isoDateTimeSchema, value: external_exports.number().nullable() }))
-});
-var insightsMeasuresSchema = external_exports.object({
-  /** Median commit to Prod, in seconds. */
-  leadTime: insightsMeasureSchema,
-  /** Prod deploys per day. */
-  deployFrequency: insightsMeasureSchema,
-  /** Prod deploys that failed or were rolled back, 0 to 1. */
-  changeFailureRate: insightsMeasureSchema,
-  /** Median from a failed Prod deploy to its roll back finishing, in seconds. */
-  timeToRestore: insightsMeasureSchema
-});
-var insightsRowSchema = external_exports.object({
-  kind: external_exports.enum(["domain", "group", "team"]),
-  /** A domain or group key, or a team id; the screen zooms into a domain or group row. */
-  key: external_exports.string(),
-  name: external_exports.string(),
-  /** The domain's tile hue, for domain rows. */
-  color: domainColorSchema.nullable(),
-  applications: external_exports.number().int(),
-  prodDeploys: external_exports.number().int(),
-  leadTimeSeconds: external_exports.number().nullable(),
-  deploysPerDay: external_exports.number().nullable(),
-  changeFailureRate: external_exports.number().nullable(),
-  timeToRestoreSeconds: external_exports.number().nullable()
-});
-var insightsSchema = external_exports.object({
-  range: insightsRangeSchema,
-  from: isoDateTimeSchema,
-  to: isoDateTimeSchema,
-  measures: insightsMeasuresSchema,
-  by: insightsBreakdownSchema,
-  rows: external_exports.array(insightsRowSchema)
-});
-
 // ../../../modules/pipelines/shared/clouds.ts
 var providerInfoSchema = external_exports.object({
   provider: providerSchema,
@@ -26829,7 +27004,8 @@ var connectionStatusSchema = external_exports.enum(["pending", "connected", "fai
 var layoutSchema = external_exports.enum([
   "per-environment",
   "per-domain-environment",
-  "per-group-environment"
+  "per-group-environment",
+  "starter"
 ]);
 var connectionModeSchema = external_exports.enum(["managed", "attached"]);
 var signInSchema = external_exports.enum(["vm", "application_default", "workload_identity_file"]);
@@ -26858,6 +27034,8 @@ var cloudConnectionSchema = external_exports.object({
   lastCheckedAt: isoDateTimeSchema.nullable(),
   /** What to do next, in plain words, when the last check failed. */
   lastError: external_exports.string().nullable(),
+  /** The same, one sentence per thing to grant or change; empty when the check passed. */
+  problems: external_exports.array(external_exports.string()),
   createdAt: isoDateTimeSchema
 });
 var connectionsResponseSchema = external_exports.object({ items: external_exports.array(cloudConnectionSchema) });
@@ -26877,6 +27055,11 @@ var connectionBase = {
   layout: layoutSchema.default("per-domain-environment")
 };
 var gcpRegionSchema = external_exports.string().regex(/^[a-z]+-[a-z]+[0-9]+$/, "Name a region such as us-central1");
+var billingAccountIdPattern = /^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/;
+var folderIdSchema = external_exports.string().trim().regex(
+  /^(folders\/)?[0-9]{6,20}$/,
+  "Use the folder ID bootstrap.sh printed, such as 417302018845"
+).transform((value) => value.replace(/^folders\//, ""));
 var connectCloudBodySchema = external_exports.discriminatedUnion("provider", [
   external_exports.object({
     provider: external_exports.literal("gcp"),
@@ -26888,15 +27071,19 @@ var connectCloudBodySchema = external_exports.discriminatedUnion("provider", [
     region: gcpRegionSchema.default("us-central1"),
     registry: registryPathSchema.optional(),
     organizationId: external_exports.string().regex(/^[0-9]{6,20}$/).optional(),
-    billingAccountId: external_exports.string().regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/).optional(),
-    folderName: external_exports.string().trim().min(1).max(30).default("Bemmoly")
+    billingAccountId: external_exports.string().regex(billingAccountIdPattern).optional(),
+    folderName: external_exports.string().trim().min(1).max(30).default("Bemmoly"),
+    /** The folder bootstrap.sh made, "folders/417302018845" or its digits; managed only. */
+    folderId: folderIdSchema.optional(),
+    /** The project bootstrap.sh made, where Bemmoly runs; Starter keeps the registry there. */
+    controlProject: external_exports.string().trim().regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, "Use the project ID bootstrap.sh printed").optional()
   }).superRefine((body, issues) => {
     if (body.mode === "managed") {
-      if (!body.organizationId) {
+      if (!body.folderId && !body.organizationId) {
         issues.addIssue({
           code: "custom",
-          path: ["organizationId"],
-          message: "Creating projects needs the organization they go in"
+          path: ["folderId"],
+          message: "Creating projects needs the folder bootstrap.sh made; paste its ID"
         });
       }
       if (!body.billingAccountId) {
@@ -26935,41 +27122,6 @@ var connectCloudBodySchema = external_exports.discriminatedUnion("provider", [
     dockerHost: dockerHostSchema.default("unix:///var/run/docker.sock")
   })
 ]);
-var landingZoneNodeKindSchema = external_exports.enum(["folder", "account", "resource"]);
-var landingZoneNodeSchema = external_exports.lazy(
-  () => external_exports.object({
-    kind: landingZoneNodeKindSchema,
-    name: external_exports.string(),
-    /** "runners, registry, caches", "3 regions". */
-    note: external_exports.string().nullable(),
-    status: external_exports.enum(["exists", "create", "update", "drifted"]),
-    children: external_exports.array(landingZoneNodeSchema)
-  })
-);
-var landingZonePlanBodySchema = external_exports.object({
-  layout: layoutSchema.optional(),
-  environments: external_exports.array(slugSchema).min(1).optional()
-});
-var landingZonePlanSchema = external_exports.object({
-  planId: idSchema,
-  connectionId: idSchema,
-  layout: layoutSchema,
-  root: landingZoneNodeSchema,
-  /** "27 projects · 1 folder per domain". */
-  counts: external_exports.object({
-    folders: external_exports.number().int(),
-    accounts: external_exports.number().int(),
-    resources: external_exports.number().int()
-  }),
-  /** Quota or permission problems found before planning; Apply stays off while any exist. */
-  blockers: external_exports.array(external_exports.string()),
-  specHash: external_exports.string()
-});
-var applyLandingZoneBodySchema = external_exports.object({
-  planId: idSchema,
-  /** The hash the person saw, so a changed plan cannot be applied unseen. */
-  specHash: external_exports.string().min(1)
-});
 var cloudAccountSchema = external_exports.object({
   id: idSchema,
   connectionId: idSchema,
@@ -27038,6 +27190,357 @@ var updateConnectionBodySchema = external_exports.object({
 }).partial().refine((body) => Object.keys(body).length > 0, "Change at least one thing");
 var accountParamsSchema = external_exports.object({ id: idSchema, accountId: idSchema });
 
+// ../../../modules/pipelines/shared/clusters.ts
+var clusterModeSchema = external_exports.enum(["autopilot", "standard"]);
+var clusterOriginSchema = external_exports.enum(["created", "attached"]);
+var clusterStatusSchema = external_exports.enum(["creating", "ready", "failed"]);
+var clusterNameSchema = external_exports.string().trim().regex(/^[a-z]([-a-z0-9]{0,38}[a-z0-9])?$/, "Use lowercase letters, digits and dashes");
+var clusterLocationSchema = external_exports.string().trim().regex(/^[a-z]+-[a-z]+[0-9]+(-[a-z])?$/, "Name a region or zone such as us-central1");
+var clusterGatewaySchema = external_exports.object({ namespace: slugSchema, name: slugSchema });
+var clusterRefSchema = external_exports.object({
+  id: idSchema,
+  name: external_exports.string(),
+  mode: clusterModeSchema,
+  origin: clusterOriginSchema,
+  status: clusterStatusSchema
+});
+var clusterSchema = clusterRefSchema.extend({
+  connectionId: idSchema,
+  connectionName: external_exports.string(),
+  environment: environmentRefSchema,
+  projectId: external_exports.string(),
+  location: external_exports.string(),
+  /** "REGULAR" for the clusters Pipelines runs; whatever the owners chose for attached ones. */
+  releaseChannel: external_exports.string().nullable(),
+  gateway: clusterGatewaySchema.nullable(),
+  /** What the last check found, each a sentence saying what to grant or turn on. */
+  problems: external_exports.array(external_exports.string()),
+  lastCheckedAt: isoDateTimeSchema.nullable(),
+  createdAt: isoDateTimeSchema
+});
+var clustersResponseSchema = external_exports.object({ items: external_exports.array(clusterSchema) });
+var createClusterBodySchema = external_exports.object({
+  origin: external_exports.literal("created"),
+  environmentId: idSchema,
+  mode: clusterModeSchema.default("autopilot"),
+  /** "bemmoly-<environment>" when left out. */
+  name: clusterNameSchema.optional()
+});
+var attachClusterBodySchema = external_exports.object({
+  origin: external_exports.literal("attached"),
+  environmentId: idSchema,
+  projectId: projectIdSchema,
+  location: clusterLocationSchema,
+  name: clusterNameSchema,
+  gateway: clusterGatewaySchema.nullable().default(null)
+});
+var clusterBodySchema = external_exports.discriminatedUnion("origin", [
+  createClusterBodySchema,
+  attachClusterBodySchema
+]);
+var clusterParamsSchema = external_exports.object({ id: idSchema });
+
+// ../../../modules/pipelines/shared/autopilot.ts
+var DEFAULT_BUILDER_IMAGE = "gcr.io/kaniko-project/executor:v1.23.2-debug";
+var AUTOPILOT_MEMORY_PER_CPU = { min: 1, max: 6.5 };
+var imageSchema = (example) => external_exports.string().trim().refine(isImageReference, `Use an image such as ${example}`);
+var autopilotPoolBodySchema = external_exports.object({
+  /** The cloud account (project) the cluster lives in: the CI project, or an attached one. */
+  account: idSchema,
+  location: external_exports.string().trim().regex(/^[a-z]+(?:-[a-z]+)*\d+$/, "Use a region such as us-central1 or asia-south1"),
+  cluster: external_exports.object({
+    name: clusterNameSchema,
+    /** Pipelines creates the cluster when it is missing; only on a managed connection. */
+    create: external_exports.boolean()
+  }),
+  image: imageSchema("us-docker.pkg.dev/acme-ci/bemmoly/runner-gke:1"),
+  /** What each pod asks for; Autopilot bills by what pods ask for, not what they use. */
+  cpu: external_exports.number().min(0.5, "Give each runner at least half a vCPU").max(28, "Ask for at most 28 vCPU per runner").multipleOf(0.25, "Use a quarter vCPU step, such as 1, 1.5 or 2"),
+  memoryGb: external_exports.number().min(1, "Give each runner at least 1 GiB of memory").max(80, "Ask for at most 80 GiB of memory per runner"),
+  /** Spot capacity costs less and Google may take it back; a job taken back fails. */
+  spot: external_exports.boolean().default(false),
+  /** The Google service account pods act as, through Workload Identity. */
+  serviceAccount: external_exports.email(
+    "Use the build service account email, such as builder@acme-ci.iam.gserviceaccount.com"
+  ),
+  builderImage: imageSchema("gcr.io/kaniko-project/executor:v1.23.2-debug").default(
+    DEFAULT_BUILDER_IMAGE
+  )
+}).refine(
+  (body) => body.memoryGb >= body.cpu * AUTOPILOT_MEMORY_PER_CPU.min && body.memoryGb <= body.cpu * AUTOPILOT_MEMORY_PER_CPU.max,
+  {
+    message: "Autopilot needs between 1 and 6.5 GiB of memory for each vCPU",
+    path: ["memoryGb"]
+  }
+);
+var autopilotStatusSchema = external_exports.enum(["preparing", "ready", "failed"]);
+var autopilotPoolSchema = external_exports.object({
+  account: external_exports.object({ id: idSchema, externalId: external_exports.string(), name: external_exports.string() }),
+  location: external_exports.string(),
+  cluster: external_exports.object({ name: external_exports.string(), create: external_exports.boolean() }),
+  image: external_exports.string(),
+  cpu: external_exports.number(),
+  memoryGb: external_exports.number(),
+  spot: external_exports.boolean(),
+  serviceAccount: external_exports.string(),
+  builderImage: external_exports.string(),
+  /** One namespace per pool. */
+  namespace: external_exports.string(),
+  /** Whether the cluster, the namespace and the pods' identity are in place. */
+  status: autopilotStatusSchema,
+  /** GKE's own words while it prepares, or why it could not. */
+  statusDetail: external_exports.string().nullable(),
+  /** Live counts: pods running a job, pods starting, and warm room ready on the nodes. */
+  runners: external_exports.object({
+    running: external_exports.number().int().min(0),
+    starting: external_exports.number().int().min(0),
+    warm: external_exports.number().int().min(0)
+  })
+});
+var runnerPodSchema = external_exports.object({
+  control: external_exports.string().min(1),
+  logs: external_exports.string().min(1),
+  steps: external_exports.record(external_exports.string(), external_exports.string().regex(/^[a-z0-9-]{1,63}$/)),
+  builder: external_exports.string().regex(/^[a-z0-9-]{1,63}$/).nullable()
+});
+
+// ../../../modules/pipelines/shared/capacity.ts
+var poolHostingSchema = external_exports.enum([
+  "kubernetes",
+  "vm",
+  "local",
+  "cloud-build",
+  "codebuild",
+  "gke-autopilot"
+]);
+var runnerPoolSchema = external_exports.object({
+  id: idSchema,
+  key: slugSchema,
+  name: external_exports.string(),
+  hosting: poolHostingSchema,
+  /** "GKE Autopilot · asia-south1". */
+  location: external_exports.string().nullable(),
+  labels: external_exports.array(external_exports.string()),
+  busy: external_exports.number().int().min(0),
+  max: external_exports.number().int().min(0),
+  minRunners: external_exports.number().int().min(0),
+  maxRunners: external_exports.number().int().min(0),
+  warmRunners: external_exports.number().int().min(0),
+  /** "40 to 240 pods", "0 to 30, at limit". */
+  scaling: external_exports.string(),
+  atLimit: external_exports.boolean(),
+  queued: external_exports.number().int().min(0),
+  /** How a Cloud Build pool starts its builds; null for every other hosting. */
+  cloudBuild: cloudBuildPoolSchema.nullable(),
+  /** Machines Pipelines started for this pool's jobs that are still starting or running. */
+  machines: external_exports.array(poolMachineSchema),
+  /** Why the last machine would not start, until one starts again. */
+  lastError: external_exports.string().nullable(),
+  /** How a GKE Autopilot pool starts its pods, and how many it has now; null otherwise. */
+  autopilot: autopilotPoolSchema.nullable()
+});
+var capacityStatsSchema = external_exports.object({
+  running: external_exports.number().int(),
+  slots: external_exports.number().int(),
+  queued: external_exports.number().int(),
+  oldestWaitSeconds: external_exports.number().int().nullable(),
+  waitP95Seconds: external_exports.number().int().nullable(),
+  /** Target for the p95 wait, from settings. */
+  waitTargetSeconds: external_exports.number().int(),
+  buildMinutesToday: external_exports.number().int(),
+  /** Share of build minutes saved by caches, 0 to 1. */
+  cacheSavedRatio: external_exports.number().min(0).max(1).nullable(),
+  cacheSavedMinutes: external_exports.number().int().nullable()
+});
+var concurrencyPointSchema = external_exports.object({
+  start: isoDateTimeSchema,
+  jobs: external_exports.number().int().min(0)
+});
+var teamShareSchema = external_exports.object({
+  team: teamRefSchema,
+  running: external_exports.number().int().min(0),
+  /** Guaranteed slots from the team's weight. */
+  share: external_exports.number().int().min(0),
+  weight: external_exports.number().int().min(1),
+  /** Using idle capacity beyond its share; returned at the next dispatch. */
+  borrowing: external_exports.boolean(),
+  waitP95Seconds: external_exports.number().int().nullable()
+});
+var queueItemSchema = external_exports.object({
+  jobId: idSchema,
+  glyph: glyphStateSchema,
+  /** "route-planner · PR #9921". */
+  what: external_exports.string(),
+  /** "Logistics core is over its share", "linux-x64-large at its limit". */
+  why: external_exports.string(),
+  waitingSeconds: external_exports.number().int().min(0)
+});
+var capacityQuerySchema = external_exports.object({
+  range: external_exports.enum(["now", "7d", "30d"]).default("now")
+});
+var capacitySchema = external_exports.object({
+  stats: capacityStatsSchema,
+  pools: external_exports.array(runnerPoolSchema),
+  /** Concurrent jobs per 30 minutes over the range, with the peak. */
+  concurrency: external_exports.array(concurrencyPointSchema),
+  peak: external_exports.object({ jobs: external_exports.number().int(), at: isoDateTimeSchema }).nullable(),
+  teams: external_exports.array(teamShareSchema),
+  queue: external_exports.array(queueItemSchema)
+});
+var createPoolBodySchema = external_exports.object({
+  key: slugSchema,
+  name: external_exports.string().trim().min(1).max(80),
+  hosting: poolHostingSchema,
+  location: external_exports.string().max(120).optional(),
+  labels: external_exports.array(external_exports.string().max(60)).max(20).default([]),
+  minRunners: external_exports.number().int().min(0).default(0),
+  maxRunners: external_exports.number().int().min(1).max(1e4),
+  warmRunners: external_exports.number().int().min(0).default(0),
+  cloudAccount: idSchema.optional(),
+  cloudBuild: cloudBuildPoolBodySchema.optional(),
+  autopilot: autopilotPoolBodySchema.optional()
+}).refine((body) => body.maxRunners >= body.minRunners, {
+  message: "The most runners must be at least the fewest",
+  path: ["maxRunners"]
+}).refine((body) => body.hosting === "cloud-build" === (body.cloudBuild !== void 0), {
+  message: "A Cloud Build pool needs its project, region, image and service account",
+  path: ["cloudBuild"]
+}).refine((body) => body.hosting === "gke-autopilot" === (body.autopilot !== void 0), {
+  message: "A GKE Autopilot pool needs its project, cluster, image, size and service account",
+  path: ["autopilot"]
+});
+var updatePoolBodySchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(80).optional(),
+  /** Where its runners come from; a switch to Cloud Build needs its settings too. */
+  hosting: poolHostingSchema.optional(),
+  location: external_exports.string().max(120).optional(),
+  labels: external_exports.array(external_exports.string().max(60)).max(20).optional(),
+  minRunners: external_exports.number().int().min(0).optional(),
+  maxRunners: external_exports.number().int().min(1).max(1e4).optional(),
+  warmRunners: external_exports.number().int().min(0).optional(),
+  /** Replaces a Cloud Build pool's settings as a whole. */
+  cloudBuild: cloudBuildPoolBodySchema.optional(),
+  /** Replaces a GKE Autopilot pool's settings as a whole. */
+  autopilot: autopilotPoolBodySchema.optional()
+});
+var teamShareBodySchema = external_exports.object({ weight: external_exports.number().int().min(1).max(1e3) });
+var poolKeyParamsSchema = external_exports.object({ key: slugSchema });
+var poolShareParamsSchema = external_exports.object({ key: slugSchema, teamId: idSchema });
+var poolTokenSchema = external_exports.object({ token: external_exports.string(), rotatedAt: isoDateTimeSchema });
+var createdPoolSchema = external_exports.object({ pool: runnerPoolSchema, token: poolTokenSchema });
+
+// ../../../modules/pipelines/shared/insights.ts
+var insightsRangeSchema = external_exports.enum(["30d", "90d", "180d"]);
+var insightsBreakdownSchema = external_exports.enum(["scope", "team"]);
+var insightsQuerySchema = external_exports.object({
+  scope: scopePathSchema.optional(),
+  range: insightsRangeSchema.default("90d"),
+  by: insightsBreakdownSchema.default("scope")
+});
+var insightsMeasureSchema = external_exports.object({
+  /** Null when nothing reached Prod in the range, so there is nothing to measure. */
+  value: external_exports.number().nullable(),
+  previous: external_exports.number().nullable(),
+  weeks: external_exports.array(external_exports.object({ start: isoDateTimeSchema, value: external_exports.number().nullable() }))
+});
+var insightsMeasuresSchema = external_exports.object({
+  /** Median commit to Prod, in seconds. */
+  leadTime: insightsMeasureSchema,
+  /** Prod deploys per day. */
+  deployFrequency: insightsMeasureSchema,
+  /** Prod deploys that failed or were rolled back, 0 to 1. */
+  changeFailureRate: insightsMeasureSchema,
+  /** Median from a failed Prod deploy to its roll back finishing, in seconds. */
+  timeToRestore: insightsMeasureSchema
+});
+var insightsRowSchema = external_exports.object({
+  kind: external_exports.enum(["domain", "group", "team"]),
+  /** A domain or group key, or a team id; the screen zooms into a domain or group row. */
+  key: external_exports.string(),
+  name: external_exports.string(),
+  /** The domain's tile hue, for domain rows. */
+  color: domainColorSchema.nullable(),
+  applications: external_exports.number().int(),
+  prodDeploys: external_exports.number().int(),
+  leadTimeSeconds: external_exports.number().nullable(),
+  deploysPerDay: external_exports.number().nullable(),
+  changeFailureRate: external_exports.number().nullable(),
+  timeToRestoreSeconds: external_exports.number().nullable()
+});
+var insightsSchema = external_exports.object({
+  range: insightsRangeSchema,
+  from: isoDateTimeSchema,
+  to: isoDateTimeSchema,
+  measures: insightsMeasuresSchema,
+  by: insightsBreakdownSchema,
+  rows: external_exports.array(insightsRowSchema)
+});
+
+// ../../../modules/pipelines/shared/landing-zones.ts
+var landingZoneNodeKindSchema = external_exports.enum(["folder", "account", "resource"]);
+var landingZoneNodeStatusSchema = external_exports.enum([
+  "exists",
+  "create",
+  "update",
+  "drifted",
+  "kept"
+]);
+var landingZoneNodeSchema = external_exports.lazy(
+  () => external_exports.object({
+    kind: landingZoneNodeKindSchema,
+    name: external_exports.string(),
+    /** "runners, registry, caches", "3 regions". */
+    note: external_exports.string().nullable(),
+    status: landingZoneNodeStatusSchema,
+    children: external_exports.array(landingZoneNodeSchema)
+  })
+);
+var landingZonePlanBodySchema = external_exports.object({
+  layout: layoutSchema.optional(),
+  environments: external_exports.array(slugSchema).min(1).optional()
+});
+var planStatusSchema = external_exports.enum(["planned", "applying", "applied", "failed", "superseded"]);
+var planBillingSchema = external_exports.object({
+  /** "01A2B3-C4D5E6-F7A8B9". */
+  account: external_exports.string(),
+  /** Projects the account pays for now. */
+  linked: external_exports.number().int(),
+  /** Projects this plan creates and links to it. */
+  adding: external_exports.number().int(),
+  /** The limit compared against: one an admin recorded, or the usual default for new accounts. */
+  limit: external_exports.number().int(),
+  /** True when an admin recorded the limit; false when it is the usual default, unconfirmed. */
+  recorded: external_exports.boolean()
+});
+var landingZonePlanSchema = external_exports.object({
+  planId: idSchema,
+  connectionId: idSchema,
+  layout: layoutSchema,
+  root: landingZoneNodeSchema,
+  /** "27 projects · 1 folder per domain". */
+  counts: external_exports.object({
+    folders: external_exports.number().int(),
+    accounts: external_exports.number().int(),
+    resources: external_exports.number().int()
+  }),
+  /** Quota or permission problems found before planning; Apply stays off while any exist. */
+  blockers: external_exports.array(external_exports.string()),
+  /** What to know before Apply that does not stop it: moves, kept projects, billing headroom. */
+  warnings: external_exports.array(external_exports.string()),
+  /** The billing account's projects now and what this plan adds; null where nothing is billed. */
+  billing: planBillingSchema.nullable(),
+  status: planStatusSchema,
+  /** Why the last apply stopped, in one sentence; null unless it failed. */
+  lastError: external_exports.string().nullable(),
+  specHash: external_exports.string()
+});
+var applyLandingZoneBodySchema = external_exports.object({
+  planId: idSchema,
+  /** The hash the person saw, so a changed plan cannot be applied unseen. */
+  specHash: external_exports.string().min(1)
+});
+var planParamsSchema = external_exports.object({ id: idSchema, planId: idSchema });
+
 // ../../../modules/pipelines/shared/environment-writes.ts
 var regionSchema = external_exports.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Name a region such as us-central1");
 var protectionPatchSchema = external_exports.object({
@@ -27057,7 +27560,9 @@ var createEnvironmentBodySchema = external_exports.object({
   region: regionSchema.nullable().default(null),
   /** Left to right; after the last environment when left out. */
   position: external_exports.number().int().min(0).max(1e4).optional(),
-  protection: protectionPatchSchema.optional()
+  protection: protectionPatchSchema.optional(),
+  /** Cloud Run when left out. */
+  defaultRuntime: deployRuntimeSchema.optional()
 });
 var updateEnvironmentBodySchema = external_exports.object({
   name: external_exports.string().trim().min(1).max(80),
@@ -27065,7 +27570,8 @@ var updateEnvironmentBodySchema = external_exports.object({
   cloudAccountId: idSchema.nullable(),
   region: regionSchema.nullable(),
   position: external_exports.number().int().min(0).max(1e4),
-  protection: protectionPatchSchema
+  protection: protectionPatchSchema,
+  defaultRuntime: deployRuntimeSchema
 }).partial().refine((body) => Object.keys(body).length > 0, "Change at least one thing");
 var pathStepBodySchema = external_exports.object({
   environmentId: idSchema,
@@ -27160,26 +27666,6 @@ var notifyPayloadSchema = external_exports.object({
   kind: streamEventKindSchema,
   userId: idSchema.optional(),
   data: external_exports.unknown().optional()
-});
-
-// ../../../modules/pipelines/shared/application-yaml.ts
-var ownerRefSchema = external_exports.string().trim().regex(/^team\/[a-z0-9][a-z0-9-]{0,62}$/, 'Owners look like "team/payments"');
-var applicationFileSchema = external_exports.object({
-  name: slugSchema,
-  /** The group's key; the group names its domain, so `domain` is only a cross-check. */
-  group: slugSchema,
-  domain: slugSchema.optional(),
-  owner: ownerRefSchema.optional(),
-  tier: tierSchema.default(2),
-  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).default([]),
-  lifecycle: lifecycleSchema.default("production"),
-  runtime: runtimeSchema.optional(),
-  description: external_exports.string().max(2e3).optional(),
-  /** Application keys this one calls; feeds coordinated releases and "include callers". */
-  dependsOn: external_exports.array(slugSchema).max(100).default([]),
-  /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
-  paths: external_exports.array(external_exports.string().min(1).max(300)).max(100).default([]),
-  pipeline: pipelineDefinitionSchema.optional()
 });
 
 // ../../../modules/pipelines/shared/saved-views.ts
@@ -27296,15 +27782,14 @@ var externalChecksResponseSchema = external_exports.object({ items: external_exp
 var ciIdParamsSchema = external_exports.object({ id: idSchema });
 var listTrustRulesQuerySchema = external_exports.object({ application: slugSchema.optional() });
 
-// ../../../modules/pipelines/shared/image-reference.ts
-var COMPONENT = "[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*";
-var DOMAIN_PART = "(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])";
-var DOMAIN = `${DOMAIN_PART}(?:\\.${DOMAIN_PART})*(?::[0-9]+)?`;
-var NAME = `(?:${DOMAIN}/)?${COMPONENT}(?:/${COMPONENT})*`;
-var TAG = "\\w[\\w.-]{0,127}";
-var DIGEST = "[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,}";
-var REFERENCE = new RegExp(`^${NAME}(?::${TAG})?(?:@${DIGEST})?$`);
-var REPOSITORY = new RegExp(`^${NAME}$`);
+// ../../../modules/pipelines/shared/app-references.ts
+var APP_REFERENCE_FIELDS = ["url", "publicUrl"];
+var appReferenceFieldSchema = external_exports.enum(APP_REFERENCE_FIELDS);
+var resolvedValueSchema = external_exports.object({
+  environment: slugSchema,
+  value: external_exports.string().nullable(),
+  problem: external_exports.string().nullable()
+});
 
 // ../../../modules/pipelines/shared/variables.ts
 var variableNameSchema = external_exports.string().trim().regex(/^[A-Z_][A-Z0-9_]{0,127}$/, "Use capitals, digits and underscores, such as DATABASE_URL");
@@ -27319,14 +27804,23 @@ var variableSchema = external_exports.object({
   value: external_exports.string().nullable(),
   /** A secret's version in the store; for a plain variable, how many times it was set. */
   version: external_exports.number().int().nullable(),
-  /** "moving": a value from before secrets existed, waiting to be written to the store. */
-  state: external_exports.enum(["set", "moving"]),
+  /**
+   * "moving": a value from before secrets existed, waiting to be written to the store.
+   * "needed": a secret copied from another environment without its value; a deploy there
+   * stops until someone sets one.
+   */
+  state: external_exports.enum(["set", "moving", "needed"]),
   /** What stops it moving or mounting, in one sentence; null when nothing does. */
   problem: external_exports.string().nullable(),
   /** Where a secret lives: "acme-shop-prod / bemmoly-shop-API_KEY-prod". */
   location: external_exports.string().nullable(),
   updatedBy: personRefSchema.nullable(),
-  updatedAt: isoDateTimeSchema
+  updatedAt: isoDateTimeSchema,
+  /**
+   * A plain value naming other applications' addresses, filled in per environment it reaches
+   * (shared/app-references.ts). Empty when the value names none.
+   */
+  resolved: external_exports.array(resolvedValueSchema).default([])
 });
 var variablesResponseSchema = external_exports.object({
   items: external_exports.array(variableSchema),
@@ -27341,6 +27835,342 @@ var variableTargetQuerySchema = external_exports.object({ environment: slugSchem
 var setVariableBodySchema = external_exports.object({
   kind: variableKindSchema,
   value: external_exports.string().min(1, "Give it a value").max(VARIABLE_VALUE_MAX)
+});
+
+// ../../../modules/pipelines/shared/moves.ts
+var moveStateSchema = external_exports.enum([
+  "planned",
+  "deploying",
+  "warming",
+  "shifting",
+  "holding",
+  "paused",
+  "succeeded",
+  "rolled_back",
+  "failed",
+  "cancelled"
+]);
+var moveStepSchema = external_exports.object({
+  /** Share of requests on the new runtime. */
+  percent: external_exports.number().int().min(1).max(100),
+  holdMinutes: external_exports.number().int().min(0),
+  state: external_exports.enum(["done", "current", "next"])
+});
+var moveCostSchema = external_exports.object({
+  currency: external_exports.literal("USD"),
+  /** "2026-10-29": when the prices were read. */
+  pricesAsOf: external_exports.string(),
+  estimate: external_exports.literal(true),
+  /** What the runtime lines assume runs all month. */
+  assumes: external_exports.object({ cpu: external_exports.number(), memoryGiB: external_exports.number(), instances: external_exports.number().int() }),
+  lines: external_exports.array(
+    external_exports.object({
+      item: external_exports.enum(["front-door", "runtime", "cluster"]),
+      runtime: deployRuntimeSchema.nullable(),
+      before: external_exports.number(),
+      after: external_exports.number()
+    })
+  ),
+  before: external_exports.number(),
+  after: external_exports.number(),
+  /** After less before: what the move adds to the month, or saves when negative. */
+  difference: external_exports.number()
+});
+var runtimeMoveSchema = external_exports.object({
+  id: idSchema,
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  environment: environmentRefSchema,
+  from: deployRuntimeSchema,
+  to: deployRuntimeSchema,
+  state: moveStateSchema,
+  release: external_exports.object({ id: idSchema, version: external_exports.string() }).nullable(),
+  steps: external_exports.array(moveStepSchema),
+  /** Share of requests on the new runtime now. */
+  percent: external_exports.number().int().min(0).max(100),
+  /** The address callers keep through the move. */
+  frontDoor: external_exports.object({ host: external_exports.string(), url: external_exports.string().nullable() }).nullable(),
+  /** Requests lost to the move itself: none, since both runtimes serve until it ends. */
+  downtime: external_exports.enum(["none", "address-change"]),
+  cost: moveCostSchema,
+  /** What has not been proved against the real cloud. */
+  untested: external_exports.array(external_exports.string()),
+  /** Steps a person does by hand, such as pointing DNS at the address. */
+  byHand: external_exports.array(external_exports.string()),
+  message: external_exports.string().nullable(),
+  can: external_exports.object({
+    start: external_exports.boolean(),
+    pause: external_exports.boolean(),
+    continue: external_exports.boolean(),
+    rollBack: external_exports.boolean()
+  }),
+  createdAt: isoDateTimeSchema,
+  updatedAt: isoDateTimeSchema,
+  finishedAt: isoDateTimeSchema.nullable()
+});
+var runtimeMovesResponseSchema = external_exports.object({ items: external_exports.array(runtimeMoveSchema) });
+var runtimeMovesQuerySchema = external_exports.object({
+  application: slugSchema,
+  environment: slugSchema.optional()
+});
+var runtimeMoveParamsSchema = external_exports.object({ id: idSchema });
+var moveActionBodySchema = external_exports.object({ reason: external_exports.string().trim().max(500).optional() });
+var moveRefSchema = external_exports.object({
+  id: idSchema,
+  state: moveStateSchema,
+  to: deployRuntimeSchema,
+  percent: external_exports.number().int()
+});
+
+// ../../../modules/pipelines/shared/runtimes.ts
+var runtimeSourceSchema = external_exports.enum(["pipelines", "file", "environment"]);
+var applicationRuntimeSchema = external_exports.object({
+  environment: environmentRefSchema,
+  /** What the next deploy uses. */
+  runtime: deployRuntimeSchema,
+  source: runtimeSourceSchema,
+  /** Chosen in Pipelines; null follows the file, then the environment. */
+  chosen: deployRuntimeSchema.nullable(),
+  /** What application.yaml names for this environment; null when it names nothing. */
+  file: deployRuntimeSchema.nullable(),
+  environmentDefault: deployRuntimeSchema,
+  /** The environment's cluster, when it has one. */
+  cluster: clusterRefSchema.nullable(),
+  /** Why the next deploy would fail, in one sentence saying what to do; null when it can go. */
+  problem: external_exports.string().nullable(),
+  /**
+   * The front door's host here, when there is one: a switch is then a traffic move with no
+   * downtime. Without one the switch waits for the next deploy and the address changes.
+   */
+  frontDoor: external_exports.object({ host: external_exports.string(), url: external_exports.string().nullable() }).nullable().default(null),
+  /** The move planned or under way here, if any. */
+  move: moveRefSchema.nullable().default(null)
+});
+var applicationRuntimesResponseSchema = external_exports.object({
+  items: external_exports.array(applicationRuntimeSchema)
+});
+var setApplicationRuntimeBodySchema = external_exports.object({
+  runtime: deployRuntimeSchema.nullable()
+});
+var applicationRuntimeParamsSchema = external_exports.object({
+  key: slugSchema,
+  environment: slugSchema
+});
+
+// ../../../modules/pipelines/shared/front-doors.ts
+var frontDoorStatusSchema = external_exports.enum(["pending", "applying", "ready", "failed", "off"]);
+var frontDoorDomainSchema = external_exports.string().trim().toLowerCase().regex(
+  /^(?=.{4,200}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/,
+  "Name a domain such as prod.example.com"
+);
+var frontDoorBackendSchema = external_exports.object({
+  runtime: deployRuntimeSchema,
+  /** Null sends the share to the runtime's own split (Cloud Run's revisions). */
+  revision: external_exports.string().nullable(),
+  percent: external_exports.number().int().min(0).max(100)
+});
+var frontDoorRouteSchema = external_exports.object({
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  /** The project it is served from. */
+  account: external_exports.string(),
+  host: external_exports.string(),
+  /** Where a person calls it. */
+  url: external_exports.string().nullable(),
+  backends: external_exports.array(frontDoorBackendSchema)
+});
+var frontDoorSchema = external_exports.object({
+  id: idSchema,
+  environment: environmentRefSchema,
+  enabled: external_exports.boolean(),
+  domain: external_exports.string().nullable(),
+  status: frontDoorStatusSchema,
+  /** The address reserved in each project the environment's applications run in. */
+  addresses: external_exports.array(external_exports.object({ account: external_exports.string(), address: external_exports.string() })),
+  /** What stops a host answering, each one sentence saying what to do. */
+  problems: external_exports.array(external_exports.string()),
+  routes: external_exports.array(frontDoorRouteSchema),
+  appliedAt: isoDateTimeSchema.nullable()
+});
+var frontDoorsResponseSchema = external_exports.object({ items: external_exports.array(frontDoorSchema) });
+var frontDoorsQuerySchema = external_exports.object({ application: slugSchema.optional() });
+var setFrontDoorBodySchema = external_exports.object({
+  enabled: external_exports.boolean(),
+  domain: frontDoorDomainSchema.nullable().default(null)
+});
+
+// ../../../modules/pipelines/shared/exports.ts
+var exportQuerySchema = external_exports.object({
+  connection: idSchema.optional(),
+  application: slugSchema.optional()
+});
+var exportConnectionSchema = external_exports.object({
+  connection: external_exports.object({ id: idSchema, name: external_exports.string(), mode: connectionModeSchema }),
+  /** "acme-google-cloud": the directory inside the zip. */
+  directory: external_exports.string(),
+  counts: external_exports.object({
+    projects: external_exports.number().int(),
+    resources: external_exports.number().int(),
+    services: external_exports.number().int(),
+    charts: external_exports.number().int(),
+    secrets: external_exports.number().int()
+  }),
+  /** Paths inside the zip, sorted. */
+  files: external_exports.array(external_exports.string()),
+  /** What was not exported and why, one sentence each. */
+  leftOut: external_exports.array(external_exports.string()),
+  /** Values Pipelines could not read, to fill in terraform.tfvars before a plan. */
+  toFill: external_exports.array(external_exports.string())
+});
+var exportPreviewSchema = external_exports.object({
+  /** "bemmoly-pipelines-export-2026-10-29.zip". */
+  fileName: external_exports.string(),
+  items: external_exports.array(exportConnectionSchema),
+  /** What no connection could export: services with no cloud, providers with no export. */
+  leftOut: external_exports.array(external_exports.string())
+});
+
+// ../../../modules/pipelines/shared/adoption.ts
+var adoptionStateSchema = external_exports.enum([
+  /** It matches an application and can be adopted. */
+  "ready",
+  /** Pipelines adopted it before. */
+  "adopted",
+  /** Pipelines already deploys the application it matches here. */
+  "deployed",
+  /** No application in the catalog has its name; pick one, or skip it. */
+  "unmatched"
+]);
+var adoptedVariableSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({
+    name: variableNameSchema,
+    kind: external_exports.literal("plain"),
+    value: external_exports.string(),
+    /**
+     * When the value holds another service's address and that service is adopted too: the
+     * application it names, and the value with `${{ apps.<key>.url }}` in place of the address.
+     */
+    reference: external_exports.object({ application: slugSchema, value: external_exports.string() }).nullable()
+  }),
+  external_exports.object({
+    name: variableNameSchema,
+    kind: external_exports.literal("secret"),
+    /** "acme-stage / cart-db-password": where the value lives; it is never read. */
+    location: external_exports.string(),
+    version: external_exports.string(),
+    /** Why it cannot be referenced from Pipelines, in one sentence; null when it can. */
+    problem: external_exports.string().nullable()
+  })
+]);
+var adoptionServiceSchema = external_exports.object({
+  /** The service's name in the cloud. */
+  service: external_exports.string(),
+  url: external_exports.string().nullable(),
+  /** The application it matches by name, or was adopted as. */
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }).nullable(),
+  state: adoptionStateSchema,
+  /** The image it runs, by digest: what release zero records. */
+  image: external_exports.string().nullable(),
+  revision: external_exports.string().nullable(),
+  variables: external_exports.array(adoptedVariableSchema),
+  settings: external_exports.array(external_exports.object({ field: deploySettingFieldSchema, value: deploySettingValueSchema })),
+  /** Why it cannot be adopted, in one sentence; null when it can. */
+  problem: external_exports.string().nullable()
+});
+var adoptionPlanSchema = external_exports.object({
+  environment: environmentRefSchema,
+  /** Where the services were looked for. */
+  project: external_exports.string(),
+  region: external_exports.string(),
+  services: external_exports.array(adoptionServiceSchema),
+  /** The catalog, for matching a service to an application of another name. */
+  applications: external_exports.array(external_exports.object({ key: slugSchema, name: external_exports.string() }))
+});
+var adoptBodySchema = external_exports.object({
+  services: external_exports.array(
+    external_exports.object({
+      service: external_exports.string().min(1).max(63),
+      application: slugSchema,
+      /** Plain variables whose address becomes a reference to the application it names. */
+      references: external_exports.array(variableNameSchema).default([])
+    })
+  ).min(1, "Choose at least one service to adopt")
+});
+var adoptResultSchema = external_exports.object({
+  adopted: external_exports.array(
+    external_exports.object({
+      service: external_exports.string(),
+      application: slugSchema,
+      release: external_exports.object({ id: external_exports.string(), version: external_exports.string() })
+    })
+  ),
+  plan: adoptionPlanSchema
+});
+
+// ../../../modules/pipelines/shared/config-copy.ts
+var copySecretModeSchema = external_exports.enum(["copy", "needs-value"]);
+var copySettingNoteSchema = external_exports.enum(["dropped", "keeps-default"]);
+var copyItemSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({
+    /** "checkout-api:variable:LOG_LEVEL", stable between plan and apply. */
+    id: external_exports.string(),
+    kind: external_exports.literal("variable"),
+    name: variableNameSchema,
+    /** The target's own value now; null when it has none. */
+    before: external_exports.string().nullable(),
+    after: external_exports.string(),
+    /** The value names another application's address, filled in per environment. */
+    reference: external_exports.boolean(),
+    ticked: external_exports.boolean()
+  }),
+  external_exports.object({
+    id: external_exports.string(),
+    kind: external_exports.literal("secret"),
+    name: variableNameSchema,
+    /** Where the source's value lives. */
+    location: external_exports.string(),
+    /** The choice the plan starts with: needs-value for a prod-class target. */
+    mode: copySecretModeSchema,
+    ticked: external_exports.boolean()
+  }),
+  external_exports.object({
+    id: external_exports.string(),
+    kind: external_exports.literal("setting"),
+    field: deploySettingFieldSchema,
+    /** What the target's next deploy uses now, and would with the copied value. */
+    before: deploySettingValueSchema,
+    after: deploySettingValueSchema,
+    /** False when the target's runtime has no such setting; it is dropped. */
+    applies: external_exports.boolean(),
+    note: copySettingNoteSchema.nullable(),
+    ticked: external_exports.boolean()
+  })
+]);
+var copyApplicationSchema = external_exports.object({
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  runtime: external_exports.object({ from: deployRuntimeSchema, to: deployRuntimeSchema }),
+  items: external_exports.array(copyItemSchema),
+  /** Items the target already has exactly as the source does. */
+  same: external_exports.number().int().min(0)
+});
+var copyPlanSchema = external_exports.object({
+  from: environmentRefSchema,
+  to: environmentRefSchema,
+  applications: external_exports.array(copyApplicationSchema),
+  secretMode: copySecretModeSchema
+});
+var copyPlanQuerySchema = external_exports.object({
+  from: slugSchema,
+  /** Comma-separated application keys; every application when absent. */
+  applications: external_exports.string().optional().transform(
+    (value) => value ? value.split(",").map((key) => key.trim()).filter(Boolean) : void 0
+  ).pipe(external_exports.array(slugSchema).optional())
+});
+var applyCopyBodySchema = external_exports.object({
+  from: slugSchema,
+  items: external_exports.array(external_exports.object({ id: external_exports.string().min(1).max(300), secret: copySecretModeSchema.optional() })).min(1, "Tick at least one item to copy")
+});
+var copyResultSchema = external_exports.object({
+  applied: external_exports.number().int().min(0),
+  plan: copyPlanSchema
 });
 
 // ../../../apps/pipelines-cli/src/clients/pipelines.ts

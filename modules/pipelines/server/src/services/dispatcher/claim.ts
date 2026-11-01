@@ -11,7 +11,9 @@ import { NO_TEAM, pickTeam, readDispatchState, type FairCandidate } from './fair
  *
  * Classes are strict: rollback > deploy > main > pull_request > scheduled. Roll backs and
  * deploys skip fair share entirely and go oldest first; the rest share by team. A job with a
- * concurrency key waits while its key already has `concurrency_limit` jobs claimed or running.
+ * concurrency key waits while its key already has `concurrency_limit` jobs claimed, running
+ * or waiting for a machine started for them. A job waiting for its machine is that machine's
+ * alone: other runners pass it by, and the machine's runner claims nothing else.
  */
 
 /** Below this priority value a class skips fair share (rollback 0, deploy 1). */
@@ -21,6 +23,8 @@ export interface ClaimInput {
   poolId: string;
   runnerId: string;
   tokenHash: string;
+  /** The machine the runner runs on, when Pipelines started it for one job. */
+  launchId?: string | null;
 }
 
 export interface ClaimedRow {
@@ -34,7 +38,8 @@ export interface ClaimedRow {
 const eligible = (tx: SqlExecutor) => tx`
   (j.concurrency_key is null or (
     select count(*) from pipeline_jobs r
-    where r.concurrency_key = j.concurrency_key and r.state in ('claimed', 'running')
+    where r.concurrency_key = j.concurrency_key and r.id <> j.id
+      and (r.state in ('claimed', 'running') or (r.state = 'ready' and r.launch_id is not null))
   ) < j.concurrency_limit)`;
 
 async function weightsOf(tx: SqlExecutor, poolId: string, teams: string[]) {
@@ -49,11 +54,15 @@ async function weightsOf(tx: SqlExecutor, poolId: string, teams: string[]) {
   return teams.map((team): FairCandidate => ({ team, weight: weights.get(team) ?? 1 }));
 }
 
-async function pickJob(tx: SqlExecutor, poolId: string): Promise<string | null> {
+/**
+ * The next job the pool should serve, by class and fair share, among those no machine waits
+ * for. The caller holds the pool's row lock. Also picks which jobs get a machine started.
+ */
+export async function pickNextJob(tx: SqlExecutor, poolId: string): Promise<string | null> {
   const groups = await tx<{ team: string; best: number }[]>`
     select coalesce(j.team_id::text, ${NO_TEAM}) as team, min(j.priority)::int as best
     from pipeline_jobs j
-    where j.state = 'ready' and j.pool_id = ${poolId} and ${eligible(tx)}
+    where j.state = 'ready' and j.pool_id = ${poolId} and j.launch_id is null and ${eligible(tx)}
     group by 1`;
   if (groups.length === 0) return null;
   const best = Math.min(...groups.map((group) => group.best));
@@ -61,7 +70,7 @@ async function pickJob(tx: SqlExecutor, poolId: string): Promise<string | null> 
     const [job] = await tx<{ id: string }[]>`
       select j.id from pipeline_jobs j
       where j.state = 'ready' and j.pool_id = ${poolId} and j.priority = ${best}
-        and ${eligible(tx)}
+        and j.launch_id is null and ${eligible(tx)}
       order by j.ready_at, j.id limit 1 for update of j skip locked`;
     return job?.id ?? null;
   }
@@ -77,7 +86,7 @@ async function pickJob(tx: SqlExecutor, poolId: string): Promise<string | null> 
   const [job] = await tx<{ id: string }[]>`
     select j.id from pipeline_jobs j
     where j.state = 'ready' and j.pool_id = ${poolId} and j.priority = ${best}
-      and j.team_id is not distinct from ${team}::uuid and ${eligible(tx)}
+      and j.launch_id is null and j.team_id is not distinct from ${team}::uuid and ${eligible(tx)}
     order by j.ready_at, j.id limit 1 for update of j skip locked`;
   if (!job) return null;
   await tx`
@@ -86,13 +95,23 @@ async function pickJob(tx: SqlExecutor, poolId: string): Promise<string | null> 
   return job.id;
 }
 
+async function launchedJob(tx: SqlExecutor, poolId: string, launchId: string) {
+  const [job] = await tx<{ id: string }[]>`
+    select j.id from pipeline_jobs j
+    where j.launch_id = ${launchId} and j.state = 'ready' and j.pool_id = ${poolId}
+    for update of j skip locked`;
+  return job?.id ?? null;
+}
+
 /** Claims the next job for a runner of the pool, or null when nothing is eligible. */
 export async function claimNextJob(sql: SqlClient, input: ClaimInput): Promise<ClaimedRow | null> {
   return sql.begin(async (tx) => {
     const [pool] = await tx`
       select id from pipeline_runner_pools where id = ${input.poolId} for update`;
     if (!pool) return null;
-    const jobId = await pickJob(tx, input.poolId);
+    const jobId = input.launchId
+      ? await launchedJob(tx, input.poolId, input.launchId)
+      : await pickNextJob(tx, input.poolId);
     if (!jobId) return null;
     const [claimed] = await tx<ClaimedRow[]>`
       update pipeline_jobs set

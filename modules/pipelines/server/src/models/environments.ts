@@ -9,6 +9,7 @@ export interface EnvironmentRow {
   region: string | null;
   position: number;
   protection: Record<string, unknown>;
+  default_runtime: string;
   account_id: string | null;
   account_external_id: string | null;
   account_name: string | null;

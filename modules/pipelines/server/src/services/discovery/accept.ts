@@ -9,22 +9,42 @@ import type { ProposalRow } from '../../models/catalog-writes.ts';
 import type { ApplicationWrites } from '../catalog-writes/applications.ts';
 import { applicationFilePath, writeApplicationFile } from '../catalog-writes/file.ts';
 import { ownerRefOf } from '../catalog-writes/owners.ts';
+import { REPOSITORY_FILE_PATH } from '../../../../shared/repository-yaml.ts';
 import type { PullRequestOpener } from '../code/pull-requests.ts';
 import { personOf } from '../deps.ts';
 import { PROPOSAL_FROM, PROPOSAL_SELECT } from './present.ts';
+import { writeRepositoryProposal, type ProposedEntry } from './repository-proposal.ts';
 
 /*
  * Bulk accept (product design: "a platform engineer accepts them in bulk"). Each proposal
  * becomes an application through the catalog's own writes, so the same checks apply; one
  * that fails says why and the rest go on. Then one pull request per repository adds the
  * application.yaml files, so the repository becomes the source of truth once it merges.
+ * Folders that share a build go into one repository file instead of a file apiece.
  */
 
 interface Created {
   proposal: ProposalRow;
   applicationId: string;
   key: string;
-  file: { path: string; content: string };
+  /** Its own application.yaml, or its entry in the repository file. */
+  file: { path: string; content: string } | null;
+  entry: ProposedEntry | null;
+}
+
+type File = { path: string; content: string };
+
+/** The files one repository's pull request holds, and which file each application is in. */
+function filesFor(items: readonly Created[]): { files: File[]; fileOf: (item: Created) => File } {
+  const entries = items.flatMap((item) => (item.entry ? [item.entry] : []));
+  const repository = entries.length
+    ? { path: REPOSITORY_FILE_PATH, content: writeRepositoryProposal(entries) }
+    : null;
+  const own = items.flatMap((item) => (item.file ? [item.file] : []));
+  return {
+    files: repository ? [...own, repository] : own,
+    fileOf: (item) => item.file ?? repository ?? { path: REPOSITORY_FILE_PATH, content: '' },
+  };
 }
 
 async function openPerRepository(
@@ -44,6 +64,7 @@ async function openPerRepository(
     const [repo] = await sql<{ full_name: string; default_branch: string }[]>`
       select full_name, default_branch from pipeline_repositories where id = ${repositoryId}::uuid`;
     if (!repo) continue;
+    const { files, fileOf } = filesFor(items);
     let url: string | null = null;
     let reason = 'The code host is not connected for pull requests yet';
     try {
@@ -52,8 +73,8 @@ async function openPerRepository(
         baseBranch: repo.default_branch,
         branch: `bemmoly/catalog/discovery-${Date.now().toString(36)}`,
         title: `Add ${items.length} ${items.length === 1 ? 'application' : 'applications'} to the Pipelines catalog`,
-        body: `Adds .bemmoly/application.yaml for ${items.map((item) => item.key).join(', ')}.\n\nProposed by Bemmoly Pipelines discovery. Review owners and tiers like code; the catalog follows these files once this merges.`,
-        files: items.map((item) => item.file),
+        body: `Adds ${files.map((file) => file.path).join(', ')} for ${items.map((item) => item.key).join(', ')}.\n\nProposed by Bemmoly Pipelines discovery. Review owners and tiers like code; the catalog follows these files once this merges.`,
+        files,
       });
       url = opened?.url ?? null;
     } catch (error) {
@@ -67,7 +88,7 @@ async function openPerRepository(
            pull_request_url, reason, created_by)
         values (${item.applicationId}::uuid, ${repositoryId}::uuid, 'create',
           ${url ? 'pull_request' : 'pending'}, ${`Adds ${item.key} to the catalog`},
-          ${item.file.path}, ${item.file.content}, ${url}, ${url ? null : reason},
+          ${fileOf(item).path}, ${fileOf(item).content}, ${url}, ${url ? null : reason},
           ${createdBy}::uuid)`;
     }
     results.push({ repository: repo.full_name, url, pending: url === null });
@@ -129,24 +150,38 @@ export async function acceptProposals(
           application_id = ${result.application.id}::uuid, updated_at = now()
         where id = ${proposal.id}::uuid`;
       const [domain, groupKey] = group.split('/');
+      const owner = result.application.ownerTeam ? ownerRefOf(result.application.ownerTeam) : null;
+      const shared = proposal.shared_build;
       created.push({
         proposal,
         applicationId: result.application.id,
         key: input.key,
-        file: {
-          path: applicationFilePath(proposal.path),
-          content: writeApplicationFile({
-            name: input.key,
-            group: groupKey ?? '',
-            domain,
-            ...(result.application.ownerTeam
-              ? { owner: ownerRefOf(result.application.ownerTeam) }
-              : {}),
-            tier: input.tier,
-            runtime: input.runtime,
-            ...(input.description ? { description: input.description } : {}),
-          }),
-        },
+        entry: shared
+          ? {
+              key: input.key,
+              path: proposal.path,
+              group,
+              owner,
+              tier: input.tier,
+              runtime: input.runtime,
+              description: input.description,
+              build: shared,
+            }
+          : null,
+        file: shared
+          ? null
+          : {
+              path: applicationFilePath(proposal.path),
+              content: writeApplicationFile({
+                name: input.key,
+                group: groupKey ?? '',
+                domain,
+                ...(owner ? { owner } : {}),
+                tier: input.tier,
+                runtime: input.runtime,
+                ...(input.description ? { description: input.description } : {}),
+              }),
+            },
       });
     } catch (error) {
       if (!isBemmolyError(error)) throw error;

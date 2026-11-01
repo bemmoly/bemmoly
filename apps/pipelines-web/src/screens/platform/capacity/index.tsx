@@ -2,7 +2,7 @@ import { formatDate, formatNumber, useT } from '@bemmoly/core-web';
 import type { Capacity, RunnerPool } from '@bemmoly/module-pipelines/shared';
 import { Button, SegmentedControl, SeriesChart, Skeleton, StatTile } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useCapacity } from '../../../hooks/use-capacity.ts';
 import { useSearchState } from '../../../hooks/use-search-state.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
@@ -11,7 +11,8 @@ import { Area } from '../../../parts/area.tsx';
 import { LoadFailed } from '../../../parts/load-failed.tsx';
 import { RowsSkeleton } from '../../../parts/rows-skeleton.tsx';
 import { Panel } from '../../../parts/screen.tsx';
-import { AddPool } from './add-pool.tsx';
+import { Builds } from './builds.tsx';
+import { PoolDialog } from './pool-dialog.tsx';
 import { Pools } from './pools.tsx';
 import { Queue } from './queue.tsx';
 import { RotateToken } from './rotate-token.tsx';
@@ -116,13 +117,16 @@ function Concurrency({ capacity }: { capacity: Capacity }) {
 
 /**
  * Platform › Capacity: runner pools and how busy they are, each team's fair share, the queue
- * and why it waits, and the build minutes the cloud will bill. Live from the dispatcher.
+ * and why it waits, and the build minutes the cloud will bill. Live from the dispatcher. A
+ * pool takes machines people start, or has Cloud Build or GKE Autopilot start one per job;
+ * those show while they run.
  */
 export default function CapacityArea() {
   const t = useT(pipelinesText);
   const [range, setRange] = useSearchState('range', RANGES, 'now');
   const capacity = useCapacity({ range });
-  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<RunnerPool | 'new' | null>(null);
+  const buildsTitle = useId();
   const [rotating, setRotating] = useState<RunnerPool | null>(null);
   const data = capacity.data;
   return (
@@ -142,7 +146,7 @@ export default function CapacityArea() {
         />
       }
       actions={
-        <Button variant="secondary" onClick={() => setAdding(true)}>
+        <Button variant="secondary" onClick={() => setEditing('new')}>
           <Icon name="plus" size={14} />
           {t('pipelines.capacity.addPool')}
         </Button>
@@ -164,8 +168,22 @@ export default function CapacityArea() {
           <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.25fr_1fr]">
             <div className="flex min-w-0 flex-col gap-3">
               <Panel flush title={t('pipelines.capacity.pools')}>
-                <Pools pools={data.pools} onRotate={setRotating} />
+                <Pools pools={data.pools} onRotate={setRotating} onEdit={setEditing} />
               </Panel>
+              {data.pools.some(
+                (pool) => pool.hosting === 'cloud-build' || pool.hosting === 'gke-autopilot',
+              ) && (
+                <Panel
+                  flush
+                  labelledBy={buildsTitle}
+                  title={t('pipelines.capacity.builds')}
+                  meta={t('pipelines.capacity.buildsCount', {
+                    count: data.pools.reduce((sum, pool) => sum + pool.machines.length, 0),
+                  })}
+                >
+                  <Builds pools={data.pools} />
+                </Panel>
+              )}
               <Concurrency capacity={data} />
             </div>
             <div className="flex min-w-0 flex-col gap-3">
@@ -184,7 +202,9 @@ export default function CapacityArea() {
         </>
       )}
       {!data && !capacity.isError && <RowsSkeleton columns={3} rows={4} />}
-      <AddPool open={adding} onClose={() => setAdding(false)} />
+      {editing && (
+        <PoolDialog pool={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />
+      )}
       <RotateToken pool={rotating} onClose={() => setRotating(null)} />
     </Area>
   );

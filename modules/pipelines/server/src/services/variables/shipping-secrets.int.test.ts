@@ -57,7 +57,9 @@ describe('values from before secrets existed', () => {
       modules: [{ module: 'pipelines', changelog: pipelines.changelog }],
       appVersion: '0.1.0',
     });
-    await runner.rollback('pipelines', { count: 1 });
+    // Back to before secrets existed, past any changeset that came after them.
+    const secrets = pipelines.changelog.findIndex((changeset) => changeset.id.startsWith('0021-'));
+    await runner.rollback('pipelines', { count: pipelines.changelog.length - secrets });
     const dev = await envId(h, 'dev');
     const staging = await envId(h, 'staging');
     await h.sql`

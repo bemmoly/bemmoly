@@ -5,6 +5,7 @@ import { useId, useState, type KeyboardEvent } from 'react';
 import { useVariableWrites } from '../../../hooks/use-variables.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { ActionError } from '../../../parts/action-error.tsx';
+import { AddressPicker } from './address-picker.tsx';
 import { nameOf, nameValid } from './rows.ts';
 
 /** Add a variable, replace a secret's value, or give one environment its own value. */
@@ -155,6 +156,15 @@ export function VariableDialog({
             />
           )}
         </Field>
+        {kind === 'plain' && (
+          <div className="flex flex-col gap-1.5">
+            <AddressPicker
+              application={application}
+              onPick={(reference) => setValue((now) => `${now}${reference}`)}
+            />
+            <p className="text-12 leading-body text-tx-3">{t('pipelines.variables.addressHint')}</p>
+          </div>
+        )}
         <ActionError error={set.error} />
       </div>
     </Modal>

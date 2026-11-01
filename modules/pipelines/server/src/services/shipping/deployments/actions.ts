@@ -4,6 +4,7 @@ import type { DeployVariable } from '../../providers/contract.ts';
 import { LEASE_MS, type ShippingEngineDeps } from '../engine-deps.ts';
 import { loadRelease } from '../load.ts';
 import { recordDeploymentEvent } from '../record.ts';
+import { deploymentPlanSchema } from '../../rollout/plan.ts';
 import { artifactOf, resolveTarget } from '../targets.ts';
 import { createRolloutEngine } from './engine.ts';
 
@@ -76,6 +77,8 @@ export async function rollbackFinished(
       and release_id = ${target} and state = 'succeeded' and revision is not null
     order by finished_at desc nulls last limit 1`;
   const now = deps.now();
+  // Back on the runtime the rolled-back deploy ran on, where its predecessor still is.
+  const runtime = deploymentPlanSchema.parse(row.plan ?? {}).runtime;
   const plan = {
     steps: [],
     holdMinutes: 0,
@@ -83,6 +86,7 @@ export async function rollbackFinished(
     sampleSeconds: 60,
     autoRollback: false,
     checks: [],
+    ...(runtime ? { runtime } : {}),
   };
   const id = await sql.begin(async (tx) => {
     const [created] = await tx<{ id: string }[]>`
@@ -103,6 +107,7 @@ export async function rollbackFinished(
       deps.providers,
       row.application_id,
       row.environment_id,
+      { runtime },
     );
     if (!provider.targets) throw new Error(`${provider.name} cannot deploy yet`);
     const targets = provider.targets;

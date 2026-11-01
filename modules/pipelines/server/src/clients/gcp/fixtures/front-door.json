@@ -1,0 +1,710 @@
+{
+  "recorded": "Hand-recorded from the Compute Engine, Cloud Run, GKE and Kubernetes references (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-prod.iam.gserviceaccount.com:generateAccessToken",
+      "body": {
+        "lifetime": "900s"
+      },
+      "repeat": true,
+      "response": {
+        "accessToken": "ya29.deployer-acme-commerce-prod",
+        "expireTime": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-prod-asia-south1",
+        "addressType": "EXTERNAL",
+        "ipVersion": "IPV4"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10",
+        "status": "RESERVED"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/networkEndpointGroups/bm-run-checkout-api",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/networkEndpointGroups",
+      "response": {
+        "name": "operation-neg",
+        "status": "RUNNING",
+        "selfLink": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/operations/operation-neg"
+      },
+      "body": {
+        "name": "bm-run-checkout-api",
+        "networkEndpointType": "SERVERLESS",
+        "cloudRun": {
+          "service": "checkout-api"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/operations/operation-neg",
+      "response": {
+        "name": "operation-neg",
+        "status": "DONE"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-prod-asia-south1-checkout-api-run",
+        "loadBalancingScheme": "EXTERNAL_MANAGED",
+        "backends": [
+          {
+            "group": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/networkEndpointGroups/bm-run-checkout-api"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-prod-asia-south1",
+        "defaultService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+        "hostRules": [
+          {
+            "hosts": ["checkout-api.prod.acme.example"],
+            "pathMatcher": "h-checkout-api-prod-acme-example"
+          }
+        ],
+        "pathMatchers": [
+          {
+            "name": "h-checkout-api-prod-acme-example",
+            "defaultRouteAction": {
+              "weightedBackendServices": [
+                {
+                  "backendService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+                  "weight": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-280ac2e7-checkout-api-prod-acme-example",
+        "type": "MANAGED",
+        "managed": {
+          "domains": ["checkout-api.prod.acme.example"]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-prod-asia-south1",
+        "urlMap": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+        "sslCertificates": [
+          "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/forwardingRules/bm-fd-prod-asia-south1",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/forwardingRules",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-prod-asia-south1",
+        "IPAddress": "34.120.1.10",
+        "IPProtocol": "TCP",
+        "portRange": "443",
+        "target": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1",
+        "loadBalancingScheme": "EXTERNAL_MANAGED"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/networkEndpointGroups/bm-run-checkout-api",
+      "response": {
+        "name": "bm-run-checkout-api"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+      "response": {
+        "name": "bm-prod-asia-south1-checkout-api-run"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://container.googleapis.com/v1/projects/acme-commerce-prod/locations/asia-south1/clusters/bemmoly-prod-asia-south1",
+      "response": {
+        "name": "bemmoly-prod-asia-south1",
+        "location": "asia-south1",
+        "status": "RUNNING",
+        "endpoint": "34.118.10.2",
+        "masterAuth": {
+          "clusterCaCertificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCnJlY29yZGVkLWNsdXN0ZXItY2EKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+        },
+        "autopilot": {
+          "enabled": true
+        },
+        "releaseChannel": {
+          "channel": "REGULAR"
+        },
+        "workloadIdentityConfig": {
+          "workloadPool": "acme-commerce-prod.svc.id.goog"
+        },
+        "networkConfig": {
+          "gatewayApiConfig": {
+            "channel": "CHANNEL_STANDARD"
+          }
+        },
+        "currentMasterVersion": "1.33.4-gke.1013000"
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v2-0-0-c4e8a10?fieldManager=bemmoly-front-door&force=true",
+      "body": {
+        "kind": "Service",
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "annotations": {
+            "cloud.google.com/neg": "{\"exposed_ports\":{\"80\":{\"name\":\"fd-checkout-checkout-api-v2-0-0-c4e8a10-80\"}}}"
+          }
+        }
+      },
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10",
+          "namespace": "checkout",
+          "annotations": {
+            "cloud.google.com/neg": "{\"exposed_ports\":{\"80\":{\"name\":\"fd-checkout-checkout-api-v2-0-0-c4e8a10-80\"}}}"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/aggregated/networkEndpointGroups?filter=name+%3D+%22fd-checkout-checkout-api-v2-0-0-c4e8a10-80%22",
+      "response": {
+        "items": {
+          "zones/asia-south1-a": {
+            "networkEndpointGroups": [
+              {
+                "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "zone": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a",
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "size": 1
+              }
+            ]
+          },
+          "zones/asia-south1-b": {
+            "networkEndpointGroups": [
+              {
+                "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "zone": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b",
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "size": 1
+              }
+            ]
+          },
+          "zones/asia-south1-c": {
+            "warning": {
+              "code": "NO_RESULTS_ON_PAGE"
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/healthChecks/bm-fd-prod-asia-south1-neg",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/healthChecks",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "bm-fd-prod-asia-south1-neg",
+        "type": "HTTP",
+        "httpHealthCheck": {
+          "portSpecification": "USE_SERVING_PORT"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "The resource was not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      },
+      "body": {
+        "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+        "loadBalancingScheme": "EXTERNAL_MANAGED",
+        "healthChecks": [
+          "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/healthChecks/bm-fd-prod-asia-south1-neg"
+        ],
+        "backends": [
+          {
+            "group": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+            "balancingMode": "RATE"
+          },
+          {
+            "group": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+            "balancingMode": "RATE"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "fingerprint": "fp-1",
+        "defaultService": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+        "hostRules": [
+          {
+            "hosts": ["checkout-api.prod.acme.example"],
+            "pathMatcher": "h-checkout-api-prod-acme-example"
+          }
+        ],
+        "pathMatchers": [
+          {
+            "name": "h-checkout-api-prod-acme-example",
+            "defaultRouteAction": {
+              "weightedBackendServices": [
+                {
+                  "backendService": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+                  "weight": 100
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+      "body": {
+        "fingerprint": "fp-1",
+        "defaultService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+        "pathMatchers": [
+          {
+            "defaultRouteAction": {
+              "weightedBackendServices": [
+                {
+                  "backendService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+                  "weight": 90
+                },
+                {
+                  "backendService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                  "weight": 10
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example",
+      "response": {
+        "name": "bm-fd-280ac2e7-checkout-api-prod-acme-example"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "sslCertificates": [
+          "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/forwardingRules/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "IPAddress": "34.120.1.10",
+        "portRange": "443-443",
+        "target": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1"
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://34.118.10.2/api/v1/namespaces/checkout/services/checkout-api-v2-0-0-c4e8a10?fieldManager=bemmoly-front-door&force=true",
+      "response": {
+        "metadata": {
+          "name": "checkout-api-v2-0-0-c4e8a10"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/aggregated/networkEndpointGroups",
+      "response": {
+        "items": {
+          "zones/asia-south1-a": {
+            "networkEndpointGroups": [
+              {
+                "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "zone": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a",
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "size": 1
+              }
+            ]
+          },
+          "zones/asia-south1-b": {
+            "networkEndpointGroups": [
+              {
+                "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "zone": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b",
+                "selfLink": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                "size": 1
+              }
+            ]
+          },
+          "zones/asia-south1-c": {
+            "warning": {
+              "code": "NO_RESULTS_ON_PAGE"
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/healthChecks/bm-fd-prod-asia-south1-neg",
+      "response": {
+        "name": "bm-fd-prod-asia-south1-neg"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+      "response": {
+        "name": "fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+        "fingerprint": "bs-1",
+        "backends": [
+          {
+            "group": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-a/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80"
+          },
+          {
+            "group": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/zones/asia-south1-b/networkEndpointGroups/fd-checkout-checkout-api-v2-0-0-c4e8a10-80"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "fingerprint": "fp-2",
+        "defaultService": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+        "hostRules": [
+          {
+            "hosts": ["checkout-api.prod.acme.example"],
+            "pathMatcher": "h-checkout-api-prod-acme-example"
+          }
+        ],
+        "pathMatchers": [
+          {
+            "name": "h-checkout-api-prod-acme-example",
+            "defaultRouteAction": {
+              "weightedBackendServices": [
+                {
+                  "backendService": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+                  "weight": 90
+                },
+                {
+                  "backendService": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                  "weight": 10
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/urlMaps/bm-fd-prod-asia-south1",
+      "body": {
+        "fingerprint": "fp-2",
+        "defaultService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+        "pathMatchers": [
+          {
+            "defaultRouteAction": {
+              "weightedBackendServices": [
+                {
+                  "backendService": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/fd-checkout-checkout-api-v2-0-0-c4e8a10-80",
+                  "weight": 100
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example",
+      "response": {
+        "name": "bm-fd-280ac2e7-checkout-api-prod-acme-example"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "sslCertificates": [
+          "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/forwardingRules/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "target": "https://www.googleapis.com/compute/v1/projects/acme-commerce-prod/global/targetHttpsProxies/bm-fd-prod-asia-south1"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/backendServices/bm-prod-asia-south1-checkout-api-run",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/delete-1",
+        "done": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/regions/asia-south1/networkEndpointGroups/bm-run-checkout-api",
+      "response": {
+        "name": "operation-1",
+        "status": "DONE"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/addresses/bm-fd-prod-asia-south1",
+      "response": {
+        "name": "bm-fd-prod-asia-south1",
+        "address": "34.120.1.10"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/acme-commerce-prod/global/sslCertificates/bm-fd-280ac2e7-checkout-api-prod-acme-example",
+      "response": {
+        "name": "bm-fd-280ac2e7-checkout-api-prod-acme-example",
+        "managed": {
+          "domains": ["checkout-api.prod.acme.example"],
+          "status": "PROVISIONING",
+          "domainStatus": {
+            "checkout-api.prod.acme.example": "FAILED_NOT_VISIBLE"
+          }
+        }
+      }
+    }
+  ]
+}

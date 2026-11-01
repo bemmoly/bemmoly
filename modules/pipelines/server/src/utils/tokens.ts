@@ -1,15 +1,15 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 /*
- * Pool, runner and job tokens: 32 random bytes behind a prefix that says what the token is
+ * Pool, runner, job and launch tokens: 32 random bytes behind a prefix that says what the token is
  * (so a leaked one is recognisable in a scanner), stored only as a SHA-256 hash. The tokens
  * are random, not chosen by people, so a fast hash is enough; a slow one would only slow
  * every runner call.
  */
 
-export type TokenKind = 'pool' | 'runner' | 'job';
+export type TokenKind = 'pool' | 'runner' | 'job' | 'launch';
 
-const PREFIX: Record<TokenKind, string> = { pool: 'bpp', runner: 'bpr', job: 'bpj' };
+const PREFIX: Record<TokenKind, string> = { pool: 'bpp', runner: 'bpr', job: 'bpj', launch: 'bpl' };
 
 export function newToken(kind: TokenKind): string {
   return `${PREFIX[kind]}_${randomBytes(32).toString('base64url')}`;

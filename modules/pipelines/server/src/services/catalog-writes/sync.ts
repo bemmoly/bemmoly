@@ -1,8 +1,9 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import type { ApplicationFile } from '../../../../shared/application-yaml.ts';
 import type { RepositoryInput } from '../../../../shared/catalog-writes.ts';
-import { applicationPathOf, isApplicationFile, readApplicationFile } from './file.ts';
+import { REPOSITORY_FILE_PATH } from '../../../../shared/repository-yaml.ts';
 import { findOwner } from './owners.ts';
+import { planCatalogFiles, whereIs, type CatalogFile, type PlannedApplication } from './plan.ts';
 import { upsertRepository, type RepositoryRecord } from './repositories.ts';
 import { storable } from '../runs/templates.ts';
 import { refreshSchedules } from '../triggers/schedules.ts';
@@ -13,12 +14,17 @@ import { refreshSchedules } from '../triggers/schedules.ts';
  * its application, a deleted one archives it, and a file that cannot be applied keeps its
  * error (shown on the repository) until a later push fixes it. An owner that names no team
  * still applies, as No owner, with a warning, since a broken owner must not hide the app.
+ * With a repository file, plan.ts merges each application's settings first; an application
+ * listed only there is defined by it, and leaving the list archives it.
  */
 
 export interface ApplicationFilesInput {
   repository: Pick<RepositoryInput, 'fullName'> & Partial<RepositoryInput>;
   commitSha: string;
-  files: Array<{ path: string; content: string | null }>;
+  /** application.yaml files and the repository file; content null when the push deleted it. */
+  files: CatalogFile[];
+  /** Every catalog file in the repository is in `files`, not only those the push changed. */
+  complete?: boolean;
 }
 
 export interface ApplicationFilesResult {
@@ -60,23 +66,32 @@ async function applyFile(
   sql: SqlExecutor,
   repository: RepositoryRecord,
   input: ApplicationFilesInput,
-  path: string,
-  file: ApplicationFile,
+  planned: PlannedApplication,
   problems: Problem[],
 ): Promise<string | null> {
+  const { path, file } = planned;
   const fail = (message: string) => {
     problems.push({ path, message, applied: false });
     return null;
   };
   const { group, error } = await resolveGroup(sql, file);
-  if (!group) return fail(error ?? 'No group');
+  if (!group) return fail(`${whereIs(planned, 'group')}${error ?? 'No group'}`);
   const [existing] = await sql<
-    { id: string; source: string; repository_id: string | null; file_path: string | null }[]
+    {
+      id: string;
+      source: string;
+      repository_id: string | null;
+      file_path: string | null;
+      path: string;
+    }[]
   >`
-    select id, source, repository_id, file_path from pipeline_applications where key = ${file.name}`;
+    select id, source, repository_id, file_path, path
+    from pipeline_applications where key = ${file.name}`;
+  // Moving between a folder's file and the central list keeps the application.
+  const sameFolder = existing?.path === planned.folder;
   if (
     existing?.source === 'repository' &&
-    (existing.repository_id !== repository.id || existing.file_path !== path)
+    (existing.repository_id !== repository.id || (existing.file_path !== path && !sameFolder))
   ) {
     return fail(
       `${file.name} is already defined by another application.yaml; application names are unique.`,
@@ -86,7 +101,7 @@ async function applyFile(
   if (file.owner && !owner) {
     problems.push({
       path,
-      message: `No team matches ${file.owner}; ${file.name} has no owner until it does.`,
+      message: `${whereIs(planned, 'owner')}No team matches ${file.owner}; ${file.name} has no owner until it does.`,
       applied: true,
     });
   }
@@ -94,20 +109,22 @@ async function applyFile(
     description: file.description ?? null,
     owner: owner?.id ?? null,
     labels: file.labels,
-    path: applicationPathOf(path),
+    path: planned.folder,
     template: templateOf(file),
   };
   const [row] = await sql<{ id: string }[]>`
     insert into pipeline_applications
       (key, name, description, domain_id, group_id, owner_team_id, tier, labels, lifecycle,
        runtime, repository_id, path, paths, template_ref, source, file_path, source_commit_sha,
-       pipeline, pipeline_source, pipeline_commit_sha)
+       pipeline, pipeline_source, pipeline_commit_sha, file_runtimes, settings_sources)
     values (${file.name}, ${file.name}, ${values.description}, ${group.domain_id}::uuid,
       ${group.id}::uuid, ${values.owner}::uuid, ${file.tier}, ${values.labels}::text[],
       ${file.lifecycle}, ${file.runtime ?? 'container-service'}, ${repository.id}::uuid,
       ${values.path}, ${file.paths}::text[], ${values.template}, 'repository', ${path},
       ${input.commitSha}, ${file.pipeline ? JSON.stringify(storable(file.pipeline)) : null}::jsonb,
-      ${file.pipeline ? 'repository' : null}, ${file.pipeline ? input.commitSha : null})
+      ${file.pipeline ? 'repository' : null}, ${file.pipeline ? input.commitSha : null},
+      ${JSON.stringify(file.runtimes ?? {})}::jsonb,
+      ${JSON.stringify({ file: path, fields: planned.fields })}::jsonb)
     on conflict (key) do update set
       description = excluded.description, domain_id = excluded.domain_id,
       group_id = excluded.group_id, owner_team_id = excluded.owner_team_id, tier = excluded.tier,
@@ -117,7 +134,8 @@ async function applyFile(
       template_ref = excluded.template_ref, source = 'repository', file_path = excluded.file_path,
       source_commit_sha = excluded.source_commit_sha, pipeline = excluded.pipeline,
       pipeline_source = excluded.pipeline_source,
-      pipeline_commit_sha = excluded.pipeline_commit_sha, archived_at = null, updated_at = now()
+      pipeline_commit_sha = excluded.pipeline_commit_sha, file_runtimes = excluded.file_runtimes,
+      settings_sources = excluded.settings_sources, archived_at = null, updated_at = now()
     returning id`;
   // The pipeline's schedules follow its definition.
   if (row) await refreshSchedules(sql, row.id);
@@ -132,10 +150,15 @@ async function recordProblems(
   commitSha: string,
   problems: readonly Problem[],
 ) {
-  for (const problem of problems) {
+  // A file keeps one error row: the first few of its problems, in the order found.
+  const byPath = new Map<string, string[]>();
+  for (const problem of problems)
+    byPath.set(problem.path, [...(byPath.get(problem.path) ?? []), problem.message]);
+  for (const [path, messages] of byPath) {
+    const message = messages.slice(0, 3).join(' ');
     await sql`
       insert into pipeline_catalog_file_errors (repository_id, path, commit_sha, message)
-      values (${repositoryId}::uuid, ${problem.path}, ${commitSha}, ${problem.message})
+      values (${repositoryId}::uuid, ${path}, ${commitSha}, ${message})
       on conflict (repository_id, path) do update set
         commit_sha = excluded.commit_sha, message = excluded.message, updated_at = now()`;
   }
@@ -171,12 +194,39 @@ async function applyDependencies(
   }
 }
 
+/** Archives what `filePath` defined, apart from `keep`; pending archive changes are then done. */
+async function archive(sql: SqlExecutor, repositoryId: string, filePath: string, keep: string[]) {
+  const rows = await sql<{ id: string; key: string }[]>`
+    update pipeline_applications set archived_at = now(), updated_at = now()
+    where repository_id = ${repositoryId}::uuid and file_path = ${filePath}
+      and source = 'repository' and archived_at is null and not (key = any(${keep}::text[]))
+    returning id, key`;
+  const central = filePath === REPOSITORY_FILE_PATH;
+  const ids = rows.map((row) => row.id);
+  await sql`update pipeline_catalog_changes set state = 'applied', updated_at = now()
+    where kind = 'archive' and state = 'pending' and repository_id = ${repositoryId}::uuid
+      and ${central ? sql`application_id = any(${ids}::uuid[])` : sql`file_path = ${filePath}`}`;
+  if (!central) {
+    await sql`delete from pipeline_catalog_file_errors
+      where repository_id = ${repositoryId}::uuid and path = ${filePath}`;
+  }
+  return rows.map((row) => row.key);
+}
+
 export async function syncApplicationFiles(
   sql: SqlExecutor,
   input: ApplicationFilesInput,
 ): Promise<ApplicationFilesResult & { domains: string[] }> {
   const repository = await upsertRepository(sql, input.repository);
-  const problems: Problem[] = [];
+  const plan = planCatalogFiles(input.files, input.complete ?? false);
+  const problems: Problem[] = [...plan.problems];
+  if (plan.repositoryFileFixed) {
+    await sql`delete from pipeline_catalog_file_errors
+      where repository_id = ${repository.id}::uuid and path = ${REPOSITORY_FILE_PATH}`;
+  }
+  const archived: string[] = [];
+  for (const path of plan.archiveFiles)
+    archived.push(...(await archive(sql, repository.id, path, [])));
   const applied: Array<{
     id: string;
     key: string;
@@ -184,29 +234,12 @@ export async function syncApplicationFiles(
     file: ApplicationFile;
     content: string;
   }> = [];
-  const archived: string[] = [];
-  for (const { path, content } of input.files.filter((f) => isApplicationFile(f.path))) {
-    if (content === null) {
-      const rows = await sql<{ key: string }[]>`
-        update pipeline_applications set archived_at = now(), updated_at = now()
-        where repository_id = ${repository.id}::uuid and file_path = ${path}
-          and source = 'repository' and archived_at is null
-        returning key`;
-      archived.push(...rows.map((row) => row.key));
-      await sql`update pipeline_catalog_changes set state = 'applied', updated_at = now()
-        where kind = 'archive' and state = 'pending' and repository_id = ${repository.id}::uuid
-          and file_path = ${path}`;
-      await sql`delete from pipeline_catalog_file_errors
-        where repository_id = ${repository.id}::uuid and path = ${path}`;
-      continue;
-    }
-    const read = readApplicationFile(content);
-    if (!read.ok) {
-      problems.push({ path, message: read.error, applied: false });
-      continue;
-    }
-    const id = await applyFile(sql, repository, input, path, read.file, problems);
-    if (id) applied.push({ id, key: read.file.name, path, file: read.file, content });
+  for (const planned of plan.applications) {
+    const id = await applyFile(sql, repository, input, planned, problems);
+    if (id) applied.push({ id, key: planned.file.name, ...planned });
+  }
+  if (plan.keepCentral) {
+    archived.push(...(await archive(sql, repository.id, REPOSITORY_FILE_PATH, plan.keepCentral)));
   }
   await applyDependencies(sql, applied, problems);
   await recordProblems(sql, repository.id, input.commitSha, problems);

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { isoDateTimeSchema, personRefSchema, slugSchema } from './common.ts';
 import { environmentRefSchema } from './environments.ts';
+import { resolvedValueSchema } from './app-references.ts';
 
 /*
  * An application's variables and secrets, for every environment or one:
@@ -29,14 +30,23 @@ export const variableSchema = z.object({
   value: z.string().nullable(),
   /** A secret's version in the store; for a plain variable, how many times it was set. */
   version: z.number().int().nullable(),
-  /** "moving": a value from before secrets existed, waiting to be written to the store. */
-  state: z.enum(['set', 'moving']),
+  /**
+   * "moving": a value from before secrets existed, waiting to be written to the store.
+   * "needed": a secret copied from another environment without its value; a deploy there
+   * stops until someone sets one.
+   */
+  state: z.enum(['set', 'moving', 'needed']),
   /** What stops it moving or mounting, in one sentence; null when nothing does. */
   problem: z.string().nullable(),
   /** Where a secret lives: "acme-shop-prod / bemmoly-shop-API_KEY-prod". */
   location: z.string().nullable(),
   updatedBy: personRefSchema.nullable(),
   updatedAt: isoDateTimeSchema,
+  /**
+   * A plain value naming other applications' addresses, filled in per environment it reaches
+   * (shared/app-references.ts). Empty when the value names none.
+   */
+  resolved: z.array(resolvedValueSchema).default([]),
 });
 
 export const variablesResponseSchema = z.object({

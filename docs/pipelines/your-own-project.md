@@ -8,6 +8,9 @@ service and its revisions. It attaches to a project you already have.
 Plan on about an hour the first time. Each step says what you should see, so you can tell where
 something went wrong.
 
+To start from an empty organization and let Pipelines create the projects instead, follow
+[Let Pipelines create your Google Cloud projects](managed-mode.md).
+
 ## What you need
 
 - **A Google Cloud project** you can deploy to, with billing on. Your own gcloud sign-in should
@@ -142,6 +145,9 @@ node apps/runner/src/main.ts --url http://localhost:8080 --pool-token <token> --
 Steps run as containers in Docker. The build runs Docker on your laptop and pushes with your own
 Docker credentials.
 
+Once a push reaches Dev in step 8, [Build machines](build-machines.md) moves this pool to Google
+Cloud Build or to GKE Autopilot, so jobs run with no laptop runner.
+
 ## 8. Push, and watch it reach Dev
 
 Push the file, or any change, to the default branch.
@@ -270,6 +276,36 @@ psql "$(grep '^DATABASE_URL=' apps/server/.env | cut -d= -f2-)" -c "select name,
 Deleting a variable on the Variables tab leaves the secret in Secret Manager, because running
 revisions and roll backs may still read it. Delete it there once nothing runs with it:
 `gcloud secrets delete bemmoly-shop-API_KEY-dev --project "$PROJECT"`.
+
+## Next: run it on GKE
+
+[Run an application on GKE](gke.md) moves this application to GKE Autopilot clusters you
+create, first in Dev, then in Prod, with a canary and a roll back there, while everything else
+stays on Cloud Run. [Move it with no failed requests](front-door.md) then puts a front door in
+front of Prod and moves it between Cloud Run and GKE as a traffic shift.
+
+## Next: a monorepo
+
+[Run a monorepo with one repository file](monorepo.md) describes many applications in one
+`.bemmoly/repository.yaml`: a shared Dockerfile with build args, path filters that wake only
+what a push touches, and libraries that are only checked.
+
+## Next: Stage on Cloud Run, Prod on GKE
+
+[Stage on Cloud Run, Prod on GKE](stage-and-prod.md) keeps Stage on Cloud Run at zero instances,
+for cost, and runs Prod on GKE Autopilot from the same definition, with deploy settings per
+environment and services that find each other by name.
+
+## Next: adopt what already runs
+
+[Adopt Stage as it runs, copy it to a fresh Prod](adopt-and-copy.md) brings Cloud Run services
+deployed by hand or by another CI into Pipelines without changing them, then copies their
+configuration to a new Prod on GKE Autopilot.
+
+## Next: take it with you
+
+[Export what Pipelines made](export.md) downloads everything here as Terraform and Helm, then
+shows that Terraform adopts the live project with no changes.
 
 ## What to send back
 

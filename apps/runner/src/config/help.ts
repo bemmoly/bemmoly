@@ -16,6 +16,8 @@ Options (each also reads the environment variable in brackets)
   --allow-build-path <dir>  A folder outside the job's workspace an image build may read; repeat for more [BEMMOLY_RUNNER_ALLOW_BUILD_PATHS]
   --data-dir <dir>       Where the registration, job folders and unsent logs live (default: ~/.bemmoly-runner) [BEMMOLY_RUNNER_DATA_DIR]
   --once                 Run one job, then exit, for one machine or pod per job [BEMMOLY_RUNNER_ONCE]
+  --launch-token <token> One-job mode on a machine Pipelines started: register for that one job, run it, exit [BEMMOLY_LAUNCH_TOKEN]
+  --volumes-from <name>  Step containers mount this container's volumes instead of a host folder; "self" is this container [BEMMOLY_RUNNER_VOLUMES_FROM]
   --docker-socket <path> The Docker socket (default: DOCKER_HOST, then Colima's, then /var/run/docker.sock)
   --log-level <level>    fatal, error, warn, info, debug or trace (default: info) [LOG_LEVEL]
 
@@ -23,7 +25,8 @@ How it works
   The runner only makes outgoing requests. It long-polls for a job, heartbeats while it works,
   checks out the commit, and runs each step as a container with the workspace at /workspace.
   Logs go out in ordered chunks and wait on disk when Bemmoly cannot be reached, so a job never
-  fails because the server was down.
+  fails because the server was down. In a pod Pipelines started on GKE Autopilot, it sets
+  BEMMOLY_RUNNER_POD, and steps run in the containers beside the runner, one per step image.
 
   Press Ctrl+C once to stop taking jobs and let the running one finish; press it again to
   cancel the running job.

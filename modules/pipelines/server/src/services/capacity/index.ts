@@ -10,7 +10,7 @@ import type {
   TeamShareBody,
   UpdatePoolBody,
 } from '../../../../shared/capacity.ts';
-import { createPoolBodySchema } from '../../../../shared/capacity.ts';
+import { createPoolBodySchema, updatePoolBodySchema } from '../../../../shared/capacity.ts';
 import { topicOf } from '../../../../shared/streams.ts';
 import {
   authorizePipelines,
@@ -20,13 +20,15 @@ import {
 } from '../deps.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { hashToken, newToken } from '../../utils/tokens.ts';
+import { machineSettings } from './hosting.ts';
 import { readPools } from './pools.ts';
 import { readCapacity } from './read.ts';
 
 /*
  * Runner pools and fair share (architecture §5, §6, Platform › Capacity). Reading is for
  * anyone in Pipelines; changing pools, tokens and weights is platform work. A pool's token is
- * shown once, on create and on rotate, and only its hash is kept.
+ * shown once, on create and on rotate, and only its hash is kept. A pool whose machines
+ * Pipelines starts also keeps how it starts them (hosting.ts).
  */
 
 export function createCapacityService(deps: PipelinesServiceDeps) {
@@ -53,13 +55,15 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
       await platform(ctx);
       const body = createPoolBodySchema.parse(input);
       const sql = requireDatabase(deps);
+      const machine = await machineSettings(sql, body.key, body.hosting, body);
       const token = newToken('pool');
       const [row] = await sql<{ token_rotated_at: Date }[]>`
         insert into pipeline_runner_pools (key, name, hosting, location, labels, min_runners,
-          max_runners, warm_runners, cloud_account_id, token_hash, token_rotated_at)
+          max_runners, warm_runners, cloud_account_id, token_hash, token_rotated_at, config)
         values (${body.key}, ${body.name}, ${body.hosting}, ${body.location ?? null},
           ${body.labels}::text[], ${body.minRunners}, ${body.maxRunners}, ${body.warmRunners},
-          ${body.cloudAccount ?? null}::uuid, ${hashToken(token)}, now())
+          ${machine?.accountId ?? body.cloudAccount ?? null}::uuid, ${hashToken(token)}, now(),
+          ${JSON.stringify(machine?.config ?? {})}::jsonb)
         on conflict (key) do nothing
         returning token_rotated_at`;
       if (!row) throw new ConflictError(`A pool called ${body.key} already exists`);
@@ -69,20 +73,35 @@ export function createCapacityService(deps: PipelinesServiceDeps) {
       };
     },
 
-    async update(ctx: RequestContext, key: string, body: UpdatePoolBody): Promise<RunnerPool> {
+    async update(ctx: RequestContext, key: string, input: UpdatePoolBody): Promise<RunnerPool> {
       await platform(ctx);
+      const body = updatePoolBodySchema.parse(input);
       const sql = requireDatabase(deps);
+      const pool = await onePool(key);
+      const machine = await machineSettings(sql, key, body.hosting ?? pool.hosting, body, {
+        cloudBuild: pool.cloudBuild !== null,
+        autopilot: pool.autopilot !== null,
+      });
       const updated = await sql`
         update pipeline_runner_pools set
           name = coalesce(${body.name ?? null}, name),
+          hosting = coalesce(${body.hosting ?? null}, hosting),
           location = coalesce(${body.location ?? null}, location),
           labels = coalesce(${body.labels ?? null}::text[], labels),
           min_runners = coalesce(${body.minRunners ?? null}, min_runners),
           max_runners = coalesce(${body.maxRunners ?? null}, max_runners),
           warm_runners = coalesce(${body.warmRunners ?? null}, warm_runners),
+          cloud_account_id = coalesce(${machine?.accountId ?? null}::uuid, cloud_account_id),
+          config = config || ${JSON.stringify(machine?.config ?? {})}::jsonb,
+          last_error = case when ${machine !== null} then null else last_error end,
           updated_at = now()
         where key = ${key} returning id`;
       if (updated.length === 0) throw new NotFoundError(`There is no runner pool called ${key}`);
+      await publishStreamEvent(sql, {
+        topic: topicOf.capacity(),
+        kind: 'capacity.updated',
+        data: {},
+      });
       return onePool(key);
     },
 

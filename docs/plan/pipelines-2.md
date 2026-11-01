@@ -18,6 +18,26 @@ three gaps that matter more than any bug:
 - **Nothing is installable outside the repository.** The runner, the `bp` CLI and the GitHub
   Action run only from source.
 
+## Status (29 October 2026)
+
+Every milestone has a draft pull request, each stacked on the one before, merged in this order:
+
+| Milestone | Pull request |
+| --- | --- |
+| 1. Ship to a project you already have | #244 |
+| 2. Safety defaults | #242 (stands alone) |
+| 3. Secrets and variables | #245 |
+| 5. GKE as a runtime | #246 |
+| 6. Cloud Build pools | #247 |
+| 4. Managed mode | #248 |
+| 6. Front door | #255 |
+| 6. GKE Autopilot runner pools | #256 |
+| 6. Terraform and Helm export, and the 2.0.0 release note | #257 |
+
+All of it has passed the unit, integration and e2e tests against the fake provider and
+recorded responses. None of it has run against a real account yet, so no milestone is done by
+the rules above until its journey is tested by hand.
+
 ## Rules for this plan
 
 - **Every milestone ends in something a person can test on their own project.** A milestone is

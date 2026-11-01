@@ -40,3 +40,10 @@ export function hasBinding(policy: IamPolicy, role: string, member: string): boo
 
 /** "serviceAccount:deployer@acme-commerce-prod.iam.gserviceaccount.com". */
 export const serviceAccountMember = (email: string) => `serviceAccount:${email}`;
+
+/**
+ * The policy member for whoever Bemmoly signs in as: a service account on a VM or through
+ * federation, or a person's own account on a laptop install.
+ */
+export const principalMember = (email: string) =>
+  email.endsWith('.gserviceaccount.com') ? `serviceAccount:${email}` : `user:${email}`;

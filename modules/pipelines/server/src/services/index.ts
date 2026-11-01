@@ -9,12 +9,14 @@ import { createAccessService } from './access/index.ts';
 import { createArtifactsService } from './artifacts/index.ts';
 import { createDispatchWakeups } from './dispatcher/wakeup.ts';
 import { createLogsService } from './logs/index.ts';
+import { createMachinesService } from './machines/index.ts';
 import { createRunnerService, createVariableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
+import { announce } from './runs/context.ts';
 import { reportJobCheck, reportRunCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
 import { createCatalogService } from './catalog/index.ts';
@@ -43,6 +45,14 @@ import { providersFromSettings } from './providers/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
 import { createVariablesService } from './variables/index.ts';
+import { createClustersService } from './clusters/index.ts';
+import { createRuntimesService } from './runtimes/index.ts';
+import { createFrontDoorsService } from './front-doors/index.ts';
+import { createMovesService } from './moves/index.ts';
+import { createExportsService } from './exports/index.ts';
+import { createDeploySettingsService } from './deploy-settings/index.ts';
+import { createAdoptionService } from './adoption/index.ts';
+import { createConfigCopyService } from './config-copy/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -68,6 +78,8 @@ export interface PipelinesServicesDeps {
   providers?: ProviderRegistry;
   /** Wakes the shipping engine at a time; without it the minute sweep does the waking. */
   wake?: Waker;
+  /** Wakes one runtime move at a time; without it the minute sweep does. */
+  wakeMove?: (id: string, at: Date) => Promise<void>;
   /** Opens a webhook gate's sealed signing secret. */
   webhookSecrets?: WebhookSecrets;
   /** The server's configured address: the audience CI's OIDC tokens must name. */
@@ -120,6 +132,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   });
   const providers = input.providers ?? providersFromSettings(input.settings);
   const variables = createVariablesService({ ...deps, providers });
+  const providerSource = typeof providers === 'function' ? providers : async () => providers;
   const triggers = createTriggersService(execution);
   // Runs start from code host events in arrival order per repository (the inbox's promise).
   inbox.handlers.on('push', async (event) => void (await triggers.push(event)));
@@ -182,6 +195,28 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ...deps,
       providers,
       ...(input.sendJob ? { sendJob: input.sendJob } : {}),
+    }),
+    clusters: createClustersService({ ...deps, providers: providerSource }),
+    runtimes: createRuntimesService({ ...deps, providers: providerSource }),
+    frontDoors: createFrontDoorsService({ ...deps, providers }),
+    moves: createMovesService({
+      ...deps,
+      providers,
+      ...(input.now ? { now: input.now } : {}),
+      variables: variables.forDeploy,
+    }),
+    exports: createExportsService({ ...deps, providers }),
+    deploySettings: createDeploySettingsService(deps),
+    adoption: createAdoptionService({
+      ...deps,
+      providers,
+      ...(input.now ? { now: input.now } : {}),
+    }),
+    configCopy: createConfigCopyService({ ...deps, providers }),
+    machines: createMachinesService({
+      ...deps,
+      providers,
+      announce: (outcomes) => announce(execution, outcomes),
     }),
   };
 }

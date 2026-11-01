@@ -192,13 +192,13 @@ describe('the landing zone reconciler', () => {
     h.world.accountQuota = 2;
     const id = await connect('Small Billing', 'per-domain-environment');
     const plan = await h.services.clouds.plan(h.as(h.users.admin), id, {});
-    expect(plan.blockers).toEqual([expect.stringContaining('7 new projects')]);
+    expect(plan.blockers).toEqual([expect.stringContaining('8 new projects')]);
     await expect(
       h.services.clouds.apply(h.as(h.users.admin), id, {
         planId: plan.planId,
         specHash: plan.specHash,
       }),
-    ).rejects.toThrow(/7 new projects/);
+    ).rejects.toThrow(/8 new projects/);
     h.world.accountQuota = 100;
   });
 });

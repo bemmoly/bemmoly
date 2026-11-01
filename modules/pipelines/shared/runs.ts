@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { applicationRefSchema, repositoryRefSchema } from './catalog.ts';
+import { jobMachineSchema } from './machines.ts';
 import {
   glyphStateSchema,
   idSchema,
@@ -105,6 +106,8 @@ export const jobSchema = z.object({
   startedAt: isoDateTimeSchema.nullable(),
   finishedAt: isoDateTimeSchema.nullable(),
   steps: z.array(stepSchema),
+  /** The machine Pipelines started for this job, such as a Cloud Build build; else null. */
+  machine: jobMachineSchema.nullable(),
 });
 
 export const runSummarySchema = z.object({

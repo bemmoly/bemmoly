@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  deployRuntimeSchema,
   environmentClassSchema,
   idSchema,
   providerSchema,
@@ -44,6 +45,8 @@ export const createEnvironmentBodySchema = z.object({
   /** Left to right; after the last environment when left out. */
   position: z.number().int().min(0).max(10_000).optional(),
   protection: protectionPatchSchema.optional(),
+  /** Cloud Run when left out. */
+  defaultRuntime: deployRuntimeSchema.optional(),
 });
 
 /** Only what is sent changes; every field is optional and none has a default. */
@@ -55,6 +58,7 @@ export const updateEnvironmentBodySchema = z
     region: regionSchema.nullable(),
     position: z.number().int().min(0).max(10_000),
     protection: protectionPatchSchema,
+    defaultRuntime: deployRuntimeSchema,
   })
   .partial()
   .refine((body) => Object.keys(body).length > 0, 'Change at least one thing');

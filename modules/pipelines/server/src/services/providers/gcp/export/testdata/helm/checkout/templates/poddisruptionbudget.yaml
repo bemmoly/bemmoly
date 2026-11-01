@@ -1,0 +1,14 @@
+{{- if and .Values.application .Values.disruptionBudget }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: {{ .Values.disruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      pipelines.bemmoly.dev/revision: {{ .Values.revision }}
+{{- end }}

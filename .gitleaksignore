@@ -2,3 +2,9 @@
 # since: a masking test's sample secret and a recorded federation fixture. Neither is real.
 adf2ca2b1f4117fbe1e5d20577345b4ce1b9e813:apps/runner/src/utils/lines.test.ts:generic-api-key:43
 6bd8663688017e88b438262df66f26927c3e9591:modules/pipelines/server/src/clients/gcp/fixtures/federation.json:generic-api-key:9
+# A made-up Cloud Billing page token in the managed-mode fixture, since replaced by "page-2".
+fe60b051c6435c575ba9856c96bf99d40a7603c5:modules/pipelines/server/src/clients/gcp/fixtures/managed-billing.json:generic-api-key:22
+fe60b051c6435c575ba9856c96bf99d40a7603c5:modules/pipelines/server/src/clients/gcp/fixtures/managed-billing.json:generic-api-key:27
+# A made-up Cloud Run page token in the adopt fixture, since replaced by "page-2".
+4e370d47915042b6802bb5660de5f81232bc2ba7:modules/pipelines/server/src/clients/gcp/fixtures/cloud-run-adopt.json:generic-api-key:154
+4e370d47915042b6802bb5660de5f81232bc2ba7:modules/pipelines/server/src/clients/gcp/fixtures/cloud-run-adopt.json:generic-api-key:211

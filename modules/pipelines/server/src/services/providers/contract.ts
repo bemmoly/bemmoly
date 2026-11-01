@@ -1,5 +1,19 @@
 import type { CloudResourceKind, Layout } from '../../../../shared/clouds.ts';
-import type { EnvironmentClass, Health, Provider, Runtime } from '../../../../shared/common.ts';
+import type { ClustersPart, Placement, RuntimeParts } from './cluster-contract.ts';
+import type {
+  DeployRuntime,
+  EnvironmentClass,
+  Health,
+  Provider,
+  Runtime,
+} from '../../../../shared/common.ts';
+import type { BillingHeadroom } from './org-contract.ts';
+import type { FrontDoorPart } from './front-door-contract.ts';
+import type { ExportPart } from './export-contract.ts';
+import type { AccessPart, CostPart } from './planned-contract.ts';
+import type { RunnersPart } from './runners-contract.ts';
+import type { ResolvedDeploySettings, ServiceAddress } from './deploy-settings-contract.ts';
+import type { AdoptPart } from './adopt-contract.ts';
 
 /*
  * The provider model (architecture §14). Everything cloud-specific sits behind these
@@ -22,6 +36,10 @@ export const PROVIDER_PARTS = [
   'access',
   'cost',
 ] as const;
+
+export type { MachineLaunch, MachineRef, MachineStatus, RunnersPart } from './runners-contract.ts';
+export { ApplyStopped, type BillingHeadroom } from './org-contract.ts';
+export type { AccessPart, CostPart } from './planned-contract.ts';
 
 export type ProviderPart = (typeof PROVIDER_PARTS)[number];
 export type PartAvailability = 'available' | 'coming_soon' | 'unsupported';
@@ -46,6 +64,8 @@ export interface DeployTarget {
    */
   account: { externalId: string; name: string; config?: Readonly<Record<string, unknown>> } | null;
   application: { id: string; key: string; runtime: Runtime };
+  /** Which runtime it runs on there, and the cluster when that runtime needs one. */
+  placement?: Placement;
 }
 
 /** What a target needs to know about a release: the image by digest and its config. */
@@ -56,6 +76,8 @@ export interface ReleaseArtifact {
   imageRepository: string | null;
   imageDigests: Readonly<Record<string, string>>;
   resolvedConfig: Readonly<Record<string, unknown>>;
+  /** Resolved for the target; absent, the provider resolves the file's alone. */
+  settings?: ResolvedDeploySettings;
 }
 
 /**
@@ -89,7 +111,7 @@ export interface TargetsPart {
     target: DeployTarget,
     release: ReleaseArtifact,
     variables?: readonly DeployVariable[],
-  ): Promise<{ revision: string }>;
+  ): Promise<{ revision: string; address?: ServiceAddress }>;
   /** `percent` of traffic to `revision`, the rest to `stable` (or nothing when null). */
   shift(
     target: DeployTarget,
@@ -167,6 +189,11 @@ export interface OrgPart {
   ): Promise<{ externalId: string }>;
   /** Problems (quota, billing links) that stop `count` new accounts; empty when fine. */
   checkQuota(connection: ConnectionRecord, count: number): Promise<string[]>;
+  /**
+   * How many accounts the billing account pays for now, and the limit to compare against.
+   * Clouds that publish no limit answer their usual default with `recorded` false.
+   */
+  billing?(connection: ConnectionRecord): Promise<BillingHeadroom>;
 }
 
 /** One neutral resource of the landing zone as declared, before any provider maps it. */
@@ -227,32 +254,6 @@ export interface SecretsPart {
   ): Promise<string>;
 }
 
-export interface RunnersPart {
-  ensurePool(
-    connection: ConnectionRecord,
-    input: { account: string; name: string; machine: string; min: number; max: number },
-  ): Promise<{ ref: string }>;
-  scale(connection: ConnectionRecord, input: { ref: string; size: number }): Promise<void>;
-}
-
-export interface AccessPart {
-  grant(
-    connection: ConnectionRecord,
-    input: { account: string; principal: string; role: string; until: Date },
-  ): Promise<void>;
-  revoke(
-    connection: ConnectionRecord,
-    input: { account: string; principal: string; role: string },
-  ): Promise<void>;
-}
-
-export interface CostPart {
-  spend(
-    connection: ConnectionRecord,
-    input: { account: string; from: Date; to: Date },
-  ): Promise<{ amount: number; currency: string } | null>;
-}
-
 /** What a provider is, and the parts it implements. */
 export interface CloudProvider {
   id: Provider;
@@ -270,9 +271,23 @@ export interface CloudProvider {
   runners?: RunnersPart;
   access?: AccessPart;
   cost?: CostPart;
+  clusters?: ClustersPart;
+  frontDoor?: FrontDoorPart;
+  export?: ExportPart;
+  /** Services already running on the default runtime, to adopt. */
+  adopt?: AdoptPart;
+  /**
+   * Runtimes beyond the default one `targets` and `metrics` serve, such as GKE beside Cloud
+   * Run. Target resolution swaps these in for the application's runtime in an environment.
+   */
+  runtimes?: Partial<Record<DeployRuntime, RuntimeParts>>;
 }
 
 export function partAvailability(provider: CloudProvider, part: ProviderPart): PartAvailability {
   if (provider[part]) return 'available';
   return provider.comingSoon.includes(part) ? 'coming_soon' : 'unsupported';
 }
+
+export type * from './cluster-contract.ts';
+export type * from './deploy-settings-contract.ts';
+export type * from './adopt-contract.ts';

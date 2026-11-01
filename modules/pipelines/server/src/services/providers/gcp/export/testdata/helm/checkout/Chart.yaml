@@ -1,0 +1,5 @@
+apiVersion: v2
+name: checkout
+description: The checkout group's applications, as Bemmoly Pipelines deployed them to GKE.
+type: application
+version: 0.1.0

@@ -1,0 +1,118 @@
+{
+  "recorded": "Hand-written from the Google Cloud REST reference (shapes and field names as documented); not captured from a live organisation. Replace with a capture from a sandbox: see README.md beside this file.",
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-nonprod-7c1e",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Project acme-nonprod-7c1e not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-nonprod-7c1e",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Project acme-nonprod-7c1e not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects",
+      "body": {
+        "projectId": "acme-nonprod-7c1e",
+        "displayName": "Non-production",
+        "parent": "folders/417302018845",
+        "labels": {
+          "class": "dev",
+          "environment": "nonprod",
+          "managed-by": "bemmoly"
+        }
+      },
+      "response": {
+        "name": "operations/cp.6618209977",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.CreateProjectMetadata",
+          "createTime": "2026-10-29T09:14:31Z"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/operations/cp.6618209977",
+      "response": {
+        "name": "operations/cp.6618209977",
+        "done": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/operations/cp.6618209977",
+      "response": {
+        "name": "operations/cp.6618209977",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.Project",
+          "name": "projects/771205334277",
+          "parent": "folders/417302018845",
+          "projectId": "acme-nonprod-7c1e",
+          "state": "ACTIVE",
+          "displayName": "Non-production",
+          "createTime": "2026-10-29T09:14:33.120Z",
+          "updateTime": "2026-10-29T09:14:35.004Z",
+          "etag": "W/\"5c1f3b2a9e7d4f11\"",
+          "labels": {
+            "class": "dev",
+            "environment": "nonprod",
+            "managed-by": "bemmoly"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/projects/acme-nonprod-7c1e/billingInfo",
+      "response": {
+        "name": "projects/acme-nonprod-7c1e/billingInfo",
+        "projectId": "acme-nonprod-7c1e",
+        "billingAccountName": "",
+        "billingEnabled": false
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://cloudbilling.googleapis.com/v1/projects/acme-nonprod-7c1e/billingInfo",
+      "body": {
+        "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9"
+      },
+      "status": 400,
+      "response": {
+        "error": {
+          "code": 400,
+          "message": "Precondition check failed.",
+          "status": "FAILED_PRECONDITION",
+          "details": [
+            {
+              "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+              "violations": [
+                {
+                  "subject": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+                  "description": "Cloud billing quota exceeded: https://support.google.com/code/contact/billing_quota_increase"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

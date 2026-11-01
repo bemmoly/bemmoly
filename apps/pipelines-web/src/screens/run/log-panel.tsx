@@ -100,6 +100,17 @@ export function LogPanel({
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-3 py-2">
         <span className="font-medium text-tx">{job.name}</span>
         <span className="truncate text-12 text-tx-3">{meta}</span>
+        {job.machine?.logUrl ? (
+          <a
+            href={job.machine.logUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 text-12 text-tx-2 hover:text-acc"
+            title={job.machine.ref ?? undefined}
+          >
+            {t('pipelines.log.machineLog')}
+          </a>
+        ) : null}
         {steps.length > 1 ? (
           <Select
             size="sm"
