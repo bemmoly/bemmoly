@@ -21,6 +21,7 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
 import { Panel } from '../../parts/screen.tsx';
+import { NewGroupDialog } from './new-group-dialog.tsx';
 import { RepositoryFiles } from './repository-file.tsx';
 
 const SIGNAL = {
@@ -87,6 +88,7 @@ export function Proposals({
     () => new Set(items.map((item) => item.id)),
   );
   const [group, setGroup] = useState('');
+  const [making, setMaking] = useState(false);
   const needsGroup = items.some((item) => picked.has(item.id) && !item.group);
   const accept = useMutation({
     mutationFn: () =>
@@ -214,6 +216,11 @@ export function Proposals({
             />
           </Field>
         )}
+        {needsGroup && (
+          <Button variant="secondary" onClick={() => setMaking(true)}>
+            {t('pipelines.newGroup.action')}
+          </Button>
+        )}
         <p className="flex-1 text-12 text-tx-3">{t('pipelines.start.noOwnerNote')}</p>
         <Button
           variant="primary"
@@ -224,6 +231,7 @@ export function Proposals({
           {t('pipelines.start.accept', { count: picked.size })}
         </Button>
       </div>
+      <NewGroupDialog open={making} onClose={() => setMaking(false)} onCreated={setGroup} />
     </Panel>
   );
 }
