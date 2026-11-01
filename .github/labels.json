@@ -47,6 +47,11 @@
   { "name": "dependencies", "color": "0366d6", "description": "Dependency updates" },
   { "name": "ci", "color": "c5def5", "description": "Workflows and quality gates" },
   { "name": "ui", "color": "f9d0c4", "description": "Needs a screenshot beside the mock" },
+  {
+    "name": "accessibility",
+    "color": "5319e7",
+    "description": "Runs the accessibility audit on this pull request"
+  },
   { "name": "duplicate", "color": "cfd3d7", "description": "Already reported" },
   { "name": "wontfix", "color": "ffffff", "description": "Out of scope for the design" },
   {
