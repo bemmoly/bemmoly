@@ -6,16 +6,17 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 ## Workflows
 
-| Workflow                        | Runs on                                       | Jobs (status check names)                                                                        |
-| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Accessibility (theme)**, **Lighthouse** |
-| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                               |
-| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release         |
-| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                              |
-| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h                |
-| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                                     |
-| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                                   |
-| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                                      |
+| Workflow                            | Runs on                                                            | Jobs (status check names)                                                                |
+| ----------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `ci.yml` (CI)                       | pull requests, merge queue, `main`                                 | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
+| `accessibility.yml` (Accessibility) | pull requests labelled `accessibility`, manual, Tuesdays 04:00 UTC | **Accessibility (theme)**                                                                |
+| `security.yml` (Security)           | pull requests, merge queue, `main`, weekly                         | **Security scans**, **Image scan** (`main` and weekly only)                              |
+| `release.yml` (Release)             | `main`, `v*` tags                                                  | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
+| `nightly.yml` (Nightly)             | 02:30 UTC daily, manual                                            | Fresh VM install, Load budgets (k6)                                                      |
+| `soak.yml` (Soak)                   | 03:00 UTC Sundays, manual                                          | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
+| `ai-evals.yml` (AI evals)           | 03:00 UTC daily, manual                                            | Live AI evals (skips without a provider key)                                             |
+| `deploy-kits.yml` (Deploy kits)     | changes to `deploy/`, 03:30 UTC daily, manual                      | Helm chart, Terraform modules, Offline install                                           |
+| `labels.yml` (Labels)               | changes to `.github/labels.json`                                   | Sync labels                                                                              |
 
 What each check runs:
 
@@ -43,11 +44,11 @@ What each check runs:
   `pnpm --filter @bemmoly/web test:a11y` with `A11Y_THEME` set: every screen through axe with
   every rule on, colour contrast included, light and dark, desktop and 390px, on the dev mock
   backend; the Bemmoly runner also runs the keyboard, focus and semantics checks. Any violation
-  fails. See `docs/accessibility-conformance.md`. On a pull request it runs only when the
-  **UI changes** job finds a change to what it renders: `apps/web`, `packages/ui`,
-  `core-web`, `shared`, `api-client` or `editor`, a module's `web` or `shared` folder, the
-  root `package.json`, the lockfile, a root `tsconfig`, or this workflow. Otherwise it is
-  skipped. The merge queue and `main` always run it.
+  fails. See `docs/accessibility-conformance.md`. Five runners of about ten minutes each are
+  half of CI's runner time, so the audit has its own workflow and is not a required check.
+  Add the `accessibility` label to a pull request that changes what a screen renders: the
+  audit runs then and on every later push. It also runs by hand from the Actions tab
+  (Accessibility › Run workflow, on any branch) and on main every Tuesday.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
 - **Load budgets (k6)**, nightly: the server from `main` and Postgres pinned to two CPUs (the
@@ -71,7 +72,8 @@ What each check runs:
 - **Image scan**: builds the application image with the commit's revision and build time,
   fails when its OCI labels are missing or left "unknown" (`deploy/scripts/check-image-labels.sh`),
   and fails on fixable high or critical findings from Trivy. Until `deploy/` adds the
-  Dockerfile it passes with a notice.
+  Dockerfile it passes with a notice. Building the image takes minutes, so it runs on every
+  push to `main` and in the weekly run, and pull requests and the merge queue skip it.
 
 Caches: the pnpm store (through `actions/setup-node`), the Turborepo cache (`.turbo/cache`,
 per job and shard, through the `turbo-cache` input of `.github/actions/setup`), Playwright browsers keyed
@@ -91,7 +93,6 @@ Settings › Rules › Rulesets (or Branches › Branch protection rules) for `m
   - `Work end to end`
   - `Lighthouse`
   - `Security scans`
-  - `Image scan`
 - Require linear history; allow **squash merging** only (AGENTS.md §5).
 - Block force pushes and deletions. Do not allow bypass except for repository admins in an
   emergency, and say so in the pull request when it happens.
