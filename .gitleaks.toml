@@ -1,0 +1,14 @@
+# Gitleaks reads this file from the repository root, beside .gitleaksignore.
+# It keeps every default rule and allows two made-up page tokens that early versions of the
+# recorded Google Cloud fixtures used ("checkout-api" and "acme-old", base64 encoded). The
+# fixtures now say "page-2", but the old commits stay in history. .gitleaksignore names
+# findings by commit, and a rebase merge gives those commits new ids, so these two values
+# are allowed by value instead. Allow only made-up values here, never a real one.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Made-up page tokens in old recorded Google Cloud fixtures"
+regexTarget = "secret"
+regexes = ['''^Cg5jaGVja291dC1hcGk$''', '''^CgwIARIIYWNtZS1vbGQ$''']
