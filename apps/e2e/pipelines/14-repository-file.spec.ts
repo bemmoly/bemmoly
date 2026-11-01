@@ -63,6 +63,16 @@ test('a repository file defines a monorepo, and Set up proposes one', async ({ b
   await expect(proposed).toContainText('SERVICE: ${{ app.name }}');
   await expect(proposed).toContainText('name: market-orders');
   await expectLoaded(page);
+
+  // Proposals already found still offer a new scan, after a new team or repository file.
+  const scanned = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/v1/pipelines/discovery/scans') &&
+      response.request().method() === 'POST',
+  );
+  await page.locator('#proposals').getByRole('button', { name: 'Scan again' }).click();
+  expect((await scanned).status()).toBe(201);
+  await expect(proposed).toContainText('name: market-orders');
   await proposed.scrollIntoViewIfNeeded();
   await page.screenshot({ path: test.info().outputPath('proposed-light.png'), fullPage: true });
   await page.emulateMedia({ colorScheme: 'dark' });

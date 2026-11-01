@@ -117,6 +117,8 @@ export default function StartScreen() {
           <Proposals
             items={proposals.data.items}
             repositoryFiles={proposals.data.repositoryFiles}
+            scanning={discovery.scanning}
+            onScanAgain={discovery.scanAgain}
           />
         </div>
       )}
