@@ -24967,7 +24967,8 @@ var discoverySignalSchema = external_exports.enum([
   "gradle",
   "bazel",
   "backstage",
-  "application-yaml"
+  "application-yaml",
+  "shared-dockerfile"
 ]);
 var proposalStateSchema = external_exports.enum(["proposed", "accepted", "dismissed"]);
 var discoveryProposalSchema = external_exports.object({
@@ -24988,6 +24989,12 @@ var discoveryProposalSchema = external_exports.object({
   }).nullable(),
   /** From a Backstage system or an existing application.yaml; the person can change it. */
   group: groupPathSchema.nullable(),
+  /** The Dockerfile and args it shares with other folders; it then goes in repository.yaml. */
+  sharedBuild: external_exports.object({
+    dockerfile: external_exports.string(),
+    context: external_exports.string(),
+    args: external_exports.record(external_exports.string(), external_exports.string())
+  }).nullable().default(null),
   state: proposalStateSchema,
   applicationKey: slugSchema.nullable(),
   createdAt: isoDateTimeSchema
@@ -24997,7 +25004,9 @@ var listProposalsQuerySchema = keysetQuerySchema.extend({
   state: proposalStateSchema.default("proposed")
 });
 var proposalsPageSchema = keysetPageSchema(discoveryProposalSchema).extend({
-  total: external_exports.number().int()
+  total: external_exports.number().int(),
+  /** The repository file accepting would propose, per repository with shared builds. */
+  repositoryFiles: external_exports.array(external_exports.object({ repository: external_exports.string(), path: external_exports.string(), content: external_exports.string() })).default([])
 });
 var acceptProposalsBodySchema = external_exports.object({
   items: external_exports.array(
@@ -25479,6 +25488,136 @@ var logAppendedSchema = external_exports.object({
 });
 var jobParamsSchema = external_exports.object({ id: idSchema });
 
+// ../../../modules/pipelines/shared/build-args.ts
+var EXPRESSION = /\$\{\{\s*([^}]*?)\s*\}\}/g;
+var ALLOWED_EXPRESSION = /^(app\.(name|path)|inputs\.[a-zA-Z_][a-zA-Z0-9_]*)$/;
+var SECRET_NAME = /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY|ACCESS_?KEY|(^|_)KEY$)/i;
+function looksLikeSecretName(name) {
+  return SECRET_NAME.test(name);
+}
+var BUILD_ARG_NAME = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
+var buildArgsSchema = external_exports.record(external_exports.string(), external_exports.string().max(2e3)).superRefine((args, ctx) => {
+  const names = Object.keys(args);
+  if (names.length > 50) {
+    ctx.addIssue({ code: "custom", message: "A build takes at most 50 args" });
+  }
+  for (const [name, value] of Object.entries(args)) {
+    if (!BUILD_ARG_NAME.test(name)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: "Name build args with letters, digits and underscores, such as SERVICE"
+      });
+      continue;
+    }
+    const expressions = [...value.matchAll(EXPRESSION)].map((match) => match[1] ?? "");
+    const unknown2 = expressions.find((expression) => !ALLOWED_EXPRESSION.test(expression));
+    if (unknown2 !== void 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: `Build args take \${{ app.name }}, \${{ app.path }} or \${{ inputs.<name> }}, not \${{ ${unknown2} }}`
+      });
+    } else if (looksLikeSecretName(name) && expressions.some((expression) => !expression.startsWith("app."))) {
+      ctx.addIssue({
+        code: "custom",
+        path: [name],
+        message: `${name} looks like a secret and build args stay in the image history, so mount the secret in a step instead`
+      });
+    }
+  }
+});
+var buildOverrideSchema = external_exports.object({
+  dockerfile: external_exports.string().optional(),
+  context: external_exports.string().optional(),
+  platforms: external_exports.array(external_exports.string()).optional(),
+  pool: slugSchema.optional(),
+  args: buildArgsSchema.optional()
+});
+
+// ../../../modules/pipelines/shared/deploy-settings.ts
+var secretsAsSchema = external_exports.enum(["env", "files"]);
+var cpuSchema = external_exports.union([
+  external_exports.number().positive().max(64),
+  external_exports.string().trim().regex(/^\d+(\.\d+)?m?$/, "Write CPU as 1, 0.5 or 500m")
+]);
+var memorySchema = external_exports.string().trim().regex(/^\d+(\.\d+)?(Ki|Mi|Gi|Ti|K|M|G|T)?$/, "Write memory as 512Mi or 2Gi");
+var pathSchema = external_exports.string().trim().startsWith("/", "A path starts with /").max(300);
+var deploySettingsSchema = external_exports.object({
+  scaling: external_exports.object({
+    /** Instances on Cloud Run, replicas on GKE. */
+    min: external_exports.number().int().min(0).max(1e3),
+    max: external_exports.number().int().min(1).max(1e3),
+    /** Cloud Run only: requests one instance takes at once. */
+    concurrency: external_exports.number().int().min(1).max(1e3),
+    /** GKE only: the CPU use, in percent of requests, the autoscaler aims for. */
+    cpuTarget: external_exports.number().int().min(1).max(100)
+  }).partial().optional(),
+  resources: external_exports.object({ cpu: cpuSchema, memory: memorySchema }).partial().optional(),
+  port: external_exports.number().int().min(1).max(65535).optional(),
+  healthcheck: external_exports.object({
+    /** Liveness: a failing answer restarts the instance or pod. */
+    path: pathSchema,
+    /** Readiness: no traffic until it answers. The liveness path when absent. */
+    ready: pathSchema
+  }).partial().optional(),
+  secretsAs: secretsAsSchema.optional()
+});
+var DEPLOY_SETTING_FIELDS = [
+  "scaling.min",
+  "scaling.max",
+  "scaling.concurrency",
+  "scaling.cpuTarget",
+  "resources.cpu",
+  "resources.memory",
+  "port",
+  "healthcheck.path",
+  "healthcheck.ready",
+  "secretsAs"
+];
+var deploySettingFieldSchema = external_exports.enum(DEPLOY_SETTING_FIELDS);
+var deploySettingSourceSchema = external_exports.enum([
+  "pipelines",
+  "file-environment",
+  "file",
+  "default"
+]);
+var deploySettingValueSchema = external_exports.union([external_exports.number(), external_exports.string()]).nullable();
+var deploySettingEntrySchema = external_exports.object({
+  field: deploySettingFieldSchema,
+  /** What the next deploy uses; null when nothing sets it and the runtime has no default. */
+  value: deploySettingValueSchema,
+  source: deploySettingSourceSchema,
+  /** False when this runtime has no such setting, such as concurrency on GKE. */
+  applies: external_exports.boolean()
+});
+var applicationDeploySettingsSchema = external_exports.object({
+  environment: environmentRefSchema,
+  runtime: deployRuntimeSchema,
+  /** The settings made in Pipelines here, exactly as stored. */
+  settings: deploySettingsSchema,
+  effective: external_exports.array(deploySettingEntrySchema),
+  /** GKE keeps all but one replica up through upgrades when it runs two or more. */
+  disruptionBudget: external_exports.boolean(),
+  /** The release whose application.yaml the file values were read from; null before one. */
+  release: external_exports.object({ id: external_exports.string(), version: external_exports.string() }).nullable(),
+  /** Why the next deploy would refuse these settings, in one sentence; null when fine. */
+  problem: external_exports.string().nullable()
+});
+var applicationDeploySettingsResponseSchema = external_exports.object({
+  items: external_exports.array(applicationDeploySettingsSchema)
+});
+var deploySettingsParamsSchema = external_exports.object({ key: slugSchema, environment: slugSchema });
+var environmentRuntimeItemSchema = external_exports.object({
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  runtime: deployRuntimeSchema,
+  /** "environment" follows the default; the others override it. */
+  source: external_exports.enum(["pipelines", "file", "environment"])
+});
+var environmentRuntimesResponseSchema = external_exports.object({
+  items: external_exports.array(environmentRuntimeItemSchema)
+});
+
 // ../../../modules/pipelines/shared/pipeline-spec.ts
 var scalarSchema = external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean()]);
 var templateRefSchema = external_exports.string().trim().regex(
@@ -25527,7 +25666,9 @@ var buildSpecSchema = external_exports.object({
   context: external_exports.string().default("."),
   platforms: external_exports.array(external_exports.string()).default(["linux/amd64"]),
   /** The runner pool that builds the image; the organisation's default when absent. */
-  pool: slugSchema.optional()
+  pool: slugSchema.optional(),
+  /** `--build-arg` values; see build-args.ts for what they may name. */
+  args: buildArgsSchema.default({})
 });
 var pipelineStepSpecSchema = external_exports.object({
   name: external_exports.string().min(1).max(120),
@@ -25562,10 +25703,17 @@ var deploySpecSchema = external_exports.object({
   secrets: external_exports.record(envNameSchema, external_exports.string().min(1)).default({}),
   healthcheck: external_exports.object({
     path: external_exports.string().startsWith("/").default("/healthz"),
-    timeoutSeconds: external_exports.number().int().min(1).max(300).default(5)
+    timeoutSeconds: external_exports.number().int().min(1).max(300).default(5),
+    /** Readiness, when it differs from the liveness `path`. */
+    ready: external_exports.string().startsWith("/").optional()
   }).optional(),
   /** Anyone on the internet may call it; otherwise callers need an identity token. */
-  public: external_exports.boolean().optional()
+  public: external_exports.boolean().optional(),
+  /** Instances or replicas, and what the autoscaler aims for (shared/deploy-settings.ts). */
+  scaling: deploySettingsSchema.shape.scaling,
+  secretsAs: secretsAsSchema.optional(),
+  /** Settings for one environment by its key, over the ones above. */
+  environments: external_exports.record(slugSchema, deploySettingsSchema).optional()
 });
 var pipelineTemplateSchema = external_exports.object({
   inputs: external_exports.record(external_exports.string(), templateInputSchema).default({}),
@@ -25583,6 +25731,8 @@ var pipelineExtendsSchema = external_exports.object({
   /** Added after the template's steps; locked template steps always stay. */
   test: external_exports.array(pipelineStepSpecSchema).optional(),
   deploy: deploySpecSchema.partial().optional(),
+  /** Changes to the template's build, such as a Dockerfile or build args. */
+  build: buildOverrideSchema.optional(),
   /** More inputs for the run form, beside the template's. */
   inputs: external_exports.record(external_exports.string(), templateInputSchema).default({}),
   schedules: external_exports.array(scheduleSpecSchema).max(20).optional()
@@ -25763,6 +25913,86 @@ var runnerStepParamsSchema = external_exports.object({
   position: external_exports.coerce.number().int().min(0)
 });
 
+// ../../../modules/pipelines/shared/application-yaml.ts
+var ownerRefSchema = external_exports.string().trim().regex(/^team\/[a-z0-9][a-z0-9-]{0,62}$/, 'Owners look like "team/payments"');
+var applicationFileSchema = external_exports.object({
+  name: slugSchema,
+  /** The group's key; the group names its domain, so `domain` is only a cross-check. */
+  group: slugSchema,
+  domain: slugSchema.optional(),
+  owner: ownerRefSchema.optional(),
+  tier: tierSchema.default(2),
+  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).default([]),
+  lifecycle: lifecycleSchema.default("production"),
+  runtime: runtimeSchema.optional(),
+  description: external_exports.string().max(2e3).optional(),
+  /** Application keys this one calls; feeds coordinated releases and "include callers". */
+  dependsOn: external_exports.array(slugSchema).max(100).default([]),
+  /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
+  paths: external_exports.array(external_exports.string().min(1).max(300)).max(100).default([]),
+  pipeline: pipelineDefinitionSchema.optional(),
+  /**
+   * Where it runs, by environment key. A choice made in Pipelines wins over this, and this
+   * wins over the environment's default (shared/runtimes.ts).
+   */
+  runtimes: external_exports.record(slugSchema, deployRuntimeSchema).optional()
+});
+
+// ../../../modules/pipelines/shared/repository-yaml.ts
+var folderSchema = external_exports.string().trim().max(300).refine(
+  (path) => !path.startsWith("/") && !path.split("/").some((part) => part === ".."),
+  "Use a folder inside the repository, such as services/orders"
+).transform((path) => path.replace(/^\.\/?/, "").replace(/\/+$/, ""));
+var pathFilterSchema = external_exports.array(external_exports.string().min(1).max(300)).max(100);
+var repositoryDefaultsSchema = external_exports.strictObject({
+  build: buildOverrideSchema.optional(),
+  /** Added to every application's own `paths`. */
+  paths: pathFilterSchema.optional(),
+  /** Steps or `extends`, as application.yaml writes them; checked once merged. */
+  pipeline: external_exports.record(external_exports.string(), external_exports.unknown()).optional(),
+  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).optional(),
+  group: slugSchema.optional(),
+  domain: slugSchema.optional(),
+  owner: ownerRefSchema.optional()
+});
+var repositoryEntrySchema = external_exports.looseObject({
+  name: slugSchema,
+  path: folderSchema,
+  build: external_exports.record(external_exports.string(), external_exports.unknown()).nullable().optional()
+});
+var repositoryFileSchema = external_exports.strictObject({
+  defaults: repositoryDefaultsSchema.default({}),
+  applications: external_exports.array(repositoryEntrySchema).max(500).default([])
+}).superRefine((file2, ctx) => {
+  const names = /* @__PURE__ */ new Set();
+  const paths = /* @__PURE__ */ new Set();
+  file2.applications.forEach((entry, index) => {
+    if (names.has(entry.name)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["applications", index, "name"],
+        message: `${entry.name} is listed twice; application names are unique`
+      });
+    }
+    if (paths.has(entry.path)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["applications", index, "path"],
+        message: `Two applications use the folder "${entry.path}"; give each its own`
+      });
+    }
+    names.add(entry.name);
+    paths.add(entry.path);
+  });
+});
+var settingOriginSchema = external_exports.enum(["file", "central", "defaults"]);
+var settingsSourceSchema = external_exports.object({
+  /** The file that defines it: its own application.yaml, or the repository file. */
+  file: external_exports.string(),
+  /** Top-level settings by name, with `build` for the pipeline's build. */
+  fields: external_exports.record(external_exports.string(), settingOriginSchema)
+});
+
 // ../../../modules/pipelines/shared/tests.ts
 var runInputFieldSchema = external_exports.object({
   name: external_exports.string(),
@@ -25788,7 +26018,11 @@ var applicationPipelineSchema = external_exports.object({
   inputs: external_exports.array(runInputFieldSchema),
   schedules: external_exports.array(scheduleSchema),
   /** The definition as written, for "view the pipeline". */
-  definition: external_exports.unknown().nullable()
+  definition: external_exports.unknown().nullable(),
+  /** Which file defines it and where each setting came from; null when made in Pipelines. */
+  settings: settingsSourceSchema.nullable().default(null),
+  /** A library: its pipeline checks it but builds no image and deploys nothing. */
+  library: external_exports.boolean().default(false)
 });
 var testStateFilterSchema = external_exports.enum(["flaky", "quarantined", "all"]);
 var testStatusSchema = external_exports.object({
@@ -25843,7 +26077,7 @@ var listFailuresQuerySchema = external_exports.object({
 var failureGroupsSchema = external_exports.object({ items: external_exports.array(failureGroupSchema) });
 
 // ../../../modules/pipelines/shared/releases.ts
-var releaseSourceSchema = external_exports.enum(["runners", "external"]);
+var releaseSourceSchema = external_exports.enum(["runners", "external", "adopted"]);
 var digestSchema = external_exports.string().regex(/^sha256:[0-9a-f]{64}$/, "Digests look like sha256:\u2026");
 var releaseTestSummarySchema = external_exports.object({
   total: external_exports.number().int().min(0),
@@ -27434,31 +27668,6 @@ var notifyPayloadSchema = external_exports.object({
   data: external_exports.unknown().optional()
 });
 
-// ../../../modules/pipelines/shared/application-yaml.ts
-var ownerRefSchema = external_exports.string().trim().regex(/^team\/[a-z0-9][a-z0-9-]{0,62}$/, 'Owners look like "team/payments"');
-var applicationFileSchema = external_exports.object({
-  name: slugSchema,
-  /** The group's key; the group names its domain, so `domain` is only a cross-check. */
-  group: slugSchema,
-  domain: slugSchema.optional(),
-  owner: ownerRefSchema.optional(),
-  tier: tierSchema.default(2),
-  labels: external_exports.array(external_exports.string().trim().min(1).max(60)).max(50).default([]),
-  lifecycle: lifecycleSchema.default("production"),
-  runtime: runtimeSchema.optional(),
-  description: external_exports.string().max(2e3).optional(),
-  /** Application keys this one calls; feeds coordinated releases and "include callers". */
-  dependsOn: external_exports.array(slugSchema).max(100).default([]),
-  /** Path filters inside a monorepo; a push touching none of them starts nothing here. */
-  paths: external_exports.array(external_exports.string().min(1).max(300)).max(100).default([]),
-  pipeline: pipelineDefinitionSchema.optional(),
-  /**
-   * Where it runs, by environment key. A choice made in Pipelines wins over this, and this
-   * wins over the environment's default (shared/runtimes.ts).
-   */
-  runtimes: external_exports.record(slugSchema, deployRuntimeSchema).optional()
-});
-
 // ../../../modules/pipelines/shared/saved-views.ts
 var savedViewScreenSchema = external_exports.enum(["catalog", "runs", "releases"]);
 var savedViewQuerySchema = external_exports.record(external_exports.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/), external_exports.string().max(500)).refine((query) => Object.keys(query).length <= 20, "A view holds at most 20 filters");
@@ -27573,6 +27782,15 @@ var externalChecksResponseSchema = external_exports.object({ items: external_exp
 var ciIdParamsSchema = external_exports.object({ id: idSchema });
 var listTrustRulesQuerySchema = external_exports.object({ application: slugSchema.optional() });
 
+// ../../../modules/pipelines/shared/app-references.ts
+var APP_REFERENCE_FIELDS = ["url", "publicUrl"];
+var appReferenceFieldSchema = external_exports.enum(APP_REFERENCE_FIELDS);
+var resolvedValueSchema = external_exports.object({
+  environment: slugSchema,
+  value: external_exports.string().nullable(),
+  problem: external_exports.string().nullable()
+});
+
 // ../../../modules/pipelines/shared/variables.ts
 var variableNameSchema = external_exports.string().trim().regex(/^[A-Z_][A-Z0-9_]{0,127}$/, "Use capitals, digits and underscores, such as DATABASE_URL");
 var variableKindSchema = external_exports.enum(["plain", "secret"]);
@@ -27586,14 +27804,23 @@ var variableSchema = external_exports.object({
   value: external_exports.string().nullable(),
   /** A secret's version in the store; for a plain variable, how many times it was set. */
   version: external_exports.number().int().nullable(),
-  /** "moving": a value from before secrets existed, waiting to be written to the store. */
-  state: external_exports.enum(["set", "moving"]),
+  /**
+   * "moving": a value from before secrets existed, waiting to be written to the store.
+   * "needed": a secret copied from another environment without its value; a deploy there
+   * stops until someone sets one.
+   */
+  state: external_exports.enum(["set", "moving", "needed"]),
   /** What stops it moving or mounting, in one sentence; null when nothing does. */
   problem: external_exports.string().nullable(),
   /** Where a secret lives: "acme-shop-prod / bemmoly-shop-API_KEY-prod". */
   location: external_exports.string().nullable(),
   updatedBy: personRefSchema.nullable(),
-  updatedAt: isoDateTimeSchema
+  updatedAt: isoDateTimeSchema,
+  /**
+   * A plain value naming other applications' addresses, filled in per environment it reaches
+   * (shared/app-references.ts). Empty when the value names none.
+   */
+  resolved: external_exports.array(resolvedValueSchema).default([])
 });
 var variablesResponseSchema = external_exports.object({
   items: external_exports.array(variableSchema),
@@ -27768,6 +27995,182 @@ var frontDoorsQuerySchema = external_exports.object({ application: slugSchema.op
 var setFrontDoorBodySchema = external_exports.object({
   enabled: external_exports.boolean(),
   domain: frontDoorDomainSchema.nullable().default(null)
+});
+
+// ../../../modules/pipelines/shared/exports.ts
+var exportQuerySchema = external_exports.object({
+  connection: idSchema.optional(),
+  application: slugSchema.optional()
+});
+var exportConnectionSchema = external_exports.object({
+  connection: external_exports.object({ id: idSchema, name: external_exports.string(), mode: connectionModeSchema }),
+  /** "acme-google-cloud": the directory inside the zip. */
+  directory: external_exports.string(),
+  counts: external_exports.object({
+    projects: external_exports.number().int(),
+    resources: external_exports.number().int(),
+    services: external_exports.number().int(),
+    charts: external_exports.number().int(),
+    secrets: external_exports.number().int()
+  }),
+  /** Paths inside the zip, sorted. */
+  files: external_exports.array(external_exports.string()),
+  /** What was not exported and why, one sentence each. */
+  leftOut: external_exports.array(external_exports.string()),
+  /** Values Pipelines could not read, to fill in terraform.tfvars before a plan. */
+  toFill: external_exports.array(external_exports.string())
+});
+var exportPreviewSchema = external_exports.object({
+  /** "bemmoly-pipelines-export-2026-10-29.zip". */
+  fileName: external_exports.string(),
+  items: external_exports.array(exportConnectionSchema),
+  /** What no connection could export: services with no cloud, providers with no export. */
+  leftOut: external_exports.array(external_exports.string())
+});
+
+// ../../../modules/pipelines/shared/adoption.ts
+var adoptionStateSchema = external_exports.enum([
+  /** It matches an application and can be adopted. */
+  "ready",
+  /** Pipelines adopted it before. */
+  "adopted",
+  /** Pipelines already deploys the application it matches here. */
+  "deployed",
+  /** No application in the catalog has its name; pick one, or skip it. */
+  "unmatched"
+]);
+var adoptedVariableSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({
+    name: variableNameSchema,
+    kind: external_exports.literal("plain"),
+    value: external_exports.string(),
+    /**
+     * When the value holds another service's address and that service is adopted too: the
+     * application it names, and the value with `${{ apps.<key>.url }}` in place of the address.
+     */
+    reference: external_exports.object({ application: slugSchema, value: external_exports.string() }).nullable()
+  }),
+  external_exports.object({
+    name: variableNameSchema,
+    kind: external_exports.literal("secret"),
+    /** "acme-stage / cart-db-password": where the value lives; it is never read. */
+    location: external_exports.string(),
+    version: external_exports.string(),
+    /** Why it cannot be referenced from Pipelines, in one sentence; null when it can. */
+    problem: external_exports.string().nullable()
+  })
+]);
+var adoptionServiceSchema = external_exports.object({
+  /** The service's name in the cloud. */
+  service: external_exports.string(),
+  url: external_exports.string().nullable(),
+  /** The application it matches by name, or was adopted as. */
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }).nullable(),
+  state: adoptionStateSchema,
+  /** The image it runs, by digest: what release zero records. */
+  image: external_exports.string().nullable(),
+  revision: external_exports.string().nullable(),
+  variables: external_exports.array(adoptedVariableSchema),
+  settings: external_exports.array(external_exports.object({ field: deploySettingFieldSchema, value: deploySettingValueSchema })),
+  /** Why it cannot be adopted, in one sentence; null when it can. */
+  problem: external_exports.string().nullable()
+});
+var adoptionPlanSchema = external_exports.object({
+  environment: environmentRefSchema,
+  /** Where the services were looked for. */
+  project: external_exports.string(),
+  region: external_exports.string(),
+  services: external_exports.array(adoptionServiceSchema),
+  /** The catalog, for matching a service to an application of another name. */
+  applications: external_exports.array(external_exports.object({ key: slugSchema, name: external_exports.string() }))
+});
+var adoptBodySchema = external_exports.object({
+  services: external_exports.array(
+    external_exports.object({
+      service: external_exports.string().min(1).max(63),
+      application: slugSchema,
+      /** Plain variables whose address becomes a reference to the application it names. */
+      references: external_exports.array(variableNameSchema).default([])
+    })
+  ).min(1, "Choose at least one service to adopt")
+});
+var adoptResultSchema = external_exports.object({
+  adopted: external_exports.array(
+    external_exports.object({
+      service: external_exports.string(),
+      application: slugSchema,
+      release: external_exports.object({ id: external_exports.string(), version: external_exports.string() })
+    })
+  ),
+  plan: adoptionPlanSchema
+});
+
+// ../../../modules/pipelines/shared/config-copy.ts
+var copySecretModeSchema = external_exports.enum(["copy", "needs-value"]);
+var copySettingNoteSchema = external_exports.enum(["dropped", "keeps-default"]);
+var copyItemSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({
+    /** "checkout-api:variable:LOG_LEVEL", stable between plan and apply. */
+    id: external_exports.string(),
+    kind: external_exports.literal("variable"),
+    name: variableNameSchema,
+    /** The target's own value now; null when it has none. */
+    before: external_exports.string().nullable(),
+    after: external_exports.string(),
+    /** The value names another application's address, filled in per environment. */
+    reference: external_exports.boolean(),
+    ticked: external_exports.boolean()
+  }),
+  external_exports.object({
+    id: external_exports.string(),
+    kind: external_exports.literal("secret"),
+    name: variableNameSchema,
+    /** Where the source's value lives. */
+    location: external_exports.string(),
+    /** The choice the plan starts with: needs-value for a prod-class target. */
+    mode: copySecretModeSchema,
+    ticked: external_exports.boolean()
+  }),
+  external_exports.object({
+    id: external_exports.string(),
+    kind: external_exports.literal("setting"),
+    field: deploySettingFieldSchema,
+    /** What the target's next deploy uses now, and would with the copied value. */
+    before: deploySettingValueSchema,
+    after: deploySettingValueSchema,
+    /** False when the target's runtime has no such setting; it is dropped. */
+    applies: external_exports.boolean(),
+    note: copySettingNoteSchema.nullable(),
+    ticked: external_exports.boolean()
+  })
+]);
+var copyApplicationSchema = external_exports.object({
+  application: external_exports.object({ key: slugSchema, name: external_exports.string() }),
+  runtime: external_exports.object({ from: deployRuntimeSchema, to: deployRuntimeSchema }),
+  items: external_exports.array(copyItemSchema),
+  /** Items the target already has exactly as the source does. */
+  same: external_exports.number().int().min(0)
+});
+var copyPlanSchema = external_exports.object({
+  from: environmentRefSchema,
+  to: environmentRefSchema,
+  applications: external_exports.array(copyApplicationSchema),
+  secretMode: copySecretModeSchema
+});
+var copyPlanQuerySchema = external_exports.object({
+  from: slugSchema,
+  /** Comma-separated application keys; every application when absent. */
+  applications: external_exports.string().optional().transform(
+    (value) => value ? value.split(",").map((key) => key.trim()).filter(Boolean) : void 0
+  ).pipe(external_exports.array(slugSchema).optional())
+});
+var applyCopyBodySchema = external_exports.object({
+  from: slugSchema,
+  items: external_exports.array(external_exports.object({ id: external_exports.string().min(1).max(300), secret: copySecretModeSchema.optional() })).min(1, "Tick at least one item to copy")
+});
+var copyResultSchema = external_exports.object({
+  applied: external_exports.number().int().min(0),
+  plan: copyPlanSchema
 });
 
 // ../../../apps/pipelines-cli/src/clients/pipelines.ts
