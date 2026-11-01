@@ -88,8 +88,9 @@ a test.
 - **The WCAG 2.2 AA audit** (`apps/web/e2e/a11y/`, `pnpm --filter @bemmoly/web test:a11y`)
   runs every screen through axe with every rule on, colour contrast included, in the five
   themes, light and dark, at desktop and 390px, on the dev mock backend; plus the keyboard,
-  focus, live-region, target and sign-in checks axe cannot make. CI runs it per theme
-  (**Accessibility**) and any violation fails. A new screen adds itself to `a11y/screens.ts`.
+  focus, live-region, target and sign-in checks axe cannot make. The **Accessibility**
+  workflow runs it per theme, and any violation fails. Label a pull request that changes a
+  screen `accessibility` to run it there. A new screen adds itself to `a11y/screens.ts`.
 - New user flows against a real server add a Playwright check where an a11y spec exists
   (`apps/e2e/flows/docs-a11y.spec.ts`).
 - What is covered, the known exceptions and how to report a problem:
