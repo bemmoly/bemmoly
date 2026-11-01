@@ -1,5 +1,16 @@
 # @bemmoly/pipelines-web
 
+## 2.0.1
+
+### Patch Changes
+
+- 1f7f6c3: Set up no longer stalls on a new install. Beside the applications it found it offers Scan again, so a new team, group or repository file shows up without waiting for the next scheduled scan, and New group, which makes a group and, when there is none, its domain, so the found applications can be added.
+- @bemmoly/module-pipelines@2.0.1
+  - @bemmoly/api-client@2.0.1
+  - @bemmoly/core-web@2.0.1
+  - @bemmoly/shared@2.0.1
+  - @bemmoly/ui@2.0.1
+
 ## 2.0.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @bemmoly/runner
 
+## 2.0.1
+
+### Patch Changes
+
+- @bemmoly/module-pipelines@2.0.1
+  - @bemmoly/shared@2.0.1
+
 ## 2.0.0
 
 ### Minor Changes
