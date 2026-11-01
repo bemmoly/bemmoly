@@ -9,14 +9,15 @@ Last reviewed: 11 October 2026.
 
 ## What is covered
 
-### Every screen, automatically, on every pull request
+### Every screen, on request and every week
 
-The **Accessibility** check in CI (`apps/web/e2e/a11y/screens.spec.ts`) opens each screen
+The **Accessibility** workflow (`apps/web/e2e/a11y/screens.spec.ts`) opens each screen
 below and runs [axe-core](https://github.com/dequelabs/axe-core) on it with **every rule on**:
 WCAG 2.0, 2.1 and 2.2 at A and AA, colour contrast included, plus axe's best practices
 (landmarks, one `main`, one `h1`, heading order). It runs each screen in **all five themes**
 (Bemmoly, Graphite, Sand, Pine, High contrast), **light and dark**, at **desktop width and at
-390px**, with reduced motion. Any violation fails the build.
+390px**, with reduced motion. Any violation fails the build. It runs on a pull request
+labelled `accessibility`, by hand from the Actions tab, and weekly on main.
 
 | Area           | Screens                                                                                                                                                                                                                                                                                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
