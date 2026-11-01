@@ -73,6 +73,21 @@ test('a repository file defines a monorepo, and Set up proposes one', async ({ b
   await page.locator('#proposals').getByRole('button', { name: 'Scan again' }).click();
   expect((await scanned).status()).toBe(201);
   await expect(proposed).toContainText('name: market-orders');
+
+  // A group for the proposals that name none, made here: a new install has no catalog yet.
+  const proposals = page.locator('#proposals');
+  await proposals.getByRole('button', { name: 'New group…' }).click();
+  const dialog = page.getByRole('dialog', { name: 'New group' });
+  await dialog.getByRole('combobox', { name: 'Domain' }).click();
+  await page.getByRole('option', { name: 'New domain…' }).click();
+  await dialog.getByLabel("New domain's name").fill('Market next');
+  await dialog.getByLabel('Group name').fill('Storefront');
+  await dialog.getByRole('button', { name: 'Create group' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    proposals.getByRole('combobox', { name: 'Group for the ones without one' }),
+  ).toHaveText('Market next › Storefront');
+  await expect(proposals.getByRole('button', { name: /^Add \d+ applications?$/ })).toBeEnabled();
   await proposed.scrollIntoViewIfNeeded();
   await page.screenshot({ path: test.info().outputPath('proposed-light.png'), fullPage: true });
   await page.emulateMedia({ colorScheme: 'dark' });

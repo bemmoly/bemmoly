@@ -1464,5 +1464,15 @@
   "pipelines.copy.submit": "Copy {count, plural, one {# item} other {# items}}",
   "pipelines.copy.done": "Copied {count, plural, one {# item} other {# items}} to {environment}. Secrets that need a value say so in each application's Variables.",
   "pipelines.variables.needed": "Needs a value",
-  "pipelines.variables.setValue": "Set value…"
+  "pipelines.variables.setValue": "Set value…",
+  "pipelines.newGroup.action": "New group…",
+  "pipelines.newGroup.create": "Create group",
+  "pipelines.newGroup.description": "Groups sit inside a domain and hold applications. You can rename both later.",
+  "pipelines.newGroup.domain": "Domain",
+  "pipelines.newGroup.domainHint": "A product or business area, such as Payments.",
+  "pipelines.newGroup.domainName": "New domain's name",
+  "pipelines.newGroup.groupHint": "A team's area inside the domain, such as Checkout.",
+  "pipelines.newGroup.groupName": "Group name",
+  "pipelines.newGroup.newDomain": "New domain…",
+  "pipelines.newGroup.title": "New group"
 }

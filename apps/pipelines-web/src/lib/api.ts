@@ -1,5 +1,6 @@
 import { createApiClient, type ApiError } from '@bemmoly/api-client';
 import { QueryClient } from '@tanstack/react-query';
+import { catalogEndpoints } from '../api/catalog.ts';
 import { deliveryEndpoints } from '../api/delivery.ts';
 import { environmentEndpoints } from '../api/environments.ts';
 import { frontDoorEndpoints } from '../api/front-doors.ts';
@@ -32,6 +33,7 @@ export const api = {
   exports: exportEndpoints(client.http),
   deploySettings: deploySettingsEndpoints(client.http),
   adoption: adoptionEndpoints(client.http),
+  catalog: catalogEndpoints(client.http),
 };
 
 export type Api = typeof api;
