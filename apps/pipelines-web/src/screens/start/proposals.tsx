@@ -69,9 +69,15 @@ function useGroupOptions() {
 export function Proposals({
   items,
   repositoryFiles = [],
+  scanning = false,
+  onScanAgain,
 }: {
   items: readonly DiscoveryProposal[];
   repositoryFiles?: ProposalsPage['repositoryFiles'];
+  /** A scan is running or was asked for: Scan again waits for it. */
+  scanning?: boolean;
+  /** Looks through every repository again, after a new team, group or repository file. */
+  onScanAgain?: () => void;
 }) {
   const t = useT(pipelinesText);
   const toast = useToast();
@@ -176,6 +182,13 @@ export function Proposals({
       flush
       title={t('pipelines.start.reviewTitle')}
       meta={t('pipelines.start.reviewMeta', { picked: picked.size, total: items.length })}
+      actions={
+        onScanAgain && (
+          <Button size="sm" variant="secondary" loading={scanning} onClick={onScanAgain}>
+            {t('pipelines.start.scanAgain')}
+          </Button>
+        )
+      }
     >
       <Table
         label={t('pipelines.start.reviewTitle')}
