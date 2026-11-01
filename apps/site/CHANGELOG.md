@@ -1,5 +1,11 @@
 # @bemmoly/site
 
+## 2.0.0
+
+### Patch Changes
+
+- 3cf6bd1: The community page and the footer link to the Bemmoly Discord.
+
 ## 1.6.1
 
 No changes in this release.

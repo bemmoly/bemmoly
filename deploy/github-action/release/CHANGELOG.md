@@ -1,5 +1,11 @@
 # @bemmoly/release-action
 
+## 2.0.0
+
+### Patch Changes
+
+- @bemmoly/pipelines-cli@2.0.0
+
 ## 1.6.1
 
 ### Patch Changes

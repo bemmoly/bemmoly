@@ -1,5 +1,25 @@
 # @bemmoly/pipelines-cli
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [8837631]
+- Updated dependencies [3e92cfe]
+- Updated dependencies [f61eb12]
+- Updated dependencies [e1cca21]
+- Updated dependencies [b633399]
+- Updated dependencies [b2734d8]
+- Updated dependencies [f3fda87]
+- Updated dependencies [2a526c9]
+- Updated dependencies [46a8c17]
+- Updated dependencies [2f75fa9]
+- Updated dependencies [352f57d]
+- Updated dependencies [c3649f5]
+- Updated dependencies [3bab756]
+- Updated dependencies [1030907]
+  - @bemmoly/module-pipelines@2.0.0
+
 ## 1.6.1
 
 ### Patch Changes
