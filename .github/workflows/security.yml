@@ -76,6 +76,9 @@ jobs:
 
   image:
     name: Image scan
+    # Building the image takes minutes, so pull requests and the merge queue skip it. Every
+    # merge to main and the weekly run still scan it.
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
