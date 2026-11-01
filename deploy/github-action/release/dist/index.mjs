@@ -25486,7 +25486,9 @@ var deploySpecSchema = external_exports.object({
   healthcheck: external_exports.object({
     path: external_exports.string().startsWith("/").default("/healthz"),
     timeoutSeconds: external_exports.number().int().min(1).max(300).default(5)
-  }).optional()
+  }).optional(),
+  /** Anyone on the internet may call it; otherwise callers need an identity token. */
+  public: external_exports.boolean().optional()
 });
 var pipelineTemplateSchema = external_exports.object({
   inputs: external_exports.record(external_exports.string(), templateInputSchema).default({}),
@@ -26829,10 +26831,24 @@ var layoutSchema = external_exports.enum([
   "per-domain-environment",
   "per-group-environment"
 ]);
+var connectionModeSchema = external_exports.enum(["managed", "attached"]);
+var signInSchema = external_exports.enum(["vm", "application_default", "workload_identity_file"]);
+var registryPathSchema = external_exports.string().trim().max(255).regex(
+  /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]{1,5})?(\/[a-z0-9]([a-z0-9._-]*[a-z0-9])?)+$/,
+  "Name a repository such as us-central1-docker.pkg.dev/my-project/apps"
+);
 var cloudConnectionSchema = external_exports.object({
   id: idSchema,
   provider: providerSchema,
   name: external_exports.string(),
+  mode: connectionModeSchema,
+  signIn: signInSchema.nullable(),
+  /** Where services go when an environment names no region. */
+  region: external_exports.string().nullable(),
+  /** Where runners push images they build; null keeps images on the runner's machine. */
+  registry: external_exports.string().nullable(),
+  /** The attached project chosen to hold CI secrets and secrets for every environment. */
+  ciAccountId: idSchema.nullable(),
   status: connectionStatusSchema,
   /** "bemmoly-control@acme-bemmoly". */
   principal: external_exports.string().nullable(),
@@ -26860,13 +26876,44 @@ var connectionBase = {
   name: external_exports.string().trim().min(1).max(80),
   layout: layoutSchema.default("per-domain-environment")
 };
+var gcpRegionSchema = external_exports.string().regex(/^[a-z]+-[a-z]+[0-9]+$/, "Name a region such as us-central1");
 var connectCloudBodySchema = external_exports.discriminatedUnion("provider", [
   external_exports.object({
     provider: external_exports.literal("gcp"),
     ...connectionBase,
-    organizationId: external_exports.string().regex(/^[0-9]{6,20}$/),
-    billingAccountId: external_exports.string().regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/),
+    mode: connectionModeSchema.default("managed"),
+    signIn: signInSchema.default("vm"),
+    /** The external_account file, only with the workload_identity_file sign-in. */
+    credentialFile: external_exports.record(external_exports.string(), external_exports.unknown()).optional(),
+    region: gcpRegionSchema.default("us-central1"),
+    registry: registryPathSchema.optional(),
+    organizationId: external_exports.string().regex(/^[0-9]{6,20}$/).optional(),
+    billingAccountId: external_exports.string().regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/).optional(),
     folderName: external_exports.string().trim().min(1).max(30).default("Bemmoly")
+  }).superRefine((body, issues) => {
+    if (body.mode === "managed") {
+      if (!body.organizationId) {
+        issues.addIssue({
+          code: "custom",
+          path: ["organizationId"],
+          message: "Creating projects needs the organization they go in"
+        });
+      }
+      if (!body.billingAccountId) {
+        issues.addIssue({
+          code: "custom",
+          path: ["billingAccountId"],
+          message: "Creating projects needs the billing account that pays for them"
+        });
+      }
+    }
+    if (body.signIn === "workload_identity_file" !== Boolean(body.credentialFile)) {
+      issues.addIssue({
+        code: "custom",
+        path: ["credentialFile"],
+        message: "Upload the workload identity file only with that sign-in"
+      });
+    }
   }),
   external_exports.object({
     provider: external_exports.literal("aws"),
@@ -26931,7 +26978,16 @@ var cloudAccountSchema = external_exports.object({
   domain: domainRefSchema.nullable(),
   environmentClass: environmentClassSchema.nullable(),
   purpose: external_exports.enum(["workload", "ci", "control"]),
-  status: external_exports.enum(["planned", "creating", "ready", "drifted", "failed"])
+  status: external_exports.enum(["planned", "creating", "ready", "drifted", "failed"]),
+  /** Created by Pipelines' landing zone, or attached as it already was. */
+  origin: external_exports.enum(["created", "attached"]),
+  /** Who deploys there; null acts as the connection's own identity. */
+  deployerServiceAccount: external_exports.string().nullable(),
+  /** Who the services run as; null leaves the cloud's default. */
+  runtimeServiceAccount: external_exports.string().nullable(),
+  /** What the last check found missing, each a sentence saying what to grant. */
+  problems: external_exports.array(external_exports.string()),
+  lastCheckedAt: isoDateTimeSchema.nullable()
 });
 var cloudResourceKindSchema = external_exports.enum([
   "account",
@@ -26958,6 +27014,74 @@ var cloudResourceSchema = external_exports.object({
 var cloudAccountsResponseSchema = external_exports.object({ items: external_exports.array(cloudAccountSchema) });
 var cloudResourcesResponseSchema = external_exports.object({ items: external_exports.array(cloudResourceSchema) });
 var connectionParamsSchema = external_exports.object({ id: idSchema });
+
+// ../../../modules/pipelines/shared/cloud-accounts.ts
+var projectIdSchema = external_exports.string().trim().regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, "Use the project ID, such as acme-prod-421309");
+var serviceAccountSchema = external_exports.email().refine((value) => value.endsWith(".gserviceaccount.com"), "Name a service account email");
+var attachAccountBodySchema = external_exports.object({
+  externalId: projectIdSchema,
+  /** Shown on screen; the project's own name when left out. */
+  name: external_exports.string().trim().min(1).max(80).optional(),
+  /** Pipelines acts as this account to deploy; it acts as itself when left out. */
+  deployerServiceAccount: serviceAccountSchema.nullable().default(null),
+  /** Services run as this account; the project's default when left out. */
+  runtimeServiceAccount: serviceAccountSchema.nullable().default(null)
+});
+var updateConnectionBodySchema = external_exports.object({
+  /** Null stops pushing: runners keep the images they build. */
+  registry: registryPathSchema.nullable(),
+  /**
+   * The attached project that holds CI secrets and secrets set for every environment. Null
+   * clears it. A managed connection keeps them in its own CI project instead.
+   */
+  ciAccountId: idSchema.nullable()
+}).partial().refine((body) => Object.keys(body).length > 0, "Change at least one thing");
+var accountParamsSchema = external_exports.object({ id: idSchema, accountId: idSchema });
+
+// ../../../modules/pipelines/shared/environment-writes.ts
+var regionSchema = external_exports.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Name a region such as us-central1");
+var protectionPatchSchema = external_exports.object({
+  protected: external_exports.boolean(),
+  controlPlaneOnly: external_exports.boolean(),
+  requiresApproval: external_exports.boolean(),
+  window: external_exports.string().max(120).nullable()
+}).partial();
+var createEnvironmentBodySchema = external_exports.object({
+  key: slugSchema,
+  name: external_exports.string().trim().min(1).max(80),
+  class: environmentClassSchema,
+  provider: providerSchema.default("gcp"),
+  /** The project it deploys into; null until one is chosen. */
+  cloudAccountId: idSchema.nullable().default(null),
+  /** The connection's region when null. */
+  region: regionSchema.nullable().default(null),
+  /** Left to right; after the last environment when left out. */
+  position: external_exports.number().int().min(0).max(1e4).optional(),
+  protection: protectionPatchSchema.optional()
+});
+var updateEnvironmentBodySchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(80),
+  class: environmentClassSchema,
+  cloudAccountId: idSchema.nullable(),
+  region: regionSchema.nullable(),
+  position: external_exports.number().int().min(0).max(1e4),
+  protection: protectionPatchSchema
+}).partial().refine((body) => Object.keys(body).length > 0, "Change at least one thing");
+var pathStepBodySchema = external_exports.object({
+  environmentId: idSchema,
+  /** Environments sharing a stage roll out together. */
+  stage: external_exports.number().int().min(0).max(50),
+  bakeMinutes: external_exports.number().int().min(0).max(7 * 24 * 60).default(0),
+  autoPromote: external_exports.boolean().default(false)
+});
+var setPathBodySchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(80).optional(),
+  steps: external_exports.array(pathStepBodySchema).min(1).max(30).refine(
+    (steps) => new Set(steps.map((step) => step.environmentId)).size === steps.length,
+    "An environment appears once on a path"
+  )
+});
+var pathParamsSchema = external_exports.object({ tier: tierQuerySchema });
 
 // ../../../modules/pipelines/shared/streams.ts
 var MAX_TOPICS = 20;
@@ -27181,6 +27305,43 @@ var TAG = "\\w[\\w.-]{0,127}";
 var DIGEST = "[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,}";
 var REFERENCE = new RegExp(`^${NAME}(?::${TAG})?(?:@${DIGEST})?$`);
 var REPOSITORY = new RegExp(`^${NAME}$`);
+
+// ../../../modules/pipelines/shared/variables.ts
+var variableNameSchema = external_exports.string().trim().regex(/^[A-Z_][A-Z0-9_]{0,127}$/, "Use capitals, digits and underscores, such as DATABASE_URL");
+var variableKindSchema = external_exports.enum(["plain", "secret"]);
+var VARIABLE_VALUE_MAX = 32768;
+var variableSchema = external_exports.object({
+  name: variableNameSchema,
+  kind: variableKindSchema,
+  /** Null for a value every environment gets unless it has its own. */
+  environment: environmentRefSchema.nullable(),
+  /** A plain variable's value. Always null for a secret. */
+  value: external_exports.string().nullable(),
+  /** A secret's version in the store; for a plain variable, how many times it was set. */
+  version: external_exports.number().int().nullable(),
+  /** "moving": a value from before secrets existed, waiting to be written to the store. */
+  state: external_exports.enum(["set", "moving"]),
+  /** What stops it moving or mounting, in one sentence; null when nothing does. */
+  problem: external_exports.string().nullable(),
+  /** Where a secret lives: "acme-shop-prod / bemmoly-shop-API_KEY-prod". */
+  location: external_exports.string().nullable(),
+  updatedBy: personRefSchema.nullable(),
+  updatedAt: isoDateTimeSchema
+});
+var variablesResponseSchema = external_exports.object({
+  items: external_exports.array(variableSchema),
+  /** The columns to lay values out under, left to right. */
+  environments: external_exports.array(environmentRefSchema),
+  /** Whether the person asking may set values for every environment. */
+  canChange: external_exports.boolean()
+});
+var variableListQuerySchema = external_exports.object({ environment: slugSchema.optional() });
+var variableParamsSchema = external_exports.object({ key: slugSchema, name: variableNameSchema });
+var variableTargetQuerySchema = external_exports.object({ environment: slugSchema.optional() });
+var setVariableBodySchema = external_exports.object({
+  kind: variableKindSchema,
+  value: external_exports.string().min(1, "Give it a value").max(VARIABLE_VALUE_MAX)
+});
 
 // ../../../apps/pipelines-cli/src/clients/pipelines.ts
 var API = "/api/v1/pipelines";
