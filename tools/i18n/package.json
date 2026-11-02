@@ -15,11 +15,11 @@
   },
   "dependencies": {
     "@bemmoly/shared": "workspace:*",
-    "@lingui/message-utils": "6.8.0"
+    "@lingui/message-utils": "6.11.0"
   },
   "devDependencies": {
     "@types/node": "26.6.4",
-    "vite": "8.3.3",
+    "vite": "8.3.5",
     "vitest": "5.0.3"
   }
 }

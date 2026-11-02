@@ -25,11 +25,11 @@
     "@bemmoly/core": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@marcbachmann/cel-js": "8.0.0",
-    "cron-parser": "5.10.1",
-    "fastify": "5.12.5",
+    "cron-parser": "5.10.2",
+    "fastify": "5.12.7",
     "google-auth-library": "10.9.1",
-    "yaml": "2.8.3",
-    "zod": "4.6.6"
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "26.6.4",
