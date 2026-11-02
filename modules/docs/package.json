@@ -44,8 +44,8 @@
     "pdfjs-dist": "6.3.289",
     "pino": "10.4.0",
     "react-dom": "19.3.0",
-    "testcontainers": "12.2.0",
+    "testcontainers": "12.2.1",
     "vite": "8.3.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }
