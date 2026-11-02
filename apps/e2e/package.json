@@ -12,7 +12,7 @@
     "test:e2e:pipelines": "playwright test -c playwright.pipelines.config.ts"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
+    "@axe-core/playwright": "4.14.0",
     "@bemmoly/core": "workspace:*",
     "@bemmoly/server": "workspace:*",
     "@bemmoly/web": "workspace:*",

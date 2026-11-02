@@ -18,11 +18,11 @@
     "k6": "bash run-k6.sh"
   },
   "dependencies": {
-    "zod": "4.6.6"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "26.6.4",
     "vitest": "5.0.3",
-    "yjs": "13.6.32"
+    "yjs": "13.6.33"
   }
 }

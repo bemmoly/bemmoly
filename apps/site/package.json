@@ -18,7 +18,7 @@
     "docker:build": "docker build -f Dockerfile -t bemmoly-site:dev ../.."
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.10",
+    "@astrojs/check": "0.9.12",
     "@astrojs/sitemap": "3.7.4",
     "@bemmoly/ui": "workspace:*",
     "@fontsource/ibm-plex-sans": "5.3.0",
@@ -27,21 +27,21 @@
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "astro": "7.3.6",
+    "astro": "7.4.4",
     "eslint": "10.12.0",
     "eslint-plugin-astro": "3.2.1",
     "globals": "17.13.0",
-    "html-validate": "11.16.2",
-    "lucide-react": "1.47.0",
+    "html-validate": "11.17.0",
+    "lucide-react": "1.64.0",
     "prettier": "3.9.10",
-    "prettier-plugin-astro": "1.1.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "prettier-plugin-astro": "1.1.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "schema-dts": "1.1.5",
     "sharp": "0.35.5",
     "tailwindcss": "4.3.3",
     "typescript": "npm:@typescript/typescript6@6.0.2",
-    "vite": "8.3.3",
+    "vite": "8.3.5",
     "vitest": "5.0.3"
   }
 }

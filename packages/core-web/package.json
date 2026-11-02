@@ -17,15 +17,15 @@
     "@bemmoly/api-client": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*",
-    "@lingui/core": "6.8.0",
-    "@lingui/message-utils": "6.8.0"
+    "@lingui/core": "6.11.0",
+    "@lingui/message-utils": "6.11.0"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "5.104.1",
-    "react": "19.3.0"
+    "@tanstack/react-query": "5.105.0",
+    "react": "19.3.1"
   },
   "devDependencies": {
-    "@tanstack/react-query": "5.104.1",
+    "@tanstack/react-query": "5.105.0",
     "@testing-library/react": "16.3.3",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
@@ -33,8 +33,8 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "17.13.0",
     "happy-dom": "21.0.4",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "vitest": "5.0.3"
   }
 }

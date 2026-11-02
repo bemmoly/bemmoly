@@ -17,9 +17,9 @@
   "dependencies": {
     "@bemmoly/module-pipelines": "workspace:*",
     "@bemmoly/shared": "workspace:*",
-    "@xmldom/xmldom": "0.8.15",
+    "@xmldom/xmldom": "0.9.12",
     "pino": "10.4.0",
-    "zod": "4.6.6"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "26.6.4",

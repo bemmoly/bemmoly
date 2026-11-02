@@ -26,12 +26,12 @@
     "@bemmoly/module-pipelines": "workspace:*",
     "@bemmoly/module-work": "workspace:*",
     "@bemmoly/shared": "workspace:*",
-    "@fastify/static": "10.1.5",
-    "fastify": "5.12.5",
-    "zod": "4.6.6"
+    "@fastify/static": "10.1.8",
+    "fastify": "5.12.7",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "1.32.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@types/node": "26.6.4",
     "vitest": "5.0.3"
   }
