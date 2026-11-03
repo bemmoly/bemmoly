@@ -1,5 +1,6 @@
 import type {
   CodeHostDirectory,
+  EventBus,
   ModuleObjects,
   SendJobOptions,
   SettingsRegistry,
@@ -56,6 +57,7 @@ import { createConfigCopyService } from './config-copy/index.ts';
 import { createRolesService } from './roles/index.ts';
 import { createEnvironmentsV2Service } from './environments-v2/index.ts';
 import { createSetupChecklistService } from './setup-checklist/index.ts';
+import { createChangeRequestsService } from './change-requests/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -88,6 +90,8 @@ export interface PipelinesServicesDeps {
   /** The server's configured address: the audience CI's OIDC tokens must name. */
   publicUrl?: string;
   now?: () => Date;
+  /** The kernel's bus: change requests tell approvers through notification.requested. */
+  events?: Pick<EventBus, 'publish'>;
 }
 
 /**
@@ -219,6 +223,16 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     }),
     configCopy: createConfigCopyService({ ...deps, providers }),
     roles: createRolesService(deps),
+    ...(input.database
+      ? {
+          changeRequests: createChangeRequestsService({
+            sql: input.database,
+            now: input.now ?? (() => new Date()),
+            ...(shipping ? { shipping } : {}),
+            ...(input.events ? { events: input.events } : {}),
+          }),
+        }
+      : {}),
     machines: createMachinesService({
       ...deps,
       providers,

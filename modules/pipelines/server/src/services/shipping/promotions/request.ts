@@ -31,6 +31,10 @@ export async function requestPromotion(
 ): Promise<{ id: string; created: boolean }> {
   const person = requirePerson(ctx.actor);
   return recordPromotion(deps, body, settings, async (where, applicationId) => {
+    await requireNoApprovalRule(
+      deps.sql,
+      where.environments.map((e) => e.id),
+    );
     const action = where.environmentClass === 'prod' ? 'request_prod' : 'deploy';
     const { policies } = await deps.access.authorize(ctx, action, {
       applicationId,
@@ -58,6 +62,38 @@ export async function requestAutomatically(
   });
 }
 
+/**
+ * Started by a change request once its last approval landed (or by a Platform admin's
+ * emergency deploy): the people it names already approved, so the promotion is recorded for
+ * the person who asked, skips the approval gate and is not held to the older path check;
+ * the request checked which versions may go when it was sent.
+ */
+export async function requestForChangeRequest(
+  deps: ShippingEngineDeps,
+  body: RequestBody & { changeRequestId: string; requestedBy: string | null },
+  settings: RequestSettings,
+): Promise<{ id: string; created: boolean }> {
+  return recordPromotion(
+    deps,
+    body,
+    settings,
+    async () => ({ person: body.requestedBy, policyVersions: [] }),
+    { changeRequestId: body.changeRequestId },
+  );
+}
+
+/** An environment with an approval rule takes versions only through a change request. */
+async function requireNoApprovalRule(sql: ShippingEngineDeps['sql'], ids: readonly string[]) {
+  const [ruled] = await sql<{ name: string }[]>`
+    select name from pipeline_environments
+    where id = any(${ids as string[]}::uuid[]) and approval_rule is not null limit 1`;
+  if (ruled) {
+    throw new ValidationError(
+      `${ruled.name} has an approval rule. Write a change request to deploy there.`,
+    );
+  }
+}
+
 type Requester = (
   where: Awaited<ReturnType<typeof promotionTargets>>,
   applicationId: string,
@@ -68,6 +104,7 @@ async function recordPromotion(
   body: RequestBody,
   settings: RequestSettings,
   requester: Requester,
+  options: { changeRequestId?: string } = {},
 ): Promise<{ id: string; created: boolean }> {
   const { sql } = deps;
   const release = await loadRelease(sql, body.release);
@@ -76,12 +113,13 @@ async function recordPromotion(
   const first = where.environments[0];
   if (!first) throw new ValidationError('Name an environment to promote to');
   const { person, policyVersions } = await requester(where, application.id);
-  await requireLandedBefore(sql, {
-    applicationId: application.id,
-    releaseId: release.id,
-    previousStage: where.previousStage,
-    version: release.version,
-  });
+  if (!options.changeRequestId)
+    await requireLandedBefore(sql, {
+      applicationId: application.id,
+      releaseId: release.id,
+      previousStage: where.previousStage,
+      version: release.version,
+    });
   if (body.mode === 'train' && !body.departure) {
     throw new ValidationError('Pick the train departure to join');
   }
@@ -96,7 +134,11 @@ async function recordPromotion(
   );
   const now = deps.now();
   const at = now.toISOString();
-  const expires = new Date(now.getTime() + settings.expiryHours * 3_600_000).toISOString();
+  // Approved already: nothing is left for it to wait on that could expire.
+  const expires = options.changeRequestId
+    ? null
+    : new Date(now.getTime() + settings.expiryHours * 3_600_000).toISOString();
+  const changeRequestId = options.changeRequestId ?? null;
   const supersedeKey = `${application.id}:${first.id}`;
 
   const result = await sql.begin(async (tx) => {
@@ -114,12 +156,12 @@ async function recordPromotion(
       insert into pipeline_promotions
         (release_id, application_id, environment_id, mode, departure_id, state, plan,
          policy_versions, supersede_key, requested_by, release_digest, expires_at, note,
-         next_check_at, created_at, updated_at)
+         change_request_id, next_check_at, created_at, updated_at)
       values (${release.id}, ${application.id}, ${first.id}, ${body.mode},
         ${body.departure ?? null}, 'requested', ${JSON.stringify(plan)}::jsonb,
         ${policyVersions}::uuid[], ${supersedeKey}, ${person}, ${releaseDigest(release)},
-        ${expires}::timestamptz, ${body.note ?? null}, ${at}::timestamptz, ${at}::timestamptz,
-        ${at}::timestamptz)
+        ${expires}::timestamptz, ${body.note ?? null}, ${changeRequestId}::uuid,
+        ${at}::timestamptz, ${at}::timestamptz, ${at}::timestamptz)
       returning id`;
     if (!row) throw new Error('The promotion was not recorded');
     await publishPromotion(tx, row.id, 'requested');

@@ -26,6 +26,7 @@ import { createAdoptionController } from './adoption.controller.ts';
 import { createRolesController } from './roles.controller.ts';
 import { createEnvironmentsV2Controller } from './environments-v2.controller.ts';
 import { createSetupChecklistController } from './setup-checklist.controller.ts';
+import { createChangeRequestsController } from './change-requests.controller.ts';
 
 export function createPipelinesControllers(services: PipelinesServices) {
   return {
@@ -56,6 +57,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     roles: createRolesController(services.roles),
     environmentsV2: createEnvironmentsV2Controller(services.environmentsV2),
     setupChecklist: createSetupChecklistController(services.setupChecklist),
+    changeRequests: createChangeRequestsController(services.changeRequests),
   };
 }
 

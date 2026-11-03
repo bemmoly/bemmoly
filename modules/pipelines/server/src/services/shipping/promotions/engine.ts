@@ -140,7 +140,8 @@ export function createPromotionEngine(deps: ShippingEngineDeps) {
     const approvals = await approvalState(sql, deps.access, {
       promotionId: row.id,
       target,
-      rules: requirements.approvals,
+      // A change request's own approvers already said yes; it never asks a second time.
+      rules: row.change_request_id ? [] : requirements.approvals,
       releaseDigest: digest,
       authors: authorsOf(release, row.requested_by),
       viewerId: null,

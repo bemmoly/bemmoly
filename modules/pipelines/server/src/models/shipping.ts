@@ -77,6 +77,8 @@ export interface PromotionRow {
   approved_at: string | null;
   started_at: string | null;
   expires_at: string | null;
+  /** The change request that started it; its approvers already approved. */
+  change_request_id?: string | null;
   finished_at: string | null;
   created_at: string;
 }

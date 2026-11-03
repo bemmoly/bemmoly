@@ -7,7 +7,7 @@ import {
   personRefSchema,
   slugSchema,
 } from './common.ts';
-import { approvalConditionSchema } from './environments-v2.ts';
+import { approvalConditionSchema, deployWindowSchema } from './environments-v2.ts';
 import { approvalGroupRefSchema } from './roles.ts';
 
 /*
@@ -29,6 +29,8 @@ export const CHANGE_REQUESTS_PATHS = {
   approve: (number: string) => `${one(number)}/approve`,
   reject: (number: string) => `${one(number)}/reject`,
   withdraw: (number: string) => `${one(number)}/withdraw`,
+  /** What the New change request form offers for an environment: steps, people, versions. */
+  options: `${base}/options`,
 } as const;
 
 /** "CHG-1042". */
@@ -39,9 +41,14 @@ export const changeRiskSchema = z.enum(['low', 'medium', 'high']);
 export const changeRequestStatusSchema = z.enum([
   'draft',
   'waiting',
+  /** An approver asked for changes: the requester edits it and sends it again. */
+  'changes_requested',
+  /** Every step approved; the deploy waits for its time or the deploy window. */
   'approved',
   'deploying',
   'deployed',
+  /** A deploy it started failed or was rolled back. */
+  'failed',
   'rejected',
   'withdrawn',
 ]);
@@ -56,6 +63,7 @@ export const changeRequestItemSchema = z.object({
   application: z.object({ key: slugSchema, name: z.string() }),
   /** Null when nothing runs there yet. */
   fromVersion: z.string().nullable(),
+  fromReleaseId: idSchema.nullable(),
   toVersion: z.string(),
   releaseId: idSchema,
   commitCount: z.number().int().min(0),
@@ -111,6 +119,9 @@ export const changeRequestSchema = z.object({
   status: changeRequestStatusSchema,
   evidence: changeEvidenceSchema,
   requestedBy: personRefSchema,
+  /** Set when a Platform admin deployed without approval: why, in their words. */
+  emergencyReason: z.string().nullable(),
+  sentAt: isoDateTimeSchema.nullable(),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
 });
@@ -121,6 +132,8 @@ export const changeRequestSummarySchema = changeRequestSchema
   .extend({
     requestedBy: personRefSchema,
     serviceCount: z.number().int(),
+    /** Each service and the version it moves to, for the list's Versions column. */
+    items: z.array(z.object({ application: slugSchema, toVersion: z.string() })),
     approvalsGot: z.number().int(),
     approvalsNeeded: z.number().int(),
     /** Whether the person asking is a picked approver who has not decided yet. */
@@ -129,7 +142,7 @@ export const changeRequestSummarySchema = changeRequestSchema
   });
 
 export const listChangeRequestsQuerySchema = keysetQuerySchema.extend({
-  tab: z.enum(['open', 'mine', 'waiting_for_me', 'done', 'all']).default('open'),
+  tab: z.enum(['open', 'mine', 'waiting_for_me', 'decided', 'done', 'all']).default('open'),
   environment: slugSchema.optional(),
 });
 
@@ -139,13 +152,32 @@ export const changeRequestDetailSchema = changeRequestSchema.extend({
   activity: z.array(
     z.object({ at: isoDateTimeSchema, by: personRefSchema.nullable(), text: z.string() }),
   ),
-  /** The Promote runs this request started once approved. */
-  deployRuns: z.array(z.object({ id: idSchema, number: z.number().int(), state: z.string() })),
+  /** The promotions this request started once approved, one per service. */
+  deploys: z.array(
+    z.object({
+      promotionId: idSchema,
+      releaseId: idSchema,
+      application: slugSchema,
+      version: z.string(),
+      state: z.string(),
+    }),
+  ),
+  /** The environment's deploy window, so the route can say when the deploy may start. */
+  window: deployWindowSchema,
+  /** Rule steps left out because their condition did not hold (low or medium risk). */
+  skipped: z.array(
+    z.object({
+      group: approvalGroupRefSchema,
+      count: z.number().int(),
+      when: approvalConditionSchema,
+    }),
+  ),
   can: z.object({
     approve: z.boolean(),
     reject: z.boolean(),
     withdraw: z.boolean(),
     send: z.boolean(),
+    edit: z.boolean(),
   }),
 });
 
@@ -163,7 +195,19 @@ export const createChangeRequestBodySchema = z.object({
   picks: z.array(z.object({ step: z.number().int().min(0), users: z.array(idSchema).min(1) })),
   /** False saves a draft. */
   send: z.boolean().default(true),
+  /**
+   * A Platform admin deploying now without approval: the reason is kept on the request and
+   * every approver of the environment is told.
+   */
+  emergency: z
+    .object({ reason: z.string().trim().min(10, 'Say why in a sentence').max(2000) })
+    .optional(),
 });
+
+/** A draft or a request sent back for changes, edited by the person who asked. */
+export const updateChangeRequestBodySchema = createChangeRequestBodySchema
+  .omit({ environment: true, send: true, emergency: true })
+  .partial();
 
 export const approveChangeRequestBodySchema = z.object({
   note: z.string().trim().max(2000).optional(),
@@ -193,6 +237,7 @@ export type ListChangeRequestsQuery = z.infer<typeof listChangeRequestsQuerySche
 export type ChangeRequestsPage = z.infer<typeof changeRequestsPageSchema>;
 export type ChangeRequestDetail = z.infer<typeof changeRequestDetailSchema>;
 export type CreateChangeRequestBody = z.infer<typeof createChangeRequestBodySchema>;
+export type UpdateChangeRequestBody = z.infer<typeof updateChangeRequestBodySchema>;
 export type ApproveChangeRequestBody = z.infer<typeof approveChangeRequestBodySchema>;
 export type RejectChangeRequestBody = z.infer<typeof rejectChangeRequestBodySchema>;
 export type WithdrawChangeRequestBody = z.infer<typeof withdrawChangeRequestBodySchema>;

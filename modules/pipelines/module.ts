@@ -12,6 +12,7 @@ import { registerExecutionWork } from './server/src/config/execution.ts';
 import { createPipelinesServices } from './server/src/services/index.ts';
 import { moveSecretsJob } from './server/src/config/variables-jobs.ts';
 import { frontDoorJobs, moveWaker } from './server/src/config/front-door-jobs.ts';
+import { changeRequestJobs } from './server/src/config/change-request-jobs.ts';
 
 /**
  * Bemmoly Pipelines, the server side. A product with its own web app (apps/pipelines-web) and
@@ -42,6 +43,7 @@ export default defineModule({
       objects: ctx.objects,
       wake: jobWaker(ctx.jobs),
       wakeMove: moveWaker(ctx.jobs),
+      events: ctx.events,
       ...(ctx.publicUrl ? { publicUrl: ctx.publicUrl } : {}),
     });
     registerCodeHostWork(ctx, services);
@@ -57,6 +59,7 @@ export default defineModule({
     for (const job of frontDoorJobs(services.frontDoors, () => services.moves.engine)) {
       ctx.jobs.add(job);
     }
+    for (const job of changeRequestJobs(() => services.changeRequests)) ctx.jobs.add(job);
     registerExecutionWork(ctx, services);
     const controllers = createPipelinesControllers(services);
     ctx.routes.add({ prefix: '/pipelines', plugin: pipelinesRoutes(controllers) });

@@ -52,4 +52,5 @@ export * from './config-copy.ts';
 export * from './roles.ts';
 export * from './environments-v2.ts';
 export * from './change-requests.ts';
+export * from './change-request-options.ts';
 export * from './pipeline-setup.ts';
