@@ -3,12 +3,13 @@ import { Avatar, Menu, MenuGroup, MenuItem, MenuSeparator } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMe } from '../hooks/use-me.ts';
 import type { Appearance } from '../hooks/use-mode.ts';
-import { pipelinesText } from '../i18n/catalog.ts';
+import { usePipelinesMe } from '../hooks/use-roles.ts';
+import { pipelinesText, rolesText } from '../i18n/catalog.ts';
 import { api } from '../lib/api.ts';
 import { goToSignIn } from '../lib/sign-in.ts';
 import { MODE_CHOICES } from './mode-choices.ts';
 
-/** The person at the rail's foot: the look, a way back to Bemmoly and signing out. */
+/** The person at the rail's foot: their role, the look, a way back to Bemmoly, signing out. */
 export function PersonMenu({
   appearance,
   align = 'start',
@@ -17,8 +18,11 @@ export function PersonMenu({
   align?: 'start' | 'end';
 }) {
   const t = useT(pipelinesText);
+  const words = useT(rolesText);
   const { data: me } = useMe();
+  const role = usePipelinesMe().data?.role;
   const name = me?.user.name ?? '';
+  const roleName = role ? words(`pipelinesRoles.role.${role}`) : null;
   const signOut = async () => {
     await api.auth.logout().catch(() => undefined);
     goToSignIn();
@@ -30,13 +34,22 @@ export function PersonMenu({
         <button
           {...props}
           type="button"
-          aria-label={t('pipelines.shell.person', { name })}
+          aria-label={
+            roleName
+              ? words('pipelinesRoles.menu.person', { name, role: roleName })
+              : t('pipelines.shell.person', { name })
+          }
           className="grid size-10 place-items-center rounded-full focus-ring"
         >
           <Avatar name={name || '?'} size={28} hue="accent" />
         </button>
       )}
     >
+      <div className="flex flex-col px-2.5 py-1.5">
+        <span className="truncate text-13 font-semibold text-tx">{name}</span>
+        {roleName && <span className="text-12 text-tx-3">{roleName}</span>}
+      </div>
+      <MenuSeparator />
       <MenuGroup label={t('pipelines.settings.mode')}>
         {MODE_CHOICES.map((choice) => (
           <MenuItem

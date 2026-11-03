@@ -1,9 +1,11 @@
+import { usePipelinesMe } from '../hooks/use-roles.ts';
 import { visiblePlaces, type Place } from './places.ts';
 
 /**
- * The places the signed-in person's role shows. Every place until the role arrives from
- * Pipelines' /me (stream S1 reads `api.roles.me` here and passes its `places`).
+ * The places the signed-in person's role shows, from Pipelines' /me. Every place shows until
+ * it answers; the route guard and the server still keep out what a role may not see.
  */
 export function usePlaces(): readonly Place[] {
-  return visiblePlaces(undefined);
+  const { data } = usePipelinesMe();
+  return visiblePlaces(data?.places);
 }

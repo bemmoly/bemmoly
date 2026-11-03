@@ -900,6 +900,7 @@
   "pipelines.releases.waitingLabel": "Promotions waiting for your approval",
   "pipelines.releases.waitingMeta": "{count, plural, one {# approval} other {# approvals}} you can give now",
   "pipelines.releases.waitingTitle": "Waiting for you",
+  "pipelines.role.approver": "Approver",
   "pipelines.role.auditor": "Auditor",
   "pipelines.role.developer": "Developer",
   "pipelines.role.maintainer": "Maintainer",

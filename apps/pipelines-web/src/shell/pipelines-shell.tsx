@@ -9,6 +9,7 @@ import { pipelinesText } from '../i18n/catalog.ts';
 import { NoAccessScreen } from '../screens/no-access.tsx';
 import { CommandMenu } from './command-menu.tsx';
 import { KeysDialog } from './keys-dialog.tsx';
+import { PlaceGuard } from './place-guard.tsx';
 import { PhoneBar } from './phone-bar.tsx';
 import { Rail } from './rail.tsx';
 import { TopBar } from './top-bar.tsx';
@@ -53,7 +54,13 @@ export function PipelinesShell() {
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
           <main id="content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0">
-            {me && !me.modules.includes('pipelines') ? <NoAccessScreen /> : <Outlet />}
+            {me && !me.modules.includes('pipelines') ? (
+              <NoAccessScreen />
+            ) : (
+              <PlaceGuard>
+                <Outlet />
+              </PlaceGuard>
+            )}
           </main>
           <PhoneBar />
         </div>
