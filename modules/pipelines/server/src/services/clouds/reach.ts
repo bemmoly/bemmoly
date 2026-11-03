@@ -67,7 +67,7 @@ export function createReach(deps: ConnectionsDeps) {
       const record: ConnectionRecord = {
         id: 'access-check',
         provider: body.provider,
-        name: 'Access check',
+        name: 'Google Cloud',
         layout: 'per-environment',
         boundaryRef: null,
         config: {

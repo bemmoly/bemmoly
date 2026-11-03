@@ -41,6 +41,8 @@ const ready = () => {
 const gcpBody = {
   provider: 'gcp',
   name: 'Acme Google Cloud',
+  // Creating projects is an explicit choice; attached is the default.
+  mode: 'managed',
   organizationId: '583920174411',
   billingAccountId: '01A2B3-C4D5E6-F7A8B9',
 };
