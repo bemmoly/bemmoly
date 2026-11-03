@@ -19,7 +19,7 @@ export interface DeployStepPorts {
   sql: SqlClient;
   writer: ReleaseWriter;
   /** Asks shipping to deploy a release into an environment; throws when it cannot. */
-  request: (release: string, environment: string, note: string) => Promise<{ id: string }>;
+  promote: (release: string, environment: string, note: string) => Promise<{ id: string }>;
 }
 
 interface StepRow {
@@ -99,7 +99,7 @@ async function start(ports: DeployStepPorts, step: StepRow): Promise<void> {
     return;
   }
   try {
-    await ports.request(release, step.environment_key, `Deployed by a step of run ${step.run_id}`);
+    await ports.promote(release, step.environment_key, `Deployed by a step of run ${step.run_id}`);
     await setState(ports.sql, step, 'running', null);
   } catch (error) {
     if (!isBemmolyError(error)) throw error;

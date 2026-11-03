@@ -39,9 +39,9 @@ type Problem = ApplicationFilesResult['problems'][number];
 /** "acme/node-service@3", as the catalog stores a template reference. */
 /** The file's value for a pipeline column, unless the file has none and Bemmoly keeps it. */
 function keepOwn(sql: SqlExecutor, column: string) {
-  return sql.unsafe(`case when excluded.pipeline is null
+  return sql`case when excluded.pipeline is null
       and pipeline_applications.pipeline_store = 'bemmoly'
-    then pipeline_applications.${column} else excluded.${column} end`);
+    then pipeline_applications.${sql(column)} else excluded.${sql(column)} end`;
 }
 
 function templateOf(file: ApplicationFile): string | null {

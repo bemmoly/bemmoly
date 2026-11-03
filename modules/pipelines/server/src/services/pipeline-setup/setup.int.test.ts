@@ -119,7 +119,7 @@ describe('setting up a pipeline', () => {
     const ports = {
       sql,
       writer: createReleaseWriter(),
-      request: async (release: string, to: string) => {
+      promote: async (release: string, to: string) => {
         asked.push(to);
         return { id: release };
       },

@@ -166,7 +166,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ? advanceDeploySteps({
           sql: input.database,
           writer: releases.writer,
-          request: (release, to, note) => shipping.requestForStep(release, to, note),
+          promote: (release, to, note) => shipping.requestForStep(release, to, note),
         })
       : [];
   return {

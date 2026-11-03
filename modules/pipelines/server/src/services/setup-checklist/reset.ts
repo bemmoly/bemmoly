@@ -23,11 +23,12 @@ async function moduleTables(sql: SqlExecutor): Promise<string[]> {
 export async function startOver(sql: SqlExecutor): Promise<number> {
   const tables = await moduleTables(sql);
   if (tables.length === 0) return 0;
-  const counts = await sql<{ count: number }[]>`
-    select (${sql.unsafe(
-      tables.map((name) => `(select count(*) from "${name}")`).join(' + '),
-    )})::int as count`;
+  let count = 0;
+  for (const name of tables) {
+    const [row] = await sql<{ count: number }[]>`select count(*)::int as count from ${sql(name)}`;
+    count += row?.count ?? 0;
+  }
   // No CASCADE: if another module's table pointed at one of these, stopping is right.
-  await sql.unsafe(`truncate table ${tables.map((name) => `"${name}"`).join(', ')}`);
-  return counts[0]?.count ?? 0;
+  await sql`truncate table ${sql(tables)}`;
+  return count;
 }
