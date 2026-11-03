@@ -46,17 +46,11 @@ export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
     queryFn: () => api.pipelines.applications({ q: search, limit: 8 }),
     enabled: open && search.length >= 2,
   });
-  const openApplication = (application: Application, dialog?: Verb) => {
+  // A verb ("promote checkout-api") opens the service; its page holds every action.
+  const openApplication = (application: Application, _verb?: Verb) => {
     close();
     setQuery('');
-    void navigate({
-      to: '/applications/$key',
-      params: { key: application.key },
-      search: {
-        scope: `${application.domain.key}/${application.group.key}`,
-        ...(dialog && dialog !== 'owner' ? { dialog } : {}),
-      } as { scope?: string },
-    });
+    void navigate({ to: '/services/$key', params: { key: application.key } });
   };
   const go = (to: string, search?: Record<string, string>) => {
     close();
@@ -125,7 +119,7 @@ export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
                 meta={t('pipelines.shell.commandsApplicationCount', {
                   count: domain.applicationCount,
                 })}
-                onSelect={() => go('/map', { scope: domain.key })}
+                onSelect={() => go('/services', { domain: domain.key })}
               />
             ))}
           </CommandGroup>

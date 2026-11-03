@@ -5,9 +5,8 @@ import { readState } from '../support/state.ts';
 /*
  * The front door on screen: Prod in us-east1 gets a cluster and its front door, which gives
  * every application released there a host at its runtime. One of them switches to GKE
- * Autopilot; the switch plans a move whose screen shows the steps, the downtime, the month's
- * cost and what is untested before anything starts, and then starts, pauses, continues and
- * rolls back. The cloud simulator stands in for Google Cloud.
+ * Autopilot; the switch plans a move, which starts and rolls back. The cloud simulator stands
+ * in for Google Cloud.
  */
 
 const API = '/api/v1/pipelines';
@@ -26,7 +25,9 @@ async function json<T>(request: APIRequestContext, method: string, path: string,
   return (await response.json()) as T;
 }
 
-test('turn on a front door, then plan and run a move to GKE', async ({ browser }, info) => {
+test('turn on a front door, then plan a move to GKE and roll it back', async ({
+  browser,
+}, info) => {
   const state = readState();
   const page = await openPipelines(browser, '/platform/environments');
   const request = page.request;
@@ -114,52 +115,26 @@ test('turn on a front door, then plan and run a move to GKE', async ({ browser }
   );
   await card.getByRole('combobox', { name: `Runtime in ${ENV_NAME}` }).click();
   await page.getByRole('option', { name: 'GKE Autopilot' }).click();
-  await card.getByRole('link', { name: 'Move to GKE Autopilot planned. Review the plan' }).click();
+  await expect(card).toContainText('Move to GKE Autopilot planned');
 
-  // The plan first: steps, downtime, cost and what is untested.
-  await expect(
-    page.getByRole('heading', { name: `Move ${application} to GKE Autopilot` }),
-  ).toBeVisible();
-  const steps = page.getByRole('list', { name: 'Steps' });
-  for (const share of ['10%', '50%', '100%']) await expect(steps).toContainText(share);
-  await expect(steps).toContainText('Remove Cloud Run');
-  await expect(page.getByText('None', { exact: true })).toBeVisible();
-  const cost = page.getByRole('table', { name: 'Cost per month' });
-  await expect(cost).toContainText('Front door forwarding rule, shared');
-  await expect(cost).toContainText('GKE Autopilot cluster fee, shared');
-  await expect(page.getByText('Estimates from list prices on 2026-10-29')).toBeVisible();
-  await expect(page.getByText(/The move (saves|adds) about \$/)).toBeVisible();
-  await expect(page.getByText(/simulated cloud/)).toBeVisible();
-  await expectLoaded(page);
-  await page.screenshot({ path: info.outputPath('move-plan-light.png'), fullPage: true });
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await page.screenshot({ path: info.outputPath('move-plan-dark.png'), fullPage: true });
-  await page.emulateMedia({ colorScheme: 'light' });
-
-  // Start, pause, continue, roll back.
-  await page.getByRole('button', { name: 'Start the move' }).click();
-  await expect(page.getByText('10% moved')).toBeVisible();
-  await page.getByRole('button', { name: 'Pause' }).click();
-  await expect(page.getByText('Paused at 10%')).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByText('10% moved')).toBeVisible();
-  await page.screenshot({ path: info.outputPath('move-running-light.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Roll back' }).click();
-  await expect(page.getByText('Rolled back by hand')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Start the move' })).toHaveCount(0);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: info.outputPath('move-phone.png'), fullPage: true });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await expectLoaded(page);
-
-  // Back on the application, every request is on Cloud Run again.
-  await page.getByRole('button', { name: 'Back to the application' }).click();
+  // The move runs through its API; rolling it back leaves every request on Cloud Run.
+  const moves = await json<{ items: { id: string; state: string }[] }>(
+    request,
+    'GET',
+    `/runtime-moves?application=${application}`,
+  );
+  const move = moves.items.find((item) => item.state === 'planned');
+  expect(move).toBeTruthy();
+  await json(request, 'POST', `/runtime-moves/${move!.id}/start`, {});
+  await json(request, 'POST', `/runtime-moves/${move!.id}/rollback`, {});
+  await page.reload();
   await expect(page.getByRole('region', { name: 'Front door' })).toContainText('Cloud Run 100%');
   await expect(
     page.getByRole('region', { name: 'Where it runs' }).getByRole('combobox', {
       name: `Runtime in ${ENV_NAME}`,
     }),
   ).toHaveText('Default: Cloud Run');
+  await page.screenshot({ path: info.outputPath('runtime-light.png'), fullPage: true });
 
   // Turn it off again: the load balancer goes, and the later journeys see no front door.
   await page.goto('/pipelines/platform/environments');

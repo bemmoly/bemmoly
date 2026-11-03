@@ -14,6 +14,7 @@ import { pipelinesEndpoints } from '../api/pipelines.ts';
 import { platformEndpoints } from '../api/platform.ts';
 import { rolesEndpoints } from '../api/roles.ts';
 import { runtimeEndpoints } from '../api/runtimes.ts';
+import { servicesEndpoints } from '../api/services.ts';
 import { setupEndpoints } from '../api/setup.ts';
 import { shippingEndpoints } from '../api/shipping.ts';
 import { variablesEndpoints } from '../api/variables.ts';
@@ -45,6 +46,7 @@ export const api = {
   setup: setupEndpoints(client.http),
   changeRequests: changeRequestsEndpoints(client.http),
   pipelineSetup: pipelineSetupEndpoints(client.http),
+  services: servicesEndpoints(client.http),
 };
 
 export type Api = typeof api;

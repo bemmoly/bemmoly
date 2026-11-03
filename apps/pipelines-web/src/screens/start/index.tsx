@@ -95,7 +95,7 @@ export default function StartScreen() {
       title: t('pipelines.start.ship'),
       description: t('pipelines.start.shipDescription'),
       state: stateOf('ship'),
-      action: action(t('pipelines.start.shipAction'), () => go({ to: '/catalog' })),
+      action: action(t('pipelines.start.shipAction'), () => go({ to: '/services' })),
     },
   ];
   const left = ORDER.filter((step) => !setup.done[step]).length;

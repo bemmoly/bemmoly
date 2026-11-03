@@ -22,8 +22,8 @@ export interface Place {
 
 /**
  * The rail's six places, then Settings at its foot (the simpler Pipelines prototype). Which of
- * them a person sees is their role's (`visiblePlaces`). The older screens (Map, Catalog,
- * Releases, Insights) keep their addresses until they retire, under the place they fold into.
+ * them a person sees is their role's (`visiblePlaces`). An application's older page stays under
+ * Services, and a release's promotion under Changes, until those retire.
  */
 export const PLACES: readonly Place[] = [
   { id: 'forYou', key: 'home', path: '/', icon: 'home', keys: 'G Y', scoped: false },
@@ -34,7 +34,7 @@ export const PLACES: readonly Place[] = [
     icon: 'grid',
     keys: 'G V',
     scoped: true,
-    also: ['/applications', '/catalog', '/map', '/insights'],
+    also: ['/applications'],
   },
   { id: 'runs', key: 'runs', path: '/runs', icon: 'play', keys: 'G R', scoped: true },
   {

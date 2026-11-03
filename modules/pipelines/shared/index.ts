@@ -55,3 +55,4 @@ export * from './change-requests.ts';
 export * from './change-request-options.ts';
 export * from './pipeline-setup.ts';
 export * from './run-next.ts';
+export * from './service-views.ts';
