@@ -45,6 +45,12 @@ const str = (value: unknown): string => (typeof value === 'string' ? value : '')
 
 /** One activity row as a sentence; the actor's name leads it on screen. */
 export function activityText(row: ChangeRequestEventRow): string {
+  const text = phrase(row);
+  // A name or a note that already ends a sentence ("Sam R.") takes no second stop.
+  return text.replace(/([.!?])\.$/, '$1');
+}
+
+function phrase(row: ChangeRequestEventRow): string {
   const d = row.data;
   const note = str(d['note']) ? `: "${str(d['note'])}"` : '';
   switch (row.kind) {

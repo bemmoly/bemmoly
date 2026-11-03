@@ -44,6 +44,7 @@ function StepPeople({ step }: { step: ChangeRequestStep }) {
                         ? 'danger'
                         : 'warn'
                   }
+                  className="inline-flex gap-1"
                 >
                   {t(`pipelinesChangeRequests.decision.${decision.decision}`)}{' '}
                   <RelativeTime iso={decision.at} />
