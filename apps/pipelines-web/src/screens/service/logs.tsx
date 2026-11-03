@@ -45,6 +45,7 @@ export default function ServiceLogs() {
         ) : url ? (
           <EmptyState
             icon={<Icon name="list" size={18} />}
+            headingLevel={2}
             title={t('pipelinesServices.logs.title', { environment: environment.name })}
             description={t('pipelinesServices.logs.inCloud', {
               service: key,
@@ -65,6 +66,7 @@ export default function ServiceLogs() {
         ) : (
           <EmptyState
             icon={<Icon name="cloud-off" size={18} />}
+            headingLevel={2}
             title={t('pipelinesServices.logs.noProject', { environment: environment.name })}
             description={t('pipelinesServices.logs.noProjectHint')}
             action={
