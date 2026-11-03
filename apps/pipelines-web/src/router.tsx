@@ -50,15 +50,14 @@ const service = createRoute({
   path: '/services/$key',
   component: lazyRouteComponent(() => import('./screens/service/layout.tsx')),
 });
-const serviceTab = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
-  createRoute({ getParentRoute: () => service, path, component: lazyRouteComponent(load) });
+const serviceTab = <Path extends string>(
+  path: Path,
+  load: Parameters<typeof lazyRouteComponent>[0],
+) => createRoute({ getParentRoute: () => service, path, component: lazyRouteComponent(load) });
 
 const routeTree = root.addChildren([
   screen('/', () => import('./screens/for-you/for-you-screen.tsx')),
-  screen('/map', () => import('./screens/map/map-screen.tsx')),
-  screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
-  screen('/applications/$key/moves/$id', () => import('./screens/move/index.tsx')),
   screen('/services', () => import('./screens/services/index.tsx')),
   service.addChildren([
     serviceTab('/', () => import('./screens/service/overview.tsx')),
@@ -70,10 +69,7 @@ const routeTree = root.addChildren([
   ]),
   screen('/runs', () => import('./screens/runs/runs-screen.tsx')),
   screen('/runs/$id', () => import('./screens/run/run-screen.tsx')),
-  screen('/releases', () => import('./screens/releases/index.tsx')),
-  screen('/releases/changes', () => import('./screens/changes/index.tsx')),
   screen('/releases/$releaseId/promote', () => import('./screens/promote/index.tsx')),
-  screen('/insights', () => import('./screens/insights/index.tsx')),
   screen('/changes', () => import('./screens/change-requests/index.tsx')),
   screen('/changes/new', () => import('./screens/change-requests/new.tsx')),
   screen('/changes/$number', () => import('./screens/change-requests/detail.tsx')),
