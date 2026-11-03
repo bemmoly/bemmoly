@@ -51,3 +51,4 @@ export * from './roles.ts';
 export * from './environments-v2.ts';
 export * from './change-requests.ts';
 export * from './pipeline-setup.ts';
+export * from './service-views.ts';

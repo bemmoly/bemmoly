@@ -35,6 +35,7 @@ import { createForYouService, type ApprovalsInbox } from './for-you/index.ts';
 import { createMapService } from './map/index.ts';
 import { createOverviewService } from './overview/index.ts';
 import { createStripService } from './strip/index.ts';
+import { createServiceViewsService } from './service-views/index.ts';
 import { createViewsService } from './views/index.ts';
 import type { ProviderRegistry } from './providers/registry.ts';
 import { createHistoryService } from './history/index.ts';
@@ -189,6 +190,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     ...(shipping ? { shipping } : {}),
     map: createMapService(deps),
     strip: createStripService(deps),
+    serviceViews: createServiceViewsService(deps),
     views: createViewsService(deps),
     forYou: createForYouService(deps, shipping ?? NO_INBOX),
     clouds: createCloudsService({

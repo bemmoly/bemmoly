@@ -23,6 +23,7 @@ import { createFrontDoorsController } from './front-doors.controller.ts';
 import { createExportsController } from './exports.controller.ts';
 import { createDeploySettingsController } from './deploy-settings.controller.ts';
 import { createAdoptionController } from './adoption.controller.ts';
+import { createServiceViewsController } from './service-views.controller.ts';
 
 export function createPipelinesControllers(services: PipelinesServices) {
   return {
@@ -50,6 +51,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     exports: createExportsController(services.exports),
     deploySettings: createDeploySettingsController(services.deploySettings),
     adoption: createAdoptionController(services.adoption, services.configCopy),
+    serviceViews: createServiceViewsController(services.serviceViews),
   };
 }
 

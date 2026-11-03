@@ -22,6 +22,7 @@ import { frontDoorsRoutes } from './front-doors.routes.ts';
 import { exportsRoutes } from './exports.routes.ts';
 import { deploySettingsRoutes } from './deploy-settings.routes.ts';
 import { adoptionRoutes } from './adoption.routes.ts';
+import { serviceViewsRoutes } from './service-views.routes.ts';
 
 export { runnerRoutes } from './runner.routes.ts';
 
@@ -53,5 +54,6 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(exportsRoutes(controllers.exports));
     await app.register(deploySettingsRoutes(controllers.deploySettings));
     await app.register(adoptionRoutes(controllers.adoption));
+    await app.register(serviceViewsRoutes(controllers.serviceViews));
   };
 }
