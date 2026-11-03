@@ -37,12 +37,21 @@ const platform = createRoute({
   path: '/platform',
   beforeLoad: ({ location }) => {
     if (/\/platform\/?$/.test(location.pathname))
-      throw redirect({ href: `${BASE_PATH}/platform/access`, replace: true });
+      throw redirect({ href: `${BASE_PATH}/platform/clouds`, replace: true });
   },
   component: lazyRouteComponent(() => import('./screens/platform/layout.tsx')),
 });
 const platformArea = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
   createRoute({ getParentRoute: () => platform, path, component: lazyRouteComponent(load) });
+
+/** A service's page: its tabs share one frame, each with its own address. */
+const service = createRoute({
+  getParentRoute: () => root,
+  path: '/services/$key',
+  component: lazyRouteComponent(() => import('./screens/service/layout.tsx')),
+});
+const serviceTab = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
+  createRoute({ getParentRoute: () => service, path, component: lazyRouteComponent(load) });
 
 const routeTree = root.addChildren([
   screen('/', () => import('./screens/for-you/for-you-screen.tsx')),
@@ -50,13 +59,31 @@ const routeTree = root.addChildren([
   screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
   screen('/applications/$key/moves/$id', () => import('./screens/move/index.tsx')),
+  screen('/services', () => import('./screens/services/index.tsx')),
+  service.addChildren([
+    serviceTab('/', () => import('./screens/service/overview.tsx')),
+    serviceTab('/versions', () => import('./screens/service/versions.tsx')),
+    serviceTab('/runs', () => import('./screens/service/runs.tsx')),
+    serviceTab('/pipelines', () => import('./screens/service/pipelines.tsx')),
+    serviceTab('/settings', () => import('./screens/service/settings.tsx')),
+    serviceTab('/logs', () => import('./screens/service/logs.tsx')),
+  ]),
   screen('/runs', () => import('./screens/runs/runs-screen.tsx')),
   screen('/runs/$id', () => import('./screens/run/run-screen.tsx')),
   screen('/releases', () => import('./screens/releases/index.tsx')),
   screen('/releases/changes', () => import('./screens/changes/index.tsx')),
   screen('/releases/$releaseId/promote', () => import('./screens/promote/index.tsx')),
   screen('/insights', () => import('./screens/insights/index.tsx')),
+  screen('/changes', () => import('./screens/change-requests/index.tsx')),
+  screen('/changes/new', () => import('./screens/change-requests/new.tsx')),
+  screen('/changes/$number', () => import('./screens/change-requests/detail.tsx')),
+  screen('/environments', () => import('./screens/environments/index.tsx')),
+  screen('/setup/cloud', () => import('./screens/setup/cloud.tsx')),
   platform.addChildren([
+    platformArea('/people', () => import('./screens/platform/people/index.tsx')),
+    platformArea('/approvals', () => import('./screens/platform/approvals/index.tsx')),
+    platformArea('/templates', () => import('./screens/platform/templates/index.tsx')),
+    platformArea('/runners', () => import('./screens/platform/runners/index.tsx')),
     platformArea('/access', () => import('./screens/platform/access/index.tsx')),
     platformArea('/capacity', () => import('./screens/platform/capacity/index.tsx')),
     platformArea('/clouds', () => import('./screens/platform/clouds/index.tsx')),

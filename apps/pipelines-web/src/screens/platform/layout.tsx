@@ -4,8 +4,8 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { LinkTabs } from '../../parts/link-tabs.tsx';
 
 /**
- * Platform: the platform team's places (access, capacity, clouds, environments, clusters) under one
- * title, each with its own address. The areas draw their own headers below the tabs.
+ * Platform: the platform admin's places (clouds, people and roles, approval rules, templates,
+ * runners, then the older areas) under one title, each with its own address. The areas draw their own headers below the tabs.
  */
 export default function PlatformLayout() {
   const t = useT(pipelinesText);
@@ -18,9 +18,18 @@ export default function PlatformLayout() {
         <LinkTabs
           label={t('pipelines.platform.areas')}
           tabs={[
+            { to: '/platform/clouds', label: t('pipelines.platform.clouds'), icon: 'cloud' },
+            { to: '/platform/people', label: t('pipelines.platform.people'), icon: 'user' },
+            {
+              to: '/platform/approvals',
+              label: t('pipelines.platform.approvals'),
+              icon: 'checklist',
+            },
+            { to: '/platform/templates', label: t('pipelines.platform.templates'), icon: 'shapes' },
+            { to: '/platform/runners', label: t('pipelines.platform.runners'), icon: 'server' },
+            // The older areas keep their tabs until they fold into the five above.
             { to: '/platform/access', label: t('pipelines.platform.access'), icon: 'lock' },
             { to: '/platform/capacity', label: t('pipelines.platform.capacity'), icon: 'server' },
-            { to: '/platform/clouds', label: t('pipelines.platform.clouds'), icon: 'cloud' },
             {
               to: '/platform/environments',
               label: t('pipelines.platform.environments'),
