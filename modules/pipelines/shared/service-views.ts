@@ -21,6 +21,7 @@ const base = '/api/v1/pipelines';
 
 export const SERVICE_VIEWS_PATHS = {
   list: `${base}/services`,
+  service: (key: string) => `${base}/services/${encodeURIComponent(key)}`,
   versions: (key: string) => `${base}/services/${encodeURIComponent(key)}/versions`,
   forYou: `${base}/for-you/summary`,
 } as const;
@@ -100,6 +101,12 @@ export const servicesResponseSchema = z.object({
   items: z.array(serviceRowSchema),
   /** Services that matched before the cap; the list shows the first 500. */
   total: z.number().int(),
+});
+
+/** One service with the path's environments, for its page. */
+export const serviceResponseSchema = z.object({
+  environments: z.array(serviceEnvironmentSchema),
+  service: serviceRowSchema,
 });
 
 /** One version of a service: every build that passed its tests (product rule 6). */
@@ -186,6 +193,7 @@ export type ServiceRunning = z.infer<typeof serviceRunningSchema>;
 export type ServiceRow = z.infer<typeof serviceRowSchema>;
 export type ListServicesQuery = z.infer<typeof listServicesQuerySchema>;
 export type ServicesResponse = z.infer<typeof servicesResponseSchema>;
+export type ServiceResponse = z.infer<typeof serviceResponseSchema>;
 export type ServiceVersion = z.infer<typeof serviceVersionSchema>;
 export type ServiceVersionsResponse = z.infer<typeof serviceVersionsResponseSchema>;
 export type ForYouNeed = z.infer<typeof forYouNeedSchema>;

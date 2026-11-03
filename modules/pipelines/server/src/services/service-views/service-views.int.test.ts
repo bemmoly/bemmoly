@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   forYouSummarySchema,
+  serviceResponseSchema,
   servicesResponseSchema,
   serviceVersionsResponseSchema,
 } from '../../../../shared/service-views.ts';
@@ -53,6 +54,11 @@ describe('the services reads on the demo', () => {
     expect(list.items.flatMap((item) => item.running).every((r) => keys.has(r.environment))).toBe(
       true,
     );
+    const page = serviceResponseSchema.parse(
+      (await http.get('/services/checkout-api', demo)).json(),
+    );
+    expect(page.service.key).toBe('checkout-api');
+    expect((await http.get('/services/no-such-service', demo)).statusCode).toBe(404);
     const one = await http.get('/services', demo, { q: 'checkout-api' });
     expect(servicesResponseSchema.parse(one.json()).items.map((item) => item.key)).toContain(
       'checkout-api',

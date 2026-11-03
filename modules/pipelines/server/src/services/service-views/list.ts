@@ -20,8 +20,9 @@ import {
 /** The table draws at most this many; the filters narrow past it. */
 const CAP = 500;
 
-function where(sql: SqlExecutor, query: ListServicesQuery, me: string | null) {
+function where(sql: SqlExecutor, query: ListServicesQuery, me: string | null, only?: string) {
   const parts = [sql`a.archived_at is null`];
+  if (only) parts.push(sql`and a.key = ${only}`);
   if (query.q) {
     const pattern = `%${escapeLike(query.q.toLowerCase())}%`;
     parts.push(sql`and (lower(a.key || ' ' || a.name || ' ' || a.path) like ${pattern}
@@ -111,8 +112,9 @@ export async function listServices(
   sql: SqlExecutor,
   query: ListServicesQuery,
   me: string | null,
+  only?: string,
 ): Promise<ServicesResponse> {
-  const filter = where(sql, query, me);
+  const filter = where(sql, query, me, only);
   const [environments, rows, [count], domains, teams] = await Promise.all([
     pathEnvironments(sql),
     sql<ServiceRecord[]>`

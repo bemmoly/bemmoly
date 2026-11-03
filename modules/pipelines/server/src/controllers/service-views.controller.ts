@@ -10,6 +10,8 @@ export function createServiceViewsController(service: ServiceViewsService) {
   return {
     list: (request: FastifyRequest) =>
       service.list(contextOf(request), parseOrThrow(listServicesQuerySchema, request.query)),
+    one: (request: FastifyRequest) =>
+      service.one(contextOf(request), parseOrThrow(applicationKeyParamsSchema, request.params).key),
     versions: (request: FastifyRequest) =>
       service.versions(
         contextOf(request),

@@ -5,6 +5,7 @@ import type { ServiceViewsController } from '../controllers/service-views.contro
 export function serviceViewsRoutes(controller: ServiceViewsController): FastifyPluginAsync {
   return async (app) => {
     app.get('/services', async (request) => controller.list(request));
+    app.get('/services/:key', async (request) => controller.one(request));
     app.get('/services/:key/versions', async (request) => controller.versions(request));
     app.get('/for-you/summary', async (request) => controller.forYou(request));
   };
