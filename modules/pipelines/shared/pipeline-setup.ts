@@ -125,6 +125,8 @@ export const builtInTemplateSummarySchema = z.object({
   suggestedTrigger: z.string(),
   /** Environments the template names that do not exist, whose steps were left out. */
   leftOut: z.array(z.string()),
+  /** The pipeline it makes here, for "Copy and edit" into a repository file. */
+  definition: pipelineSpecSchema.optional(),
 });
 
 export const builtInTemplatesResponseSchema = z.object({

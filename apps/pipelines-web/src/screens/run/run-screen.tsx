@@ -1,6 +1,6 @@
 import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { RunDetail, RunGraph } from '@bemmoly/module-pipelines/shared';
-import { Button, EmptyState, Skeleton, StageGraph, useToast } from '@bemmoly/ui';
+import { Button, EmptyState, Skeleton, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
@@ -18,6 +18,8 @@ import { RunHeading, RunSkeleton } from './run-heading.tsx';
 import { ChangeCard, FailuresCard } from './run-side.tsx';
 import { UnstartableRun } from './run-unstartable.tsx';
 import { useRun } from './use-run.ts';
+import { RunGraphCard } from './run-graph-card.tsx';
+import { WhereNext } from './where-next.tsx';
 
 /** The node a run opens on: the address's, else the graph's focus, else the first. */
 function pickNode(graph: RunGraph | undefined, wanted: string | undefined) {
@@ -208,43 +210,27 @@ export default function RunScreen() {
       }
     >
       <ActionError error={rerun.error ?? cancel.error} />
-      <div className="rounded-card border border-line bg-card px-4 py-3.5 shadow-e1">
-        {graph.isPending ? (
-          <div aria-busy className="flex gap-6">
-            {[1, 2, 3, 2].map((count, column) => (
-              <div key={column} className="flex flex-col justify-center gap-2">
-                {Array.from({ length: count }, (_, row) => (
-                  <Skeleton key={row} width={168} height={46} />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : graph.isError ? (
-          <p className="flex items-center gap-3 text-13 text-tx-2">
-            {t('pipelines.run.graphFailed')}
-            <Button size="sm" variant="ghost" onClick={() => void graph.refetch()}>
-              {t('pipelines.common.tryAgain')}
-            </Button>
-          </p>
-        ) : (
-          <StageGraph
-            stages={graph.data.stages.map((stage) => ({
-              index: stage.index,
-              nodes: stage.nodes.map((item) => ({
-                id: item.key,
-                name: item.name,
-                state: item.state,
-                detail: item.detail,
-              })),
-            }))}
-            edges={graph.data.edges}
-            selectedId={node?.key ?? null}
-            onSelect={(key) => set({ node: key, line: undefined })}
-            ariaLabel={t('pipelines.run.graphLabel')}
-            stateLabel={(state) => t(`pipelines.state.${state}`)}
-          />
-        )}
-      </div>
+      <RunGraphCard
+        graph={graph}
+        selected={node?.key ?? null}
+        onSelect={(key) => set({ node: key, line: undefined })}
+      />
+      <WhereNext
+        runId={id}
+        live={Boolean(active)}
+        // The seam to the Deploy or promote dialog: until it mounts here, a change request
+        // (or a deploy) starts from the new change request form with the version picked.
+        onPromote={(environment, version) =>
+          void navigate({
+            to: '/changes/new',
+            search: {
+              service: data.applications[0]?.key,
+              version,
+              environment,
+            } as never,
+          })
+        }
+      />
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
         {data.executor === 'external' && data.externalUrl ? (
           <div className="rounded-card border border-line bg-card py-10 shadow-e1">

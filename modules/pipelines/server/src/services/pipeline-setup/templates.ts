@@ -218,6 +218,7 @@ export function builtInTemplates(context: TemplateContext): BuiltInTemplateSumma
       })),
       suggestedTrigger: template.suggestedTrigger,
       leftOut,
+      definition: definitionFrom(template.key, context),
     };
   });
 }
