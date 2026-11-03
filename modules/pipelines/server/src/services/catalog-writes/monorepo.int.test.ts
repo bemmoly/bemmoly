@@ -91,8 +91,8 @@ describe('a monorepo with a repository file', () => {
     await harness?.stop();
   });
 
-  const sync = (services: string[], sha: string) =>
-    harness!.services.catalogWrites.applyApplicationFiles(system, {
+  const sync = async (services: string[], sha: string) => {
+    const result = await harness!.services.catalogWrites.applyApplicationFiles(system, {
       repository: { fullName: REPOSITORY, defaultBranch: 'main' },
       commitSha: sha,
       complete: true,
@@ -101,6 +101,11 @@ describe('a monorepo with a repository file', () => {
         { path: STOREFRONT_FILE, content: storefrontFile },
       ],
     });
+    // Pushes start a pipeline only once someone adds the trigger; these tests push.
+    await harness!.sql`
+      update pipeline_applications set pipeline_triggers = '[{"kind": "push", "branch": "*"}]'::jsonb`;
+    return result;
+  };
 
   /** Which applications a push started, and each build's args. */
   const started = async (sha: string, files: string[]) => {

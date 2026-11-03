@@ -25,6 +25,7 @@ import { applicationPipeline } from './pipeline-info.ts';
 import { listRuns, readGraph, readRun } from './reads.ts';
 import { resetForRerun } from './rerun.ts';
 import { startRun, type StartApplication } from './start.ts';
+import { whereNext } from './where-next.ts';
 
 export { createRunHooks, type RunHooks } from './hooks.ts';
 export { startRun, type StartRunInput, type StartedRun } from './start.ts';
@@ -89,6 +90,12 @@ export function createRunsService(deps: ExecutionDeps) {
     async graph(ctx: RequestContext, runId: string): Promise<RunGraph> {
       await authorizePipelines(ctx);
       return readGraph(requireDatabase(deps), runId);
+    },
+
+    /** Where the version this run made goes next, environment by environment. */
+    async whereNext(ctx: RequestContext, runId: string) {
+      await authorizePipelines(ctx);
+      return whereNext(requireDatabase(deps), runId);
     },
 
     async pipeline(ctx: RequestContext, key: string) {
@@ -177,6 +184,7 @@ export function createRunsService(deps: ExecutionDeps) {
             variables: Record<string, string>;
             from_fork: boolean;
             failure_reason: string | null;
+            commit_messages: string[];
           }[]
         >`select * from pipeline_runs where id = ${runId}`;
         if (!run) throw new NotFoundError('That run does not exist');
@@ -222,6 +230,7 @@ export function createRunsService(deps: ExecutionDeps) {
           variables: run.variables,
           rerunOfRunId: runId,
           fromFork: run.from_fork,
+          commitMessages: run.commit_messages,
           ...defaults,
         });
       });

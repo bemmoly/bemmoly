@@ -16,6 +16,7 @@ import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
+import { advanceDeploySteps } from './runs/deploy-steps.ts';
 import { announce } from './runs/context.ts';
 import { reportJobCheck, reportRunCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
@@ -53,6 +54,7 @@ import { createExportsService } from './exports/index.ts';
 import { createDeploySettingsService } from './deploy-settings/index.ts';
 import { createAdoptionService } from './adoption/index.ts';
 import { createConfigCopyService } from './config-copy/index.ts';
+import { createPipelineSetupService } from './pipeline-setup/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -150,9 +152,19 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
         variables: variables.forDeploy,
       })
     : undefined;
+  // A run's deploy steps go through shipping, so they need it (and the database) to move.
+  const deploySteps = async () =>
+    input.database && shipping
+      ? advanceDeploySteps({
+          sql: input.database,
+          writer: releases.writer,
+          request: (release, to, note) => shipping.requestForStep(release, to, note),
+        })
+      : [];
   return {
     access,
     inbox,
+    deploySteps,
     hooks,
     wakeups,
     logs,
@@ -213,6 +225,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ...(input.now ? { now: input.now } : {}),
     }),
     configCopy: createConfigCopyService({ ...deps, providers }),
+    pipelineSetup: createPipelineSetupService(deps),
     machines: createMachinesService({
       ...deps,
       providers,

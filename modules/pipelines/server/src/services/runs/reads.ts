@@ -9,7 +9,7 @@ import type {
   RunsPage,
   TestSummary,
 } from '../../../../shared/runs.ts';
-import { stagesOf } from '../orchestrator/expand.ts';
+import { groupingOf, groupStages } from './graph-groups.ts';
 import { escapeLike } from '../../utils/time.ts';
 import {
   jobsSelect,
@@ -190,7 +190,13 @@ export async function readGraph(sql: SqlExecutor, runId: string): Promise<RunGra
     where f.run_id = ${runId} and not f.quarantined and f.created_at >= j.claimed_at
     group by f.job_id`;
   const failedBy = new Map(failed.map((row) => [row.job_id, row.count]));
-  const stage = stagesOf(jobs);
+  const { environmentOf, environments } = await groupingOf(sql, runId);
+  const environmentFor = (job: Job) => environmentOf.get(job.id) ?? null;
+  const { stageOf: stage, groups } = groupStages(
+    jobs.map((job) => ({ key: job.key, needs: job.needs, environment: environmentFor(job) })),
+    environments,
+    'Build',
+  );
   const nodes = jobs.map((job) => ({
     jobId: job.id,
     key: job.key,
@@ -198,6 +204,7 @@ export async function readGraph(sql: SqlExecutor, runId: string): Promise<RunGra
     state: GLYPH[job.state],
     detail: detailOf(job, failedBy.get(job.id) ?? 0),
     stage: stage.get(job.key) ?? 0,
+    environment: environmentFor(job),
   }));
   const indexes = [...new Set(nodes.map((node) => node.stage))].sort((a, b) => a - b);
   const focus =
@@ -205,6 +212,7 @@ export async function readGraph(sql: SqlExecutor, runId: string): Promise<RunGra
   return {
     runId,
     stages: indexes.map((index) => ({ index, nodes: nodes.filter((n) => n.stage === index) })),
+    groups,
     edges: jobs.flatMap((job) => job.needs.map((need) => ({ from: need, to: job.key }))),
     focus: focus?.key ?? null,
   };

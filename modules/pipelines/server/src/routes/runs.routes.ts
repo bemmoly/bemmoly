@@ -8,6 +8,7 @@ export function runsRoutes(controller: RunsController): FastifyPluginAsync {
     app.post('/runs', async (request, reply) => controller.create(request, reply));
     app.get('/runs/:id', async (request) => controller.get(request));
     app.get('/runs/:id/graph', async (request) => controller.graph(request));
+    app.get('/runs/:id/where-next', async (request) => controller.whereNext(request));
     app.post('/runs/:id/cancel', async (request) => controller.cancel(request));
     app.post('/runs/:id/rerun', async (request) => controller.rerun(request));
     app.get('/applications/:key/pipeline', async (request) => controller.pipeline(request));

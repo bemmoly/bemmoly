@@ -1,4 +1,5 @@
 import { ValidationError } from '@bemmoly/shared';
+import { DEPLOY_ACTION } from '../../../../shared/pipeline-spec.ts';
 import type {
   BuildSpec,
   DeploySpec,
@@ -152,7 +153,7 @@ function testJobs(layers: Layers, inputs: Record<string, Scalar>, options: Resol
       jobs.push({
         key: jobKey,
         name: cell ? `${step.name} (${cellName(cell)})` : step.name,
-        kind: spec.uses ? 'scan' : 'test',
+        kind: spec.uses === DEPLOY_ACTION ? 'deploy' : spec.uses ? 'scan' : 'test',
         needs: spec.needs,
         steps: [step],
         pool: spec.pool ?? null,
@@ -160,6 +161,7 @@ function testJobs(layers: Layers, inputs: Record<string, Scalar>, options: Resol
         timeoutMinutes: spec.timeoutMinutes ?? options.defaultTimeoutMinutes,
         application: options.application,
         matrix: cell,
+        environment: spec.environment ?? null,
       });
     }
     expansions.set(key, keys);
