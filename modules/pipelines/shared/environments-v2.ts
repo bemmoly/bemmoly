@@ -192,5 +192,8 @@ export type ApprovalStepView = z.infer<typeof approvalStepViewSchema>;
 export type EnvironmentV2View = z.infer<typeof environmentV2ViewSchema>;
 export type EnvironmentsV2Response = z.infer<typeof environmentsV2ResponseSchema>;
 export type CreateEnvironmentV2Body = z.infer<typeof createEnvironmentV2BodySchema>;
+/** What a client sends: settings left out start off. */
+export type CreateEnvironmentV2Input = z.input<typeof createEnvironmentV2BodySchema>;
 export type UpdateEnvironmentV2Body = z.infer<typeof updateEnvironmentV2BodySchema>;
+export type UpdateEnvironmentV2Input = z.input<typeof updateEnvironmentV2BodySchema>;
 export type ReorderEnvironmentsBody = z.infer<typeof reorderEnvironmentsBodySchema>;
