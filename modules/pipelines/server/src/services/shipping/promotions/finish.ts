@@ -1,6 +1,7 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import type { ChangeOutcome } from '../../../../../shared/trains.ts';
 import { topicOf } from '../../../../../shared/streams.ts';
+import { settleChangeRequest } from '../../change-requests/settle.ts';
 import { publishStreamEvent } from '../../streams/publish.ts';
 
 /*
@@ -85,6 +86,7 @@ export async function finishPromotion(
     values (${promotionId}, ${promotion.application_id}, ${promotion.environment_id},
       ${promotion.release_id}, ${outcome}, ${JSON.stringify(record)}::jsonb, ${at}::timestamptz)
     on conflict (promotion_id) do nothing`;
+  await settleChangeRequest(tx, promotionId, now);
   await publishPromotion(tx, promotionId, outcome);
 }
 

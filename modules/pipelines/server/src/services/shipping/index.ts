@@ -36,7 +36,7 @@ import {
 } from './promotions/decisions.ts';
 import { presentPromotion } from './promotions/present.ts';
 import { previewPromotion } from './promotions/preview.ts';
-import { requestPromotion } from './promotions/request.ts';
+import { requestForChangeRequest, requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
 import { promoteAutomatically } from './promotions/automatic.ts';
@@ -102,6 +102,25 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
     ) {
       const { id, created } = await requestPromotion(deps, ctx, body, await rolloutSettings());
       return { promotion: await after(id, ctx), created };
+    },
+
+    /**
+     * Records one service's version of an approved change request. The caller links it to the
+     * request, then advances it, so the request sees every promotion it started.
+     */
+    async promoteForChangeRequest(input: {
+      release: string;
+      to: string;
+      changeRequestId: string;
+      requestedBy: string | null;
+      note: string;
+    }): Promise<string> {
+      const { id } = await requestForChangeRequest(
+        deps,
+        { ...input, mode: 'continuous' },
+        await rolloutSettings(),
+      );
+      return id;
     },
 
     async previewPromotion(ctx: RequestContext, query: PromotionPreviewQuery) {
