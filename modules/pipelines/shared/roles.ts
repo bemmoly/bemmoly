@@ -16,6 +16,7 @@ export const ROLES_PATHS = {
   people: '/api/v1/pipelines/people',
   person: (userId: string) => `/api/v1/pipelines/people/${encodeURIComponent(userId)}`,
   invitations: '/api/v1/pipelines/people/invitations',
+  invitation: (id: string) => `/api/v1/pipelines/people/invitations/${encodeURIComponent(id)}`,
   groups: '/api/v1/pipelines/approval-groups',
   group: (id: string) => `/api/v1/pipelines/approval-groups/${encodeURIComponent(id)}`,
   groupMembers: (id: string) =>
@@ -49,7 +50,8 @@ export const ROLE_PLACES: Readonly<
 /** Pipelines' part of "who am I": the role and the places it shows. */
 export const pipelinesMeSchema = z.object({
   user: personRefSchema,
-  role: personRoleSchema,
+  /** Null until a Platform admin invites the person: they see no place. */
+  role: personRoleSchema.nullable(),
   places: z.array(placeKeySchema),
   /** Read only: a Viewer sees screens but no action that changes anything. */
   readOnly: z.boolean(),
@@ -90,6 +92,7 @@ export const addGroupMembersBodySchema = z.object({ users: z.array(idSchema).min
 
 /** One person in Platform › People and roles. */
 export const pipelinesPersonSchema = z.object({
+  /** A pending invitation's id stands in for the account it does not have yet. */
   user: personRefSchema,
   email: z.string(),
   role: personRoleSchema,
@@ -104,11 +107,33 @@ export const peopleResponseSchema = z.object({ items: z.array(pipelinesPersonSch
 
 export const setPersonRoleBodySchema = z.object({ role: personRoleSchema });
 
+export const personParamsSchema = z.object({ userId: idSchema });
+export const invitationParamsSchema = z.object({ id: idSchema });
+export const approvalGroupParamsSchema = z.object({ id: idSchema });
+export const approvalGroupMemberParamsSchema = z.object({ id: idSchema, userId: idSchema });
+
 export const invitePeopleBodySchema = z.object({
   emails: z.array(z.email()).min(1).max(50),
   role: personRoleSchema,
   groups: z.array(idSchema).max(50).default([]),
 });
+
+/**
+ * People who already have a Bemmoly account get the role at once; the others wait as pending
+ * until they accept the workspace invitation the screen sends them (`needAccount`).
+ */
+export const invitePeopleResponseSchema = z.object({
+  items: z.array(pipelinesPersonSchema),
+  needAccount: z.array(z.string()),
+});
+
+/** The workspace role a new account needs so the Pipelines role can do its work. */
+export const WORKSPACE_ROLE_FOR: Readonly<Record<z.infer<typeof personRoleSchema>, string>> = {
+  platform_admin: 'member',
+  developer: 'member',
+  approver: 'member',
+  viewer: 'viewer',
+};
 
 export type PersonRole = z.infer<typeof personRoleSchema>;
 export type PlaceKey = z.infer<typeof placeKeySchema>;
@@ -124,3 +149,4 @@ export type PipelinesPerson = z.infer<typeof pipelinesPersonSchema>;
 export type PeopleResponse = z.infer<typeof peopleResponseSchema>;
 export type SetPersonRoleBody = z.infer<typeof setPersonRoleBodySchema>;
 export type InvitePeopleBody = z.infer<typeof invitePeopleBodySchema>;
+export type InvitePeopleResponse = z.infer<typeof invitePeopleResponseSchema>;

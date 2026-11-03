@@ -18,23 +18,22 @@ import {
 
 const texts = (decision: ReturnType<typeof decide>) => decision.trace.map((step) => step.text);
 
-describe('roles from bindings and ownership', () => {
+describe('roles from bindings', () => {
   it('lets everyone in engineering view through the organisation binding', () => {
     const decision = decide(facts({ environment: null }), 'view');
     expect(decision.allowed).toBe(true);
     expect(texts(decision)).toContain('Everyone who uses Pipelines can view it');
   });
 
-  it('makes the owning team Maintainer without a stored binding', () => {
+  it('gives the owning team its bound role and nothing for owning the service', () => {
     const decision = decide(facts({ person: PRIYA, environment: STAGING }), 'change_variables');
     expect(decision.allowed).toBe(true);
-    expect(decision.roles).toContain('maintainer');
-    expect(decision.trace).toContainEqual(
-      expect.objectContaining({
-        kind: 'ownership',
-        text: 'Payments owns checkout-api: Maintainer',
-      }),
-    );
+    expect(texts(decision)).toContain('Payments: Maintainer at Checkout API');
+    const base = facts({ person: PRIYA, environment: STAGING });
+    const unbound = base.bindings.filter((binding) => binding.subject.id !== TEAMS.payments.id);
+    const owner = decide({ ...base, bindings: unbound }, 'change_variables');
+    expect(owner.allowed).toBe(false);
+    expect(owner.roles).not.toContain('maintainer');
   });
 
   it('refuses a Developer the settings and names the owning team to ask', () => {
@@ -71,7 +70,8 @@ describe('roles from bindings and ownership', () => {
     const base = facts();
     const withBinding = { ...base, bindings: [...base.bindings, prodOnly] };
     expect(decide({ ...withBinding, policies: [] }, 'deploy').allowed).toBe(true);
-    expect(decide({ ...withBinding, environment: STAGING }, 'approve').allowed).toBe(false);
+    const guarded = { ...STAGING, protected: true };
+    expect(decide({ ...withBinding, environment: guarded }, 'deploy').allowed).toBe(false);
   });
 
   it('ignores an expired break-glass binding and explains a live one', () => {
@@ -100,6 +100,7 @@ describe('roles from bindings and ownership', () => {
       id: '00000000-0000-4000-8000-000000000020',
       name: 'Ada',
       teams: [],
+      groups: [],
       orgAdmin: true,
     };
     const decision = decide(facts({ person: admin, bindings: [] }), 'platform');
@@ -209,10 +210,9 @@ describe('policies', () => {
 });
 
 describe('ownership', () => {
-  it('blocks protected deploys of an application with no owner', () => {
-    const decision = decide(facts({ owner: null, policies: [] }), 'request_prod');
-    expect(decision.allowed).toBe(false);
-    expect(decision.sentence).toContain('checkout-api has no owner');
+  it('lets a service with no owner go wherever the role allows', () => {
+    const decision = decide(facts({ person: PRIYA, owner: null, policies: [] }), 'request_prod');
+    expect(decision.allowed).toBe(true);
     expect(decide(facts({ owner: null, environment: STAGING }), 'deploy').allowed).toBe(true);
   });
 });

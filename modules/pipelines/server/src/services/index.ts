@@ -53,6 +53,7 @@ import { createExportsService } from './exports/index.ts';
 import { createDeploySettingsService } from './deploy-settings/index.ts';
 import { createAdoptionService } from './adoption/index.ts';
 import { createConfigCopyService } from './config-copy/index.ts';
+import { createRolesService } from './roles/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -213,6 +214,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ...(input.now ? { now: input.now } : {}),
     }),
     configCopy: createConfigCopyService({ ...deps, providers }),
+    roles: createRolesService(deps),
     machines: createMachinesService({
       ...deps,
       providers,

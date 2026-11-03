@@ -64,8 +64,8 @@ export async function appliesToTier0(sql: SqlClient, expressions: readonly strin
       where a.tier = 0 and a.archived_at is null
       order by a.key limit 500`,
     sql<EnvRow[]>`
-      select key, class, coalesce((protection ->> 'protected')::boolean, class = 'prod') as protected,
-        region
+      select key, coalesce(class, '') as class,
+        coalesce((protection ->> 'protected')::boolean, false) as protected, region
       from pipeline_environments where archived_at is null order by position limit 50`,
   ]);
   const inputs = synthetic();

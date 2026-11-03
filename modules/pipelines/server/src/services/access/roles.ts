@@ -1,10 +1,10 @@
 import type { AccessAction, Role } from '../../../../shared/access.ts';
 
 /*
- * What each role may do (product design, "Who can do what"). Protected environments (Prod)
- * narrow deploy, roll back and changing variables to the roles trusted with them; everyone
- * else reaches Prod by requesting a promotion, which policy then gates. Policies only ever add
- * requirements on top of this table, never take one away.
+ * What each role may do (product design, "Who can do what"). Approvers approve and never run
+ * or deploy. An environment an admin explicitly protected with the older setting narrows
+ * deploy, roll back and changing variables to the roles trusted with them; no environment is
+ * protected for its name. Policies only ever add requirements on top of this table.
  */
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -14,12 +14,14 @@ export const ROLE_LABELS: Record<Role, string> = {
   release_manager: 'Release manager',
   platform_admin: 'Platform admin',
   auditor: 'Auditor',
+  approver: 'Approver',
 };
 
 /** A role and every role it includes, for has_role(): a Platform admin is also a Maintainer. */
 const INCLUDES: Record<Role, readonly Role[]> = {
   viewer: ['viewer'],
   auditor: ['auditor', 'viewer'],
+  approver: ['approver', 'viewer'],
   developer: ['developer', 'viewer'],
   maintainer: ['maintainer', 'developer', 'viewer'],
   release_manager: ['release_manager', 'developer', 'viewer'],
@@ -29,6 +31,7 @@ const INCLUDES: Record<Role, readonly Role[]> = {
     'release_manager',
     'developer',
     'auditor',
+    'approver',
     'viewer',
   ],
 };
@@ -42,6 +45,7 @@ export function includedRoles(roles: Iterable<Role>): Set<Role> {
 const EVERYONE: readonly Role[] = [
   'viewer',
   'auditor',
+  'approver',
   'developer',
   'maintainer',
   'release_manager',
@@ -62,7 +66,9 @@ export function rolesFor(action: AccessAction, protectedEnvironment: boolean): r
     case 'rollback':
       return protectedEnvironment ? ['maintainer', 'release_manager', 'platform_admin'] : BUILDERS;
     case 'approve':
-      return ['maintainer', 'release_manager', 'platform_admin'];
+      // Who approves a change is its approval group's members; the role only rules out
+      // Viewers, so a Developer in "Production approvers" approves like an Approver does.
+      return ['approver', 'developer', 'maintainer', 'release_manager', 'platform_admin'];
     case 'change_variables':
       // A protected environment's values reach it with the next deploy, which only these
       // roles may make there, so only they may change them.

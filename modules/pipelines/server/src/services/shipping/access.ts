@@ -8,8 +8,8 @@ import { authorizePipelines } from '../deps.ts';
  * What shipping asks of access and policy (architecture §10). The access engine decides who
  * may request, approve and roll back, and which policies apply; a promotion records the
  * policy versions that applied when it was requested, so its requirements never shift under
- * it when a policy is edited later. Without a matching policy, an environment's own
- * protection decides: protected environments need one approval from the owning team.
+ * it when a policy is edited later. Without a matching policy, only an environment an admin
+ * set to require approval asks for one; the newer approval rule asks through a change request.
  */
 
 export interface ShippingTarget {
@@ -110,7 +110,8 @@ function defaultsFor(facts: TargetFacts | null): Pick<ShippingRequirements, 'gat
   const protection = facts?.protection ?? {};
   const environmentClass = facts?.environment_class ?? 'dev';
   return {
-    approve: protection['requiresApproval'] === true || environmentClass === 'prod',
+    // Only an admin's explicit choice asks for approval; no environment does by its name.
+    approve: protection['requiresApproval'] === true,
     gates: environmentClass === 'dev' ? [] : ['tests', 'external_checks'],
   };
 }

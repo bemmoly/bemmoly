@@ -58,7 +58,7 @@ describe('access endpoints and the engine', () => {
   const users = () => harness?.users ?? { admin: '', member: '', outsider: '' };
   const check = (as: string, body: object) => http.send('POST', '/access/checks', as, body);
 
-  it('makes the owning team Maintainer and lets it request Prod', async (ctx) => {
+  it('lets a Developer request Prod by their own role, owning the service or not', async (ctx) => {
     if (!harness) return ctx.skip(reason);
     const response = await check(users().member, {
       action: 'request_prod',
@@ -70,10 +70,11 @@ describe('access endpoints and the engine', () => {
     expect(decision.allowed).toBe(true);
     expect(decision.trace).toContainEqual(
       expect.objectContaining({
-        kind: 'ownership',
-        text: 'Payments owns checkout-api: Maintainer',
+        kind: 'binding',
+        text: expect.stringMatching(/^Priya Sharma's role: Developer at /),
       }),
     );
+    expect(decision.trace.map((step) => step.kind)).not.toContain('ownership');
   });
 
   it('holds a Tier 0 policy change until a second Platform admin approves it', async (ctx) => {
@@ -141,7 +142,8 @@ describe('access endpoints and the engine', () => {
     const listed = bindingsResponseSchema.parse(
       (await http.get('/bindings', users().member, { application: 'checkout-api' })).json(),
     );
-    expect(listed.items[0]).toMatchObject({ implicit: true, role: 'maintainer' });
+    // Owning checkout-api grants its team nothing, so no implicit row is listed.
+    expect(listed.items.some((item) => item.implicit)).toBe(false);
     expect(listed.items).toContainEqual(
       expect.objectContaining({
         role: 'developer',
@@ -201,6 +203,14 @@ describe('access endpoints and the engine', () => {
     if (!harness) return ctx.skip(reason);
     const target = { application: 'pricing-svc', environment: 'staging' };
     const memberCtx = harness.as(users().member);
+    // Without their own role, the member runs only through a team binding.
+    await harness.sql`
+      delete from pipeline_role_bindings
+      where subject_kind = 'user' and subject_id = ${users().member} and scope_kind = 'organisation'`;
+    await harness.sql`
+      insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind, scope_id)
+      select 'team', ${fixture.teams.search}, 'developer', 'application', id
+      from pipeline_applications where key = 'pricing-svc'`;
     const before = await harness.services.access.decideFor(
       memberCtx,
       users().member,
