@@ -12,6 +12,7 @@ import {
   attachAccountBodySchema,
   updateConnectionBodySchema,
 } from '../../../shared/cloud-accounts.ts';
+import { cloudAccessCheckBodySchema } from '../../../shared/cloud-reach.ts';
 import type { CloudsService } from '../services/clouds/index.ts';
 
 /** Platform › Clouds: providers, connections, the landing zone and what it made. */
@@ -27,6 +28,10 @@ export function createCloudsController(clouds: CloudsService) {
       return created;
     },
     check: (request: FastifyRequest) => clouds.check(contextOf(request), idOf(request)),
+    accessCheck(request: FastifyRequest) {
+      const body = parseOrThrow(cloudAccessCheckBodySchema, request.body);
+      return clouds.accessCheck(contextOf(request), body);
+    },
     update(request: FastifyRequest) {
       const body = parseOrThrow(updateConnectionBodySchema, request.body);
       return clouds.update(contextOf(request), idOf(request), body);

@@ -15,7 +15,24 @@ export const PIPELINE_SETUP_PATHS = {
   /** Built-in templates, with steps for the environments that exist. */
   builtInTemplates: '/api/v1/pipelines/templates/built-in',
   checklist: '/api/v1/pipelines/setup/checklist',
+  /** POST: Start over. Removes every Pipelines record on the install; admins only. */
+  reset: '/api/v1/pipelines/setup/reset',
 } as const;
+
+/** The words the person types to confirm Start over. */
+export const START_OVER_PHRASE = 'start over';
+
+export const startOverBodySchema = z.object({
+  confirm: z.literal(START_OVER_PHRASE, { error: `Type "${START_OVER_PHRASE}" to confirm` }),
+});
+
+export const startOverResponseSchema = z.object({
+  /** How many records went, for the toast; tables with nothing in them are left out. */
+  removed: z.number().int().min(0),
+});
+
+export type StartOverBody = z.infer<typeof startOverBodySchema>;
+export type StartOverResponse = z.infer<typeof startOverResponseSchema>;
 
 /** Start from nothing, from a built-in template, or from a file already in the repository. */
 export const pipelineStartSchema = z.enum(['empty', 'template', 'repository']);
@@ -117,6 +134,15 @@ export const setupChecklistResponseSchema = z.object({
   steps: z.array(setupStepSchema).length(6),
   /** Every required step is done: For you stops showing the checklist. */
   complete: z.boolean(),
+  /** "What's switched on": everything starts off, so a fresh install says None and Off. */
+  switchedOn: z.object({
+    /** Connected clouds by name, "Google Cloud". */
+    clouds: z.array(z.string()),
+    /** Some service's pipeline runs on push. */
+    deployOnPush: z.boolean(),
+    /** The version schemes services chose, each once. */
+    versionSchemes: z.array(versionSchemeSchema),
+  }),
 });
 
 export type PipelineStart = z.infer<typeof pipelineStartSchema>;

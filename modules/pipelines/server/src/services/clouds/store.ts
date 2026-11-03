@@ -44,7 +44,9 @@ export async function requireConnection(sql: SqlClient, id: string): Promise<Con
 }
 
 /** How a sign-in choice is stored: the credential kinds the Google Cloud clients read. */
-function credentialsOf(body: Extract<ConnectCloud, { provider: 'gcp' }>) {
+export function credentialsOf(
+  body: Pick<Extract<ConnectCloud, { provider: 'gcp' }>, 'signIn' | 'credentialFile'>,
+) {
   switch (body.signIn) {
     case 'vm':
       return { kind: 'metadata' };

@@ -18,6 +18,8 @@ export const ENVIRONMENTS_V2_PATHS = {
   environment: (key: string) => `${base}/${encodeURIComponent(key)}`,
   /** PUT the whole order of the one promotion path. */
   order: `${base}/order`,
+  /** POST the suggested setup the person confirmed: environments and their approval groups. */
+  suggested: `${base}/suggested`,
 } as const;
 
 /** "Production": what people read. */
@@ -34,6 +36,12 @@ export const environmentProjectSchema = z.object({
   name: z.string().nullable(),
   region: z.string().nullable(),
   cloudAccountId: idSchema.nullable(),
+});
+
+/** A project as a body names it: by its ID; Bemmoly finds the account it reaches it as. */
+export const environmentProjectInputSchema = environmentProjectSchema.omit({ name: true }).extend({
+  region: z.string().nullable().default(null),
+  cloudAccountId: idSchema.nullable().default(null),
 });
 
 /** Who may deploy here: nobody named means anyone whose role deploys. */
@@ -105,7 +113,7 @@ export const environmentsV2ResponseSchema = z.object({ items: z.array(environmen
 export const createEnvironmentV2BodySchema = z.object({
   name: environmentNameSchema,
   key: environmentIdSchema,
-  project: environmentProjectSchema.omit({ name: true }).optional(),
+  project: environmentProjectInputSchema.optional(),
   /** Absent: the end of the path. */
   position: z.number().int().min(0).optional(),
   deployers: environmentDeployersSchema.default(null),
@@ -118,7 +126,7 @@ export const createEnvironmentV2BodySchema = z.object({
 export const updateEnvironmentV2BodySchema = z.object({
   name: environmentNameSchema.optional(),
   key: environmentIdSchema.optional(),
-  project: environmentProjectSchema.omit({ name: true }).nullable().optional(),
+  project: environmentProjectInputSchema.nullable().optional(),
   deployers: environmentDeployersSchema.optional(),
   approvalRule: approvalRuleSchema.optional(),
   window: deployWindowSchema.optional(),
@@ -134,6 +142,43 @@ export const reorderEnvironmentsBodySchema = z.object({
     .refine((keys) => new Set(keys).size === keys.length, 'Each environment once'),
 });
 
+/**
+ * One environment of the suggested setup as the person left it. An approval names its group by
+ * name: the group is made when no group has that name yet, and it starts with nobody in it.
+ */
+export const suggestedEnvironmentSchema = z.object({
+  name: environmentNameSchema,
+  key: environmentIdSchema,
+  project: environmentProjectInputSchema.optional(),
+  versionsAllowed: versionsAllowedSchema.default('any'),
+  approval: z
+    .object({
+      groupName: z.string().trim().min(1, 'Name the group').max(80),
+      count: z.number().int().min(1).max(10),
+    })
+    .nullable()
+    .default(null),
+  window: deployWindowSchema.default(null),
+});
+
+export const applySuggestedSetupBodySchema = z.object({
+  environments: z
+    .array(suggestedEnvironmentSchema)
+    .min(1, 'Tick at least one environment')
+    .max(10)
+    .refine((items) => new Set(items.map((item) => item.key)).size === items.length, {
+      message: 'Give each environment its own ID',
+    }),
+});
+
+export const appliedSuggestedSetupSchema = environmentsV2ResponseSchema.extend({
+  /** The approval groups made for it, empty when every one existed already. */
+  groups: z.array(approvalGroupRefSchema),
+});
+
+export type SuggestedEnvironment = z.input<typeof suggestedEnvironmentSchema>;
+export type ApplySuggestedSetupBody = z.input<typeof applySuggestedSetupBodySchema>;
+export type AppliedSuggestedSetup = z.infer<typeof appliedSuggestedSetupSchema>;
 export type EnvironmentProject = z.infer<typeof environmentProjectSchema>;
 export type EnvironmentDeployers = z.infer<typeof environmentDeployersSchema>;
 export type ApprovalCondition = z.infer<typeof approvalConditionSchema>;

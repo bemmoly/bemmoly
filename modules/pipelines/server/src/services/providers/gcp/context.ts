@@ -12,6 +12,7 @@ import {
   type PollOptions,
 } from '../../../clients/gcp/index.ts';
 import type { KubernetesTransport } from '../../../clients/kubernetes/index.ts';
+import { cloudReachSchema } from '../../../../../shared/cloud-reach.ts';
 import type { ConnectionRecord, DeployTarget } from '../contract.ts';
 
 /*
@@ -40,6 +41,8 @@ export const gcpConnectionConfigSchema = z.object({
    */
   projectQuota: z.number().int().positive().optional(),
   credentials: gcpCredentialsSchema,
+  /** What the person chose Bemmoly may reach; attached connections made before have none. */
+  reach: cloudReachSchema.optional(),
   /** Service Monitoring SLO names by application key; no entry means no error budget. */
   slos: z.record(z.string(), z.string()).default({}),
 });

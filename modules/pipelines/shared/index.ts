@@ -26,6 +26,8 @@ export * from './insights.ts';
 export * from './clouds.ts';
 export * from './landing-zones.ts';
 export * from './cloud-accounts.ts';
+export * from './cloud-reach.ts';
+export * from './grant-command.ts';
 export * from './environment-writes.ts';
 export * from './streams.ts';
 export * from './application-yaml.ts';

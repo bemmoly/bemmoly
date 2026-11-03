@@ -12,6 +12,7 @@ import { authorizePipelines, personOf } from '../deps.ts';
 import { partAvailability, type CloudProvider } from '../providers/contract.ts';
 import type { ProviderRegistry } from '../providers/registry.ts';
 import { toConnection } from './present.ts';
+import { attachReachable } from './reach.ts';
 import {
   insertConnection,
   listConnections,
@@ -69,7 +70,8 @@ export function createConnections(deps: ConnectionsDeps) {
         throw new ValidationError(`${provider.name} is coming soon`);
       }
       try {
-        return toConnection(await insertConnection(deps.sql(), body, personOf(ctx.actor)));
+        const row = await insertConnection(deps.sql(), body, personOf(ctx.actor));
+        return toConnection(await attachReachable(deps, row));
       } catch (error) {
         if (isUniqueViolation(error)) {
           throw new ConflictError(

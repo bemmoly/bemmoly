@@ -23,6 +23,8 @@ import { createFrontDoorsController } from './front-doors.controller.ts';
 import { createExportsController } from './exports.controller.ts';
 import { createDeploySettingsController } from './deploy-settings.controller.ts';
 import { createAdoptionController } from './adoption.controller.ts';
+import { createEnvironmentsV2Controller } from './environments-v2.controller.ts';
+import { createSetupChecklistController } from './setup-checklist.controller.ts';
 
 export function createPipelinesControllers(services: PipelinesServices) {
   return {
@@ -50,6 +52,8 @@ export function createPipelinesControllers(services: PipelinesServices) {
     exports: createExportsController(services.exports),
     deploySettings: createDeploySettingsController(services.deploySettings),
     adoption: createAdoptionController(services.adoption, services.configCopy),
+    environmentsV2: createEnvironmentsV2Controller(services.environmentsV2),
+    setupChecklist: createSetupChecklistController(services.setupChecklist),
   };
 }
 

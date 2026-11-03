@@ -124,7 +124,8 @@ async function resolveEnvironment(sql: SqlClient, ref: string): Promise<Environm
     select id, key, name, class, region, protection from pipeline_environments
     where ${isUuid(ref) ? sql`id = ${ref}::uuid` : sql`key = ${ref}`}`;
   if (!row) throw new NotFoundError(`No environment called "${ref}"`);
-  const cls = environmentClassSchema.parse(row.class);
+  // Equal environments have no class; they read as the least guarded one.
+  const cls = row.class === null ? 'dev' : environmentClassSchema.parse(row.class);
   return {
     id: row.id,
     key: row.key,

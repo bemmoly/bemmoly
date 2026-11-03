@@ -4,6 +4,7 @@ import type {
   CloudResource,
   Layout,
 } from '../../../../shared/clouds.ts';
+import { cloudReachSchema } from '../../../../shared/cloud-reach.ts';
 import type { LandingZoneNode, LandingZonePlan } from '../../../../shared/landing-zones.ts';
 import type { DomainColor } from '../../../../shared/catalog.ts';
 import type { EnvironmentClass, Provider } from '../../../../shared/common.ts';
@@ -17,6 +18,11 @@ const boundaryOf = (row: ConnectionRow) =>
   row.boundary_ref
     ? String(row.config['folderName'] ?? row.config['organizationalUnitName'] ?? row.boundary_ref)
     : null;
+
+const reachOf = (value: unknown) => {
+  const parsed = cloudReachSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+};
 
 const textOf = (value: unknown) => (typeof value === 'string' && value ? value : null);
 
@@ -45,6 +51,7 @@ export const toConnection = (row: ConnectionRow): CloudConnection => ({
   principal: row.principal,
   boundary: boundaryOf(row),
   layout: row.layout as Layout,
+  reach: reachOf(row.config['reach']),
   lastCheckedAt: isoOrNull(row.last_checked_at),
   lastError: row.last_error,
   problems: Array.isArray(row.problems) ? row.problems.map(String) : [],
