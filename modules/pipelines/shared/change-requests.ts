@@ -63,6 +63,7 @@ export const changeRequestItemSchema = z.object({
   application: z.object({ key: slugSchema, name: z.string() }),
   /** Null when nothing runs there yet. */
   fromVersion: z.string().nullable(),
+  fromReleaseId: idSchema.nullable(),
   toVersion: z.string(),
   releaseId: idSchema,
   commitCount: z.number().int().min(0),

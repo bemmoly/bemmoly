@@ -16,7 +16,8 @@ import { approvalGroupRefSchema } from './roles.ts';
  */
 
 export const changeRequestOptionsQuerySchema = z.object({
-  environment: slugSchema,
+  /** Absent: the first environment on the path that has an approval rule, else the first. */
+  environment: slugSchema.optional(),
   risk: changeRiskSchema.default('low'),
   /** Only this service's versions; absent, every service with a version that may go. */
   application: slugSchema.optional(),
@@ -57,6 +58,10 @@ export const changeRequestOptionServiceSchema = z.object({
 
 export const changeRequestOptionsSchema = z.object({
   environment: z.object({ key: slugSchema, name: z.string() }),
+  /** Every environment on the path, in order, for the target picker. */
+  environments: z.array(
+    z.object({ key: slugSchema, name: z.string(), needsChangeRequest: z.boolean() }),
+  ),
   /** False: no approval rule, so versions deploy here directly. */
   needsChangeRequest: z.boolean(),
   previousEnvironment: z.object({ key: slugSchema, name: z.string() }).nullable(),

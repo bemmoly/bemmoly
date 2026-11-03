@@ -148,6 +148,7 @@ export async function presentDetail(
       items.map(async (item) => ({
         application: { key: item.application_key, name: item.application_name },
         fromVersion: item.from_version,
+        fromReleaseId: item.from_release_id,
         toVersion: item.version,
         releaseId: item.release_id,
         commitCount: await commitCount(sql, item),

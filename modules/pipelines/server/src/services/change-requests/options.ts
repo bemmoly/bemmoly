@@ -1,4 +1,5 @@
 import type { SqlExecutor } from '@bemmoly/core';
+import { NotFoundError } from '@bemmoly/shared';
 import type {
   ChangeRequestOptions,
   ChangeRequestOptionsQuery,
@@ -35,7 +36,13 @@ export async function changeRequestOptions(
   viewer: string,
   canEmergencyDeploy: boolean,
 ): Promise<ChangeRequestOptions> {
-  const environment = await loadEnvironment(sql, { key: query.environment });
+  const all = await sql<Array<{ key: string; name: string; ruled: boolean }>>`
+    select key, name, approval_rule is not null as ruled from pipeline_environments
+    where archived_at is null order by position, id`;
+  const fallback = all.find((env) => env.ruled) ?? all[0];
+  const key = query.environment ?? fallback?.key;
+  if (!key) throw new NotFoundError('Add an environment first');
+  const environment = await loadEnvironment(sql, { key });
   const previous = await previousEnvironment(sql, environment);
   const route = await routeOf(sql, environment, query.risk);
   const steps = await Promise.all(
@@ -101,6 +108,11 @@ export async function changeRequestOptions(
   }
   return {
     environment: { key: environment.key, name: environment.name },
+    environments: all.map((env) => ({
+      key: env.key,
+      name: env.name,
+      needsChangeRequest: env.ruled,
+    })),
     needsChangeRequest: environment.approval_rule !== null,
     previousEnvironment: previous ? { key: previous.key, name: previous.name } : null,
     versionsAllowed: environment.versions_allowed,
