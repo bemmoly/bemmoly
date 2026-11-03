@@ -56,6 +56,10 @@ const PROJECTS = ['example-dev', 'example-stage', 'example-prod'];
 describe('a fresh install', () => {
   it('starts with nothing done and nothing switched on', async (ctx) => {
     if (!harness) return ctx.skip(skip);
+    // On a fresh install only the installing admin is in Pipelines; the harness also gives
+    // its member a role, which would count as someone invited.
+    await harness.sql`
+      delete from pipeline_role_bindings where subject_kind = 'user' and scope_kind = 'organisation'`;
     const list = await checklist();
     expect(list.complete).toBe(false);
     expect(list.steps.map((step) => [step.key, step.done, step.blockedBy])).toEqual([
