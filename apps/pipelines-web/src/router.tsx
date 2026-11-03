@@ -56,7 +56,7 @@ const serviceTab = <Path extends string>(
 ) => createRoute({ getParentRoute: () => service, path, component: lazyRouteComponent(load) });
 
 const routeTree = root.addChildren([
-  screen('/', () => import('./screens/for-you/for-you-screen.tsx')),
+  screen('/', () => import('./screens/for-you/index.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
   screen('/services', () => import('./screens/services/index.tsx')),
   service.addChildren([

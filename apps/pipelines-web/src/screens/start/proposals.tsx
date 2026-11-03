@@ -17,6 +17,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useDomains } from '../../hooks/use-catalog-tree.ts';
+import { useReturnToChecklist } from '../../hooks/use-setup.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
@@ -90,6 +91,7 @@ export function Proposals({
   const [group, setGroup] = useState('');
   const [making, setMaking] = useState(false);
   const needsGroup = items.some((item) => picked.has(item.id) && !item.group);
+  const backToChecklist = useReturnToChecklist();
   const accept = useMutation({
     mutationFn: () =>
       api.platform.acceptProposals({
@@ -106,6 +108,7 @@ export function Proposals({
           : t('pipelines.start.pullRequests', { count: result.pullRequests.length }),
       });
       void client.invalidateQueries({ queryKey: ['pipelines'] });
+      if (result.created.length > 0) void backToChecklist();
     },
     onError: (error) =>
       toast.show({

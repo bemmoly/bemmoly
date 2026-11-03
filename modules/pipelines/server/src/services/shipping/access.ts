@@ -70,12 +70,17 @@ interface TargetFacts {
   group_id: string;
   environment_class: string | null;
   protection: Record<string, unknown> | null;
+  deploy_window: { days: string[]; from: string; to: string; timeZone: string } | null;
 }
+
+/** An environment's own deploy window, written the way the window gate reads policy windows. */
+const windowText = (w: TargetFacts['deploy_window']) =>
+  w ? `${w.days.join(',')} ${w.from}-${w.to} ${w.timeZone}` : null;
 
 async function factsOf(sql: SqlExecutor, target: ShippingTarget): Promise<TargetFacts | null> {
   const [row] = await sql<TargetFacts[]>`
     select a.owner_team_id, t.name as owner_team_name, a.domain_id, a.group_id,
-      e.class as environment_class, e.protection
+      e.class as environment_class, e.protection, e.deploy_window
     from pipeline_applications a
     left join teams t on t.id = a.owner_team_id
     left join pipeline_environments e on e.id = ${target.environmentId}::uuid
@@ -174,7 +179,10 @@ export function createShippingAccess(engine?: AccessEngine): ShippingAccess {
     async requirements(sql, target) {
       const facts = await factsOf(sql, target);
       const protection = facts?.protection ?? {};
-      const ownWindow = typeof protection['window'] === 'string' ? protection['window'] : null;
+      const ownWindow =
+        typeof protection['window'] === 'string'
+          ? protection['window']
+          : windowText(facts?.deploy_window ?? null);
       const versions = await sql<
         { id: string; name: string; version: number; requirements: PolicyRequirements }[]
       >`

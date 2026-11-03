@@ -24,8 +24,11 @@ export function useDeployDialog(input: {
   const data = options.data;
   const service = data?.services.find((s) => s.key === input.application) ?? null;
   const versions = useMemo(() => service?.versions ?? [], [service]);
-  // Until one is picked, the newest version that may go.
-  const release = chosen || (versions.find((v) => v.allowed) ?? versions[0])?.releaseId || '';
+  // Screens open the dialog on a release id or on a version's name; until one is picked, the
+  // newest version that may go.
+  const picked = versions.find((v) => v.releaseId === chosen || v.version === chosen);
+  const release =
+    picked?.releaseId ?? (versions.find((v) => v.allowed) ?? versions[0])?.releaseId ?? '';
   const version = versions.find((v) => v.releaseId === release) ?? null;
   const shipping = useShippingWrites();
   const changes = useChangeRequestWrites();

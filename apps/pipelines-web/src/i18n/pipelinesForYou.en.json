@@ -1,7 +1,4 @@
 {
-  "pipelinesForYou.approver.description": "Changes sent to you for approval are on Changes. Approved changes deploy themselves.",
-  "pipelinesForYou.approver.open": "Open Changes",
-  "pipelinesForYou.approver.title": "Changes waiting for you",
   "pipelinesForYou.greeting.afternoon": "Good afternoon, {name}",
   "pipelinesForYou.greeting.evening": "Good evening, {name}",
   "pipelinesForYou.greeting.morning": "Good morning, {name}",
@@ -29,9 +26,6 @@
   "pipelinesForYou.services.none": "No services yet. Services your teams own show here.",
   "pipelinesForYou.services.notYet": "not yet",
   "pipelinesForYou.services.title": "Your services",
-  "pipelinesForYou.setup.connect": "Connect a cloud",
-  "pipelinesForYou.setup.description": "Nothing is switched on yet. Connect a cloud, add environments, invite people and add services, in any order.",
-  "pipelinesForYou.setup.title": "Set up Pipelines",
   "pipelinesForYou.stats.approval": "Change approval, median",
   "pipelinesForYou.stats.approvalDetail": "From request to deploy",
   "pipelinesForYou.stats.changes": "Changes to {environment}",

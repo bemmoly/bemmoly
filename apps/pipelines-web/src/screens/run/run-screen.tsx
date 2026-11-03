@@ -10,6 +10,7 @@ import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { ActionError } from '../../parts/action-error.tsx';
+import { useDeployOrPromote } from '../../parts/deploy-or-promote.tsx';
 import { refusalOf } from '../../lib/refusal.ts';
 import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
@@ -39,6 +40,7 @@ export default function RunScreen() {
   const t = useT(pipelinesText);
   const toast = useToast();
   const navigate = useNavigate();
+  const deploy = useDeployOrPromote();
   const client = useQueryClient();
   const { id = '' } = useParams({ strict: false }) as { id?: string };
   const search = useSearch({ strict: false }) as { node?: string; line?: number | string };
@@ -218,17 +220,8 @@ export default function RunScreen() {
       <WhereNext
         runId={id}
         live={Boolean(active)}
-        // The seam to the Deploy or promote dialog: until it mounts here, a change request
-        // (or a deploy) starts from the new change request form with the version picked.
         onPromote={(environment, version) =>
-          void navigate({
-            to: '/changes/new',
-            search: {
-              service: data.applications[0]?.key,
-              version,
-              environment,
-            } as never,
-          })
+          deploy.open({ service: data.applications[0]?.key, environment, version })
         }
       />
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
@@ -271,6 +264,7 @@ export default function RunScreen() {
           <ChangeCard run={data} />
         </div>
       </div>
+      {deploy.dialog}
     </ScreenFrame>
   );
 }

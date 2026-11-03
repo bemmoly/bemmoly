@@ -1,23 +1,19 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
-import { RunDialog } from '../screens/application/run-dialog.tsx';
+import { RunPipelineDialog } from '../screens/runs/run-pipeline-dialog.tsx';
 
 /**
- * The seam for "Run a pipeline" (stream S4 owns the new dialog): `open` starts it for a
- * service, or with none lets the person choose one; `dialog` is mounted once by the screen.
- * Until then a service runs through the existing run form and no service opens Runs.
+ * "Run a pipeline" for any screen: `open` starts the dialog for a service, or with none lets
+ * the person choose one; `dialog` is mounted once by the screen.
  */
 export function useRunPipeline(): { open: (service?: string) => void; dialog: ReactNode } {
-  const navigate = useNavigate();
-  const [service, setService] = useState<string | null>(null);
-  const open = (key?: string) => {
-    if (key) setService(key);
-    else void navigate({ to: '/runs' });
-  };
+  const [state, setState] = useState<{ service?: string } | null>(null);
   return {
-    open,
-    dialog: service ? (
-      <RunDialog application={service} open onClose={() => setService(null)} />
+    open: (service?: string) => setState(service ? { service } : {}),
+    dialog: state ? (
+      <RunPipelineDialog
+        {...(state.service ? { service: state.service } : {})}
+        onClose={() => setState(null)}
+      />
     ) : null,
   };
 }

@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { deliveryKeys } from '../../api/delivery.ts';
 import { pipelineSetupKeys } from '../../api/pipeline-setup.ts';
 import { setupKeys } from '../../api/setup.ts';
+import { useReturnToChecklist } from '../../hooks/use-setup.ts';
 import { api } from '../../lib/api.ts';
 
 /** A service's pipeline setup, its pipeline as stored, and the built-in templates. */
@@ -76,10 +77,14 @@ function useSaved(key: string) {
 
 export function useSaveSetup(key: string) {
   const saved = useSaved(key);
+  const backToChecklist = useReturnToChecklist();
   return useMutation({
     mutationFn: (body: Omit<SavePipelineSetupBody, 'triggers'>) =>
       api.pipelineSetup.save(key, body),
-    onSuccess: saved,
+    onSuccess: (result) => {
+      saved(result);
+      void backToChecklist();
+    },
   });
 }
 

@@ -45,9 +45,9 @@ export async function requestPromotion(
 }
 
 /**
- * Asked for by the path, not a person: a platform admin marked this step auto-promote, so the
- * system requests it with nobody named. It never reaches production, and gates, bake time
- * and approvals hold it exactly as they hold a person's request.
+ * Asked for by the path or a pipeline's deploy step, not a person, so nobody is named. It never
+ * reaches an environment with an approval rule (only a change request does), and gates and
+ * bake time hold it exactly as they hold a person's request.
  */
 export async function requestAutomatically(
   deps: ShippingEngineDeps,
@@ -55,9 +55,10 @@ export async function requestAutomatically(
   settings: RequestSettings,
 ): Promise<{ id: string; created: boolean }> {
   return recordPromotion(deps, body, settings, async (where) => {
-    if (where.environmentClass === 'prod') {
-      throw new ValidationError('Production is only ever promoted to by a person');
-    }
+    await requireNoApprovalRule(
+      deps.sql,
+      where.environments.map((e) => e.id),
+    );
     return { person: null, policyVersions: [] };
   });
 }

@@ -5,6 +5,7 @@ import type { IssuedInvitation } from '@bemmoly/shared';
 import { Button, Field, Modal, Select, Textarea, useToast, type SelectOption } from '@bemmoly/ui';
 import { useState } from 'react';
 import { looksLikeEmail, parseEmails, useInvitePeople } from '../../../hooks/use-invite.ts';
+import { useReturnToChecklist } from '../../../hooks/use-setup.ts';
 import { rolesText } from '../../../i18n/catalog.ts';
 import { PickMany } from './pick-many.tsx';
 
@@ -24,6 +25,7 @@ export function InviteDialog({
   const t = useT(rolesText);
   const toast = useToast();
   const invite = useInvitePeople();
+  const backToChecklist = useReturnToChecklist();
   const [text, setText] = useState('');
   const [role, setRole] = useState<PersonRole>('developer');
   const [picked, setPicked] = useState<string[]>([]);
@@ -43,12 +45,15 @@ export function InviteDialog({
       { emails, role, groups: picked },
       {
         onSuccess: (outcome) => {
-          toast.show({
-            tone: 'ok',
-            title: t('pipelinesRoles.invite.sent', { count: outcome.count }),
-          });
-          if (outcome.links.length > 0) setLinks(outcome.links);
-          else close();
+          const sent = t('pipelinesRoles.invite.sent', { count: outcome.count });
+          if (outcome.links.length > 0) {
+            toast.show({ tone: 'ok', title: sent });
+            setLinks(outcome.links);
+            return;
+          }
+          close();
+          // A finished setup step goes back to the checklist; the helper shows the toast.
+          void backToChecklist(sent);
         },
       },
     );
