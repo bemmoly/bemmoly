@@ -4,6 +4,7 @@ import type { ProviderSource } from '../providers/index.ts';
 import type { ProviderRegistry } from '../providers/registry.ts';
 import { createAttachedAccounts } from './attached.ts';
 import { createConnections } from './connections.ts';
+import { createReach } from './reach.ts';
 import { applyPlan, scanDrift } from './reconcile.ts';
 import { createZones, type SendJob } from './zones.ts';
 
@@ -33,6 +34,7 @@ export function createCloudsService(deps: CloudsServiceDeps) {
   return {
     ...createConnections(shared),
     ...createAttachedAccounts(shared),
+    ...createReach(shared),
     ...createZones({ ...shared, ...(deps.sendJob ? { sendJob: deps.sendJob } : {}) }),
     /** The apply job's work: authorization was checked when it was queued. */
     runApply: (planId: string) => applyPlan({ database: sql(), providers }, planId),

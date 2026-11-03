@@ -67,7 +67,12 @@ describe('attaching a project that already exists', () => {
   it('passes when Cloud Run is on and the deploy permissions are held, taking the project name', async () => {
     const { provider, replay } = recording([
       project,
-      enabled('run.googleapis.com', 'monitoring.googleapis.com'),
+      enabled(
+        'run.googleapis.com',
+        'monitoring.googleapis.com',
+        'cloudbuild.googleapis.com',
+        'secretmanager.googleapis.com',
+      ),
       {
         method: 'POST',
         url: `${RM}/projects/${PROJECT}:testIamPermissions`,
@@ -88,7 +93,12 @@ describe('attaching a project that already exists', () => {
       externalId: PROJECT,
       config: {},
     });
-    expect(check).toEqual({ ok: true, name: 'Nila Shop Prod', problems: [] });
+    expect(check).toEqual({
+      ok: true,
+      name: 'Nila Shop Prod',
+      problems: [],
+      services: { run: true, build: true, secrets: true },
+    });
     // No deployer is named, so nothing is impersonated: the connection acts as itself.
     expect(replay.calls.some((call) => call.includes('generateAccessToken'))).toBe(false);
     replay.verify({ allUsed: true });
@@ -114,6 +124,8 @@ describe('attaching a project that already exists', () => {
       `Grant Bemmoly Cloud Run Developer on ${PROJECT}`,
       `Grant Bemmoly Service Account User on ${PROJECT}, or on the account services run as`,
       `Turn on the Cloud Monitoring API in ${PROJECT} so canaries can read error rates`,
+      `Turn on the Cloud Build API in ${PROJECT} so jobs can run there`,
+      `Turn on the Secret Manager API in ${PROJECT} so secrets can live there`,
       `Grant Bemmoly Monitoring Viewer on ${PROJECT} so canaries can read error rates`,
     ]);
     replay.verify({ allUsed: true });

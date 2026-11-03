@@ -7,6 +7,7 @@ export function cloudsRoutes(controller: CloudsController): FastifyPluginAsync {
     app.get('/clouds/providers', async (request) => controller.providers(request));
     app.get('/clouds', async (request) => controller.list(request));
     app.post('/clouds', async (request, reply) => controller.connect(request, reply));
+    app.post('/clouds/access-check', async (request) => controller.accessCheck(request));
     app.patch('/clouds/:id', async (request) => controller.update(request));
     app.post('/clouds/:id/check', async (request) => controller.check(request));
     app.post('/clouds/:id/plan', async (request) => controller.plan(request));

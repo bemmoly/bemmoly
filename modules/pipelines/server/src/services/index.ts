@@ -54,6 +54,8 @@ import { createDeploySettingsService } from './deploy-settings/index.ts';
 import { createAdoptionService } from './adoption/index.ts';
 import { createConfigCopyService } from './config-copy/index.ts';
 import { createRolesService } from './roles/index.ts';
+import { createEnvironmentsV2Service } from './environments-v2/index.ts';
+import { createSetupChecklistService } from './setup-checklist/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -179,6 +181,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     catalogWrites,
     discovery: createDiscoveryService(deps, catalogWrites),
     environments: createEnvironmentsService(deps),
+    environmentsV2: createEnvironmentsV2Service(deps),
+    setupChecklist: createSetupChecklistService(deps),
     teams: createTeamsService(deps),
     variables,
     overview: createOverviewService(deps),

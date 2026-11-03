@@ -60,9 +60,15 @@ async function apiProblems(clients: GcpClients, projectId: string, impersonates:
     enabled = await clients.serviceUsage.listEnabled(projectId);
   } catch (error) {
     // Listing APIs needs its own permission; a deploy then fails loudly if Cloud Run is off.
-    return denied(error) ? { critical: [], soft: [] } : { critical: [], soft: [reasonOf(error)] };
+    const soft = denied(error) ? [] : [reasonOf(error)];
+    return { critical: [], soft, services: undefined };
   }
   const missing = (api: string) => !enabled.includes(api);
+  const services = {
+    run: !missing('run.googleapis.com'),
+    build: !missing('cloudbuild.googleapis.com'),
+    secrets: !missing('secretmanager.googleapis.com'),
+  };
   const critical = missing('run.googleapis.com')
     ? [`Turn on the Cloud Run Admin API in ${projectId}`]
     : [];
@@ -72,7 +78,12 @@ async function apiProblems(clients: GcpClients, projectId: string, impersonates:
   const soft = missing('monitoring.googleapis.com')
     ? [`Turn on the Cloud Monitoring API in ${projectId} so canaries can read error rates`]
     : [];
-  return { critical, soft };
+  if (!services.build)
+    soft.push(`Turn on the Cloud Build API in ${projectId} so jobs can run there`);
+  if (!services.secrets) {
+    soft.push(`Turn on the Secret Manager API in ${projectId} so secrets can live there`);
+  }
+  return { critical, soft, services };
 }
 
 async function permissionProblems(clients: GcpClients, projectId: string, who: string) {
@@ -116,6 +127,7 @@ export function createAttachCheck(contexts: GcpContexts) {
         ok: critical.length === 0,
         name: project.name,
         problems: [...critical, ...apis.soft, ...permissions.soft],
+        ...(apis.services ? { services: apis.services } : {}),
       };
     } catch (error) {
       if (impersonates && denied(error)) {

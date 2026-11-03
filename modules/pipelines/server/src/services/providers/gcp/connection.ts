@@ -127,5 +127,19 @@ export function createGcpConnection(contexts: GcpContexts): ConnectionPart {
       return { ok: problems.length === 0, principal, problems };
     },
     verifyAccount: createAttachCheck(contexts),
+    async listReachable(connection) {
+      const { config, control } = contexts(connection);
+      if (!config.reach) return [];
+      if (config.reach.kind === 'projects') {
+        return config.reach.projects.map((externalId) => ({ externalId, name: null }));
+      }
+      const projects = await control.resourceManager.searchProjects(
+        `parent:${config.reach.parent} state:ACTIVE`,
+      );
+      return projects.map((project) => ({
+        externalId: project.projectId,
+        name: project.displayName ?? null,
+      }));
+    },
   };
 }

@@ -74,11 +74,8 @@ export function createEnvironmentWrites(deps: PipelinesServiceDeps) {
       await authorizeAdmin(ctx);
       const db = sql();
       await checkAccount(db, body.cloudAccountId, body.provider);
-      const protection = environmentProtectionSchema.parse({
-        protected: body.class === 'prod',
-        requiresApproval: body.class === 'prod',
-        ...body.protection,
-      });
+      // Nothing is guarded for its class: protection is what the person asked for.
+      const protection = environmentProtectionSchema.parse({ ...body.protection });
       try {
         await db`
           insert into pipeline_environments

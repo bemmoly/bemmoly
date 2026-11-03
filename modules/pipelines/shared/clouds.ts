@@ -7,6 +7,7 @@ import {
   providerSchema,
   slugSchema,
 } from './common.ts';
+import { cloudReachSchema } from './cloud-reach.ts';
 
 /*
  * Platform › Clouds (architecture §14): GET /api/v1/pipelines/clouds/providers,
@@ -84,6 +85,8 @@ export const cloudConnectionSchema = z.object({
   /** The folder or organizational unit Pipelines works inside. */
   boundary: z.string().nullable(),
   layout: layoutSchema,
+  /** What the person chose Bemmoly may reach; null on connections made before. */
+  reach: cloudReachSchema.nullable(),
   lastCheckedAt: isoDateTimeSchema.nullable(),
   /** What to do next, in plain words, when the last check failed. */
   lastError: z.string().nullable(),
@@ -142,7 +145,10 @@ export const connectCloudBodySchema = z.discriminatedUnion('provider', [
     .object({
       provider: z.literal('gcp'),
       ...connectionBase,
-      mode: connectionModeSchema.default('managed'),
+      // Attached is the default: connecting creates nothing; creating projects is an opt-in.
+      mode: connectionModeSchema.default('attached'),
+      /** What Bemmoly may reach; connecting attaches the projects found there. */
+      reach: cloudReachSchema.optional(),
       signIn: signInSchema.default('vm'),
       /** The external_account file, only with the workload_identity_file sign-in. */
       credentialFile: z.record(z.string(), z.unknown()).optional(),

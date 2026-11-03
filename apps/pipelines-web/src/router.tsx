@@ -54,7 +54,7 @@ const serviceTab = (path: string, load: Parameters<typeof lazyRouteComponent>[0]
   createRoute({ getParentRoute: () => service, path, component: lazyRouteComponent(load) });
 
 const routeTree = root.addChildren([
-  screen('/', () => import('./screens/for-you/for-you-screen.tsx')),
+  screen('/', () => import('./screens/for-you/index.tsx')),
   screen('/map', () => import('./screens/map/map-screen.tsx')),
   screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
@@ -84,6 +84,7 @@ const routeTree = root.addChildren([
     platformArea('/approvals', () => import('./screens/platform/approvals/index.tsx')),
     platformArea('/templates', () => import('./screens/platform/templates/index.tsx')),
     platformArea('/runners', () => import('./screens/platform/runners/index.tsx')),
+    platformArea('/settings', () => import('./screens/platform/settings/index.tsx')),
     platformArea('/access', () => import('./screens/platform/access/index.tsx')),
     platformArea('/capacity', () => import('./screens/platform/capacity/index.tsx')),
     platformArea('/clouds', () => import('./screens/platform/clouds/index.tsx')),

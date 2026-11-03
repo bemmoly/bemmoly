@@ -108,11 +108,11 @@ function defaultsFor(facts: TargetFacts | null): Pick<ShippingRequirements, 'gat
   approve: boolean;
 } {
   const protection = facts?.protection ?? {};
-  const environmentClass = facts?.environment_class ?? 'dev';
   return {
     // Only an admin's explicit choice asks for approval; no environment does by its name.
     approve: protection['requiresApproval'] === true,
-    gates: environmentClass === 'dev' ? [] : ['tests', 'external_checks'],
+    // Gates come only from policies a person wrote; no environment gets them for its class.
+    gates: [],
   };
 }
 
