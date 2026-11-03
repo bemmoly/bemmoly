@@ -40,6 +40,10 @@ describe('GitHub deliveries as events', () => {
           truncated: false,
           commits: 2,
           pusher: 'priya-n',
+          messages: [
+            'Rate limit sign-in per account\n\nFixes ACME-2 and keeps the per-IP budget.',
+            'Tidy the limiter tests',
+          ],
         },
       },
     ]);
