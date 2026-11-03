@@ -61,7 +61,7 @@ export function PipelineEditor({
   }
   const layout = layoutOf(definition, editor.environments, {
     build: t('pipelinesEditor.group.build'),
-    buildWhere: t('pipelinesEditor.group.buildWhere'),
+    buildWhere: definition.build?.pool ?? null,
     kind: (kind: StepKind) => t(`pipelinesEditor.kind.${kind}`),
   });
   const origin =

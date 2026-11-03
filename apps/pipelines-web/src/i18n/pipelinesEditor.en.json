@@ -25,7 +25,6 @@
   "pipelinesEditor.editor.visual": "Visual",
   "pipelinesEditor.editor.yaml": "YAML",
   "pipelinesEditor.group.build": "Build",
-  "pipelinesEditor.group.buildWhere": "Cloud Build",
   "pipelinesEditor.inspector.after": "Runs after",
   "pipelinesEditor.inspector.afterAdd": "Add a step it waits for",
   "pipelinesEditor.inspector.afterHint": "With none named, it runs after the build.",

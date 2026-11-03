@@ -35,7 +35,7 @@ export function groupStages(
     .filter((key): key is string => key !== null && !known.has(key))
     .sort();
   const buckets: Array<{ name: string; environment: string | null; where: string | null }> = [
-    { name: buildName, environment: null, where: 'Cloud Build' },
+    { name: buildName, environment: null, where: null },
     ...environments.map((e) => ({ name: e.name, environment: e.key, where: e.where })),
     ...unknown.map((key) => ({ name: key, environment: key, where: null })),
   ];

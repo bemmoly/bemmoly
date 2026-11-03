@@ -27,7 +27,7 @@ describe('a run graph grouped by environment', () => {
       'deploy-stage': 4,
     });
     expect(groups).toEqual([
-      { name: 'Build', environment: null, where: 'Cloud Build', stages: [0, 1] },
+      { name: 'Build', environment: null, where: null, stages: [0, 1] },
       { name: 'Dev', environment: 'dev', where: 'acme-dev', stages: [2, 3] },
       { name: 'Stage', environment: 'stage', where: 'acme-stage', stages: [4] },
     ]);

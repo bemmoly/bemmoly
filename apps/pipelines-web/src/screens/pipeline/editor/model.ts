@@ -76,7 +76,7 @@ export interface Layout {
 
 export interface LayoutWords {
   build: string;
-  buildWhere: string;
+  buildWhere: string | null;
   kind: (kind: StepKind) => string;
 }
 

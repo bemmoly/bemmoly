@@ -35,7 +35,7 @@ export default function TemplatesScreen() {
               <CardHeader
                 title={
                   <span className="flex flex-wrap items-center gap-2">
-                    {template.name}
+                    <h2 className="m-0 text-14 font-semibold">{template.name}</h2>
                     <Tag>{t('pipelinesEditor.template.builtIn')}</Tag>
                     {template.suggested ? (
                       <Tag tone="accent">{t('pipelinesEditor.template.suggested')}</Tag>
