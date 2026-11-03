@@ -1,0 +1,16 @@
+{
+  "pipelinesServices.list.planned": "Every service by domain, with the version running in each environment.",
+  "pipelinesServices.list.title": "Services",
+  "pipelinesServices.logs.planned": "This service's logs in each environment.",
+  "pipelinesServices.overview.planned": "Where each version of this service runs, environment by environment.",
+  "pipelinesServices.runs.planned": "This service's runs, newest first.",
+  "pipelinesServices.service.tabs": "Service",
+  "pipelinesServices.settings.planned": "Size, scaling, network, variables and secrets for each environment.",
+  "pipelinesServices.tab.logs": "Logs",
+  "pipelinesServices.tab.overview": "Overview",
+  "pipelinesServices.tab.pipelines": "Pipelines",
+  "pipelinesServices.tab.runs": "Runs",
+  "pipelinesServices.tab.settings": "Settings",
+  "pipelinesServices.tab.versions": "Versions",
+  "pipelinesServices.versions.planned": "Every version that passed its tests, and where each one runs."
+}

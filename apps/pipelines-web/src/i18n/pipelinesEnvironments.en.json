@@ -1,0 +1,6 @@
+{
+  "pipelinesEnvironments.approvals.planned": "Who approves a change in each environment, step by step.",
+  "pipelinesEnvironments.approvals.title": "Approval rules",
+  "pipelinesEnvironments.list.planned": "Your environments in promotion order, each with its own optional settings.",
+  "pipelinesEnvironments.list.title": "Environments"
+}

@@ -1,0 +1,5 @@
+{
+  "pipelinesEditor.pipelines.planned": "This service's pipelines: set one up, then edit its steps.",
+  "pipelinesEditor.templates.planned": "Built-in templates, your own, and the steps every pipeline must keep.",
+  "pipelinesEditor.templates.title": "Templates"
+}

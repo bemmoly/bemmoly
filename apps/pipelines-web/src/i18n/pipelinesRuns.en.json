@@ -1,0 +1,4 @@
+{
+  "pipelinesRuns.runners.planned": "Where jobs run: Cloud Build in each environment's project, or your own runners.",
+  "pipelinesRuns.runners.title": "Runners"
+}

@@ -1,0 +1,7 @@
+{
+  "pipelinesChangeRequests.detail.planned": "What changes, why, and who has approved it so far.",
+  "pipelinesChangeRequests.list.planned": "Change requests that move versions into an environment with an approval rule.",
+  "pipelinesChangeRequests.list.title": "Changes",
+  "pipelinesChangeRequests.new.planned": "Pick the versions, say why, and choose who approves.",
+  "pipelinesChangeRequests.new.title": "New change request"
+}
