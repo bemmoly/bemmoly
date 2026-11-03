@@ -60,6 +60,11 @@ export async function seedCatalogFixture(sql: SqlClient, member: string): Promis
           ${key === 'gift-cards' ? null : new Date().toISOString()}::timestamptz)
         returning id`);
   }
+  // Owning grants nothing by itself: each owning team maintains its applications by binding.
+  await sql`
+    insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind, scope_id)
+    select 'team', owner_team_id, 'maintainer', 'application', id
+    from pipeline_applications where owner_team_id is not null`;
   const dev = await one(sql`insert into pipeline_environments (key, name, class, position)
       values ('dev', 'Dev', 'dev', 1) returning id`);
   const prod =
