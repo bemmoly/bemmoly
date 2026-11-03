@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { slugSchema } from './common.ts';
+import { pipelineSpecSchema } from './pipeline-spec.ts';
 
 /*
  * Setting up a service's pipeline (product rules 1, 6 and 8), the built-in templates, and the
@@ -12,6 +13,12 @@ export const PIPELINE_SETUP_PATHS = {
   /** GET and PUT a service's choices. */
   setup: (application: string) =>
     `/api/v1/pipelines/applications/${encodeURIComponent(application)}/pipeline-setup`,
+  /** The pipeline files Bemmoly can read in the service's repository. */
+  repositoryFiles: (application: string) =>
+    `/api/v1/pipelines/applications/${encodeURIComponent(application)}/pipeline-setup/repository-files`,
+  /** PUT the pipeline the editor saved, with its triggers. */
+  definition: (application: string) =>
+    `/api/v1/pipelines/applications/${encodeURIComponent(application)}/pipeline-definition`,
   /** Built-in templates, with steps for the environments that exist. */
   builtInTemplates: '/api/v1/pipelines/templates/built-in',
   checklist: '/api/v1/pipelines/setup/checklist',
@@ -88,6 +95,35 @@ export const savePipelineSetupBodySchema = z
     path: ['repositoryFile'],
   });
 
+/**
+ * What a save answers: the setup as stored, and when the pipeline lives in the repository the
+ * pull request that writes it there (or why none could be opened yet).
+ */
+export const savedPipelineSetupSchema = pipelineSetupSchema.extend({
+  pullRequestUrl: z.string().nullable(),
+  /** Set when the change waits: the code host is not connected, the file could not be read. */
+  pendingReason: z.string().nullable(),
+  /** Steps of a repository file Bemmoly cannot run as they are, named so nothing is lost. */
+  skipped: z.array(z.string()),
+});
+
+/** The editor's save: the whole pipeline as drawn, and the triggers that start it. */
+export const savePipelineDefinitionBodySchema = z.object({
+  definition: pipelineSpecSchema,
+  triggers: z.array(pipelineTriggerSchema).max(20),
+});
+
+export const repositoryFileCandidateSchema = z.object({
+  path: z.string(),
+  kind: z.enum(['bemmoly', 'github_actions']),
+});
+
+export const repositoryFilesResponseSchema = z.object({
+  /** False when no code host can read the service's repository. */
+  readable: z.boolean(),
+  items: z.array(repositoryFileCandidateSchema),
+});
+
 /** A template's preview: its groups of steps, as the setup screen and Platform › Templates draw. */
 export const builtInTemplateSummarySchema = z.object({
   key: builtInTemplateKeySchema,
@@ -106,6 +142,8 @@ export const builtInTemplateSummarySchema = z.object({
   suggestedTrigger: z.string(),
   /** Environments the template names that do not exist, whose steps were left out. */
   leftOut: z.array(z.string()),
+  /** The pipeline it makes here, for "Copy and edit" into a repository file. */
+  definition: pipelineSpecSchema.optional(),
 });
 
 export const builtInTemplatesResponseSchema = z.object({
@@ -152,6 +190,10 @@ export type BuiltInTemplateKey = z.infer<typeof builtInTemplateKeySchema>;
 export type PipelineTrigger = z.infer<typeof pipelineTriggerSchema>;
 export type PipelineSetup = z.infer<typeof pipelineSetupSchema>;
 export type SavePipelineSetupBody = z.infer<typeof savePipelineSetupBodySchema>;
+export type SavedPipelineSetup = z.infer<typeof savedPipelineSetupSchema>;
+export type SavePipelineDefinitionBody = z.input<typeof savePipelineDefinitionBodySchema>;
+export type RepositoryFileCandidate = z.infer<typeof repositoryFileCandidateSchema>;
+export type RepositoryFilesResponse = z.infer<typeof repositoryFilesResponseSchema>;
 export type BuiltInTemplateSummary = z.infer<typeof builtInTemplateSummarySchema>;
 export type BuiltInTemplatesResponse = z.infer<typeof builtInTemplatesResponseSchema>;
 export type SetupStepKey = z.infer<typeof setupStepKeySchema>;

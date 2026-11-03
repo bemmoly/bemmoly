@@ -49,6 +49,8 @@ export interface StartRunInput {
   rerunOfRunId?: string | null;
   /** A pull request from a fork: its jobs get no secrets. */
   fromFork?: boolean;
+  /** The pushed commits' messages, for versions numbered from them. */
+  commitMessages?: readonly string[];
 }
 
 export interface StartedRun {
@@ -87,17 +89,20 @@ async function folders(tx: SqlExecutor, applicationIds: string[]) {
 
 async function insertJobs(tx: SqlExecutor, runId: string, plans: JobPlan[], input: StartRunInput) {
   const poolOf = await poolIds(tx, plans, input.defaultPoolKey);
+  // Pipelines runs a deploy step itself (runs/deploy-steps.ts); no runner may claim it.
+  const pool = (plan: JobPlan) => (plan.kind === 'deploy' ? null : poolOf(plan.poolKey));
   for (const plan of plans) {
     const [job] = await tx<{ id: string }[]>`
       insert into pipeline_jobs
         (run_id, application_id, key, name, kind, needs, pool_id, team_id, priority_class,
-         supersede_key, shard_index, shard_total, timeout_minutes, matrix, steps_spec)
+         supersede_key, shard_index, shard_total, timeout_minutes, matrix, steps_spec,
+         environment_key)
       values (${runId}, ${plan.applicationId}, ${plan.key}, ${plan.name}, ${plan.kind},
-        ${plan.needs}::text[], ${poolOf(plan.poolKey)}::uuid, ${plan.teamId}::uuid,
+        ${plan.needs}::text[], ${pool(plan)}::uuid, ${plan.teamId}::uuid,
         ${input.priorityClass}, ${input.supersedeKey ?? null}, ${plan.shardIndex},
         ${plan.shardTotal}, ${plan.timeoutMinutes},
         ${plan.matrix ? JSON.stringify(plan.matrix) : null}::jsonb,
-        ${JSON.stringify(plan.steps)}::jsonb)
+        ${JSON.stringify(plan.steps)}::jsonb, ${plan.environment})
       returning id`;
     if (!job) continue;
     const steps = plan.steps.map((step, position) => ({
@@ -185,14 +190,16 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
     insert into pipeline_runs
       (repository_id, application_id, trigger, ref, commit_sha, title, pull_request,
        author_user_id, author_login, team_id, priority_class, supersede_key, idempotency_key,
-       resolved_spec, inputs, variables, created_by, rerun_of_run_id, from_fork)
+       resolved_spec, inputs, variables, created_by, rerun_of_run_id, from_fork,
+       commit_messages)
     values (${input.repositoryId}::uuid, ${primary?.id ?? null}::uuid, ${input.trigger},
       ${input.ref}, ${input.commitSha}, ${input.title}, ${input.pullRequest ?? null},
       ${input.authorUserId ?? null}::uuid, ${input.authorLogin ?? null}, ${primary?.teamId ?? null}::uuid,
       ${input.priorityClass}, ${input.supersedeKey ?? null}, ${input.idempotencyKey ?? null},
       ${JSON.stringify(resolved ?? null)}::jsonb, ${JSON.stringify(inputs)}::jsonb,
       ${JSON.stringify(input.variables ?? {})}::jsonb, ${input.createdBy ?? null}::uuid,
-      ${input.rerunOfRunId ?? null}::uuid, ${input.fromFork ?? false})
+      ${input.rerunOfRunId ?? null}::uuid, ${input.fromFork ?? false},
+      ${[...(input.commitMessages ?? [])].slice(-50)}::text[])
     on conflict (idempotency_key) where idempotency_key is not null do nothing
     returning id, number`;
   if (!run) {

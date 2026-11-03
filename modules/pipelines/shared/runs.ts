@@ -186,11 +186,26 @@ export const runGraphNodeSchema = z.object({
   /** "2m 41s", "2 failed · 2m 55s", "needs every test". */
   detail: z.string(),
   stage: z.number().int().min(0),
+  /** The environment the job runs against or deploys to; null for build and check jobs. */
+  environment: z.string().nullable().default(null),
+});
+
+/**
+ * A run's stages grouped the way the editor draws a pipeline: build and checks first, then
+ * one group per environment in path order. Stages never straddle two groups.
+ */
+export const runGraphGroupSchema = z.object({
+  name: z.string(),
+  environment: z.string().nullable(),
+  /** The environment's cloud project, or where build jobs run ("Cloud Build"). */
+  where: z.string().nullable(),
+  stages: z.array(z.number().int().min(0)),
 });
 
 export const runGraphSchema = z.object({
   runId: idSchema,
   stages: z.array(z.object({ index: z.number().int().min(0), nodes: z.array(runGraphNodeSchema) })),
+  groups: z.array(runGraphGroupSchema).default([]),
   edges: z.array(z.object({ from: z.string(), to: z.string() })),
   /** The node the screen opens on: the first failure, else the running one. */
   focus: z.string().nullable(),
@@ -248,6 +263,7 @@ export type TestSummary = z.infer<typeof testSummarySchema>;
 export type RunDetail = z.infer<typeof runDetailSchema>;
 export type RunGraphNode = z.infer<typeof runGraphNodeSchema>;
 export type RunGraph = z.infer<typeof runGraphSchema>;
+export type RunGraphGroup = z.infer<typeof runGraphGroupSchema>;
 export type ListRunsQuery = z.infer<typeof listRunsQuerySchema>;
 export type RunsPage = z.infer<typeof runsPageSchema>;
 export type CreateRunBody = z.input<typeof createRunBodySchema>;

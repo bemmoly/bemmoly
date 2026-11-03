@@ -36,7 +36,7 @@ import {
 } from './promotions/decisions.ts';
 import { presentPromotion } from './promotions/present.ts';
 import { previewPromotion } from './promotions/preview.ts';
-import { requestForChangeRequest, requestPromotion } from './promotions/request.ts';
+import { requestAutomatically, requestForChangeRequest, requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
 import { promoteAutomatically } from './promotions/automatic.ts';
@@ -95,6 +95,14 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
 
   return {
     engine,
+
+    /** A run's deploy step: Pipelines itself asks for the version, as auto-promote does. */
+    async requestForStep(release: string, to: string, note: string) {
+      const body = { release, to, mode: 'continuous' as const, note };
+      const { id } = await requestAutomatically(deps, body, await rolloutSettings());
+      await engine.advance('promotion', id, true);
+      return { id };
+    },
 
     async requestPromotion(
       ctx: RequestContext,

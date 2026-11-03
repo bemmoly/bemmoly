@@ -138,3 +138,33 @@ export const ManyShards: Story = {
     ],
   },
 };
+
+/** A Deliver run grouped by environment, as the run view draws it. */
+export const ByEnvironment: Story = {
+  args: {
+    stages: [
+      { index: 0, nodes: [node('build', 'Build image', 'passed', '1m 48s')] },
+      { index: 1, nodes: [node('unit', 'Unit tests', 'passed', '52s')] },
+      { index: 2, nodes: [node('deploy-dev', 'Deploy', 'passed', '38s')] },
+      { index: 3, nodes: [node('it-dev', 'Integration tests', 'running', '2m 10s')] },
+      {
+        index: 4,
+        nodes: [node('deploy-stage', 'Deploy', 'queued', 'Waits for Integration tests')],
+      },
+    ],
+    edges: [
+      { from: 'build', to: 'unit' },
+      { from: 'unit', to: 'deploy-dev' },
+      { from: 'deploy-dev', to: 'it-dev' },
+      { from: 'it-dev', to: 'deploy-stage' },
+    ],
+    groups: [
+      { id: 'build', label: 'Build', detail: 'Cloud Build', stages: [0, 1] },
+      { id: 'dev', label: 'Dev', detail: 'example-dev', stages: [2, 3] },
+      { id: 'stage', label: 'Stage', detail: 'example-stage', stages: [4] },
+    ],
+    selectedId: 'it-dev',
+  },
+};
+
+export const ByEnvironmentDark: Story = { ...ByEnvironment, globals: { mode: 'dark' } };

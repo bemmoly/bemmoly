@@ -67,6 +67,8 @@ async function queueFacts(sql: SqlExecutor, row: JobRow): Promise<QueueFacts | u
 }
 
 async function inQueue(sql: SqlExecutor, row: JobRow): Promise<WaitReason> {
+  // Pipelines starts a deploy step itself within a minute; no runner is involved.
+  if (row.kind === 'deploy') return { kind: 'runner', text: 'Starting the deploy' };
   const pool = row.pool_key ?? 'its pool';
   if (!row.pool_id) return { kind: 'runner', text: 'No runner pool is set up yet' };
   const facts = await queueFacts(sql, row);

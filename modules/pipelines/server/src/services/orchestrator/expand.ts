@@ -35,6 +35,8 @@ export interface JobPlan {
   timeoutMinutes: number;
   matrix: Record<string, Scalar> | null;
   steps: ResolvedStep[];
+  /** The environment the job runs against or deploys to. */
+  environment: string | null;
 }
 
 export function autoShards(testSeconds: number): number {
@@ -69,6 +71,7 @@ export function expandJobs(applications: readonly ExpandApplication[]): JobPlan[
           timeoutMinutes: job.timeoutMinutes,
           matrix: job.matrix,
           steps: job.steps,
+          environment: job.environment ?? null,
         });
       }
       fanned.set(job.key, keys);

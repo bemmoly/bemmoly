@@ -1,20 +1,20 @@
 import type { SqlClient } from '@bemmoly/core';
 import type { ReleaseWriter } from '../releases/index.ts';
+import { legacyVersion, runVersion } from './versions.ts';
 
 /*
  * A passing build becomes a release (architecture §11): once a run on the default branch or
  * a tag passes, each application whose build job reported an image gets an immutable
- * release through the shared writer. The version is the tag when the run built one, else
- * the short commit. Pull request and merge queue runs never make releases.
+ * release through the shared writer, numbered as the service's setup says (versions.ts).
+ * Pull request and merge queue runs never make releases.
  */
 
 export const RELEASE_FROM_RUN_JOB = 'pipelines.release-from-run';
 
 const TAG = /^(refs\/tags\/)?(v?\d+\.\d+\.\d+[0-9A-Za-z.+-]*)$/;
 
-export function versionOf(ref: string, commitSha: string): string {
-  return TAG.exec(ref)?.[2] ?? commitSha.slice(0, 7);
-}
+/** The older rule, for a service that has not chosen a version scheme. */
+export const versionOf = legacyVersion;
 
 /** The repository the build step named, so a release points where the image was pushed. */
 export function repositoryOf(steps: unknown, application: string): string {
@@ -91,7 +91,7 @@ export async function releaseFromRun(
     await sql.begin(async (tx) => {
       const result = await writer.createRelease(tx, {
         applicationId: build.application_id,
-        version: versionOf(run.ref, run.commit_sha),
+        version: await runVersion(tx, runId, build.application_id),
         source: 'runners',
         commitSha: run.commit_sha,
         ref: run.ref,

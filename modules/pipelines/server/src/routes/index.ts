@@ -25,6 +25,7 @@ import { adoptionRoutes } from './adoption.routes.ts';
 import { rolesRoutes } from './roles.routes.ts';
 import { environmentsV2Routes } from './environments-v2.routes.ts';
 import { changeRequestsRoutes } from './change-requests.routes.ts';
+import { pipelineSetupRoutes } from './pipeline-setup.routes.ts';
 
 export { runnerRoutes } from './runner.routes.ts';
 
@@ -61,5 +62,6 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
       environmentsV2Routes(controllers.environmentsV2, controllers.setupChecklist),
     );
     await app.register(changeRequestsRoutes(controllers.changeRequests));
+    await app.register(pipelineSetupRoutes(controllers.pipelineSetup));
   };
 }
