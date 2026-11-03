@@ -36,7 +36,11 @@ import {
 } from './promotions/decisions.ts';
 import { presentPromotion } from './promotions/present.ts';
 import { previewPromotion } from './promotions/preview.ts';
-import { requestAutomatically, requestForChangeRequest, requestPromotion } from './promotions/request.ts';
+import {
+  requestAutomatically,
+  requestForChangeRequest,
+  requestPromotion,
+} from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
 import { promoteAutomatically } from './promotions/automatic.ts';

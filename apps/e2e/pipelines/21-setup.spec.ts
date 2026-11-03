@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { startFreshInstall, type FreshInstall } from '../support/fresh-install.ts';
 import { expectLoaded } from '../support/pipelines.ts';
 
@@ -20,7 +20,7 @@ test.afterAll(async () => {
   await fresh?.stop();
 });
 
-async function open(browser: import('@playwright/test').Browser, path = '/'): Promise<Page> {
+async function open(browser: Browser, path = '/'): Promise<Page> {
   const context = await browser.newContext({
     baseURL: fresh.baseURL,
     storageState: fresh.storageState,

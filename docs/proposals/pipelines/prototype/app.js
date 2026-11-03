@@ -866,7 +866,10 @@ pnpm --filter buyer-agent test:integration</textarea></div>
 
   function render() {
     clearInterval(streamTimer);
-    const route = (location.hash.replace(/^#\/?/, '') || 'home').split('/');
+    // Route parts come from the address bar: keep only plain keys before they reach the page.
+    const route = (location.hash.replace(/^#\/?/, '') || 'home')
+      .split('/')
+      .map((part) => (/^[a-z0-9-]{1,64}$/i.test(part) ? part : ''));
     document.body.innerHTML = shell(route) + `<div id="overlay">${overlay()}</div>${ui.toast ? `<div class="toast">${ic('circle-check', 'i14')}${ui.toast}</div>` : ''}`;
     const c = $('#content');
     const [head, a, b] = route;
@@ -877,7 +880,11 @@ pnpm --filter buyer-agent test:integration</textarea></div>
     else if (head === 'service') {
       const s = svc(a) || D.services[0]; const tab = b || 'overview';
       if (tab === 'pipelines') { c.innerHTML = pipelineEditor(s); c.style.overflow = 'hidden'; }
-      else c.innerHTML = `<div class="wrap">${serviceHead(s, tab)}${({ overview: serviceOverview, versions: serviceVersions, runs: serviceRuns, settings: serviceSettings, logs: serviceLogs })[tab](s)}</div>`;
+      else {
+        const TABS = { overview: serviceOverview, versions: serviceVersions, runs: serviceRuns, settings: serviceSettings, logs: serviceLogs };
+        const known = Object.prototype.hasOwnProperty.call(TABS, tab) ? tab : 'overview';
+        c.innerHTML = `<div class="wrap">${serviceHead(s, known)}${TABS[known](s)}</div>`;
+      }
     } else if (head === 'runs') c.innerHTML = runs();
     else if (head === 'run') c.innerHTML = runView(a, b);
     else if (head === 'changes') c.innerHTML = changes();

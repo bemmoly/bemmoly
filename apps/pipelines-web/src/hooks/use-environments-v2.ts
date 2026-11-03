@@ -5,6 +5,7 @@ import type {
 } from '@bemmoly/module-pipelines/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { environmentsV2Keys } from '../api/environments-v2.ts';
+import { rolesKeys } from '../api/roles.ts';
 import { setupKeys } from '../api/setup.ts';
 import { api } from '../lib/api.ts';
 
@@ -71,7 +72,7 @@ export function useEnvironmentV2Writes() {
     Promise.all([
       client.invalidateQueries({ queryKey: environmentsV2Keys.all }),
       client.invalidateQueries({ queryKey: setupKeys.all }),
-      client.invalidateQueries({ queryKey: ['pipelines', 'roles'] }),
+      client.invalidateQueries({ queryKey: rolesKeys.all }),
     ]);
   return {
     create: useMutation({
