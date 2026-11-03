@@ -68,9 +68,10 @@ export function useEnvironmentsV2() {
 /** Every write refreshes the environments and the checklist that counts them. */
 export function useEnvironmentV2Writes() {
   const client = useQueryClient();
+  const environments = environmentsV2Keys.all;
   const settle = () =>
     Promise.all([
-      client.invalidateQueries({ queryKey: environmentsV2Keys.all }),
+      client.invalidateQueries({ queryKey: environments }),
       client.invalidateQueries({ queryKey: setupKeys.all }),
       client.invalidateQueries({ queryKey: rolesKeys.all }),
     ]);
