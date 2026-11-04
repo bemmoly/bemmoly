@@ -49,12 +49,56 @@ test('set up a fresh install from the checklist, then start over', async ({ brow
   await page.getByRole('link', { name: 'Connect: Connect a cloud' }).click();
   await expect(page).toHaveURL(/\/pipelines\/setup\/cloud$/);
   await expect(page.getByRole('link', { name: /Back to the checklist/ })).toBeVisible();
-  await expect(page.getByText(/the command to grant access appears here/)).toBeVisible();
+  await expect(page.getByText(/the steps appear here/)).toBeVisible();
 
-  // Someone who has never made a workload identity file is shown how.
+  // Create projects from a laptop: numbered steps, each command filled in from what was typed
+  // and never shown while a value is missing.
+  await page.getByRole('radio', { name: /Create projects for me/ }).check();
+  await page.getByRole('radio', { name: /A gcloud sign-in on this machine/ }).check();
+  const steps = page.getByRole('list', { name: 'Steps to connect Google Cloud' });
+  const step = (title: string) => steps.getByRole('listitem', { name: title });
+  const bootstrap = step('1. Run the setup script');
+  await expect(bootstrap).toContainText(
+    'Fill in Organization ID, Billing account, Control project ID to see the command.',
+  );
+  await expect(bootstrap.getByLabel('Folder name')).toHaveValue('Bemmoly Pipelines');
+  await bootstrap.getByLabel('Organization ID').fill('583920174411');
+  await bootstrap.getByLabel('Billing account').fill('01A2B3-C4D5E6-F7A8B9');
+  await expect(bootstrap.getByLabel('Control project ID')).toHaveValue(
+    'bemmoly-control-583920174411',
+  );
+  const script = bootstrap.getByLabel('Command for step 1');
+  await expect(script).toContainText('--org 583920174411 --billing 01A2B3-C4D5E6-F7A8B9');
+  await expect(script).toContainText("--folder-name 'Bemmoly Pipelines'");
+  await expect(script).toContainText('--region us-central1 --mode none');
+  await expect(bootstrap.getByRole('link', { name: 'Open Cloud Shell' })).toBeVisible();
+  const account = 'bemmoly-control@bemmoly-control-583920174411.iam.gserviceaccount.com';
+  const token = step('2. Let yourself act as bemmoly-control');
+  await expect(token.getByLabel('Command for step 2')).toHaveCount(0);
+  await token.getByLabel('Your Google account').fill('asha@example.com');
+  await expect(token.getByLabel('Command for step 2')).toContainText(
+    `add-iam-policy-binding ${account}`,
+  );
+  await expect(step('3. Sign in on this machine as that account')).toContainText(
+    `gcloud auth application-default login --impersonate-service-account=${account}`,
+  );
+  await expect(step('4. Let Bemmoly’s container read that sign-in')).toContainText(
+    'Only if Bemmoly runs in Docker',
+  );
+  await step('5. Paste the folder ID').getByLabel('Folder ID').fill('417302018845');
+  await page.getByRole('button', { name: 'Check access' }).click();
+  // The simulator signs in as someone else, so Check names the step to run again.
+  const found = page.getByRole('list', { name: 'What Check found' });
+  await expect(found).toContainText(
+    `Your sign-in is acting as fake-control@Google Cloud, not ${account}. Run step 3.`,
+  );
+  await expect(page.getByRole('button', { name: 'Connect Google Cloud' })).toHaveCount(0);
+
+  // The workload identity file is the advanced choice, with the guide to making one.
+  await page.getByRole('radio', { name: /Use projects I already have/ }).check();
   await page.getByRole('radio', { name: /A workload identity file/ }).check();
   const guide = page.getByRole('region', { name: 'How to make this file' });
-  await expect(guide).toContainText("Choose 'The machine Bemmoly runs on' instead");
+  await expect(guide).toContainText('Choose ‘The machine Bemmoly runs on’');
   await expect(guide).toContainText('Create pool, named bemmoly');
   await expect(
     page.getByRole('link', { name: 'Get it from the Google Cloud console' }),
@@ -72,12 +116,20 @@ test('set up a fresh install from the checklist, then start over', async ({ brow
   // The VM's account, and only the projects picked: the command grants exactly that.
   await page.getByRole('radio', { name: /The machine Bemmoly runs on/ }).check();
   await expect(guide).toHaveCount(0);
+  const grantStep = step('1. Grant access');
+  await expect(grantStep).toContainText('Choose what Bemmoly can reach to see the command.');
+  await expect(grantStep.getByLabel('Bemmoly signs in as')).toHaveValue(
+    'fake-control@Google Cloud',
+  );
   await page.getByRole('radio', { name: /Only the projects I pick/ }).check();
   await page.getByLabel(/Project IDs/).fill('example-dev, example-stage, example-prod');
-  const grant = page.getByLabel('Command that grants access');
+  const grant = page.getByLabel('Command for step 1');
   await expect(grant).toContainText('for PROJECT in example-dev example-stage example-prod; do');
   await expect(grant).not.toContainText('folders');
   await page.getByRole('button', { name: 'Check access' }).click();
+  await expect(page.getByRole('list', { name: 'What Check found' })).toContainText(
+    'Bemmoly can deploy to 3 projects.',
+  );
   const seen = page.getByRole('table', { name: 'Projects Bemmoly can see' });
   await expect(seen).toContainText('example-dev');
   await expect(seen).toContainText('example-prod');

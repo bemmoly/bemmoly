@@ -78,7 +78,8 @@ export function suggestionsOf({ principal, signIn, firstProject, draft }: Sugges
   const control = draft.controlProject ?? out.controlProject;
   if (runsIn || control) out.vmProject = runsIn ?? control;
   if (principal) out.principal = principal;
-  if (principal && signIn === 'application_default' && !isServiceAccount(principal)) {
+  const person = principal && !isServiceAccount(principal) && fieldValid('you', principal);
+  if (person && signIn === 'application_default') {
     out.you = principal;
   }
   if (principal && projectOfAccount(principal)) out.serviceAccount = principal;
