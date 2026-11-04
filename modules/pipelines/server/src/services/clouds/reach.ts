@@ -15,8 +15,9 @@ import { credentialsOf, recordCheck, toRecord } from './store.ts';
 /*
  * What Bemmoly can reach (product rule 9): "Check access" signs in the way the person chose and
  * lists every project their reach covers, with what each is missing, before anything is
- * stored. Connecting then records those projects as attached: it reads them and never creates
- * or changes anything in the cloud.
+ * stored. With `managed` it checks the folder and billing grants bootstrap.sh made instead of
+ * projects, since a folder made for Pipelines starts empty. Connecting then records those
+ * projects as attached: it reads them and never creates or changes anything in the cloud.
  */
 
 type AccessCheckBody = z.infer<typeof cloudAccessCheckBodySchema>;
@@ -81,6 +82,18 @@ export function createReach(deps: ConnectionsDeps) {
         },
       };
       const signIn = await provider.connection.verify(record);
+      if (signIn.ok && body.managed) {
+        const grants = await provider.connection.verify({
+          ...record,
+          config: { ...record.config, mode: 'managed', ...body.managed },
+        });
+        return {
+          signedIn: true,
+          principal: grants.principal ?? signIn.principal,
+          problems: grants.problems,
+          projects: [],
+        };
+      }
       if (!signIn.ok || !body.reach) {
         return {
           signedIn: signIn.ok,

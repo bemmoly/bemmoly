@@ -3,8 +3,8 @@ import { Badge, Card } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { setupText } from '../../i18n/catalog.ts';
 import { ScreenFrame } from '../screen-frame.tsx';
-import { GrantCard } from './cloud/grant-card.tsx';
-import { ReachCard } from './cloud/reach-card.tsx';
+import { GuideCard } from './cloud/guide-card.tsx';
+import { ModeCard } from './cloud/mode-card.tsx';
 import { SignInCard } from './cloud/sign-in-card.tsx';
 import { useConnectCloud } from './cloud/use-connect-cloud.ts';
 
@@ -15,13 +15,18 @@ const SOON = [
 ] as const;
 
 /**
- * Connect a cloud, a setup checklist step (product rule 9): Google Cloud, how Bemmoly signs in
- * and what it may reach, both chosen by the person; the command that grants exactly that;
- * Check access; Connect, which creates nothing and goes back to the checklist.
+ * Connect a cloud, a setup checklist step (product rule 9): Google Cloud, what Pipelines does
+ * there and how Bemmoly signs in, both chosen by the person; then numbered steps whose commands
+ * are filled in from what they typed; Check, which says per step what is done or missing; and
+ * Connect, which goes back to the checklist.
  */
 export default function ConnectCloudScreen() {
   const t = useT(setupText);
-  const flow = useConnectCloud(t('pipelinesSetup.cloud.connected'), t('pipelinesSetup.cloud.name'));
+  const flow = useConnectCloud({
+    connected: t('pipelinesSetup.cloud.connected'),
+    connectedManaged: t('pipelinesSetup.cloud.connectedManaged'),
+    name: t('pipelinesSetup.cloud.name'),
+  });
   return (
     <ScreenFrame
       title={t('pipelinesSetup.cloud.title')}
@@ -61,10 +66,10 @@ export default function ConnectCloudScreen() {
         ))}
       </ul>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        <SignInCard flow={flow} />
-        <ReachCard flow={flow} />
+        <ModeCard guide={flow.guide} />
+        <SignInCard guide={flow.guide} />
       </div>
-      <GrantCard flow={flow} />
+      <GuideCard flow={flow} />
     </ScreenFrame>
   );
 }

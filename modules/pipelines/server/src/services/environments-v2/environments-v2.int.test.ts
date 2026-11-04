@@ -102,6 +102,16 @@ describe('a fresh install', () => {
     );
     expect(whoAmI.projects).toEqual([]);
     expect(whoAmI.principal).toBeTruthy();
+    // Creating projects: the folder and billing grants are checked, not the projects.
+    const managed = cloudAccessCheckResponseSchema.parse(
+      (
+        await api.send('POST', '/clouds/access-check', h.users.admin, {
+          ...body,
+          managed: { folderId: 'folders/417302018845', billingAccountId: '01A2B3-C4D5E6-F7A8B9' },
+        })
+      ).json(),
+    );
+    expect(managed).toMatchObject({ signedIn: true, problems: [], projects: [] });
     const [stored] = await h.sql<{ count: number }[]>`
       select count(*)::int as count from cloud_connections`;
     expect(stored?.count).toBe(0);
