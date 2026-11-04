@@ -48,6 +48,23 @@ export const cloudAccessCheckBodySchema = z
     credentialFile: z.record(z.string(), z.unknown()).optional(),
     /** Left out: only check the sign-in and say who Bemmoly is. */
     reach: cloudReachSchema.optional(),
+    /**
+     * Creating projects: also check what bootstrap.sh granted on its folder and on the billing
+     * account; the problems then name each grant still missing.
+     */
+    managed: z
+      .object({
+        folderId: z
+          .string()
+          .trim()
+          .regex(/^(folders\/)?[0-9]{6,20}$/, 'Use the folder ID bootstrap.sh printed')
+          .transform((value) => value.replace(/^folders\//, '')),
+        billingAccountId: z
+          .string()
+          .trim()
+          .regex(/^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$/, 'Use a billing account ID'),
+      })
+      .optional(),
   })
   .refine((body) => (body.signIn === 'workload_identity_file') === Boolean(body.credentialFile), {
     message: 'Choose the workload identity file only with that sign-in',
@@ -68,6 +85,7 @@ export const cloudAccessCheckResponseSchema = z.object({
   signedIn: z.boolean(),
   /** "bemmoly@my-project.iam.gserviceaccount.com", or the person's own account. */
   principal: z.string().nullable(),
+  /** Why signing in failed; once signed in, with `managed`, each folder or billing grant missing. */
   problems: z.array(z.string()),
   projects: z.array(reachableProjectSchema),
 });
