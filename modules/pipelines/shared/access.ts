@@ -27,6 +27,8 @@ export const roleSchema = z.enum([
   'release_manager',
   'platform_admin',
   'auditor',
+  // Approves what an approval group is asked; never runs or deploys.
+  'approver',
 ]);
 
 /** A scope as screens name it: "Commerce › Checkout". */
@@ -96,7 +98,9 @@ export const approverSourceSchema = z.union([
   z.literal('owning_team'),
   z.string().regex(/^team:[0-9a-f-]{36}$/),
   z.string().regex(/^oncall:[a-z0-9][a-z0-9-]{0,62}$/),
-  z.string().regex(/^role:(viewer|developer|maintainer|release_manager|platform_admin|auditor)$/),
+  z
+    .string()
+    .regex(/^role:(viewer|developer|maintainer|release_manager|platform_admin|auditor|approver)$/),
 ]);
 
 export const policyRequirementsSchema = z.object({

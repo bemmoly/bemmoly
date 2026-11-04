@@ -37,6 +37,13 @@ export interface ApplicationFilesResult {
 type Problem = ApplicationFilesResult['problems'][number];
 
 /** "acme/node-service@3", as the catalog stores a template reference. */
+/** The file's value for a pipeline column, unless the file has none and Bemmoly keeps it. */
+function keepOwn(sql: SqlExecutor, column: string) {
+  return sql`case when excluded.pipeline is null
+      and pipeline_applications.pipeline_store = 'bemmoly'
+    then pipeline_applications.${sql(column)} else excluded.${sql(column)} end`;
+}
+
 function templateOf(file: ApplicationFile): string | null {
   const pipeline = file.pipeline;
   if (!pipeline || !('extends' in pipeline)) return null;
@@ -132,9 +139,10 @@ async function applyFile(
       runtime = ${file.runtime ? sql`excluded.runtime` : sql`pipeline_applications.runtime`},
       repository_id = excluded.repository_id, path = excluded.path, paths = excluded.paths,
       template_ref = excluded.template_ref, source = 'repository', file_path = excluded.file_path,
-      source_commit_sha = excluded.source_commit_sha, pipeline = excluded.pipeline,
-      pipeline_source = excluded.pipeline_source,
-      pipeline_commit_sha = excluded.pipeline_commit_sha, file_runtimes = excluded.file_runtimes,
+      source_commit_sha = excluded.source_commit_sha,
+      -- A pipeline someone chose to keep in Bemmoly stays when the file names none.
+      pipeline = ${keepOwn(sql, 'pipeline')}, pipeline_source = ${keepOwn(sql, 'pipeline_source')},
+      pipeline_commit_sha = ${keepOwn(sql, 'pipeline_commit_sha')}, file_runtimes = excluded.file_runtimes,
       settings_sources = excluded.settings_sources, archived_at = null, updated_at = now()
     returning id`;
   // The pipeline's schedules follow its definition.

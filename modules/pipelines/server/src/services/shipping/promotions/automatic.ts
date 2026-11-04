@@ -5,8 +5,9 @@ import { requestAutomatically, type RequestSettings } from './request.ts';
  * Auto-promote (journeys proposal, "Continuous"): where a tier's path marks a step
  * auto-promote, each application's newest release goes there by itself. The first step goes
  * as soon as the release exists; a later one once the stage before it has the release
- * running for its bake time. Production is never promoted to this way, and the engine's
- * minute sweep runs this, so it works the same for releases from runners and from CI.
+ * running for its bake time. Every environment is equal: whether one is promoted to this way
+ * is only the path's say, never its class. The engine's minute sweep runs this, so it works
+ * the same for releases from runners and from CI.
  */
 
 /** Releases older than this are not caught up on when a step is newly marked auto-promote. */
@@ -27,7 +28,7 @@ async function dueSteps(deps: ShippingEngineDeps, limit: number): Promise<Due[]>
       join pipeline_environment_paths p on p.tier = a.tier
       join pipeline_environment_path_steps s on s.path_id = p.id and s.auto_promote
       join pipeline_environments e on e.id = s.environment_id
-        and e.archived_at is null and e.class <> 'prod'
+        and e.archived_at is null
     ),
     newest as (
       select distinct on (application_id) id as release_id, application_id

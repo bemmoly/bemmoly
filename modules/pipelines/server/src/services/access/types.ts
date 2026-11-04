@@ -67,17 +67,23 @@ export interface EnvironmentFacts {
   id: string;
   key: string;
   name: string;
-  class: EnvironmentClass;
+  /** The older dev/staging/prod label; null for an environment made without one. */
+  class: EnvironmentClass | null;
+  /** Only when an admin turned the older protection on: no environment is protected by kind. */
   protected: boolean;
   region: string | null;
   /** The environment's own window, from its protection settings. */
   window: string | null;
+  /** Who may deploy here; null is anyone whose role deploys. */
+  deployers: { users: string[]; groups: string[] } | null;
 }
 
 export interface PersonFacts {
   id: string;
   name: string;
   teams: TeamRef[];
+  /** Approval groups the person is in, for an environment whose deployers name a group. */
+  groups: string[];
   /** Bemmoly's organisation admins are Platform admins of Pipelines, so an empty install works. */
   orgAdmin: boolean;
 }

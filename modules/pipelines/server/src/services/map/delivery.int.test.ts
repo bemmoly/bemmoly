@@ -15,7 +15,11 @@ describe('For you, the map and the environment strip on the Acme demo', () => {
   let http: PipelinesHttp;
   let demo = '';
   let reason = '';
+  // The demo's live canaries and deploy history follow the clock, and late in the UTC day the
+  // seeded Prod canary has no deployment of its own yet; seed it from the last midday instead.
   const now = new Date();
+  now.setUTCHours(12, 0, 0, 0);
+  if (now.getTime() > Date.now()) now.setUTCDate(now.getUTCDate() - 1);
 
   beforeAll(async () => {
     const started = await startPipelinesHarness();

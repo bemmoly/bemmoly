@@ -16,6 +16,8 @@ const serviceAccountSchema = z.object({
 
 export type GcpServiceAccount = z.infer<typeof serviceAccountSchema>;
 
+const permissionsSchema = z.object({ permissions: z.array(z.string()).default([]) });
+
 /** "deployer@acme-commerce-prod.iam.gserviceaccount.com". */
 export const serviceAccountEmail = (accountId: string, projectId: string) =>
   `${accountId}@${projectId}.iam.gserviceaccount.com`;
@@ -50,6 +52,17 @@ export function createIamClient(http: GcpHttp) {
         url: `${BASE}/projects/-/serviceAccounts/${email}:getIamPolicy`,
         schema: policySchema,
       });
+    },
+
+    /** Which of `permissions` the caller holds on one service account, such as actAs. */
+    async testServiceAccountPermissions(email: string, permissions: string[]): Promise<string[]> {
+      const answer = await http.send({
+        method: 'POST',
+        url: `${BASE}/projects/-/serviceAccounts/${email}:testIamPermissions`,
+        body: { permissions },
+        schema: permissionsSchema,
+      });
+      return answer.permissions;
     },
 
     async setServiceAccountPolicy(email: string, policy: IamPolicy): Promise<void> {

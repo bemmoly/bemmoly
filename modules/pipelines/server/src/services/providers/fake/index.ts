@@ -37,6 +37,8 @@ export interface FakeWorld
   connectionProblems: string[];
   /** Projects an attach check finds problems in; any other project attaches cleanly. */
   accountProblems: Map<string, string[]>;
+  /** The projects a folder holds, as a folder-wide reach finds them. */
+  reachable: string[];
 }
 
 export function createFakeWorld(): FakeWorld {
@@ -57,6 +59,7 @@ export function createFakeWorld(): FakeWorld {
     billingLimit: { limit: 5, recorded: false },
     connectionProblems: [],
     accountProblems: new Map(),
+    reachable: ['example-dev', 'example-stage', 'example-prod', 'example-tools'],
     clusters: new Map(),
     clusterProblems: new Map(),
     machines: new Map(),
@@ -103,7 +106,16 @@ export function createFakeProvider(
       },
       async verifyAccount(_connection, account) {
         const problems = world.accountProblems.get(account.externalId) ?? [];
-        return { ok: problems.length === 0, name: `Simulated ${account.externalId}`, problems };
+        const ok = problems.length === 0;
+        const services = { run: ok, build: ok, secrets: ok };
+        return { ok, name: `Simulated ${account.externalId}`, problems, services };
+      },
+      async listReachable(connection) {
+        const reach = connection.config['reach'] as
+          { kind: 'folder' } | { kind: 'projects'; projects: string[] } | undefined;
+        if (!reach) return [];
+        const ids = reach.kind === 'projects' ? reach.projects : world.reachable;
+        return ids.map((externalId) => ({ externalId, name: `Simulated ${externalId}` }));
       },
     },
     org: {

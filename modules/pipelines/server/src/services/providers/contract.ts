@@ -166,6 +166,8 @@ export interface AccountCheck {
   /** The account's own name in the cloud; null when it could not be read. */
   name: string | null;
   problems: string[];
+  /** Which of what a deploy uses is on there; absent when the cloud cannot say. */
+  services?: { run: boolean; build: boolean; secrets: boolean };
 }
 
 export interface ConnectionPart {
@@ -175,6 +177,10 @@ export interface ConnectionPart {
     connection: ConnectionRecord,
     account: { externalId: string; config: Readonly<Record<string, unknown>> },
   ): Promise<AccountCheck>;
+  /** The accounts the connection's reach covers: a folder's projects, or the ones picked. */
+  listReachable?(
+    connection: ConnectionRecord,
+  ): Promise<{ externalId: string; name: string | null }[]>;
 }
 
 /** Boundaries and accounts: a folder and projects, an organizational unit and accounts. */

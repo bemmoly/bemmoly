@@ -5,9 +5,19 @@ import type { AccessFacts, BindingFact, ScopeNode } from './types.ts';
 
 /*
  * The effective role set (architecture §10.1): the union of the person's bindings on the
- * path from the organisation to the target, the owning team's implicit Maintainer, and
- * Bemmoly's organisation admins as Platform admins. Each grant is a trace line.
+ * path from the organisation to the target, and Bemmoly's organisation admins as Platform
+ * admins until someone gives them a role of their own. Owning a service grants nothing by
+ * itself: nothing is switched on that nobody chose. Each grant is a trace line.
  */
+
+/** The one role a person holds for the whole organisation (Platform › People and roles). */
+export function isPersonRole(binding: BindingFact): boolean {
+  return (
+    binding.subject.kind === 'user' &&
+    binding.scope.kind === 'organisation' &&
+    binding.expiresAt === null
+  );
+}
 
 export interface Grant {
   role: Role;
@@ -30,7 +40,10 @@ function appliesToPerson(binding: BindingFact, facts: AccessFacts): boolean {
 export function grantsOf(facts: AccessFacts): Grant[] {
   const grants: Grant[] = [];
   const root = facts.path[0];
-  if (facts.person.orgAdmin && root) {
+  const ownRole = facts.bindings.some(
+    (binding) => isPersonRole(binding) && binding.subject.id === facts.person.id,
+  );
+  if (facts.person.orgAdmin && root && !ownRole) {
     grants.push({
       role: 'platform_admin',
       via: 'Bemmoly organisation admin',
@@ -48,7 +61,9 @@ export function grantsOf(facts: AccessFacts): Grant[] {
     const via =
       binding.subject.kind === 'team'
         ? binding.subject.name
-        : `${binding.subject.name} (break-glass)`;
+        : isPersonRole(binding)
+          ? `${binding.subject.name}'s role`
+          : `${binding.subject.name} (break-glass)`;
     const where = binding.environmentClass
       ? `${scopeLabel(binding.scope)}, ${binding.environmentClass} only`
       : scopeLabel(binding.scope);
@@ -61,22 +76,6 @@ export function grantsOf(facts: AccessFacts): Grant[] {
         text: `${via}: ${ROLE_LABELS[binding.role]} at ${where}`,
         effect: 'grant',
         ref: { kind: 'binding', id: binding.id },
-      },
-    });
-  }
-  const owner = facts.owner;
-  const app = facts.application;
-  const target = facts.path.at(-1);
-  if (owner && app && target && facts.person.teams.some((team) => team.id === owner.id)) {
-    grants.push({
-      role: 'maintainer',
-      via: `${owner.name}, the owning team`,
-      scope: target,
-      trace: {
-        kind: 'ownership',
-        text: `${owner.name} owns ${app.key}: Maintainer`,
-        effect: 'grant',
-        ref: { kind: 'team', id: owner.id },
       },
     });
   }
@@ -105,16 +104,13 @@ export function describePerson(facts: AccessFacts, grants: readonly Grant[], tar
 }
 
 /**
- * The teams that hold one of `roles` on the path, who to ask: the owning team first, then
- * the narrowest bindings, and Platform admins only when nobody closer can grant it.
+ * The teams that hold one of `roles` on the path, who to ask: the narrowest bindings first,
+ * and Platform admins only when nobody closer can grant it.
  */
 export function teamsHolding(facts: AccessFacts, roles: readonly Role[]): TeamRef[] {
   const wanted = new Set(roles);
   const close = new Map<string, TeamRef>();
   const admins = new Map<string, TeamRef>();
-  if (facts.owner && facts.application && wanted.has('maintainer')) {
-    close.set(facts.owner.id, facts.owner);
-  }
   const depth = (binding: BindingFact) =>
     facts.path.findIndex(
       (node) => node.kind === binding.scope.kind && node.id === binding.scope.id,

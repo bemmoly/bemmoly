@@ -174,10 +174,11 @@ describe('environments you create', () => {
           name: 'Shop prod',
           class: 'prod',
           cloudAccountId: state.account,
+          protection: { protected: true, requiresApproval: true },
         })
       ).json(),
     );
-    // Production is protected and asks for an approval unless the admin says otherwise.
+    // Nothing is guarded for its class: Prod is protected because the admin asked.
     expect(prod.protection).toMatchObject({ protected: true, requiresApproval: true });
     expect(prod.position).toBeGreaterThan(created.position);
     state.prod = prod.id;

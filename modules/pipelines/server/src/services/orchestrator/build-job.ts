@@ -118,5 +118,6 @@ export function buildJob(
     timeoutMinutes: timeout,
     application,
     matrix: null,
+    environment: null,
   };
 }

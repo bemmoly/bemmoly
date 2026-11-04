@@ -165,6 +165,11 @@ describe('catalog writes and application.yaml sync', () => {
         },
       },
     });
+    // The file made Payments the owner; owning grants nothing, so Payments is bound too.
+    await harness.sql`
+      insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind, scope_id)
+      select 'team', owner_team_id, 'maintainer', 'application', id
+      from pipeline_applications where key = 'lake-ingest'`;
     const edit = await withHost.applications.update(harness.as(member()), 'lake-ingest', {
       tier: 0,
       name: 'Lake ingest',

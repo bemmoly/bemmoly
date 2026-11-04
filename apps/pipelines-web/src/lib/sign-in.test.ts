@@ -17,9 +17,12 @@ describe('signing in and back', () => {
 describe('places and formats', () => {
   it('finds the place an address is in, For you only at the root', () => {
     expect(placeAt('/pipelines/')?.id).toBe('forYou');
-    expect(placeAt('/pipelines/map')?.id).toBe('map');
+    expect(placeAt('/pipelines/services/checkout-api/versions')?.id).toBe('services');
+    expect(placeAt('/pipelines/applications/checkout-api')?.id).toBe('services');
     expect(placeAt('/pipelines/runs/123')?.id).toBe('runs');
-    expect(placeAt('/pipelines/mapping')).toBeUndefined();
+    expect(placeAt('/pipelines/changes/CHG-1042')?.id).toBe('changes');
+    expect(placeAt('/pipelines/setup/cloud')?.id).toBe('platform');
+    expect(placeAt('/pipelines/servicesx')).toBeUndefined();
   });
 
   it('writes lead times and shares the way the header shows them', () => {

@@ -189,6 +189,10 @@ describe('a push whose pipeline cannot start', () => {
       ],
     });
     expect(warned.problems).toEqual([expect.objectContaining({ applied: true })]);
+    // Pushes start the pipeline only once someone adds the push trigger.
+    await harness.sql`
+      update pipeline_applications set pipeline_triggers = '[{"kind": "push", "branch": "main"}]'::jsonb
+      where key = 'lake-batch'`;
     const ran = await triggers().push(push('acme/data', 'f'.repeat(40), [path]));
     const [state] = await harness.sql<{ state: string }[]>`
       select state from pipeline_runs where id = ${ran ?? ''}`;

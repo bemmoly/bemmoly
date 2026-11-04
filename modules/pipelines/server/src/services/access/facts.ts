@@ -121,19 +121,21 @@ async function resolveScope(sql: SqlClient, target: AccessTarget, root: ScopeNod
 
 async function resolveEnvironment(sql: SqlClient, ref: string): Promise<EnvironmentFacts> {
   const [row] = await sql<EnvironmentFactRow[]>`
-    select id, key, name, class, region, protection from pipeline_environments
+    select id, key, name, class, region, protection, deployers from pipeline_environments
     where ${isUuid(ref) ? sql`id = ${ref}::uuid` : sql`key = ${ref}`}`;
   if (!row) throw new NotFoundError(`No environment called "${ref}"`);
-  const cls = environmentClassSchema.parse(row.class);
   return {
     id: row.id,
     key: row.key,
     name: row.name,
-    class: cls,
-    // Prod is protected unless an admin explicitly says otherwise.
-    protected: row.protection?.protected ?? cls === 'prod',
+    class: envClass(row.class),
+    // Environments are equal: none is protected for being called production.
+    protected: row.protection?.protected === true,
     region: row.region,
     window: row.protection?.window ?? null,
+    deployers: row.deployers
+      ? { users: row.deployers.users ?? [], groups: row.deployers.groups ?? [] }
+      : null,
   };
 }
 
@@ -160,10 +162,19 @@ export async function loadPerson(
 ): Promise<Omit<PersonFacts, 'orgAdmin'>> {
   const [person] = await sql<{ name: string }[]>`select name from users where id = ${userId}::uuid`;
   if (!person) throw new NotFoundError('No such person');
-  const teams = await sql<{ id: string; name: string }[]>`
-    select t.id, t.name from team_members m join teams t on t.id = m.team_id
-    where m.user_id = ${userId}::uuid order by lower(t.name)`;
-  return { id: userId, name: person.name, teams: [...teams] };
+  const [teams, groups] = await Promise.all([
+    sql<{ id: string; name: string }[]>`
+      select t.id, t.name from team_members m join teams t on t.id = m.team_id
+      where m.user_id = ${userId}::uuid order by lower(t.name)`,
+    sql<{ group_id: string }[]>`
+      select group_id from pipeline_approval_group_members where user_id = ${userId}::uuid`,
+  ]);
+  return {
+    id: userId,
+    name: person.name,
+    teams: [...teams],
+    groups: groups.map((row) => row.group_id),
+  };
 }
 
 /** Bindings, policies and freezes at any scope on the path. */

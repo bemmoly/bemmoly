@@ -5,12 +5,23 @@ import { ACTION_PHRASES, POLICY_ACTIONS, roleList, rolesFor, withArticle } from 
 import type { AccessFacts, Decision } from './types.ts';
 
 /*
- * One access decision from its facts, with no I/O: roles first (bindings, ownership), then
- * the application's owner, then policies. The first refusal decides the sentence; the trace
- * keeps every step, so "Why can't I?" and the checker show the same reasoning.
+ * One access decision from its facts, with no I/O: roles first (the person's role, team
+ * bindings), then the environment's own deployers, then policies. The first refusal decides
+ * the sentence; the trace keeps every step, so "Why can't I?" and the checker show the same
+ * reasoning.
  */
 
-const OWNERLESS_BLOCKED: ReadonlySet<AccessAction> = new Set(['deploy', 'request_prod']);
+const DEPLOYING: ReadonlySet<AccessAction> = new Set(['deploy', 'rollback']);
+
+/** An environment that names its deployers lets only them (and Platform admins) deploy. */
+function deployerDenial(facts: AccessFacts, action: AccessAction, admin: boolean) {
+  const deployers = facts.environment?.deployers;
+  if (!deployers || !DEPLOYING.has(action) || admin) return null;
+  const { person } = facts;
+  if (deployers.users.includes(person.id)) return null;
+  if (deployers.groups.some((group) => person.groups.includes(group))) return null;
+  return `${facts.environment?.name ?? 'This environment'} lets only the people it names deploy there.`;
+}
 
 /** "checkout-api in Prod · asia-south1", "Commerce", "Acme". */
 export function targetName(facts: AccessFacts): string {
@@ -29,8 +40,25 @@ export function decide(facts: AccessFacts, action: AccessAction): Decision {
   const base = { action, roles: [...roles], decisionId: null };
   const person = describePerson(facts, grants, facts.application?.key ?? target);
 
+  if (roles.size === 0) {
+    // Nobody but the installing admin is in until invited: no role, no place.
+    trace.push({
+      kind: 'fact',
+      text: `${facts.person.name} has no role`,
+      effect: 'deny',
+      ref: null,
+    });
+    return {
+      ...base,
+      allowed: false,
+      sentence: `${facts.person.name} has no role in Pipelines yet. A Platform admin invites people.`,
+      trace,
+      askWho: { teams: [], label: 'Ask a Platform admin' },
+      policies: [],
+    };
+  }
   if (action === 'view') {
-    // Everyone who may use Pipelines sees the whole catalog; roles narrow actions only.
+    // Everyone with a role sees the whole catalog; roles narrow actions only.
     trace.push({
       kind: 'fact',
       text: 'Everyone who uses Pipelines can view it',
@@ -68,17 +96,10 @@ export function decide(facts: AccessFacts, action: AccessAction): Decision {
   }
 
   let denial: { sentence: string; askWho: AskWho | null } | null = null;
-  if (facts.application && !facts.owner && protectedEnv && OWNERLESS_BLOCKED.has(action)) {
-    trace.push({
-      kind: 'fact',
-      text: `${facts.application.key} has no owning team`,
-      effect: 'deny',
-      ref: { kind: 'application', id: facts.application.id },
-    });
-    denial = {
-      sentence: `${facts.application.key} has no owner, so it cannot go to protected environments. Name its owning team in .bemmoly/application.yaml.`,
-      askWho: null,
-    };
+  const notDeployer = deployerDenial(facts, action, roles.has('platform_admin'));
+  if (notDeployer) {
+    trace.push({ kind: 'fact', text: notDeployer, effect: 'deny', ref: null });
+    denial = { sentence: notDeployer, askWho: { teams: [], label: 'Ask a Platform admin' } };
   }
 
   const policies =

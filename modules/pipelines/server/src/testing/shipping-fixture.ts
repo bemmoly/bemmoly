@@ -51,12 +51,17 @@ export async function seedShippingFixture(
   const ravi = await one(sql`insert into users (email, name, role_id)
     select 'ravi@example.test', 'Ravi Kumar', id from roles where key = 'member' returning id`);
   await sql`insert into module_grants (module_id, subject_kind, subject_id) values ('pipelines', 'user', ${ravi})`;
+  await sql`insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind)
+    values ('user', ${ravi}, 'developer', 'organisation')`;
   const team = await one(sql`insert into teams (name) values ('Payments') returning id`);
   await sql`insert into team_members (team_id, user_id) values (${team}, ${users.member}), (${team}, ${ravi})`;
   const domain = await one(sql`insert into pipeline_domains (key, name, color, position)
     values ('commerce', 'Commerce', 'epic-1', 1) returning id`);
   const group = await one(sql`insert into pipeline_groups (domain_id, key, name)
     values (${domain}, 'checkout', 'Checkout') returning id`);
+  // The owners maintain what they own through a binding: owning grants nothing by itself.
+  await sql`insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind, scope_id)
+    values ('team', ${team}, 'maintainer', 'group', ${group})`;
   const app = await one(sql`insert into pipeline_applications
       (key, name, domain_id, group_id, owner_team_id, tier, runtime, health)
     values ('checkout-api', 'checkout-api', ${domain}, ${group}, ${team}, 1, 'container-service', 'healthy')

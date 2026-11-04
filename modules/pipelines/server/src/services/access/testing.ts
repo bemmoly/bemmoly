@@ -43,6 +43,7 @@ export const PROD: EnvironmentFacts = {
   protected: true,
   region: 'asia-south1',
   window: null,
+  deployers: null,
 };
 export const STAGING: EnvironmentFacts = {
   id: '00000000-0000-4000-8000-000000000004',
@@ -52,6 +53,7 @@ export const STAGING: EnvironmentFacts = {
   protected: false,
   region: null,
   window: null,
+  deployers: null,
 };
 
 let next = 0;
@@ -108,6 +110,7 @@ export function facts(overrides: Partial<AccessFacts> = {}): AccessFacts {
       id: '00000000-0000-4000-8000-000000000012',
       name: 'Jon',
       teams: [TEAMS.checkoutWeb, TEAMS.everyone],
+      groups: [],
       orgAdmin: false,
     },
     path: [ORG, COMMERCE, CHECKOUT, CHECKOUT_API],
@@ -129,6 +132,8 @@ export function facts(overrides: Partial<AccessFacts> = {}): AccessFacts {
       teamBinding(TEAMS.checkoutWeb, 'developer', CHECKOUT),
       teamBinding(TEAMS.commerceRm, 'release_manager', COMMERCE),
       teamBinding(TEAMS.platform, 'platform_admin', ORG),
+      // Owning a service grants nothing by itself; the owners hold a binding like anyone.
+      teamBinding(TEAMS.payments, 'maintainer', CHECKOUT_API),
     ],
     policies: [policy(TIER0)],
     freezes: [],
@@ -141,5 +146,6 @@ export const PRIYA = {
   id: '00000000-0000-4000-8000-000000000013',
   name: 'Priya',
   teams: [TEAMS.payments, TEAMS.everyone],
+  groups: [],
   orgAdmin: false,
 };

@@ -34,9 +34,10 @@ export interface EnvironmentFactRow {
   id: string;
   key: string;
   name: string;
-  class: string;
+  class: string | null;
   region: string | null;
   protection: { protected?: boolean; window?: string | null } | null;
+  deployers: { users?: string[]; groups?: string[] } | null;
 }
 
 export interface BindingRow {

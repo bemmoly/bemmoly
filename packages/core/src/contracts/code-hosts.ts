@@ -59,6 +59,8 @@ export interface CodePush {
   truncated: boolean;
   commits: number;
   pusher: string | null;
+  /** The pushed commits' messages, oldest first, as far as the host sent them. */
+  messages?: readonly string[];
 }
 
 /**

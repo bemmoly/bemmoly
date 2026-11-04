@@ -6,6 +6,7 @@ import { cancelJobsOf } from '../runs/cancel.ts';
 import { announce, queueRunCheck, runDefaults, type ExecutionDeps } from '../runs/context.ts';
 import { recordFailedRun, startOrRecordFailure } from '../runs/failed.ts';
 import type { StartApplication, StartRunInput } from '../runs/start.ts';
+import { startsOn, type TriggerEvent } from './enabled.ts';
 import { nextRunAt } from './schedules.ts';
 import { unreadableFiles, unreadableReason } from './unreadable.ts';
 
@@ -17,7 +18,8 @@ export { nextRunAt, refreshSchedules } from './schedules.ts';
  * handlers in order per repository, at least once) wires them in one line, and each is
  * idempotent through the run's idempotency key: a redelivered event starts nothing new.
  * A newer commit on a pull request supersedes the older run; closing it cancels the run.
- * A pipeline that cannot start still makes a run: a failed one that says why.
+ * A pipeline that cannot start still makes a run: a failed one that says why. Each starts
+ * only the services whose pipeline has that trigger (enabled.ts); none has one by default.
  */
 
 type Push = Extract<CodeEvent, { type: 'push' }>;
@@ -34,11 +36,13 @@ interface Candidate {
   path: string;
   paths: string[] | null;
   repository_id: string;
+  pipeline_triggers: unknown;
 }
 
 async function candidatesIn(sql: SqlExecutor, repository: string): Promise<Candidate[]> {
   return sql<Candidate[]>`
-    select a.id, a.key, a.owner_team_id, a.pipeline, a.path, a.paths, a.repository_id
+    select a.id, a.key, a.owner_team_id, a.pipeline, a.path, a.paths, a.repository_id,
+      a.pipeline_triggers
     from pipeline_applications a
     join pipeline_repositories p on p.id = a.repository_id
     where p.full_name = ${repository} and a.archived_at is null and a.pipeline is not null
@@ -48,6 +52,7 @@ async function candidatesIn(sql: SqlExecutor, repository: string): Promise<Candi
 export function createTriggersService(deps: ExecutionDeps) {
   async function start(
     repository: string,
+    event: TriggerEvent,
     changedFiles: readonly string[] | null,
     input: Omit<
       StartRunInput,
@@ -55,7 +60,9 @@ export function createTriggersService(deps: ExecutionDeps) {
     >,
   ): Promise<string | null> {
     const sql = requireDatabase(deps);
-    const candidates = await candidatesIn(sql, repository);
+    const candidates = (await candidatesIn(sql, repository)).filter((c) =>
+      startsOn(c.pipeline_triggers, event),
+    );
     const affected = new Set(
       affectedApplications(
         candidates.map((c) => ({ key: c.key, path: c.path, paths: c.paths ?? [] })),
@@ -97,11 +104,14 @@ export function createTriggersService(deps: ExecutionDeps) {
     async push(event: Push): Promise<string | null> {
       const { push } = event;
       if (push.deleted) return null;
-      return start(event.repository, push.truncated ? null : push.changedFiles, {
+      const on = { kind: 'push', branch: push.branch } as const;
+      return start(event.repository, on, push.truncated ? null : push.changedFiles, {
         trigger: 'push',
         ref: push.branch,
         commitSha: push.after,
-        title: `Push to ${push.branch}`,
+        // The newest commit's subject says what the run is for; a push without one says where.
+        title: push.messages?.at(-1)?.split('\n', 1)[0]?.slice(0, 200) || `Push to ${push.branch}`,
+        commitMessages: push.messages ?? [],
         authorLogin: push.pusher,
         priorityClass: push.isDefaultBranch ? 'main' : 'pull_request',
         idempotencyKey: `push:${event.repository}:${push.branch}:${push.after}`,
@@ -130,7 +140,7 @@ export function createTriggersService(deps: ExecutionDeps) {
       }
       if (!PR_ACTIONS.has(event.action)) return null;
       // The host does not list a pull request's files; building every application is safe.
-      return start(event.repository, null, {
+      return start(event.repository, { kind: 'pull_request' }, null, {
         trigger: 'pull_request',
         ref: event.headRef,
         commitSha: event.headSha,
@@ -146,7 +156,8 @@ export function createTriggersService(deps: ExecutionDeps) {
 
     async mergeGroup(event: MergeGroup): Promise<string | null> {
       if (event.action !== 'checks_requested') return null;
-      return start(event.repository, null, {
+      // A merge queue checks what its pull requests would merge: the same trigger starts it.
+      return start(event.repository, { kind: 'pull_request' }, null, {
         trigger: 'merge_group',
         ref: event.headRef,
         commitSha: event.headSha,
@@ -181,6 +192,7 @@ export function createTriggersService(deps: ExecutionDeps) {
             p.default_branch, s.cron, s.time_zone, s.ref, s.inputs, s.next_run_at
           from pipeline_schedules s
           join pipeline_applications a on a.id = s.application_id and a.archived_at is null
+            and a.pipeline_triggers @> '[{"kind": "schedule"}]'::jsonb
           left join pipeline_repositories p on p.id = a.repository_id
           where s.next_run_at <= ${now.toISOString()}::timestamptz
           order by s.next_run_at limit 100

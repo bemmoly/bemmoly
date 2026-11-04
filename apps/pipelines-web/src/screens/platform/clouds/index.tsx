@@ -44,7 +44,13 @@ export default function CloudsArea() {
             title={t('pipelines.clouds.emptyTitle')}
             description={t('pipelines.clouds.emptyDescription')}
             headingLevel={2}
-            action={connect}
+            action={
+              // A fresh install connects through the setup step, which creates nothing.
+              <Button variant="primary" onClick={() => go({ to: '/setup/cloud' })}>
+                <Icon name="plus" size={14} />
+                {t('pipelines.clouds.connect')}
+              </Button>
+            }
           />
         </div>
       ) : (

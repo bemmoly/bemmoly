@@ -8,3 +8,6 @@ fe60b051c6435c575ba9856c96bf99d40a7603c5:modules/pipelines/server/src/clients/gc
 # A made-up Cloud Run page token in the adopt fixture, since replaced by "page-2".
 4e370d47915042b6802bb5660de5f81232bc2ba7:modules/pipelines/server/src/clients/gcp/fixtures/cloud-run-adopt.json:generic-api-key:154
 4e370d47915042b6802bb5660de5f81232bc2ba7:modules/pipelines/server/src/clients/gcp/fixtures/cloud-run-adopt.json:generic-api-key:211
+# A React Query key in the environments hook (queryKey: environmentsV2Keys.all) that the
+# generic rule read as a secret; the line now names the key differently. Not a secret.
+e7f3e141595137f33c2a7751974fa74dad0ed916:apps/pipelines-web/src/hooks/use-environments-v2.ts:generic-api-key:72

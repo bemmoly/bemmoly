@@ -6,16 +6,18 @@ import { useBrowserPath } from '../hooks/use-browser-path.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { PersonMenu } from './person-menu.tsx';
 import { PlaceLink } from './place-link.tsx';
-import { PLACES, placeAt, SETTINGS } from './places.ts';
+import { placeAt, SETTINGS } from './places.ts';
+import { usePlaces } from './use-places.ts';
 
 /**
- * The 72px rail: the Bemmoly mark, the seven places, then Settings and the person at its
- * foot. Hidden below 768px, where the phone bar takes over.
+ * The 72px rail: the Bemmoly mark, the places the person's role shows, then Settings and the
+ * person at its foot. Hidden below 768px, where the phone bar takes over.
  */
 export function Rail({ appearance }: { appearance: Appearance }) {
   const t = useT(pipelinesText);
   const pathname = useBrowserPath();
   const current = placeAt(pathname);
+  const places = usePlaces();
   return (
     <nav
       aria-label={t('pipelines.shell.mainNavigation')}
@@ -28,7 +30,7 @@ export function Rail({ appearance }: { appearance: Appearance }) {
       >
         <Logo variant="mark" size={26} label="" />
       </Link>
-      {PLACES.map((place) => (
+      {places.map((place) => (
         <PlaceLink key={place.id} place={place} active={current?.id === place.id} layout="rail" />
       ))}
       <div className="mt-auto flex flex-col items-center gap-1.5">

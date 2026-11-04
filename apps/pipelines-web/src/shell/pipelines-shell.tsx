@@ -1,5 +1,5 @@
 import { FrameContext, setPreferenceOwner, useT } from '@bemmoly/core-web';
-import { Outlet, useRouter } from '@tanstack/react-router';
+import { Outlet, useRouter, useRouterState } from '@tanstack/react-router';
 import { useEffect, useMemo } from 'react';
 import { useBrowserPath } from '../hooks/use-browser-path.ts';
 import { useMe } from '../hooks/use-me.ts';
@@ -7,8 +7,11 @@ import { useMode } from '../hooks/use-mode.ts';
 import { useWorkspaceTheme } from '../hooks/use-workspace-theme.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { NoAccessScreen } from '../screens/no-access.tsx';
+import { BackToChecklist } from '../screens/setup/back-bar.tsx';
+import { isSetupPage } from '../screens/setup/checklist/steps.ts';
 import { CommandMenu } from './command-menu.tsx';
 import { KeysDialog } from './keys-dialog.tsx';
+import { PlaceGuard } from './place-guard.tsx';
 import { PhoneBar } from './phone-bar.tsx';
 import { Rail } from './rail.tsx';
 import { TopBar } from './top-bar.tsx';
@@ -24,6 +27,7 @@ export function PipelinesShell() {
   const router = useRouter();
   const pathname = useBrowserPath();
   const { data: me } = useMe();
+  const location = useRouterState({ select: (state) => state.location.pathname });
   const appearance = useMode();
   const { mode, toggle } = appearance;
   useWorkspaceTheme(mode);
@@ -53,7 +57,14 @@ export function PipelinesShell() {
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
           <main id="content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0">
-            {me && !me.modules.includes('pipelines') ? <NoAccessScreen /> : <Outlet />}
+            {me && !me.modules.includes('pipelines') ? (
+              <NoAccessScreen />
+            ) : (
+              <PlaceGuard>
+                {isSetupPage(location) && <BackToChecklist />}
+                <Outlet />
+              </PlaceGuard>
+            )}
           </main>
           <PhoneBar />
         </div>

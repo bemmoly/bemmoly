@@ -31,6 +31,7 @@ const pushSchema = z.object({
         modified: z.array(z.string()).default([]),
         removed: z.array(z.string()).default([]),
         timestamp: text,
+        message: z.string().max(20_000).default(''),
       }),
     )
     .default([]),
@@ -136,6 +137,7 @@ export function pushDetail(body: Buffer): CodePush | null {
     truncated: push.commits.length >= PUSH_COMMIT_LIMIT,
     commits: push.commits.length,
     pusher: push.pusher?.name ?? null,
+    messages: push.commits.map((commit) => commit.message).filter(Boolean),
   };
 }
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { projectIdSchema } from './cloud-accounts.ts';
+import { projectIdSchema } from './cloud-reach.ts';
 import { idSchema, isoDateTimeSchema, slugSchema } from './common.ts';
 import { environmentRefSchema } from './environments.ts';
 

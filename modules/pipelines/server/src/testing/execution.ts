@@ -41,13 +41,21 @@ export async function createPool(
   return { id: pool.id, token };
 }
 
+/** Every trigger on: the execution tests start runs from pushes, pull requests and schedules. */
+export const ALL_TRIGGERS = [
+  { kind: 'push', branch: '*' },
+  { kind: 'pull_request' },
+  { kind: 'schedule', cron: '0 3 * * *', timeZone: 'UTC' },
+];
+
 export async function givePipeline(
   sql: SqlClient,
   application: string,
   pipeline: unknown = TEST_PIPELINE,
+  triggers: unknown[] = ALL_TRIGGERS,
 ) {
   await sql`
     update pipeline_applications set pipeline = ${JSON.stringify(storable(pipeline))}::jsonb,
-      pipeline_source = 'repository'
+      pipeline_source = 'repository', pipeline_triggers = ${JSON.stringify(triggers)}::jsonb
     where key = ${application}`;
 }

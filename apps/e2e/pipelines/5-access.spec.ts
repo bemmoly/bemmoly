@@ -3,13 +3,21 @@ import { openPipelines } from '../support/pipelines.ts';
 import { readState } from '../support/state.ts';
 
 /*
- * Walkthrough step 5, access: Sam may use Pipelines (the module is granted to everyone) but no
- * team of his holds a role on checkout-api, so running its pipeline is refused with a
- * sentence and who to ask. The checker in Platform › Access explains the same decision.
+ * Walkthrough step 5, access: Sam may use Pipelines (the module is granted to everyone) and is
+ * a Viewer, so running checkout-api's pipeline is refused with a sentence and who to ask.
+ * The checker in Platform › Access explains the same decision.
  */
 
 test('a person without the role is refused with a reason and who to ask', async ({ browser }) => {
-  const { member } = readState();
+  const state = readState();
+  const { member } = state;
+  // Nobody has a Pipelines role until given one: the admin makes Sam a Viewer.
+  const admin = await openPipelines(browser, '/platform/people');
+  const given = await admin.request.put(`/api/v1/pipelines/people/${member.id}`, {
+    data: { role: 'viewer' },
+    headers: { origin: state.baseURL },
+  });
+  expect(given.ok()).toBe(true);
   const page = await openPipelines(browser, '/applications/checkout-api', member);
   await expect(page.getByRole('heading', { name: 'checkout-api' })).toBeVisible();
   await page.getByRole('button', { name: /^Run( R)?$/ }).click();

@@ -25,6 +25,11 @@ describe('auto-promote', () => {
       update pipeline_environment_path_steps set auto_promote = true,
         bake_minutes = case when environment_id = ${f.environments.dev} then 15 else bake_minutes end
       where environment_id = any(${[f.environments.dev, f.environments.staging, f.environments.prodAsia]}::uuid[])`;
+    // Environments are equal; only an approval rule keeps an automatic promotion out.
+    await harness.sql`
+      update pipeline_environments
+      set approval_rule = '{"steps":[{"group":"Release approvers","count":1,"when":"always"}]}'::jsonb
+      where id = ${f.environments.prodAsia}`;
   });
 
   afterAll(async () => {
@@ -45,7 +50,7 @@ describe('auto-promote', () => {
     expect(dev).toMatchObject({ key: 'dev', mode: 'continuous', requested_by: null });
   });
 
-  it('moves on to Staging only after Dev has run it for its bake time, and never to Prod', async (ctx) => {
+  it('moves on to Staging only after Dev has run it for its bake time, never past an approval rule', async (ctx) => {
     if (!harness) return ctx.skip(reason);
     const [release] = await harness.sql<{ id: string }[]>`
       select id from pipeline_releases where version = 'v3.0.0'`;

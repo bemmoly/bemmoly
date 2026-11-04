@@ -17,8 +17,8 @@ import type { ScopeNode } from './types.ts';
 type ListBindingsQuery = ReturnType<typeof listBindingsQuerySchema.parse>;
 
 /*
- * Role bindings on the Access screen: the ones at a scope, those inherited from wider
- * scopes, and the owning team's implicit Maintainer. Binding a team at a scope needs
+ * Role bindings on the Access screen: the ones at a scope and those inherited from wider
+ * scopes (owning a service grants no role by itself). Binding a team at a scope needs
  * Maintainer there; the organisation, Platform admin and break-glass bindings for one
  * person need a Platform admin.
  */
@@ -84,27 +84,6 @@ export function createBindingsService(sql: () => SqlClient, engine: AccessEngine
         order by case b.scope_kind when 'application' then 0 when 'group' then 1
           when 'domain' then 2 else 3 end, b.role, lower(coalesce(t.name, u.name))`;
       const items = rows.map((row) => present(row, path, target));
-      if (target.kind === 'application' && target.id) {
-        const [owner] = await db<{ id: string; name: string }[]>`
-          select t.id, t.name from pipeline_applications a join teams t on t.id = a.owner_team_id
-          where a.id = ${target.id}::uuid`;
-        if (owner) {
-          items.unshift({
-            id: null,
-            subject: { kind: 'team', team: owner },
-            role: 'maintainer',
-            scope: namedScope(target, path),
-            environmentClass: null,
-            expiresAt: null,
-            reason: null,
-            inherited: false,
-            inheritedFrom: null,
-            implicit: true,
-            createdBy: null,
-            createdAt: null,
-          });
-        }
-      }
       const column = { domain: 'domain_id', group: 'group_id', application: 'id' } as const;
       const [count] = await db<{ teams: number }[]>`
         select count(distinct owner_team_id)::int as teams from pipeline_applications

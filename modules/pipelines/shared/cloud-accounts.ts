@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { idSchema } from './common.ts';
+import { projectIdSchema } from './cloud-reach.ts';
 import { registryPathSchema } from './clouds.ts';
 
 /*
@@ -8,12 +9,6 @@ import { registryPathSchema } from './clouds.ts';
  * /clouds/:id/accounts/:accountId/check runs its checks again, DELETE detaches it, and
  * PATCH /clouds/:id sets where runners push images and which project holds CI secrets.
  */
-
-/** A Google Cloud project id: 6 to 30 lowercase letters, digits and hyphens. */
-export const projectIdSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, 'Use the project ID, such as acme-prod-421309');
 
 const serviceAccountSchema = z
   .email()

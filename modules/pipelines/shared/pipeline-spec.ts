@@ -101,6 +101,12 @@ export const buildSpecSchema = z.object({
   args: buildArgsSchema.default({}),
 });
 
+/**
+ * The action a deploy step uses: Pipelines itself moves the version this run built into the
+ * step's environment (no runner), and the job passes when the deployment is healthy.
+ */
+export const DEPLOY_ACTION = 'bemmoly/deploy';
+
 /** A step runs as a container: an image and a command, or an action it `uses`. */
 export const pipelineStepSpecSchema = z
   .object({
@@ -130,9 +136,17 @@ export const pipelineStepSpecSchema = z
     junit: z.string().min(1).max(300).optional(),
     /** Files to keep after the job, paths or globs in the workspace. */
     artifacts: z.array(z.string().min(1).max(300)).max(20).default([]),
+    /**
+     * The environment (by its ID) the step runs against or deploys to. The editor and the run
+     * view group a pipeline's steps under their environment; a step without one is a build step.
+     */
+    environment: slugSchema.optional(),
   })
   .refine((step) => Boolean(step.run) !== Boolean(step.uses), {
     message: 'A step either runs a command or uses an action',
+  })
+  .refine((step) => step.uses !== DEPLOY_ACTION || Boolean(step.environment), {
+    message: 'A deploy step names the environment it deploys to',
   });
 
 export const deploySpecSchema = z.object({
@@ -219,6 +233,8 @@ export const resolvedJobSchema = z.object({
   application: slugSchema.nullable(),
   /** The matrix cell this job runs, e.g. { node: 24 }. */
   matrix: z.record(z.string(), scalarSchema).nullable().default(null),
+  /** The environment the job runs against or deploys to; null for build and check jobs. */
+  environment: slugSchema.nullable().default(null),
 });
 
 /** What is stored on a run: the pipeline exactly as it ran. */

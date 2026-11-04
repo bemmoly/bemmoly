@@ -122,7 +122,7 @@ export default function ApplicationScreen() {
             headingLevel={2}
             action={
               missing ? (
-                <Button onClick={() => void navigate({ to: '/catalog' })}>
+                <Button onClick={() => void navigate({ to: '/services' })}>
                   {t('pipelines.application.backToCatalog')}
                 </Button>
               ) : (

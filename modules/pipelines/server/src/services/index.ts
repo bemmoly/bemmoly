@@ -1,5 +1,6 @@
 import type {
   CodeHostDirectory,
+  EventBus,
   ModuleObjects,
   SendJobOptions,
   SettingsRegistry,
@@ -16,6 +17,7 @@ import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
+import { advanceDeploySteps } from './runs/deploy-steps.ts';
 import { announce } from './runs/context.ts';
 import { reportJobCheck, reportRunCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
@@ -35,6 +37,7 @@ import { createForYouService, type ApprovalsInbox } from './for-you/index.ts';
 import { createMapService } from './map/index.ts';
 import { createOverviewService } from './overview/index.ts';
 import { createStripService } from './strip/index.ts';
+import { createServiceViewsService } from './service-views/index.ts';
 import { createViewsService } from './views/index.ts';
 import type { ProviderRegistry } from './providers/registry.ts';
 import { createHistoryService } from './history/index.ts';
@@ -53,6 +56,11 @@ import { createExportsService } from './exports/index.ts';
 import { createDeploySettingsService } from './deploy-settings/index.ts';
 import { createAdoptionService } from './adoption/index.ts';
 import { createConfigCopyService } from './config-copy/index.ts';
+import { createRolesService } from './roles/index.ts';
+import { createEnvironmentsV2Service } from './environments-v2/index.ts';
+import { createSetupChecklistService } from './setup-checklist/index.ts';
+import { createChangeRequestsService } from './change-requests/index.ts';
+import { createPipelineSetupService } from './pipeline-setup/index.ts';
 
 /** Without a database there is nothing to approve. */
 const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
@@ -85,6 +93,8 @@ export interface PipelinesServicesDeps {
   /** The server's configured address: the audience CI's OIDC tokens must name. */
   publicUrl?: string;
   now?: () => Date;
+  /** The kernel's bus: change requests tell approvers through notification.requested. */
+  events?: Pick<EventBus, 'publish'>;
 }
 
 /**
@@ -150,9 +160,19 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
         variables: variables.forDeploy,
       })
     : undefined;
+  // A run's deploy steps go through shipping, so they need it (and the database) to move.
+  const deploySteps = async () =>
+    input.database && shipping
+      ? advanceDeploySteps({
+          sql: input.database,
+          writer: releases.writer,
+          promote: (release, to, note) => shipping.requestForStep(release, to, note),
+        })
+      : [];
   return {
     access,
     inbox,
+    deploySteps,
     hooks,
     wakeups,
     logs,
@@ -178,6 +198,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     catalogWrites,
     discovery: createDiscoveryService(deps, catalogWrites),
     environments: createEnvironmentsService(deps),
+    environmentsV2: createEnvironmentsV2Service(deps),
+    setupChecklist: createSetupChecklistService(deps),
     teams: createTeamsService(deps),
     variables,
     overview: createOverviewService(deps),
@@ -189,6 +211,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     ...(shipping ? { shipping } : {}),
     map: createMapService(deps),
     strip: createStripService(deps),
+    serviceViews: createServiceViewsService(deps),
     views: createViewsService(deps),
     forYou: createForYouService(deps, shipping ?? NO_INBOX),
     clouds: createCloudsService({
@@ -213,6 +236,18 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
       ...(input.now ? { now: input.now } : {}),
     }),
     configCopy: createConfigCopyService({ ...deps, providers }),
+    roles: createRolesService(deps),
+    ...(input.database
+      ? {
+          changeRequests: createChangeRequestsService({
+            sql: input.database,
+            now: input.now ?? (() => new Date()),
+            ...(shipping ? { shipping } : {}),
+            ...(input.events ? { events: input.events } : {}),
+          }),
+        }
+      : {}),
+    pipelineSetup: createPipelineSetupService(deps),
     machines: createMachinesService({
       ...deps,
       providers,

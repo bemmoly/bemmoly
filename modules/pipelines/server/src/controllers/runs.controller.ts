@@ -23,6 +23,10 @@ export function createRunsController(service: RunsService) {
     graph(request: FastifyRequest) {
       return service.graph(contextOf(request), parseOrThrow(runParamsSchema, request.params).id);
     },
+    whereNext(request: FastifyRequest) {
+      const { id } = parseOrThrow(runParamsSchema, request.params);
+      return service.whereNext(contextOf(request), id);
+    },
     async create(request: FastifyRequest, reply: FastifyReply) {
       const body = parseOrThrow(createRunBodySchema, request.body ?? {});
       const run = await service.create(contextOf(request), body);

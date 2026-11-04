@@ -17,8 +17,8 @@ import { createPipelinesServices, type PipelinesServices } from '../services/ind
 
 /*
  * One real Postgres per integration file: the kernel and Pipelines changelogs applied from
- * empty, three people (an org admin, a member granted Pipelines and an outsider who is not),
- * and the Pipelines services wired as the module wires them.
+ * empty, three people (an org admin, a member granted Pipelines as a Developer and an outsider
+ * who is not), and the Pipelines services wired as the module wires them.
  */
 
 export interface PipelinesHarness {
@@ -72,6 +72,11 @@ export async function startPipelinesHarness(): Promise<HarnessStart> {
   await sql`
     insert into module_grants (module_id, subject_kind, subject_id)
     values ('pipelines', 'user', ${users.admin}), ('pipelines', 'user', ${users.member})`;
+  // Nobody but the installing admin has a Pipelines role until given one: the member is a
+  // Developer, as a Platform admin would have made them.
+  await sql`
+    insert into pipeline_role_bindings (subject_kind, subject_id, role, scope_kind)
+    values ('user', ${users.member}, 'developer', 'organisation')`;
   const modules = loadModules({ available: [pipelines], enabled: ['pipelines'] });
   const db = createDatabase(sql);
   const world = createFakeWorld();

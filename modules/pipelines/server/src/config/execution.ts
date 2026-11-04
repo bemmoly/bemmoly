@@ -17,6 +17,7 @@ import type { PipelinesServices } from '../services/index.ts';
 export const SCHEDULES_JOB = 'pipelines.schedules';
 export const DISPATCH_SWEEP_JOB = 'pipelines.dispatch-sweep';
 export const LOG_RETENTION_JOB = 'pipelines.logs-retention';
+export const DEPLOY_STEPS_JOB = 'pipelines.deploy-steps';
 
 const runPayload = z.object({ runId: z.uuid() });
 const poolPayload = z.object({ poolId: z.uuid() });
@@ -50,6 +51,19 @@ export function registerExecutionWork(ctx: ModuleContext, services: PipelinesSer
     expireInSeconds: 120,
     async handle() {
       await services.triggers.runDueSchedules();
+    },
+  });
+  ctx.jobs.add({
+    name: DEPLOY_STEPS_JOB,
+    schedule: '* * * * *',
+    singleton: true,
+    expireInSeconds: 120,
+    async handle() {
+      for (const outcome of await services.deploySteps()) {
+        if (outcome.finished) {
+          await services.hooks.emitFinished({ runId: outcome.runId, state: outcome.state });
+        }
+      }
     },
   });
   ctx.jobs.add({
