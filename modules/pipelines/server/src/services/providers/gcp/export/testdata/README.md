@@ -5,7 +5,7 @@ Helm you can run without Pipelines. Nothing here holds a secret value.
 
 ## Terraform
 
-`terraform/` declares what exists today, with an import block for each of the 46
+`terraform/` declares what exists today, with an import block for each of the 44
 resources so Terraform adopts them instead of creating them again. The values that differ
 per company are in `terraform.tfvars`.
 
@@ -15,7 +15,7 @@ terraform init
 terraform plan
 ```
 
-You should see `Plan: 46 to import, 0 to add, 0 to change, 0 to destroy.` Run
+You should see `Plan: 44 to import, 0 to add, 0 to change, 0 to destroy.` Run
 `terraform apply` to record them in your state. From then on, change them here.
 
 ## Before you plan

@@ -10,10 +10,11 @@ import {
 } from '../../../clients/gcp/index.ts';
 import type { GcpContext } from './context.ts';
 import {
+  DEPLOYER_NAME,
   DEPLOYER_ROLES,
   IDENTITY_ROLES,
   REGISTRY_ROLES,
-  SECRET_ACCESSOR,
+  SERVICE_ACCOUNT_USER,
   TOKEN_CREATOR,
   projectNumberOf,
   runServiceAgent,
@@ -62,8 +63,39 @@ async function ensureServiceAccount(context: GcpContext, projectId: string, name
   return email;
 }
 
+/*
+ * The deployer starts services that run as the runtime account, so it needs Service Account
+ * User on that one account and no other. Whichever of the two is made second grants it, and
+ * the deployer's read reports it, so a missing grant shows as drift and its apply repairs it.
+ */
+async function grantActAsRuntime(context: GcpContext, projectId: string, deployer: string) {
+  const runtime = context.runtimeAccount(projectId);
+  const iam = context.control.iam;
+  if (!runtime || !(await iam.getServiceAccount(projectId, runtime))) return;
+  if (!(await iam.getServiceAccount(projectId, deployer))) return;
+  const policy = await iam.getServiceAccountPolicy(runtime);
+  const updated = withBinding(policy, SERVICE_ACCOUNT_USER, serviceAccountMember(deployer));
+  if (updated) await iam.setServiceAccountPolicy(runtime, updated);
+}
+
+/** True until the runtime account exists: there is nothing to act as yet. */
+async function actsAsRuntime(context: GcpContext, projectId: string, deployer: string) {
+  const runtime = context.runtimeAccount(projectId);
+  if (!runtime || !(await context.control.iam.getServiceAccount(projectId, runtime))) return true;
+  return hasBinding(
+    await context.control.iam.getServiceAccountPolicy(runtime),
+    SERVICE_ACCOUNT_USER,
+    serviceAccountMember(deployer),
+  );
+}
+
 export const deployerKind: ZoneKind<'deployer_identity'> = {
-  expected: (spec) => ({ name: spec.name, roles: [...DEPLOYER_ROLES].sort(), impersonated: true }),
+  expected: (spec) => ({
+    name: spec.name,
+    roles: [...DEPLOYER_ROLES].sort(),
+    impersonated: true,
+    actsAsRuntime: true,
+  }),
   async read({ context, resource, spec }) {
     const email = serviceAccountEmail(spec.name, resource.account);
     if (!(await context.control.iam.getServiceAccount(resource.account, email))) return null;
@@ -82,6 +114,7 @@ export const deployerKind: ZoneKind<'deployer_identity'> = {
       name: spec.name,
       roles: rolesHeld(policy, serviceAccountMember(email), DEPLOYER_ROLES),
       impersonated,
+      actsAsRuntime: await actsAsRuntime(context, resource.account, email),
     };
   },
   async apply({ context, resource, spec }) {
@@ -92,6 +125,7 @@ export const deployerKind: ZoneKind<'deployer_identity'> = {
       resource.account,
       DEPLOYER_ROLES.map((role) => [role, member]),
     );
+    await grantActAsRuntime(context, resource.account, email);
     const control = await context.principal();
     if (!control) return;
     const policy = await context.control.iam.getServiceAccountPolicy(email);
@@ -120,6 +154,13 @@ export const identityKind: ZoneKind<'runtime_identity'> = {
       resource.account,
       IDENTITY_ROLES[spec.purpose].map((role) => [role, member]),
     );
+    if (spec.purpose === 'runtime') {
+      await grantActAsRuntime(
+        context,
+        resource.account,
+        serviceAccountEmail(DEPLOYER_NAME, resource.account),
+      );
+    }
   },
 };
 
@@ -174,30 +215,21 @@ export const registryAccessKind: ZoneKind<'registry_access'> = {
   },
 };
 
+/**
+ * Secrets stay readable by the runtime identity alone, one secret at a time: each deploy
+ * grants Secret Accessor on exactly the secrets its revision names (revision-secrets.ts), so
+ * nothing is granted on the whole project. Zones made before that keep their project grant,
+ * which still works and is left for an admin to remove. Reading back says which readers exist.
+ */
 export const secretStoreKind: ZoneKind<'secret_store'> = {
   expected: (spec) => ({ readers: [...spec.readers].sort() }),
   async read({ context, resource, spec }) {
-    const policy = await context.control.resourceManager.getProjectPolicy(resource.account);
-    return {
-      readers: spec.readers
-        .filter((name) =>
-          hasBinding(
-            policy,
-            SECRET_ACCESSOR,
-            serviceAccountMember(serviceAccountEmail(name, resource.account)),
-          ),
-        )
-        .sort(),
-    };
+    const readers: string[] = [];
+    for (const name of spec.readers) {
+      const email = serviceAccountEmail(name, resource.account);
+      if (await context.control.iam.getServiceAccount(resource.account, email)) readers.push(name);
+    }
+    return { readers: readers.sort() };
   },
-  async apply({ context, resource, spec }) {
-    await grantOnProject(
-      context,
-      resource.account,
-      spec.readers.map((name) => [
-        SECRET_ACCESSOR,
-        serviceAccountMember(serviceAccountEmail(name, resource.account)),
-      ]),
-    );
-  },
+  async apply() {},
 };

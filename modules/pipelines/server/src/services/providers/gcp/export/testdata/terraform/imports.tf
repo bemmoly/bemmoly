@@ -62,11 +62,6 @@ import {
 }
 
 import {
-  to = google_project_iam_member.acme_prod_7f3a_deployer_iam_serviceaccountuser
-  id = "${var.projects.acme_prod_7f3a} roles/iam.serviceAccountUser serviceAccount:deployer@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
-}
-
-import {
   to = google_project_iam_member.acme_prod_7f3a_deployer_monitoring_viewer
   id = "${var.projects.acme_prod_7f3a} roles/monitoring.viewer serviceAccount:deployer@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
 }
@@ -84,11 +79,6 @@ import {
 import {
   to = google_project_iam_member.bemmoly_control_583920174411_builder_logging_logwriter
   id = "${var.projects.bemmoly_control_583920174411} roles/logging.logWriter serviceAccount:builder@${var.projects.bemmoly_control_583920174411}.iam.gserviceaccount.com"
-}
-
-import {
-  to = google_project_iam_member.bemmoly_control_583920174411_builder_artifactregistry_writer
-  id = "${var.projects.bemmoly_control_583920174411} roles/artifactregistry.writer serviceAccount:builder@${var.projects.bemmoly_control_583920174411}.iam.gserviceaccount.com"
 }
 
 import {
@@ -112,6 +102,11 @@ import {
 }
 
 import {
+  to = google_service_account_iam_member.acme_prod_7f3a_runtime_deployer
+  id = "projects/${var.projects.acme_prod_7f3a}/serviceAccounts/runtime@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com roles/iam.serviceAccountUser serviceAccount:deployer@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
+}
+
+import {
   to = google_artifact_registry_repository.apps
   id = "projects/${var.projects.bemmoly_control_583920174411}/locations/us-central1/repositories/apps"
 }
@@ -129,11 +124,6 @@ import {
 import {
   to = google_artifact_registry_repository_iam_member.acme_prod_7f3a_runtime_pull
   id = "projects/${var.projects.bemmoly_control_583920174411}/locations/us-central1/repositories/apps roles/artifactregistry.reader serviceAccount:runtime@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
-}
-
-import {
-  to = google_project_iam_member.acme_prod_7f3a_runtime_secrets
-  id = "${var.projects.acme_prod_7f3a} roles/secretmanager.secretAccessor serviceAccount:runtime@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
 }
 
 import {

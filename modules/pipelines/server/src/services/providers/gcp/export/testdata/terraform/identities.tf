@@ -13,12 +13,6 @@ resource "google_project_iam_member" "acme_prod_7f3a_deployer_run_admin" {
   member  = google_service_account.acme_prod_7f3a_deployer.member
 }
 
-resource "google_project_iam_member" "acme_prod_7f3a_deployer_iam_serviceaccountuser" {
-  project = google_project.acme_prod_7f3a.project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = google_service_account.acme_prod_7f3a_deployer.member
-}
-
 resource "google_project_iam_member" "acme_prod_7f3a_deployer_monitoring_viewer" {
   project = google_project.acme_prod_7f3a.project_id
   role    = "roles/monitoring.viewer"
@@ -42,12 +36,6 @@ resource "google_service_account" "bemmoly_control_583920174411_builder" {
 resource "google_project_iam_member" "bemmoly_control_583920174411_builder_logging_logwriter" {
   project = var.projects.bemmoly_control_583920174411
   role    = "roles/logging.logWriter"
-  member  = google_service_account.bemmoly_control_583920174411_builder.member
-}
-
-resource "google_project_iam_member" "bemmoly_control_583920174411_builder_artifactregistry_writer" {
-  project = var.projects.bemmoly_control_583920174411
-  role    = "roles/artifactregistry.writer"
   member  = google_service_account.bemmoly_control_583920174411_builder.member
 }
 
@@ -76,8 +64,8 @@ resource "google_project_iam_member" "acme_prod_7f3a_runtime_cloudtrace_agent" {
   member  = google_service_account.acme_prod_7f3a_runtime.member
 }
 
-resource "google_project_iam_member" "acme_prod_7f3a_runtime_secrets" {
-  project = google_project.acme_prod_7f3a.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:runtime@${var.projects.acme_prod_7f3a}.iam.gserviceaccount.com"
+resource "google_service_account_iam_member" "acme_prod_7f3a_runtime_deployer" {
+  service_account_id = google_service_account.acme_prod_7f3a_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.acme_prod_7f3a_deployer.member
 }

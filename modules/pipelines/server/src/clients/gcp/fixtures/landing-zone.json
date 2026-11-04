@@ -178,9 +178,6 @@
               "role": "roles/run.admin"
             },
             {
-              "role": "roles/iam.serviceAccountUser"
-            },
-            {
               "role": "roles/monitoring.viewer"
             }
           ]
@@ -195,10 +192,6 @@
             "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
           },
           {
-            "role": "roles/iam.serviceAccountUser",
-            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
-          },
-          {
             "role": "roles/monitoring.viewer",
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           },
@@ -207,6 +200,18 @@
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           }
         ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://iam.googleapis.com/v1/projects/acme-commerce-dev/serviceAccounts/runtime@acme-commerce-dev.iam.gserviceaccount.com",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Unknown service account",
+          "status": "NOT_FOUND"
+        }
       }
     },
     {
@@ -268,10 +273,6 @@
             "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
           },
           {
-            "role": "roles/iam.serviceAccountUser",
-            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
-          },
-          {
             "role": "roles/monitoring.viewer",
             "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
           },
@@ -294,6 +295,18 @@
             "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
           }
         ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://iam.googleapis.com/v1/projects/acme-commerce-dev/serviceAccounts/runtime@acme-commerce-dev.iam.gserviceaccount.com",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Unknown service account",
+          "status": "NOT_FOUND"
+        }
       }
     },
     {
