@@ -127,8 +127,10 @@ describe('the Google Cloud landing zone', () => {
     const observed = await zone.apply(connection, deployer);
     expect(observed).toEqual({
       name: 'deployer',
-      roles: ['roles/iam.serviceAccountUser', 'roles/monitoring.viewer', 'roles/run.admin'],
+      roles: ['roles/monitoring.viewer', 'roles/run.admin'],
       impersonated: true,
+      // No runtime account yet: its own apply grants the deployer Service Account User on it.
+      actsAsRuntime: true,
     });
     expect(zone.diff(deployer, observed)).toEqual([]);
 

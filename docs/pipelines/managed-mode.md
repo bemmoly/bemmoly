@@ -15,6 +15,8 @@ hand-written answers shaped from Google's REST reference, and the screens have o
 cloud simulator. Nothing here has run against a real organization yet. That is what this guide
 is for. The last section says how to capture real answers for the tests while you are at it.
 
+[Google Cloud access](google-cloud-access.md) lists every role Bemmoly holds, where, and why.
+
 ## What you need
 
 - **A sandbox Google Cloud organization**, empty. Cloud Identity Free is enough to have one.

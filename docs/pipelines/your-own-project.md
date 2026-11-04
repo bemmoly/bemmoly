@@ -197,10 +197,11 @@ Push it and let it reach Dev, as in step 8.
 the service as the project's default compute account,
 `PROJECT_NUMBER-compute@developer.gserviceaccount.com`. At each deploy Pipelines grants that
 account Secret Manager Secret Accessor on every secret the revision mounts, and nothing else.
-To find out who that is, Pipelines reads the project's number, so your sign-in needs Browser on
-the project (Owner and Editor include it). If you name a runtime account when you attach a
-project, that account is granted instead. Creating secrets and granting access needs Secret
-Manager Admin, which Owner includes.
+To find out who that is, Pipelines reads the project's number, which Cloud Run Admin allows
+(Owner and Editor include it too). If you name a runtime account when you attach a project,
+that account is granted instead. Creating secrets and granting access needs the few Secret
+Manager permissions the Connect a cloud command puts in its own role, which Owner includes.
+[Google Cloud access](google-cloud-access.md) lists every grant and why.
 
 **Choose where CI secrets live.** In Platform › Clouds, on your connection, set **CI secrets**
 to your project. Secrets you set for every environment, and secrets your pipeline's steps name

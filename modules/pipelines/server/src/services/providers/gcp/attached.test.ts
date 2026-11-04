@@ -6,6 +6,7 @@ import {
   type RecordedExchange,
 } from '../../../testing/gcp-replay.ts';
 import type { ConnectionRecord, DeployTarget, ReleaseArtifact } from '../contract.ts';
+import { SECRETS_PERMISSIONS } from '../../../../../shared/grant-command.ts';
 import { createGcpProvider } from './index.ts';
 
 /*
@@ -16,6 +17,8 @@ import { createGcpProvider } from './index.ts';
 const RM = 'https://cloudresourcemanager.googleapis.com/v3';
 const SU = 'https://serviceusage.googleapis.com/v1';
 const RUN = 'https://run.googleapis.com/v2';
+const IAM = 'https://iam.googleapis.com/v1';
+const RUNTIME = '829301-compute@developer.gserviceaccount.com';
 const PROJECT = 'nila-shop-prod';
 const SERVICE = `projects/${PROJECT}/locations/europe-west1/services/storefront`;
 
@@ -34,6 +37,14 @@ const enabled = (...apis: string[]) => ({
   response: {
     services: apis.map((api) => ({ name: `projects/1/services/${api}`, config: { name: api } })),
   },
+});
+
+/** Asked of the account services run as, not the project: actAs is granted there alone. */
+const actAs = (held: string[]): RecordedExchange => ({
+  method: 'POST',
+  url: `${IAM}/projects/-/serviceAccounts/${RUNTIME}:testIamPermissions`,
+  body: { permissions: ['iam.serviceAccounts.actAs'] },
+  response: { permissions: held },
 });
 
 const project: RecordedExchange = {
@@ -83,11 +94,15 @@ describe('attaching a project that already exists', () => {
             'run.services.update',
             'run.revisions.get',
             'run.revisions.delete',
-            'iam.serviceAccounts.actAs',
+            'run.services.setIamPolicy',
             'monitoring.timeSeries.list',
+            'cloudbuild.builds.create',
+            'cloudbuild.builds.get',
+            ...SECRETS_PERMISSIONS,
           ],
         },
       },
+      actAs(['iam.serviceAccounts.actAs']),
     ]);
     const check = await provider.connection!.verifyAccount!(connection, {
       externalId: PROJECT,
@@ -113,6 +128,7 @@ describe('attaching a project that already exists', () => {
         url: `${RM}/projects/${PROJECT}:testIamPermissions`,
         response: { permissions: ['run.services.get'] },
       },
+      actAs([]),
     ]);
     const check = await provider.connection!.verifyAccount!(connection, {
       externalId: PROJECT,
@@ -121,12 +137,14 @@ describe('attaching a project that already exists', () => {
     expect(check.ok).toBe(false);
     expect(check.problems).toEqual([
       `Turn on the Cloud Run Admin API in ${PROJECT}`,
-      `Grant Bemmoly Cloud Run Developer on ${PROJECT}`,
-      `Grant Bemmoly Service Account User on ${PROJECT}, or on the account services run as`,
+      `Grant Bemmoly Cloud Run Admin on ${PROJECT}`,
+      `Grant Bemmoly Service Account User on ${RUNTIME}, the account services in ${PROJECT} run as`,
       `Turn on the Cloud Monitoring API in ${PROJECT} so canaries can read error rates`,
       `Turn on the Cloud Build API in ${PROJECT} so jobs can run there`,
       `Turn on the Secret Manager API in ${PROJECT} so secrets can live there`,
       `Grant Bemmoly Monitoring Viewer on ${PROJECT} so canaries can read error rates`,
+      `Grant Bemmoly Cloud Build Editor on ${PROJECT} so jobs can run there`,
+      `Grant Bemmoly the role projects/${PROJECT}/roles/bemmolySecrets (the grant command creates it, holding ${SECRETS_PERMISSIONS.join(', ')}) so secrets can live there`,
     ]);
     replay.verify({ allUsed: true });
   });
@@ -149,7 +167,7 @@ describe('attaching a project that already exists', () => {
     expect(check).toEqual({
       ok: false,
       name: null,
-      problems: [`Bemmoly cannot see project ${PROJECT}. Grant it Browser or Viewer there`],
+      problems: [`Bemmoly cannot see project ${PROJECT}. Grant it Cloud Run Admin there`],
     });
   });
 });

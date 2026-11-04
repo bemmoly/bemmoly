@@ -5,7 +5,7 @@ import {
   DEPLOYER_ROLES,
   IDENTITY_ROLES,
   REGISTRY_ROLES,
-  SECRET_ACCESSOR,
+  SERVICE_ACCOUNT_USER,
   TOKEN_CREATOR,
 } from '../zone-kind.ts';
 import { attr, interpolate, str, type Expr } from './hcl.ts';
@@ -13,9 +13,10 @@ import type { Terraform } from './terraform-context.ts';
 
 /*
  * Who acts where: the deployer and runtime service accounts and their project roles, the
- * control identity's right to act as each deployer, the shared registry and who may pull from
- * or push to it, and who may read each project's secrets. Members are written out in full in
- * import IDs, since an import cannot read another resource.
+ * control identity's right to act as each deployer, each deployer's right to act as its
+ * runtime account alone, and the shared registry and who may pull from or push to it. Secrets
+ * are granted one at a time (terraform-secrets.ts), never on a project. Members are written
+ * out in full in import IDs, since an import cannot read another resource.
  */
 
 const DESCRIPTION = 'Managed by Bemmoly Pipelines; changes are reverted by the landing zone';
@@ -176,33 +177,38 @@ function registry(tf: Terraform, resource: ExportResource, repositories: Map<str
   }
 }
 
-function secretReaders(tf: Terraform, resource: ExportResource) {
-  const spec = SPEC_SCHEMAS.secret_store.parse(resource.spec);
-  for (const reader of [...spec.readers].sort()) {
-    tf.add('identities.tf', {
-      type: 'google_project_iam_member',
-      name: tf.unique('google_project_iam_member', `${resource.account}_${reader}_secrets`),
-      body: [
-        attr('project', tf.projectRef(resource.account)),
-        attr('role', str(SECRET_ACCESSOR)),
-        attr('member', interpolate(memberText(tf, reader, resource.account))),
-      ],
-      importId: interpolate([
-        { ref: tf.projectVar(resource.account) },
-        ` ${SECRET_ACCESSOR} `,
-        ...memberText(tf, reader, resource.account),
-      ]),
-    });
-  }
+/** The deployer may start services that run as the runtime account, and as no other. */
+function actAsRuntime(tf: Terraform, resource: ExportResource) {
+  const spec = SPEC_SCHEMAS.deployer_identity.parse(resource.spec);
+  const runtime = tf.identities.get(`runtime@${resource.account}`);
+  const deployer = tf.identities.get(`${spec.name}@${resource.account}`);
+  if (!runtime || !deployer) return;
+  tf.add('identities.tf', {
+    type: 'google_service_account_iam_member',
+    name: tf.unique('google_service_account_iam_member', `${runtime}_${spec.name}`),
+    body: [
+      attr('service_account_id', `google_service_account.${runtime}.name`),
+      attr('role', str(SERVICE_ACCOUNT_USER)),
+      attr('member', `google_service_account.${deployer}.member`),
+    ],
+    importId: interpolate([
+      'projects/',
+      { ref: tf.projectVar(resource.account) },
+      '/serviceAccounts/runtime@',
+      { ref: tf.projectVar(resource.account) },
+      `.iam.gserviceaccount.com ${SERVICE_ACCOUNT_USER} `,
+      ...memberText(tf, spec.name, resource.account),
+    ]),
+  });
 }
 
 export function identities(tf: Terraform): void {
   const of = (kind: ExportResource['kind']) => tf.records.resources.filter((r) => r.kind === kind);
   for (const resource of of('deployer_identity')) deployer(tf, resource);
   for (const resource of of('runtime_identity')) runtime(tf, resource);
+  for (const resource of of('deployer_identity')) actAsRuntime(tf, resource);
   const repositories = new Map<string, string>();
   for (const resource of of('registry_access')) registry(tf, resource, repositories);
-  for (const resource of of('secret_store')) secretReaders(tf, resource);
 }
 
 /** The variable's value: "serviceAccount:…" or "user:…" for whoever Pipelines signs in as. */

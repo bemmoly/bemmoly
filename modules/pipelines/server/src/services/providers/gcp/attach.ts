@@ -1,3 +1,8 @@
+import {
+  defaultRuntimeAccount,
+  SECRETS_PERMISSIONS,
+  SECRETS_ROLE_ID,
+} from '../../../../../shared/grant-command.ts';
 import { GcpApiError, type GcpClients } from '../../../clients/gcp/index.ts';
 import type { AccountCheck, ConnectionRecord } from '../contract.ts';
 import { accountConfigOf, type GcpContexts } from './context.ts';
@@ -5,8 +10,10 @@ import { accountConfigOf, type GcpContexts } from './context.ts';
 /*
  * Attaching a project that already exists (journeys proposal, attached mode). Before anything
  * deploys there, Pipelines checks, as the identity it will deploy as, that it can see the
- * project, that Cloud Run is on, and that it holds what a deploy needs. Every gap becomes one
- * sentence saying what to grant; only the gaps that would stop a deploy fail the check.
+ * project, that Cloud Run is on, and that it holds what a deploy needs, each on the resource
+ * the grant command grants it on: Cloud Run on the project, Service Account User on the one
+ * account services run as. Every gap becomes one sentence saying what to grant and where;
+ * only the gaps that would stop a deploy fail the check.
  */
 
 const DEPLOY_PERMISSIONS = [
@@ -15,10 +22,11 @@ const DEPLOY_PERMISSIONS = [
   'run.services.update',
   'run.revisions.get',
   'run.revisions.delete',
-  'iam.serviceAccounts.actAs',
 ];
-
-const CANARY_PERMISSIONS = ['monitoring.timeSeries.list'];
+const PUBLIC_PERMISSION = 'run.services.setIamPolicy';
+const CANARY_PERMISSION = 'monitoring.timeSeries.list';
+const BUILD_PERMISSIONS = ['cloudbuild.builds.create', 'cloudbuild.builds.get'];
+const ACT_AS = 'iam.serviceAccounts.actAs';
 
 const reasonOf = (error: unknown) =>
   error instanceof GcpApiError
@@ -32,23 +40,34 @@ async function projectName(clients: GcpClients, projectId: string, who: string) 
   try {
     const project = await clients.resourceManager.getProject(projectId);
     if (!project)
-      return { name: null, problem: `Project ${projectId} does not exist; check the ID` };
+      return {
+        name: null,
+        number: null,
+        problem: `Project ${projectId} does not exist; check the ID`,
+      };
     if (project.state && project.state !== 'ACTIVE') {
       return {
         name: null,
+        number: null,
         problem: `Project ${projectId} is ${project.state.toLowerCase()}, not active`,
       };
     }
-    return { name: project.displayName ?? project.projectId, problem: null };
+    return {
+      name: project.displayName ?? project.projectId,
+      number: project.name.split('/').pop() ?? null,
+      problem: null,
+    };
   } catch (error) {
     if (denied(error)) {
       return {
         name: null,
-        problem: `${who} cannot see project ${projectId}. Grant it Browser or Viewer there`,
+        number: null,
+        problem: `${who} cannot see project ${projectId}. Grant it Cloud Run Admin there`,
       };
     }
     return {
       name: null,
+      number: null,
       problem: `Bemmoly could not read project ${projectId}. ${reasonOf(error)}`,
     };
   }
@@ -86,22 +105,67 @@ async function apiProblems(clients: GcpClients, projectId: string, impersonates:
   return { critical, soft, services };
 }
 
-async function permissionProblems(clients: GcpClients, projectId: string, who: string) {
-  const wanted = [...DEPLOY_PERMISSIONS, ...CANARY_PERMISSIONS];
-  const held = await clients.resourceManager.testPermissions(`projects/${projectId}`, wanted);
+/** Whether the deploy identity may start services that run as `runtime`, asked of it. */
+async function actAsProblem(clients: GcpClients, projectId: string, runtime: string, who: string) {
+  const grant = `Grant ${who} Service Account User on ${runtime}, the account services in ${projectId} run as`;
+  try {
+    const held = await clients.iam.testServiceAccountPermissions(runtime, [ACT_AS]);
+    return held.includes(ACT_AS) ? null : grant;
+  } catch (error) {
+    if (error instanceof GcpApiError && error.status === 404) {
+      return `${runtime}, the account services in ${projectId} run as, does not exist. Name the runtime account when you attach ${projectId}, or create it`;
+    }
+    if (denied(error)) return grant;
+    throw error;
+  }
+}
+
+interface Holders {
+  deploy: GcpClients;
+  /** Secret Manager calls are made by the connection's own identity, never a deployer. */
+  secrets: GcpClients;
+  who: string;
+  secretsWho: string;
+}
+
+async function permissionProblems(holders: Holders, projectId: string, runtime: string | null) {
+  const { who } = holders;
+  const same = holders.deploy === holders.secrets;
+  const wanted = [
+    ...DEPLOY_PERMISSIONS,
+    PUBLIC_PERMISSION,
+    CANARY_PERMISSION,
+    ...BUILD_PERMISSIONS,
+    ...(same ? SECRETS_PERMISSIONS : []),
+  ];
+  const resource = `projects/${projectId}`;
+  const held = await holders.deploy.resourceManager.testPermissions(resource, wanted);
+  const secretsHeld = same
+    ? held
+    : await holders.secrets.resourceManager.testPermissions(resource, [...SECRETS_PERMISSIONS]);
   const lacks = (permission: string) => !held.includes(permission);
   const critical: string[] = [];
-  if (DEPLOY_PERMISSIONS.slice(0, 5).some(lacks)) {
-    critical.push(`Grant ${who} Cloud Run Developer on ${projectId}`);
-  }
-  if (lacks('iam.serviceAccounts.actAs')) {
-    critical.push(
-      `Grant ${who} Service Account User on ${projectId}, or on the account services run as`,
+  const soft: string[] = [];
+  if (DEPLOY_PERMISSIONS.some(lacks)) {
+    critical.push(`Grant ${who} Cloud Run Admin on ${projectId}`);
+  } else if (lacks(PUBLIC_PERMISSION)) {
+    soft.push(
+      `Grant ${who} Cloud Run Admin on ${projectId} so services marked public can be reached; Cloud Run Developer cannot open a service to everyone`,
     );
   }
-  const soft = CANARY_PERMISSIONS.some(lacks)
-    ? [`Grant ${who} Monitoring Viewer on ${projectId} so canaries can read error rates`]
-    : [];
+  const actAs = runtime ? await actAsProblem(holders.deploy, projectId, runtime, who) : null;
+  if (actAs) critical.push(actAs);
+  if (lacks(CANARY_PERMISSION)) {
+    soft.push(`Grant ${who} Monitoring Viewer on ${projectId} so canaries can read error rates`);
+  }
+  if (BUILD_PERMISSIONS.some(lacks)) {
+    soft.push(`Grant ${who} Cloud Build Editor on ${projectId} so jobs can run there`);
+  }
+  if (SECRETS_PERMISSIONS.some((permission) => !secretsHeld.includes(permission))) {
+    soft.push(
+      `Grant ${holders.secretsWho} the role projects/${projectId}/roles/${SECRETS_ROLE_ID} (the grant command creates it, holding ${SECRETS_PERMISSIONS.join(', ')}) so secrets can live there`,
+    );
+  }
   return { critical, soft };
 }
 
@@ -114,14 +178,18 @@ export function createAttachCheck(contexts: GcpContexts) {
     const config = accountConfigOf(account.config);
     const projectId = account.externalId;
     const impersonates = Boolean(config.deployerServiceAccount);
-    const who =
-      config.deployerServiceAccount ?? (await context.principal().catch(() => null)) ?? 'Bemmoly';
+    const principal = (await context.principal().catch(() => null)) ?? 'Bemmoly';
+    const who = config.deployerServiceAccount ?? principal;
     const clients = context.deployer(projectId, config);
     try {
       const project = await projectName(clients, projectId, who);
       if (project.problem) return { ok: false, name: null, problems: [project.problem] };
+      const runtime =
+        config.runtimeServiceAccount ??
+        (project.number ? defaultRuntimeAccount(project.number) : null);
       const apis = await apiProblems(clients, projectId, impersonates);
-      const permissions = await permissionProblems(clients, projectId, who);
+      const holders = { deploy: clients, secrets: context.control, who, secretsWho: principal };
+      const permissions = await permissionProblems(holders, projectId, runtime);
       const critical = [...apis.critical, ...permissions.critical];
       return {
         ok: critical.length === 0,

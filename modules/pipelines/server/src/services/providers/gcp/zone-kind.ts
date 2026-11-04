@@ -43,16 +43,25 @@ export const FEATURE_APIS: Readonly<Record<Feature, readonly string[]>> = {
 /**
  * Deploy roles only, scoped to the one project (architecture §15). Cloud Run Admin rather than
  * Developer: a service marked public needs its invoker policy set, which Developer cannot do.
+ * Not Service Account User here: on the project it would let the deployer act as every
+ * account in it. It holds that role on the runtime account alone (SERVICE_ACCOUNT_USER).
  */
-export const DEPLOYER_ROLES = [
-  'roles/run.admin',
-  'roles/iam.serviceAccountUser',
-  'roles/monitoring.viewer',
-] as const;
+export const DEPLOYER_ROLES = ['roles/run.admin', 'roles/monitoring.viewer'] as const;
 
+/** Lets the deployer start services that run as one account, granted on that account. */
+export const SERVICE_ACCOUNT_USER = 'roles/iam.serviceAccountUser';
+
+/** The deployer every managed project's landing zone creates (identities.ts declares it). */
+export const DEPLOYER_NAME = 'deployer';
+
+/**
+ * Project roles for what an identity writes about itself. The builder pushes to the shared
+ * repository through its grant on that repository (registry_access), not a project role that
+ * would reach every repository beside it.
+ */
 export const IDENTITY_ROLES = {
   runtime: ['roles/logging.logWriter', 'roles/monitoring.metricWriter', 'roles/cloudtrace.agent'],
-  build: ['roles/logging.logWriter', 'roles/artifactregistry.writer'],
+  build: ['roles/logging.logWriter'],
 } as const;
 
 export const TOKEN_CREATOR = 'roles/iam.serviceAccountTokenCreator';
