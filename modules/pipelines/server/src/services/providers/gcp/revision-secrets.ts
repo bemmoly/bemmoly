@@ -17,7 +17,7 @@ export async function defaultRuntimeAccount(context: GcpContext, projectId: stri
   const number = project?.name.split('/').pop();
   if (!number) {
     throw new ValidationError(
-      `Pipelines cannot read ${projectId}, so it cannot tell who the service runs as. Grant Bemmoly Browser on ${projectId}, or name a runtime account when you attach it`,
+      `Pipelines cannot read ${projectId}, so it cannot tell who the service runs as. Grant Bemmoly Cloud Run Admin on ${projectId}, which can read it, or name a runtime account when you attach it`,
     );
   }
   return `${number}-compute@developer.gserviceaccount.com`;
