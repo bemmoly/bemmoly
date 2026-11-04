@@ -117,6 +117,7 @@ lock_or_unlock() {
   if [ "${LOCK}" = lock ]; then
     confirm "Remove the provisioning roles of ${SA_EMAIL} from folder ${FOLDER_ID}?"
     revoke_provisioning_roles
+    note_retired_folder_role
     say "Locked: ${SA_EMAIL} keeps only its deploy and billing roles. New environments need --unlock first."
   else
     confirm "Give ${SA_EMAIL} its provisioning roles on folder ${FOLDER_ID} again?"
@@ -134,6 +135,7 @@ bootstrap() {
   ensure_apis
   ensure_service_account
   grant_folder_roles "${PROVISIONING_ROLES} ${DEPLOY_ROLES}"
+  note_retired_folder_role
   grant_billing_roles
   grant_project_roles
   if [ -n "${WIF_JWKS}" ]; then ensure_wif; fi

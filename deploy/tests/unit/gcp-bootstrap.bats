@@ -98,9 +98,11 @@ roles/resourcemanager.projectIamAdmin'
   grep -qx 'billing projects link bemmoly-control-123456789012 --billing-account=0123AB-4567CD-89EF01' "${FAKE_LOG}"
   grep -q '^iam service-accounts create bemmoly-control --project=bemmoly-control-123456789012' "${FAKE_LOG}"
   grep -q '^services enable .*iamcredentials.googleapis.com.*compute.googleapis.com' "${FAKE_LOG}"
-  for role in ${PROVISIONING} roles/iam.serviceAccountTokenCreator roles/resourcemanager.folderViewer; do
+  for role in ${PROVISIONING} roles/resourcemanager.folderViewer; do
     grep -qxF "${role}" "${FAKE_STATE}/folder-roles"
   done
+  # Token Creator is granted per deployer@ by each landing zone, never on the whole folder.
+  lacks_line roles/iam.serviceAccountTokenCreator "${FAKE_STATE}/folder-roles"
   grep -qx roles/billing.user "${FAKE_STATE}/billing-roles"
   grep -qx roles/billing.costsManager "${FAKE_STATE}/billing-roles"
   grep -q 'member=serviceAccount:bemmoly-control@bemmoly-control-123456789012.iam.gserviceaccount.com' "${FAKE_LOG}"
@@ -132,8 +134,8 @@ roles/resourcemanager.projectIamAdmin'
     lacks_line "${role}" "${FAKE_STATE}/folder-roles"
     grep -q "remove-iam-policy-binding 1001 .*--role=${role} --all" "${FAKE_LOG}"
   done
-  grep -qx roles/iam.serviceAccountTokenCreator "${FAKE_STATE}/folder-roles"
   grep -qx roles/resourcemanager.folderViewer "${FAKE_STATE}/folder-roles"
+  lacks_line roles/iam.serviceAccountTokenCreator "${FAKE_STATE}/folder-roles"
   grep -qx roles/billing.costsManager "${FAKE_STATE}/billing-roles"
   lacks ' create ' "${FAKE_LOG}"
 
@@ -145,6 +147,18 @@ roles/resourcemanager.projectIamAdmin'
   [ "${status}" -eq 0 ]
   for role in ${PROVISIONING}; do grep -qxF "${role}" "${FAKE_STATE}/folder-roles"; done
   [ -z "$(changes | grep -v add-iam-policy-binding)" ]
+}
+
+@test "a folder-wide Token Creator from an earlier version is named, with how to remove it" {
+  echo roles/iam.serviceAccountTokenCreator >"${FAKE_STATE}/folder-roles"
+  echo folders/1001 >"${FAKE_STATE}/folder"
+  bootstrap
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == *"still holds roles/iam.serviceAccountTokenCreator on all of folder 1001"* ]]
+  [[ "${output}" == *"folders remove-iam-policy-binding 1001 --member=serviceAccount:bemmoly-control@"* ]]
+  # Left in place: a landing zone may still lean on it until its own grant is there.
+  grep -qx roles/iam.serviceAccountTokenCreator "${FAKE_STATE}/folder-roles"
+  lacks 'remove-iam-policy-binding' "${FAKE_LOG}"
 }
 
 @test "it ends with the values to paste into Connect, and grants the platform project's roles" {
