@@ -6,6 +6,7 @@ import type { Actor } from '../contracts/authz.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
 import type { ContainerMemberships } from '../contracts/memberships.ts';
+import type { PersonDirectory } from '../contracts/people.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { CodeRegistry } from './code.ts';
 import type { RequestContext } from '../services/authz/index.ts';
@@ -100,6 +101,8 @@ export interface ModuleContext {
   audit?: AuditRecorder;
   /** Project and space membership; present whenever the database is. */
   memberships?: ContainerMemberships;
+  /** The person record and org data (ADR 0050); present whenever the database is. */
+  people?: PersonDirectory;
   /**
    * The context a job acts in as an actor that is not a request: an automation rule, say.
    * Its `authz` is the one requests get, so a job's writes are checked the same way.

@@ -103,6 +103,7 @@ export * from './services/import/index.ts';
 export * from './services/code-hosts/index.ts';
 export * from './services/system/index.ts';
 export * from './services/webhooks/index.ts';
+export * from './services/people/index.ts';
 export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
 export type { SystemControllerDependencies } from './controllers/system.controller.ts';
 export { maintenanceHook } from './middlewares/maintenance.ts';

@@ -22,6 +22,7 @@ import {
   createModulesController,
 } from '../controllers/modules.controller.ts';
 import { createPeopleController } from '../controllers/people.controller.ts';
+import { createOrgController, type People } from '../controllers/org.controller.ts';
 import {
   createRealtimeController,
   REALTIME_MAX_MESSAGE_BYTES,
@@ -88,6 +89,7 @@ import { ssoRoutes } from './sso.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
 import { webhooksRoutes } from './webhooks.routes.ts';
+import { orgRoutes } from './org.routes.ts';
 
 export const API_PREFIX = '/api/v1';
 
@@ -149,6 +151,8 @@ export interface KernelRouteDependencies {
   codeHosts?: CodeHosts;
   /** Settings › Webhooks (/admin/webhooks); mounted when the host wires outgoing webhooks. */
   webhooks?: WebhookAdmin;
+  /** The person record, locations and cost centres (/people, /locations, /cost-centres). */
+  people?: People;
 }
 
 function identityAndAccessRoutes(
@@ -281,6 +285,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         if (deps.webhooks) {
           await api.register(webhooksRoutes(createWebhooksController(deps.webhooks, actorOf)));
         }
+        if (deps.people) await api.register(orgRoutes(createOrgController(deps.people, actorOf)));
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
         }

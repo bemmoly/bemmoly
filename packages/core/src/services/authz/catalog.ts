@@ -78,6 +78,13 @@ const KERNEL: ReadonlyArray<
   ],
   ['workspace.audit.view', 'View the audit log', null, 'Workspace', ONLY_ORG_ADMIN],
   [
+    'workspace.people.manage',
+    'Manage people records',
+    'Employment, managers, locations and cost centres',
+    'Workspace',
+    ONLY_ORG_ADMIN,
+  ],
+  [
     'ai.assist.use',
     'Use AI assist',
     'Summaries, drafting, search',

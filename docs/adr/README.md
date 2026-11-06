@@ -50,3 +50,4 @@ accepted record is never edited except to mark it superseded.
 | [0047](0047-pages-embed-html-and-pdf-files-in-a-sandbox.md) | Pages embed HTML and PDF files, HTML in a sandbox with an origin of its own | accepted |
 | [0048](0048-mcp-clients-upload-large-files-through-single-use-links.md) | MCP clients upload large files through single-use upload links | accepted |
 | [0049](0049-pages-have-a-kind-page-file-or-folder.md) | Pages have a kind: page, file or folder | accepted; adds the file page and the folder to the design system |
+| [0050](0050-the-person-record-lives-in-the-kernel.md) | The person record and org data live in the kernel | accepted |
